@@ -194,11 +194,19 @@ export async function startDevServer(options) {
         if (!key || !record || record.memberId !== key.memberId)
           return reply(403, { error: 'unknown key' })
         if (record.revoked) return reply(403, { error: 'revoked' })
-        if (record.activation) return reply(409, { error: 'used' })
-        if (activeOf(key.memberId).length >= MAX_ACTIVE) return reply(429, { error: 'limit' })
         const type = body.deviceType
         if ((type !== 'usb' && type !== 'pc') || !/^[0-9a-f]{64}$/.test(String(body.deviceId))) {
           return reply(400, { error: 'bad device' })
+        }
+        // the same key on the same device again (a write that failed, a cleared data folder) is
+        // signed anew, counted from now; on another device it is already used
+        const again =
+          record.activation &&
+          record.activation.deviceType === type &&
+          record.activation.deviceId === body.deviceId
+        if (record.activation && !again) return reply(409, { error: 'used' })
+        if (!again && activeOf(key.memberId).length >= MAX_ACTIVE) {
+          return reply(429, { error: 'limit' })
         }
         if (type === 'pc' && typeof body.pcConsentAt !== 'string')
           return reply(400, { error: 'no consent' })

@@ -95,7 +95,7 @@ describe('securekey-dev-server', () => {
       fetch,
     })
     expect(status?.payload.status).toBe('active')
-    // the same key a second time: already used
+    // the same key on another device: already used
     const again = await registerKey({
       userData: join(root, 'userData2'),
       keyFile,
@@ -105,6 +105,33 @@ describe('securekey-dev-server', () => {
       fetch,
     })
     expect(again).toEqual({ ok: false, error: 'used' })
+  })
+
+  it('activates the same key on the same device again, with a new activation time', async () => {
+    // a stick whose first write failed on another PC, or a data folder that was cleared
+    const { server, keys } = await startServer()
+    const root = mkdtempSync(join(tmpdir(), 'sk-app-'))
+    const keyFile = await issue(server, root, 'hanpan.key')
+    const register = (n: number) =>
+      registerKey({
+        userData: join(root, `userData${n}`),
+        keyFile,
+        target: { where: 'usb', letter: 'E' },
+        probe,
+        config: config(server, keys),
+        fetch,
+        usbDir: (letter) => join(root, `usb-${n}-${letter}`, 'Hanpan'),
+      })
+    const first = await register(1)
+    await new Promise((r) => setTimeout(r, 15))
+    const second = await register(2)
+    expect(first.ok && second.ok).toBe(true)
+    if (!first.ok || !second.ok) return
+    expect(second.registration.activation.deviceId).toBe(first.registration.activation.deviceId)
+    // counted from now: the 30 days start again for the new registration
+    expect(Date.parse(second.registration.activation.activatedAt)).toBeGreaterThan(
+      Date.parse(first.registration.activation.activatedAt),
+    )
   })
 
   it('refuses the fourth active key', async () => {
