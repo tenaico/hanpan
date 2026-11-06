@@ -36,6 +36,8 @@ export interface SecureKeyUiState {
   strings: Record<string, string>
   /** a cover over another window: only the title line, no buttons */
   cover?: boolean
+  /** false on a cover: [Register a key] is offered only in the gate window */
+  canRegister?: boolean
 }
 
 /** What the window asks to register on: a stick by letter, or this PC once the warning is accepted */

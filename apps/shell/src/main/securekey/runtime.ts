@@ -113,6 +113,8 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
   let current: Registration | null = null
   let grace: string | null = null
   let showing = false
+  /** from the start of the run until the gate has decided: a second launch only queues its files */
+  let starting = true
   let lockedNow = false
   let stopWatch: (() => void) | null = null
 
@@ -278,6 +280,8 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
         config,
         fetch: deps.fetch,
         ...(deps.usbDir ? { usbDir: deps.usbDir } : {}),
+        // the AI keys stay sealed with the vault of the registration being replaced
+        vault: current?.vault ?? null,
       })
       if (!result.ok) return tSecureKey(lang(), REGISTER_ERROR_TEXT[result.error])
       open(result.registration)
@@ -311,47 +315,16 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     },
 
     async runGate() {
-      if (!onWindows || !config.requireKey) return 'continue'
-      let decision: GateDecision
-      if (found?.kind === 'found') {
-        const registration = found.registration
-        const status = verdictOf(registration, stateOf(registration))
-        decision =
-          status.ok || status.reason !== 'stale'
-            ? decideGate({ config, now: deps.now(), found, state: readState(path), status })
-            : await decide()
-      } else {
-        decision = await decide()
-      }
-      if (decision.kind === 'skip') return 'continue'
-      if (decision.kind === 'open') {
-        open(decision.registration)
-        watch(decision.registration)
-        backgroundCheck(decision.registration)
-        return 'continue'
-      }
-      showing = true
-      let answer: SecureKeyWindowResult
       try {
-        answer = await deps.showWindow(uiState(decision), handlers)
+        return await gate()
       } finally {
-        showing = false
+        starting = false
       }
-      if (answer === 'quit') return 'quit'
-      if (answer === 'later') {
-        grace = config.requiredFrom
-        return 'continue'
-      }
-      if (current) {
-        watch(current)
-        backgroundCheck(current)
-      }
-      return 'continue'
     },
 
     vault: () => current?.vault ?? null,
     graceUntil: () => grace,
-    pending: () => showing,
+    pending: () => starting || showing,
     registration: () => current,
     closeWindow: () => deps.closeWindow(),
     locked: () => lockedNow,
@@ -360,5 +333,44 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
       if (decision.kind === 'open' || decision.kind === 'skip') return 'passed'
       return uiState(decision)
     },
+  }
+
+  async function gate(): Promise<'continue' | 'quit'> {
+    if (!onWindows || !config.requireKey) return 'continue'
+    let decision: GateDecision
+    if (found?.kind === 'found') {
+      const registration = found.registration
+      const status = verdictOf(registration, stateOf(registration))
+      decision =
+        status.ok || status.reason !== 'stale'
+          ? decideGate({ config, now: deps.now(), found, state: readState(path), status })
+          : await decide()
+    } else {
+      decision = await decide()
+    }
+    if (decision.kind === 'skip') return 'continue'
+    if (decision.kind === 'open') {
+      open(decision.registration)
+      watch(decision.registration)
+      backgroundCheck(decision.registration)
+      return 'continue'
+    }
+    showing = true
+    let answer: SecureKeyWindowResult
+    try {
+      answer = await deps.showWindow(uiState(decision), handlers)
+    } finally {
+      showing = false
+    }
+    if (answer === 'quit') return 'quit'
+    if (answer === 'later') {
+      grace = config.requiredFrom
+      return 'continue'
+    }
+    if (current) {
+      watch(current)
+      backgroundCheck(current)
+    }
+    return 'continue'
   }
 }

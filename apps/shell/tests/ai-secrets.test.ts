@@ -14,6 +14,7 @@ import { vaultCodec } from '../src/main/securekey/vault-codec'
 import { normalizeFileSearchSettings } from '../src/main/file-index/rerank'
 import {
   MAX_REVEAL_VALUES,
+  assertFileSearchKeysWritable,
   fileSearchHoldsPlainKeys,
   openFileSearchKeys,
   sealFileSearchKeys,
@@ -219,6 +220,17 @@ describe('the reveal entry', () => {
 })
 
 describe('home search reranking keys', () => {
+  it('are not written while a v2 key among them cannot be opened', () => {
+    setAiSecretCodec({ seal: () => null, open: () => null })
+    expect(() => assertFileSearchKeysWritable({ keys: { openrouter: 'sealed:v2:x' } })).toThrow()
+    expect(() => assertFileSearchKeysWritable({ keys: { openrouter: 'sk-or' } })).not.toThrow()
+    expect(() => assertFileSearchKeysWritable(undefined)).not.toThrow()
+    setAiSecretCodec({ seal: () => null, open: () => 'sk-or' })
+    expect(() =>
+      assertFileSearchKeysWritable({ keys: { openrouter: 'sealed:v2:x' } }),
+    ).not.toThrow()
+  })
+
   it('seal on write and open before the settings are normalized', () => {
     setAiSecretCodec(safeStorageCodec(fakeStorage(), 'win32'))
     const settings = normalizeFileSearchSettings({ rerank: true, keys: { openrouter: 'sk-or' } })

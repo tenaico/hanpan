@@ -202,6 +202,42 @@ describe('runGate', () => {
     expect(windowCalls[0]!.state.optional).toBe(false)
   })
 
+  it('is pending from the start until the gate has decided', async () => {
+    await registerOnE()
+    volumes = [E]
+    const rt = runtime()
+    // a second launch during the quiet open or the gate's lookup must only queue its files
+    expect(rt.pending()).toBe(true)
+    await rt.openQuietly()
+    expect(rt.pending()).toBe(true)
+    expect(await rt.runGate()).toBe('continue')
+    expect(rt.pending()).toBe(false)
+    // outside Windows the gate decides at once
+    const mac = runtime({ platform: 'darwin' })
+    expect(await mac.runGate()).toBe('continue')
+    expect(mac.pending()).toBe(false)
+  })
+
+  it('is no longer pending once the gate fails', async () => {
+    const rt = createSecureKeyRuntime({
+      config: config(),
+      userData,
+      probe: { listUsbVolumes: async () => [], machineGuid: async () => null },
+      fetch: fakeFetch,
+      now: () => now,
+      lang: () => 'ko',
+      showWindow: async () => {
+        throw new Error('window failed')
+      },
+      closeWindow,
+      lockAi,
+      unlockAi,
+      usbDir,
+    })
+    await expect(rt.runGate()).rejects.toThrow('window failed')
+    expect(rt.pending()).toBe(false)
+  })
+
   it('is pending while the window is up and closes it on request', async () => {
     let release: (r: SecureKeyWindowResult) => void = () => {}
     const rt = createSecureKeyRuntime({
@@ -305,6 +341,73 @@ describe('runGate', () => {
     expect(unlockAi).toHaveBeenCalled()
     expect(registered).toHaveBeenCalledTimes(1)
     expect(rt.graceUntil()).toBeNull()
+  })
+
+  it('a new key registered over a revoked one, on the PC this time, keeps its vault', async () => {
+    const vault = await registerOnE()
+    volumes = [E]
+    const { writeFileSync } = await import('node:fs')
+    // the last answer said revoked: the gate shows the lock screen and the person registers anew
+    await writeState(statePath(userData), {
+      keyId: 'k1',
+      where: 'usb',
+      status: signer.sign({ v: 1, keyId: 'k1', status: 'revoked', serverTime: now.toISOString() }),
+      checkedAt: now.toISOString(),
+    })
+    const newKey = join(root, 'new.key')
+    writeFileSync(
+      newKey,
+      JSON.stringify(
+        signer.sign({
+          v: 1,
+          kid: 'test1',
+          memberId: 'm1',
+          keyId: 'k2',
+          issuedAt: '2026-11-25T00:00:00Z',
+        }),
+      ),
+    )
+    const activate = (async (_url: string | URL | Request, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body)) as {
+        deviceId: string
+        deviceType: 'usb' | 'pc'
+        pcConsentAt?: string
+      }
+      return new Response(
+        JSON.stringify(
+          signer.sign({
+            ...activation(),
+            keyId: 'k2',
+            deviceType: body.deviceType,
+            deviceId: body.deviceId,
+            pcConsentAt: body.pcConsentAt,
+          }),
+        ),
+      )
+    }) as typeof fetch
+    const rt = createSecureKeyRuntime({
+      config: config(),
+      userData,
+      probe: { listUsbVolumes: async () => volumes, machineGuid: async () => 'guid-1' },
+      fetch: activate,
+      now: () => now,
+      lang: () => 'ko',
+      showWindow: async (state, handlers) => {
+        expect(state).toMatchObject({ mode: 'lock', reason: 'revoked' })
+        expect(
+          await handlers.register(newKey, { where: 'pc', consentAt: '2026-11-25T09:00:00Z' }),
+        ).toBeNull()
+        return 'registered'
+      },
+      closeWindow,
+      lockAi,
+      unlockAi,
+      usbDir,
+    })
+    await rt.openQuietly()
+    expect(await rt.runGate()).toBe('continue')
+    expect(rt.registration()?.key.keyId).toBe('k2')
+    expect(rt.vault()?.equals(vault)).toBe(true)
   })
 
   it('turns a register error into a line in the window language', async () => {

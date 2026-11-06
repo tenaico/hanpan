@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import {
+  AiLockedError,
   SEALED_PREFIX,
+  SEALED_PREFIX_V2,
   isSealedSecret,
   mapAiSecrets,
   openSecretValue,
@@ -192,6 +194,21 @@ export function fileSearchHoldsPlainKeys(stored: unknown, options: SealOptions =
     keys !== null &&
     Object.values(keys).some((v) => typeof v === 'string' && wantsSealing(v, options))
   )
+}
+
+/**
+ * The reranking keys are not written while one of them is a v2 value this run
+ * cannot open (the security key's stick is out): it reads as empty, and the
+ * write would replace it for good. Pass the stored `fileSearch` value.
+ */
+export function assertFileSearchKeysWritable(stored: unknown): void {
+  const keys = (stored as { keys?: unknown } | null | undefined)?.keys
+  if (typeof keys !== 'object' || keys === null) return
+  for (const v of Object.values(keys)) {
+    if (typeof v === 'string' && v.startsWith(SEALED_PREFIX_V2) && openSecretValue(v) === '') {
+      throw new AiLockedError()
+    }
+  }
 }
 
 /** The hidden entry the terminal command starts to open sealed values */

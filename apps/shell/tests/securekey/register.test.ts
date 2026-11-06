@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -157,6 +157,57 @@ describe('registerKey', () => {
       ok: false,
       error: 'no-usb',
     }))
+
+  it('keeps an activation the stick could not take and uses it on the next try', async () => {
+    // the stick refuses the write (write-protected, full, pulled): a file where the folder goes
+    mkdirSync(join(root, 'usb-E'), { recursive: true })
+    writeFileSync(join(root, 'usb-E', 'Hanpan'), 'in the way')
+    await expect(register(server())).rejects.toThrow()
+    expect(requests).toHaveLength(1)
+    rmSync(join(root, 'usb-E', 'Hanpan'))
+    // the server would answer 409 now; the kept activation is used instead
+    const again = await register(server({ status: 409 }))
+    expect(again.ok).toBe(true)
+    expect(requests).toHaveLength(1)
+    for (const name of Object.values(KEY_FILES))
+      expect(existsSync(join(usbDir('E'), name))).toBe(true)
+    // once written, nothing is kept any more
+    expect(existsSync(join(userData, 'securekey-pending.json'))).toBe(false)
+  })
+
+  it('keeps the vault of the registration it replaces', async () => {
+    // the AI keys are sealed with that vault: a new one would leave them unreadable
+    const previous = Buffer.alloc(32, 7)
+    const result = await registerKey({
+      userData,
+      keyFile,
+      target: { where: 'usb', letter: 'E' },
+      probe,
+      config,
+      fetch: server(),
+      usbDir,
+      vault: previous,
+    })
+    expect(result.ok).toBe(true)
+    expect(readFileSync(join(usbDir('E'), KEY_FILES.vault)).equals(previous)).toBe(true)
+  })
+
+  it('reuses a vault already in the place it registers to', async () => {
+    const onStick = Buffer.alloc(32, 9)
+    mkdirSync(usbDir('E'), { recursive: true })
+    writeFileSync(join(usbDir('E'), KEY_FILES.vault), onStick)
+    expect((await register(server())).ok).toBe(true)
+    expect(readFileSync(join(usbDir('E'), KEY_FILES.vault)).equals(onStick)).toBe(true)
+  })
+
+  it('does not use a kept activation for another device', async () => {
+    mkdirSync(join(root, 'usb-E'), { recursive: true })
+    writeFileSync(join(root, 'usb-E', 'Hanpan'), 'in the way')
+    await expect(register(server())).rejects.toThrow()
+    const pc = await register(server(), { where: 'pc', consentAt: '2026-11-20T00:59:00Z' })
+    expect(pc.ok).toBe(true)
+    expect(requests).toHaveLength(2)
+  })
 
   it('needs the internet', async () => {
     const offline = (async () => {

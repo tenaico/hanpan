@@ -62,6 +62,7 @@ class FakeBrowserWindow {
   }
   once(event: string, l: () => void) {
     if (event === 'ready-to-show') l()
+    else this.on(event, l)
   }
   on(event: string, l: () => void) {
     this.listeners.set(event, [...(this.listeners.get(event) ?? []), l])
@@ -72,8 +73,16 @@ class FakeBrowserWindow {
       (this.listeners.get(event) ?? []).filter((x) => x !== l),
     )
   }
-  emit(event: string) {
-    for (const l of this.listeners.get(event) ?? []) l()
+  emit(event: string, arg?: unknown) {
+    for (const l of this.listeners.get(event) ?? []) (l as (a?: unknown) => void)(arg)
+  }
+  /** what Alt+F4 does: a 'close' the window may refuse, then 'closed' */
+  userClose() {
+    let refused = false
+    this.emit('close', { preventDefault: () => (refused = true) })
+    if (refused) return false
+    this.close()
+    return true
   }
   close() {
     this.closeCalls += 1
@@ -190,6 +199,42 @@ describe('lock overlays', () => {
     expect(shell.closeCalls).toBe(0)
     expect(detached.closeCalls).toBe(0)
     expect(mod.lockOverlaysShown()).toBe(false)
+  })
+
+  it('a cover cannot be closed by the person while locked (Alt+F4)', async () => {
+    const { mod, shell } = await setup()
+    mod.showLockOverlays(lockState())
+    const cover = overlaysOf(shell)[0]!
+    expect(cover.userClose()).toBe(false)
+    expect(overlaysOf(shell)).toHaveLength(1)
+    mod.hideLockOverlays()
+    expect(overlaysOf(shell)).toHaveLength(0)
+  })
+
+  it('covers a window that appears while locked', async () => {
+    const { mod } = await setup()
+    mod.showLockOverlays(lockState())
+    const later = new FakeBrowserWindow({ show: false })
+    mod.coverNewWindow(later as never)
+    later.visible = true
+    later.emit('show')
+    expect(overlaysOf(later)).toHaveLength(1)
+    mod.hideLockOverlays()
+    const afterUnlock = new FakeBrowserWindow({ show: false })
+    mod.coverNewWindow(afterUnlock as never)
+    afterUnlock.visible = true
+    afterUnlock.emit('show')
+    expect(overlaysOf(afterUnlock)).toHaveLength(0)
+  })
+
+  it('offers no register button on a cover, where registering cannot run', async () => {
+    const { mod, shell } = await setup()
+    mod.showLockOverlays({ ...lockState(), reason: 'revoked' })
+    const main = overlaysOf(shell)[0]!
+    const state = handlers.get(SECUREKEY_CHANNELS.getState)!({
+      sender: main.webContents,
+    }) as SecureKeyUiState
+    expect(state.canRegister).toBe(false)
   })
 
   it('follows the parent when it moves', async () => {

@@ -34,8 +34,11 @@ export function configureLockOverlays(next: OverlayConfig): void {
   config = next
 }
 
+// a cover cannot register a key (that runs only in the gate window): no [Register a key] there
 const stateFor = (cover: Cover): SecureKeyUiState =>
-  cover.main ? { ...lockState!, cover: false } : { ...lockState!, cover: true }
+  cover.main
+    ? { ...lockState!, cover: false, canRegister: false }
+    : { ...lockState!, cover: true, canRegister: false }
 
 function send(cover: Cover): void {
   if (!cover.overlay.isDestroyed() && lockState) {
@@ -70,8 +73,14 @@ function coverWindow(parent: BrowserWindow): void {
     if (!overlay.isDestroyed() && !parent.isDestroyed())
       overlay.setBounds(parent.getContentBounds())
   }
+  // the window underneath is closing (quit, or its own close): its cover goes with it
+  let parentClosing = false
+  const onParentClose = () => {
+    parentClosing = true
+  }
   parent.on('move', follow)
   parent.on('resize', follow)
+  parent.on('close', onParentClose)
   const cover: Cover = {
     parent,
     overlay,
@@ -79,8 +88,13 @@ function coverWindow(parent: BrowserWindow): void {
     detach: () => {
       parent.removeListener('move', follow)
       parent.removeListener('resize', follow)
+      parent.removeListener('close', onParentClose)
     },
   }
+  // Alt+F4 or any other close by the person does not take the cover away while locked
+  overlay.on('close', (event: { preventDefault(): void }) => {
+    if (lockState && !parentClosing && !parent.isDestroyed()) event.preventDefault()
+  })
   covers.set(parent.id, cover)
   overlayIds.add(overlay.id)
   const contentsId = overlay.webContents.id
@@ -132,6 +146,16 @@ export function hideLockOverlays(): void {
     cover.detach()
     if (!cover.overlay.isDestroyed()) cover.overlay.close()
   }
+}
+
+/**
+ * A window made while locked (a detached editor, a tool window) gets its own
+ * cover once it shows. Call for every new window; outside a lock it does nothing.
+ */
+export function coverNewWindow(win: BrowserWindow): void {
+  win.once('show', () => {
+    if (lockState && !win.isDestroyed()) showLockOverlays(lockState)
+  })
 }
 
 export function lockOverlaysShown(): boolean {

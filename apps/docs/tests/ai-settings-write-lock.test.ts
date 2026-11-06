@@ -99,6 +99,18 @@ describe('ai-settings.json while the security key is locked', () => {
     expect(readFileSync(path).equals(before)).toBe(true)
   })
 
+  it('refuses to write over v2 keys it cannot open, also outside a lock', () => {
+    // a build without the key requirement, the stick out: the v2 key reads as empty
+    setAiSecretCodec({ seal: () => null, open: () => null })
+    writeFileSync(path, JSON.stringify({ providers: { openai: { apiKey: 'sealed:v2:keep' } } }))
+    const before = readFileSync(path)
+    const settings = { ...defaultAiSettings(), provider: 'openai' as const }
+    expect(() => writeStoredAiSettings(settings)).toThrow()
+    expect(() => handlers.get('ai:set-settings')!({}, settings)).toThrow()
+    expect(() => subscriptionDeps!.setMeteredAccepted('codex', true)).toThrow()
+    expect(readFileSync(path).equals(before)).toBe(true)
+  })
+
   it('setMeteredAccepted writes sealed values', () => {
     setAiSecretCodec(reversing)
     writeFileSync(

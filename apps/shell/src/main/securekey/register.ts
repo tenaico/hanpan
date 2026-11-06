@@ -1,4 +1,6 @@
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile, rm } from 'node:fs/promises'
+import { join } from 'node:path'
+import { atomicWriteFile } from '../atomic-write'
 import { deviceIdHash, usbDeviceId, type DeviceProbe } from './devices'
 import {
   isActivationPayload,
@@ -10,7 +12,14 @@ import {
   type Signed,
 } from './format'
 import type { GateConfig } from './gate'
-import { newVaultKey, pcKeyDir, usbKeyDir, writeRegistration, type Registration } from './store'
+import {
+  KEY_FILES,
+  newVaultKey,
+  pcKeyDir,
+  usbKeyDir,
+  writeRegistration,
+  type Registration,
+} from './store'
 import { statePath, writeState } from './status'
 
 /**
@@ -90,6 +99,38 @@ async function readKeyFile(path: string, keys: PublicKeys): Promise<Signed<KeyPa
   }
 }
 
+const VAULT_BYTES = 32
+
+async function existingVault(dir: string): Promise<Buffer | null> {
+  try {
+    const bytes = await readFile(join(dir, KEY_FILES.vault))
+    return bytes.length === VAULT_BYTES ? bytes : null
+  } catch {
+    return null
+  }
+}
+
+/** userData: an activation received but not yet written to its place */
+const PENDING_FILE = 'securekey-pending.json'
+
+async function readPending(
+  path: string,
+  keys: PublicKeys,
+  key: KeyPayload,
+  deviceType: 'usb' | 'pc',
+  deviceId: string,
+): Promise<Signed<ActivationPayload> | null> {
+  try {
+    const doc = JSON.parse(await readFile(path, 'utf8')) as unknown
+    const p = verifySigned(doc, keys, isActivationPayload)
+    if (!p || p.keyId !== key.keyId || p.memberId !== key.memberId) return null
+    if (p.deviceType !== deviceType || p.deviceId !== deviceId) return null
+    return doc as Signed<ActivationPayload>
+  } catch {
+    return null
+  }
+}
+
 export async function registerKey(opts: {
   userData: string
   keyFile: string
@@ -99,6 +140,11 @@ export async function registerKey(opts: {
   fetch: typeof fetch
   /** where a stick's folder is; tests point it at a temporary folder */
   usbDir?: (letter: string) => string
+  /**
+   * The vault of the registration this one replaces (a revoked key, a move from
+   * the PC to a stick): the AI keys are sealed with it, so it is kept.
+   */
+  vault?: Buffer | null
 }): Promise<{ ok: true; registration: Registration } | { ok: false; error: RegisterError }> {
   const { target, config } = opts
   // the PC needs the moment the person accepted the warning (spec 7-1)
@@ -122,27 +168,47 @@ export async function registerKey(opts: {
     dir = pcKeyDir(opts.userData)
   }
 
-  const activated = await activateKey({
-    server: config.server,
-    fetch: opts.fetch,
-    key,
-    deviceType: target.where,
-    deviceIdHash: deviceIdHash(rawId),
-    ...(target.where === 'pc' ? { pcConsentAt: target.consentAt } : {}),
-    keys: config.keys,
-  })
-  if (!activated.ok) return activated
+  const deviceId = deviceIdHash(rawId)
+  // an activation the server gave on an earlier try whose files could not be written:
+  // asking again would be refused as already used (409)
+  const pendingPath = join(opts.userData, PENDING_FILE)
+  const kept = await readPending(pendingPath, config.keys, key.payload, target.where, deviceId)
+  let activation: Signed<ActivationPayload>
+  if (kept) {
+    activation = kept
+  } else {
+    const activated = await activateKey({
+      server: config.server,
+      fetch: opts.fetch,
+      key,
+      deviceType: target.where,
+      deviceIdHash: deviceId,
+      ...(target.where === 'pc' ? { pcConsentAt: target.consentAt } : {}),
+      keys: config.keys,
+    })
+    if (!activated.ok) return activated
+    activation = activated.activation
+    await mkdir(opts.userData, { recursive: true }).catch(() => undefined)
+    await atomicWriteFile(pendingPath, Buffer.from(JSON.stringify(activation), 'utf8')).catch(
+      () => undefined,
+    )
+  }
 
-  const vault = newVaultKey()
-  await writeRegistration(dir, { key, activation: activated.activation, vault })
+  // the vault the AI keys are sealed with goes on: the one in use, or the one already in that place
+  const vault =
+    opts.vault && opts.vault.length === VAULT_BYTES
+      ? opts.vault
+      : ((await existingVault(dir)) ?? newVaultKey())
+  await writeRegistration(dir, { key, activation, vault })
   await writeState(statePath(opts.userData), { keyId: key.payload.keyId, where: target.where })
+  await rm(pendingPath, { force: true }).catch(() => undefined)
   return {
     ok: true,
     registration: {
       where: target.where,
       dir,
       key: key.payload,
-      activation: activated.activation.payload,
+      activation: activation.payload,
       vault,
       ...(volumeSerial !== undefined ? { volumeSerial } : {}),
     },

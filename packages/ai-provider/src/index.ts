@@ -110,6 +110,7 @@ export type {
 } from './subscription/contract'
 export { AiRunError, aiStreamErrorFields } from './run-error'
 export { AiLockedError, aiLockSignal, assertAiUnlocked, isAiLocked, setAiLocked } from './ai-lock'
+export { assertAiSecretsWritable } from './secrets-write-guard'
 export {
   AI_PROVIDERS,
   DEFAULT_MAX_OUTPUT_TOKENS,

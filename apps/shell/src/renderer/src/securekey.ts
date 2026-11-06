@@ -128,7 +128,13 @@ function render(): void {
   show(later, registering && state.optional)
   later.disabled = state.busy
   toRegister.textContent = s.skToRegister ?? ''
-  show(toRegister, !registering && state.reason !== null && REREGISTER.has(state.reason))
+  show(
+    toRegister,
+    !registering &&
+      state.canRegister !== false &&
+      state.reason !== null &&
+      REREGISTER.has(state.reason),
+  )
   toRegister.disabled = state.busy
   retry.textContent = state.busy && !registering ? (s.skChecking ?? '') : (s.skRetry ?? '')
   show(retry, true)

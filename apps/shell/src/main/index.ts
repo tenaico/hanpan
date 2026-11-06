@@ -33,7 +33,12 @@ import { atomicWriteFile } from './atomic-write'
 import { setupHanpan } from './hanpan/setup'
 import { windowsDeviceProbe } from './securekey/devices'
 import { readGateConfig } from './securekey/gate'
-import { configureLockOverlays, hideLockOverlays, showLockOverlays } from './securekey/lock-overlay'
+import {
+  configureLockOverlays,
+  coverNewWindow,
+  hideLockOverlays,
+  showLockOverlays,
+} from './securekey/lock-overlay'
 import {
   createSecureKeyRuntime,
   secureKeyGraceLine,
@@ -515,6 +520,7 @@ import {
 import { shutdownCodexAppServers } from '@genoffice/ai-provider/codex-app-server'
 import {
   REVEAL_FLAG,
+  assertFileSearchKeysWritable,
   fileSearchHoldsPlainKeys,
   openFileSearchKeys,
   runRevealEntry,
@@ -5944,8 +5950,9 @@ function registerHomeIpc(): void {
   ipcMain.handle(
     HOME_CHANNELS.setFileSearchSettings,
     (_event, patch: unknown): FileSearchSettings => {
-      // locked by the security key: the v2 keys read as empty now, a save would replace them
+      // locked by the security key, or v2 keys this run cannot open: a save would replace them
       assertAiUnlocked()
+      assertFileSearchKeysWritable(readAppSettings(APP_SETTINGS_PATH()).fileSearch)
       const current = readFileSearchSettings()
       const p = (patch && typeof patch === 'object' ? patch : {}) as Partial<FileSearchSettings>
       const next = normalizeFileSearchSettings({
@@ -9176,6 +9183,7 @@ function resealStoredKeys(): void {
   sealStoredAiSettings(join(app.getPath('userData'), 'ai-settings.json'), { upgrade })
   const storedSearch = readAppSettings(APP_SETTINGS_PATH()).fileSearch
   if (!fileSearchHoldsPlainKeys(storedSearch, { upgrade })) return
+  assertFileSearchKeysWritable(storedSearch)
   const sealed = sealFileSearchKeys(readFileSearchSettings())
   if (fileSearchHoldsPlainKeys(sealed, { upgrade })) return
   const filled = (keys: unknown) =>
@@ -9187,6 +9195,8 @@ function resealStoredKeys(): void {
 }
 
 function createAppSecureKey(): SecureKeyRuntime {
+  // a window opened while the security key is locked gets a cover too
+  app.on('browser-window-created', (_event, win) => coverNewWindow(win))
   configureLockOverlays({
     mainWindow: () => shellWindow,
     retry: () => (secureKey ? secureKey.retryLock() : Promise.resolve('passed' as const)),

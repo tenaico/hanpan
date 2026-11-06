@@ -6,6 +6,8 @@ import {
   isAiLocked,
   setAiLocked,
 } from '../src/ai-lock'
+import { assertAiSecretsWritable } from '../src/secrets-write-guard'
+import { setAiSecretCodec } from '../src/settings-secrets'
 import { aiFetch } from '../src/fetch'
 import { AiRunError } from '../src/run-error'
 import { chatForProvider } from '../src/chat'
@@ -112,5 +114,26 @@ describe('the security key AI lock', () => {
     await listCustomModels('http://127.0.0.1:1234/v1', 'k').catch(() => undefined)
     await listLocalModels({ baseUrl: 'http://127.0.0.1:11434' } as never).catch(() => undefined)
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('writing settings over v2 keys that cannot be opened', () => {
+  afterEach(() => setAiSecretCodec(null))
+
+  it('refuses while a v2 value would be lost, allows once it opens', () => {
+    const stored = { providers: { openai: { apiKey: 'sealed:v2:abc', model: '' } } }
+    setAiSecretCodec({ seal: () => null, open: () => null })
+    expect(() => assertAiSecretsWritable(stored)).toThrow(AiLockedError)
+    setAiSecretCodec({ seal: () => null, open: () => 'sk-open' })
+    expect(() => assertAiSecretsWritable(stored)).not.toThrow()
+  })
+
+  it('lets files without v2 values through', () => {
+    setAiSecretCodec({ seal: () => null, open: () => null })
+    expect(() =>
+      assertAiSecretsWritable({ providers: { openai: { apiKey: 'sealed:v1:x' } } }),
+    ).not.toThrow()
+    expect(() => assertAiSecretsWritable({})).not.toThrow()
+    expect(() => assertAiSecretsWritable(null)).not.toThrow()
   })
 })
