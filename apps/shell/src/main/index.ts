@@ -33,6 +33,7 @@ import { atomicWriteFile } from './atomic-write'
 import { setupHanpan } from './hanpan/setup'
 import { windowsDeviceProbe } from './securekey/devices'
 import { readGateConfig } from './securekey/gate'
+import { configureLockOverlays, hideLockOverlays, showLockOverlays } from './securekey/lock-overlay'
 import {
   createSecureKeyRuntime,
   secureKeyGraceLine,
@@ -9140,6 +9141,12 @@ function lockAi(): void {}
 function unlockAi(): void {}
 
 function createAppSecureKey(): SecureKeyRuntime {
+  configureLockOverlays({
+    mainWindow: () => shellWindow,
+    retry: () => (secureKey ? secureKey.retryLock() : Promise.resolve('passed' as const)),
+    // the windows close the usual way, asking about unsaved documents; their covers go with them
+    quit: () => app.quit(),
+  })
   return createSecureKeyRuntime({
     config: readGateConfig(),
     userData: app.getPath('userData'),
@@ -9151,6 +9158,7 @@ function createAppSecureKey(): SecureKeyRuntime {
     closeWindow: closeSecureKeyWindow,
     lockAi,
     unlockAi,
+    overlays: { show: showLockOverlays, hide: hideLockOverlays },
   })
 }
 

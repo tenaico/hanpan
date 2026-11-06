@@ -35,6 +35,29 @@ let handlers: SecureKeyWindowHandlers | null = null
 let pending: ((result: SecureKeyWindowResult) => void) | null = null
 let ipcRegistered = false
 
+/**
+ * Another page that loads securekey.html: a lock cover over a window (Task 9).
+ * Its requests go to its own handlers instead of the gate window's.
+ */
+export interface SecureKeyPage {
+  state(): SecureKeyUiState
+  retry?(): Promise<void>
+  quit?(): void
+}
+const pages = new Map<number, SecureKeyPage>()
+
+const pageOf = (event: unknown): SecureKeyPage | undefined => {
+  const id = (event as { sender?: { id?: unknown } } | null)?.sender?.id
+  return typeof id === 'number' ? pages.get(id) : undefined
+}
+
+/** Route a page's requests by its webContents id; null removes it */
+export function routeSecureKeyPage(webContentsId: number, page: SecureKeyPage | null): void {
+  if (page) pages.set(webContentsId, page)
+  else pages.delete(webContentsId)
+  registerIpc()
+}
+
 function settle(result: SecureKeyWindowResult): void {
   const resolve = pending
   pending = null
@@ -59,9 +82,9 @@ const isRequest = (v: unknown): v is SecureKeyRegisterRequest => {
 function registerIpc(): void {
   if (ipcRegistered) return
   ipcRegistered = true
-  ipcMain.handle(SECUREKEY_CHANNELS.getState, () => current)
-  ipcMain.handle(SECUREKEY_CHANNELS.pickKeyFile, async () => {
-    if (!current || current.busy) return
+  ipcMain.handle(SECUREKEY_CHANNELS.getState, (event) => pageOf(event)?.state() ?? current)
+  ipcMain.handle(SECUREKEY_CHANNELS.pickKeyFile, async (event) => {
+    if (pageOf(event) || !current || current.busy) return
     const options = {
       properties: ['openFile' as const],
       filters: [{ name: 'hanpan.key', extensions: ['key'] }],
@@ -75,8 +98,9 @@ function registerIpc(): void {
     keyFile = path
     push({ keyFileName: basename(path), error: null })
   })
-  ipcMain.handle(SECUREKEY_CHANNELS.register, async (_event, request: unknown) => {
-    if (!current || current.busy || !handlers || !keyFile || !isRequest(request)) return
+  ipcMain.handle(SECUREKEY_CHANNELS.register, async (event, request: unknown) => {
+    if (pageOf(event) || !current || current.busy || !handlers || !keyFile || !isRequest(request))
+      return
     if (request.where === 'pc' && !request.consent) return
     if (request.where === 'usb' && !current.usbLetters.includes(request.letter)) return
     const target: SecureKeyRegisterTarget =
@@ -96,10 +120,13 @@ function registerIpc(): void {
     }
     push({ busy: false, error })
   })
-  ipcMain.handle(SECUREKEY_CHANNELS.later, () => {
+  ipcMain.handle(SECUREKEY_CHANNELS.later, (event) => {
+    if (pageOf(event)) return
     if (current?.optional && !current.busy) settle('later')
   })
-  ipcMain.handle(SECUREKEY_CHANNELS.retry, async () => {
+  ipcMain.handle(SECUREKEY_CHANNELS.retry, async (event) => {
+    const page = pageOf(event)
+    if (page) return page.retry?.()
     if (!current || current.busy || !handlers) return
     push({ busy: true })
     let next: SecureKeyUiState | 'passed'
@@ -115,7 +142,9 @@ function registerIpc(): void {
     }
     push({ ...next, keyFileName: current.keyFileName, busy: false })
   })
-  ipcMain.handle(SECUREKEY_CHANNELS.quit, () => {
+  ipcMain.handle(SECUREKEY_CHANNELS.quit, (event) => {
+    const page = pageOf(event)
+    if (page) return page.quit?.()
     settle('quit')
     closeSecureKeyWindow()
   })

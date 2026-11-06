@@ -382,3 +382,122 @@ describe('runGate', () => {
     expect(windowCalls[0]!.state).toMatchObject({ mode: 'lock', reason: 'stale' })
   })
 })
+
+describe('while running', () => {
+  function watched() {
+    let report: (present: boolean) => void = () => {}
+    const watchOpts: Array<{ activationPath: string; volumeSerial: string | null }> = []
+    const stopWatch = vi.fn()
+    const overlays = { show: vi.fn(), hide: vi.fn() }
+    const locked = vi.fn()
+    const rt = createSecureKeyRuntime({
+      config: config(),
+      userData,
+      probe: { listUsbVolumes: async () => volumes, machineGuid: async () => null },
+      fetch: fakeFetch,
+      now: () => now,
+      lang: () => 'ko',
+      showWindow: async () => 'quit',
+      closeWindow,
+      lockAi,
+      unlockAi,
+      usbDir,
+      overlays,
+      onLocked: locked,
+      startWatch: (opts) => {
+        watchOpts.push(opts)
+        report = opts.onChange
+        return stopWatch
+      },
+    })
+    return { rt, overlays, locked, watchOpts, stopWatch, report: (p: boolean) => report(p) }
+  }
+
+  it('locks every window when the stick is removed and opens again when it comes back', async () => {
+    await registerOnE()
+    volumes = [E]
+    statusAnswer = { v: 1, keyId: 'k1', status: 'active', serverTime: '2026-11-25T08:00:00Z' }
+    const w = watched()
+    await w.rt.openQuietly()
+    expect(await w.rt.runGate()).toBe('continue')
+    expect(w.watchOpts[0]).toEqual(
+      expect.objectContaining({
+        activationPath: join(usbDir('E'), 'activation.json'),
+        volumeSerial: '1a2b3c4d',
+      }),
+    )
+    lockAi.mockClear()
+    unlockAi.mockClear()
+
+    volumes = []
+    w.report(false)
+    await flush()
+    expect(lockAi).toHaveBeenCalledTimes(1)
+    expect(w.overlays.show).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: 'lock', reason: 'usb-missing' }),
+    )
+    expect(w.locked).toHaveBeenCalledWith('usb-missing')
+    expect(w.rt.locked()).toBe(true)
+
+    volumes = [E]
+    w.report(true)
+    await flush()
+    expect(unlockAi).toHaveBeenCalledTimes(1)
+    expect(w.overlays.hide).toHaveBeenCalledTimes(1)
+    expect(w.rt.locked()).toBe(false)
+    expect(w.rt.vault()).toHaveLength(32)
+  })
+
+  it('stays locked when another stick comes back on the letter', async () => {
+    await registerOnE()
+    volumes = [E]
+    const w = watched()
+    await w.rt.openQuietly()
+    await w.rt.runGate()
+    volumes = []
+    w.report(false)
+    await flush()
+    unlockAi.mockClear()
+    volumes = [{ ...E, diskSerial: 'ZZ99' }]
+    w.report(true)
+    await flush()
+    expect(unlockAi).not.toHaveBeenCalled()
+    expect(w.overlays.hide).not.toHaveBeenCalled()
+    expect(w.overlays.show).toHaveBeenLastCalledWith(
+      expect.objectContaining({ reason: 'other-device' }),
+    )
+  })
+
+  it('covers the windows when the background check says revoked', async () => {
+    await registerOnE()
+    volumes = [E]
+    statusAnswer = { v: 1, keyId: 'k1', status: 'revoked', serverTime: '2026-11-25T08:00:00Z' }
+    const w = watched()
+    await w.rt.openQuietly()
+    await w.rt.runGate()
+    await flush()
+    expect(w.overlays.show).toHaveBeenCalledWith(expect.objectContaining({ reason: 'revoked' }))
+    // a revoked key does not open again when the stick is pulled and put back
+    w.report(false)
+    await flush()
+    w.report(true)
+    await flush()
+    expect(w.overlays.hide).not.toHaveBeenCalled()
+  })
+
+  it('retries from the cover', async () => {
+    await registerOnE()
+    volumes = [E]
+    const w = watched()
+    await w.rt.openQuietly()
+    await w.rt.runGate()
+    volumes = []
+    w.report(false)
+    await flush()
+    expect(await w.rt.retryLock()).toMatchObject({ reason: 'usb-missing' })
+    volumes = [E]
+    expect(await w.rt.retryLock()).toBe('passed')
+    expect(w.overlays.hide).toHaveBeenCalledTimes(1)
+    expect(w.rt.locked()).toBe(false)
+  })
+})

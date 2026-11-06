@@ -1,10 +1,11 @@
 import { isLang, type Lang } from '@genoffice/i18n'
 import type { SecureKeyUiState } from '../../shared/securekey-api'
+import { join } from 'node:path'
 import type { DeviceProbe, UsbVolume } from './devices'
 import { isStatusPayload, verifySigned } from './format'
 import { decideGate, type GateConfig, type GateDecision, type LockReason } from './gate'
 import { registerKey, type RegisterError } from './register'
-import { findRegistration, type FindResult, type Registration } from './store'
+import { findRegistration, KEY_FILES, type FindResult, type Registration } from './store'
 import {
   fetchStatus,
   judgeStatus,
@@ -16,6 +17,7 @@ import {
   type StatusVerdict,
 } from './status'
 import { secureKeyStrings, tSecureKey, type SecureKeyStringKey } from './strings'
+import { startPresenceWatch } from './watch'
 import type {
   SecureKeyRegisterTarget,
   SecureKeyWindowHandlers,
@@ -50,6 +52,10 @@ export interface SecureKeyRuntimeDeps {
   onLocked?(reason: LockReason): void
   /** where a stick's folder is; tests point it at a temporary folder */
   usbDir?: (letter: string) => string
+  /** the lock cover over every window (lock-overlay.ts) */
+  overlays?: { show(state: SecureKeyUiState): void; hide(): void }
+  /** the presence watch (watch.ts); tests report the changes themselves */
+  startWatch?: typeof startPresenceWatch
 }
 
 export interface SecureKeyRuntime {
@@ -62,6 +68,10 @@ export interface SecureKeyRuntime {
   registration(): Registration | null
   /** close the gate window once the shell window exists */
   closeWindow(): void
+  /** locked after the gate: the stick was removed, or the key was revoked */
+  locked(): boolean
+  /** [Check again] on the shell window's cover */
+  retryLock(): Promise<SecureKeyUiState | 'passed'>
 }
 
 const REGISTER_ERROR_TEXT: Record<RegisterError, SecureKeyStringKey> = {
@@ -103,6 +113,8 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
   let current: Registration | null = null
   let grace: string | null = null
   let showing = false
+  let lockedNow = false
+  let stopWatch: (() => void) | null = null
 
   const lang = (): Lang => {
     const l = deps.lang()
@@ -202,12 +214,57 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     }
   }
 
+  function lockNow(decision: GateDecision): void {
+    const reason: LockReason = decision.kind === 'locked' ? decision.reason : 'usb-missing'
+    const first = !lockedNow
+    lockedNow = true
+    if (first) {
+      deps.lockAi()
+      deps.onLocked?.(reason)
+    }
+    deps.overlays?.show(uiState(decision.kind === 'locked' ? decision : { kind: 'locked', reason }))
+  }
+
+  function unlockNow(registration: Registration): void {
+    const wasLocked = lockedNow
+    lockedNow = false
+    if (registration !== current) watch(registration)
+    open(registration)
+    if (wasLocked) deps.overlays?.hide()
+  }
+
+  /** look again after a change: open when the key passes, else keep the lock with the new reason */
+  async function recheck(): Promise<GateDecision> {
+    const decision = await decide()
+    if (decision.kind === 'open') unlockNow(decision.registration)
+    else if (decision.kind !== 'skip') lockNow(decision)
+    return decision
+  }
+
+  /** watch the registration's stick (or PC folder) while the app runs (spec 7-4) */
+  function watch(registration: Registration): void {
+    stopWatch?.()
+    stopWatch = (deps.startWatch ?? startPresenceWatch)({
+      activationPath: join(registration.dir, KEY_FILES.activation),
+      volumeSerial: registration.volumeSerial ?? null,
+      onChange: (present) => {
+        if (!present) {
+          lockNow({
+            kind: 'locked',
+            reason: registration.where === 'usb' ? 'usb-missing' : 'damaged',
+          })
+          return
+        }
+        void recheck().catch(() => undefined)
+      },
+    })
+  }
+
   function backgroundCheck(registration: Registration): void {
     if (!statusDue(stateOf(registration), deps.now())) return
     void checkStatus(registration).then((verdict) => {
       if (!verdict || verdict.ok || current !== registration) return
-      deps.lockAi()
-      deps.onLocked?.(verdict.reason)
+      lockNow({ kind: 'locked', reason: verdict.reason })
     })
   }
 
@@ -269,6 +326,7 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
       if (decision.kind === 'skip') return 'continue'
       if (decision.kind === 'open') {
         open(decision.registration)
+        watch(decision.registration)
         backgroundCheck(decision.registration)
         return 'continue'
       }
@@ -284,7 +342,10 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
         grace = config.requiredFrom
         return 'continue'
       }
-      if (current) backgroundCheck(current)
+      if (current) {
+        watch(current)
+        backgroundCheck(current)
+      }
       return 'continue'
     },
 
@@ -293,5 +354,11 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     pending: () => showing,
     registration: () => current,
     closeWindow: () => deps.closeWindow(),
+    locked: () => lockedNow,
+    async retryLock() {
+      const decision = await recheck()
+      if (decision.kind === 'open' || decision.kind === 'skip') return 'passed'
+      return uiState(decision)
+    },
   }
 }
