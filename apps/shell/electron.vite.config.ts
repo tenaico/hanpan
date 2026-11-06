@@ -54,6 +54,8 @@ export default defineConfig({
           'doc-picker': resolve(__dirname, 'src/preload/doc-picker.ts'),
           // dedicated preload for the Quick Look preview window (see src/main/quick-look/quick-look-window.ts)
           'quick-look': resolve(__dirname, 'src/preload/quick-look.ts'),
+          // security key register and lock window (see src/main/securekey/window.ts)
+          securekey: resolve(__dirname, 'src/preload/securekey.ts'),
         },
       },
     },
@@ -82,6 +84,8 @@ export default defineConfig({
           'doc-picker': resolve(__dirname, 'src/renderer/doc-picker.html'),
           // Quick Look preview window (see src/main/quick-look/quick-look-window.ts)
           'quick-look': resolve(__dirname, 'src/renderer/quick-look.html'),
+          // security key register and lock window (see src/main/securekey/window.ts)
+          securekey: resolve(__dirname, 'src/renderer/securekey.html'),
         },
       },
     },
