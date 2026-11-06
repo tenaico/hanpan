@@ -94,3 +94,4 @@
 | [0091](0091-hanpan-korean-doc-features.md)                    | 한판의 한국 문서 기능은 화면 언어로 기본값을 정하고, 설정 스위치로 바꿀 수 있다                 | 2026-11-05 |
 | [0092](0092-hanpan-first-language-follows-windows.md)         | 한판의 첫 화면 언어는 운영체제 표시 언어를 따르고, 한판에 없는 언어면 한국어다                  | 2026-11-05 |
 | [0093](0093-hanpan-graphics-web-tabs.md)                      | AI 포토·AI 일러스트는 웹판을 한판 탭에 넣고 AI가 고친다(0090을 대체)                            | 2026-11-06 |
+| [0094](0094-hanpan-security-key.md)                           | 한판 Windows판은 tenai.kr의 보안키가 있어야 켜지고, 보안키가 없는 동안 AI를 막는다              | 2026-11-06 |
