@@ -87,7 +87,7 @@ describe('registerKey', () => {
   })
 
   it('registers on the PC with the consent time', async () => {
-    const consentAt = '2026-11-20T00:59:00Z'
+    const consentAt = '2026-11-20T00:59:00.000Z'
     const result = await register(server(), { where: 'pc', consentAt })
     expect(result.ok).toBe(true)
     expect(requests[0]!.body.pcConsentAt).toBe(consentAt)
@@ -101,6 +101,23 @@ describe('registerKey', () => {
     const result = await register(server(), { where: 'pc', consentAt: '' })
     expect(result).toEqual({ ok: false, error: 'refused' })
     expect(requests).toHaveLength(0)
+    expect(await register(server(), { where: 'pc', consentAt: 'not a time' })).toEqual({
+      ok: false,
+      error: 'refused',
+    })
+    expect(requests).toHaveLength(0)
+  })
+
+  it('sends the consent time as UTC ending in Z, the form the answer is compared in', async () => {
+    // the answer's pcConsentAt must equal what was sent, and the server writes times in UTC
+    const result = await register(server(), {
+      where: 'pc',
+      consentAt: '2026-11-20T09:59:00+09:00',
+    })
+    expect(requests[0]!.body.pcConsentAt).toBe('2026-11-20T00:59:00.000Z')
+    expect(result.ok).toBe(true)
+    if (result.ok)
+      expect(result.registration.activation.pcConsentAt).toBe('2026-11-20T00:59:00.000Z')
   })
 
   it('sends only the hashed device number', async () => {

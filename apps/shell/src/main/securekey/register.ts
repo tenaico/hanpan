@@ -148,7 +148,11 @@ export async function registerKey(opts: {
 }): Promise<{ ok: true; registration: Registration } | { ok: false; error: RegisterError }> {
   const { target, config } = opts
   // the PC needs the moment the person accepted the warning (spec 7-1)
-  if (target.where === 'pc' && !target.consentAt) return { ok: false, error: 'refused' }
+  // sent as UTC ending in Z: the answer's pcConsentAt is compared with it as text,
+  // and the server writes times that way (docs/contracts.md)
+  const consentMs = target.where === 'pc' ? Date.parse(target.consentAt) : Number.NaN
+  if (target.where === 'pc' && !Number.isFinite(consentMs)) return { ok: false, error: 'refused' }
+  const pcConsentAt = target.where === 'pc' ? new Date(consentMs).toISOString() : undefined
   const key = await readKeyFile(opts.keyFile, config.keys)
   if (!key) return { ok: false, error: 'bad-key' }
 
@@ -183,7 +187,7 @@ export async function registerKey(opts: {
       key,
       deviceType: target.where,
       deviceIdHash: deviceId,
-      ...(target.where === 'pc' ? { pcConsentAt: target.consentAt } : {}),
+      ...(pcConsentAt !== undefined ? { pcConsentAt } : {}),
       keys: config.keys,
     })
     if (!activated.ok) return activated
