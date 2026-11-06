@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { mkdir } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
 import { atomicWriteFile } from '../atomic-write'
 import {
   isStatusPayload,
@@ -54,7 +55,8 @@ export function readState(path: string): SecureKeyState | null {
   return state
 }
 
-export function writeState(path: string, state: SecureKeyState): Promise<void> {
+export async function writeState(path: string, state: SecureKeyState): Promise<void> {
+  await mkdir(dirname(path), { recursive: true })
   return atomicWriteFile(path, Buffer.from(JSON.stringify(state, null, 2), 'utf8'))
 }
 
