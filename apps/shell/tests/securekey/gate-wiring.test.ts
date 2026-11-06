@@ -26,7 +26,7 @@ describe('security key wiring', () => {
     expect(quiet).toBeLessThan(reveal)
     // a normal run opens it right after the lock, before the keys are sealed again
     const afterLock = at('await secureKey.openQuietly()', lock)
-    expect(afterLock).toBeLessThan(at('sealStoredAiSettings(', lock))
+    expect(afterLock).toBeLessThan(at('    resealStoredKeys()', lock))
     expect(afterLock).toBeLessThan(gate)
   })
 
@@ -83,6 +83,19 @@ describe('security key wiring', () => {
     for (const file of ['../../src/main/mcp/app-mcp.ts', '../../src/main/agent/agent-mcp.ts']) {
       expect(readFileSync(join(__dirname, file), 'utf8')).toContain('isLocked: isAiLocked')
     }
+  })
+
+  it('seals the AI keys twice with the vault and refuses writes while locked', () => {
+    const codec = at('const secretCodec = vaultCodec(', ready)
+    expect(codec).toBeLessThan(at('setAiSecretCodec(secretCodec)', ready))
+    expect(source.slice(codec, codec + 400)).toContain('secureKey?.vault()')
+    const reseal = at('function resealStoredKeys(): void {')
+    expect(source.slice(reseal, source.indexOf('\n}', reseal))).toContain('assertAiUnlocked()')
+    // a new registration seals again with its vault
+    const onRegistered = at('onRegistered: () => {')
+    expect(source.slice(onRegistered, onRegistered + 200)).toContain('resealStoredKeys()')
+    const search = at('HOME_CHANNELS.setFileSearchSettings,')
+    expect(source.slice(search, search + 300)).toContain('assertAiUnlocked()')
   })
 
   it('reads the four build values from the environment', () => {

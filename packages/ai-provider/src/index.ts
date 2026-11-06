@@ -60,6 +60,7 @@ export {
 } from './legacy-settings'
 export {
   SEALED_PREFIX,
+  SEALED_PREFIX_V2,
   isSealedSecret,
   mapAiSecrets,
   openAiSecrets,

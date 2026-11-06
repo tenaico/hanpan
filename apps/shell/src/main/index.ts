@@ -40,6 +40,7 @@ import {
   type SecureKeyRuntime,
 } from './securekey/runtime'
 import { tSecureKey } from './securekey/strings'
+import { vaultCodec } from './securekey/vault-codec'
 import { closeSecureKeyWindow, focusSecureKeyWindow, showSecureKeyWindow } from './securekey/window'
 import { configureDesignWindow, openDesignWithOutline } from './hanpan/design-window'
 import { tabStripOverlay } from './title-bar-overlay'
@@ -504,6 +505,7 @@ import {
 } from '@genoffice/ai-provider/agent-session'
 import { normalizeAgentPrefs } from '../shared/agent-api'
 import {
+  assertAiUnlocked,
   isAiLocked,
   normalizeAiSettings,
   setAiLocked,
@@ -5942,6 +5944,8 @@ function registerHomeIpc(): void {
   ipcMain.handle(
     HOME_CHANNELS.setFileSearchSettings,
     (_event, patch: unknown): FileSearchSettings => {
+      // locked by the security key: the v2 keys read as empty now, a save would replace them
+      assertAiUnlocked()
       const current = readFileSearchSettings()
       const p = (patch && typeof patch === 'object' ? patch : {}) as Partial<FileSearchSettings>
       const next = normalizeFileSearchSettings({
@@ -9160,6 +9164,28 @@ function unlockAi(): void {
   setAiLocked(false)
 }
 
+/**
+ * Keys an earlier version (or a hand edit) left plain are sealed; once the
+ * security key's vault is open, v1 values are sealed again as v2 (spec 7-5).
+ * Refused while the security key is locked. A key that cannot be opened is
+ * left as it is rather than written back empty.
+ */
+function resealStoredKeys(): void {
+  assertAiUnlocked()
+  const upgrade = secureKey?.vault() != null
+  sealStoredAiSettings(join(app.getPath('userData'), 'ai-settings.json'), { upgrade })
+  const storedSearch = readAppSettings(APP_SETTINGS_PATH()).fileSearch
+  if (!fileSearchHoldsPlainKeys(storedSearch, { upgrade })) return
+  const sealed = sealFileSearchKeys(readFileSearchSettings())
+  if (fileSearchHoldsPlainKeys(sealed, { upgrade })) return
+  const filled = (keys: unknown) =>
+    typeof keys === 'object' && keys !== null
+      ? Object.values(keys).filter((v) => typeof v === 'string' && v !== '').length
+      : 0
+  if (filled(sealed.keys) < filled((storedSearch as { keys?: unknown } | undefined)?.keys)) return
+  writeAppSetting(APP_SETTINGS_PATH(), 'fileSearch', sealed)
+}
+
 function createAppSecureKey(): SecureKeyRuntime {
   configureLockOverlays({
     mainWindow: () => shellWindow,
@@ -9179,14 +9205,26 @@ function createAppSecureKey(): SecureKeyRuntime {
     lockAi,
     unlockAi,
     overlays: { show: showLockOverlays, hide: hideLockOverlays },
+    // a new registration seals the keys again with its vault (spec 7-5)
+    onRegistered: () => {
+      try {
+        resealStoredKeys()
+      } catch (error) {
+        console.warn('[securekey] could not seal the AI keys again', error)
+      }
+    },
   })
 }
 
 app.whenReady().then(async () => {
   secureKey = createAppSecureKey()
   // safeStorage works only once the app is ready: keys read before this read as empty
-  const secretCodec = safeStorageCodec(safeStorage, process.platform, () =>
-    sealingKeyOnDisk(join(app.getPath('userData'), 'Local State')),
+  // the security key's vault adds a second lock on Windows once a key is registered (spec 7-5)
+  const secretCodec = vaultCodec(
+    safeStorageCodec(safeStorage, process.platform, () =>
+      sealingKeyOnDisk(join(app.getPath('userData'), 'Local State')),
+    ),
+    () => secureKey?.vault() ?? null,
   )
   setAiSecretCodec(secretCodec)
   if (revealSecretsRun) {
@@ -9270,15 +9308,10 @@ app.whenReady().then(async () => {
     if (process.platform === 'win32' && safeStorage.isEncryptionAvailable()) {
       safeStorage.encryptString('')
     }
-    sealStoredAiSettings(join(app.getPath('userData'), 'ai-settings.json'))
-    const storedSearch = readAppSettings(APP_SETTINGS_PATH()).fileSearch
-    if (fileSearchHoldsPlainKeys(storedSearch)) {
-      const sealed = sealFileSearchKeys(readFileSearchSettings())
-      if (!fileSearchHoldsPlainKeys(sealed))
-        writeAppSetting(APP_SETTINGS_PATH(), 'fileSearch', sealed)
-    }
+    resealStoredKeys()
   } catch {
-    // an unwritable data folder keeps the plain file; the next save tries again
+    // an unwritable data folder keeps the plain file; the next save tries again. A
+    // security key lock refuses the write too: the v2 keys cannot be opened then.
   }
   // a registry left by a crashed instance must not block genoffice writes
   ownsOpenDocumentsRegistry = true
