@@ -1,4 +1,5 @@
 import { basename, dirname } from 'node:path'
+import { isAiLocked } from '@genoffice/ai-provider'
 import { withoutUnsavedFiles } from '@genoffice/electron-utils/unsaved-files'
 import type { DecisionEndpoint, FileSearchRerank, FileSearchSettings } from '../../shared/home-api'
 import {
@@ -105,6 +106,8 @@ export class SearchReranker {
     paths: readonly string[],
     settings: FileSearchSettings,
   ): Promise<FileSearchRerank | null> {
+    // the decision model is an AI call too: nothing goes out while the security key is locked
+    if (isAiLocked()) return null
     const opts = callOptions(settings)
     // local servers (Kev, Rizzo Flow, a custom URL) run without credentials
     if (!settings.rerank || (!isLocalEndpoint(settings.endpoint) && !opts.key)) return null

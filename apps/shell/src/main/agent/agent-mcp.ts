@@ -6,6 +6,7 @@ import {
 } from '@genoffice/ai-provider/agent-session'
 import { redactHtmlSource, redactMarkdownSource } from '@genoffice/file-parse'
 import { z } from 'zod'
+import { isAiLocked } from '@genoffice/ai-provider'
 import { McpServerService, type McpToolDefinition } from '../mcp/mcp-server'
 import { createDocumentTools, type DocsControl } from '../mcp/tools/document-tools'
 import { createHwpTools } from '../mcp/tools/hwp-tools'
@@ -328,6 +329,8 @@ export async function startAgentMcpServer(
     token,
     version: deps.version,
     maxListenAttempts: 1,
+    // refused while Hanpan's security key is locked (spec 7-4)
+    isLocked: isAiLocked,
     toolsFactory: () => buildAgentMcpTools(deps, projectRoot),
   })
   await service.start(0)

@@ -18,6 +18,7 @@ import {
   SearchReranker,
 } from '../src/main/file-index/rerank'
 import { FileIndexStore } from '../src/main/file-index/store'
+import { setAiLocked } from '@genoffice/ai-provider'
 
 const docs = [
   { title: 'a.md', heading: 'notes', text: 'alpha' },
@@ -303,6 +304,21 @@ describe('SearchReranker', () => {
     expect(r!.scores['/n/second.md']).toBe(2)
     await reranker.rerank('budget', SHOWN, settings)
     expect(sent).toBe(1)
+  })
+
+  it('sends nothing while the security key locks AI', async () => {
+    let sent = 0
+    const reranker = new SearchReranker(store, async () => {
+      sent++
+      return { status: 200, body: answer([2, 1, 0]) }
+    })
+    setAiLocked(true)
+    try {
+      expect(await reranker.rerank('budget', SHOWN, settings)).toBeNull()
+    } finally {
+      setAiLocked(false)
+    }
+    expect(sent).toBe(0)
   })
 
   it('shares one call between concurrent requests for the same query', async () => {

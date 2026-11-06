@@ -65,8 +65,13 @@ const localNoTools = (): AiSettings =>
     customEndpoint: 'loc',
   })
 
-/** A turn: tool calls to emit, or the reply text; `hang` keeps the turn open until stopped. */
-type Turn = { tools: Omit<AgentToolCall, 'id'>[] } | { text: string } | { hang: true }
+/**
+ * A turn: tool calls to emit, or the reply text; `hang` keeps the turn open until stopped;
+ * `cut` is the main ending the stream with a bare done, as abortAllAiStreams does when the
+ * security key locks.
+ */
+type Turn =
+  { tools: Omit<AgentToolCall, 'id'>[] } | { text: string } | { hang: true } | { cut: true }
 
 function scriptedTransport(turns: Turn[]) {
   const requests: AgentStreamRequest[] = []
@@ -79,6 +84,7 @@ function scriptedTransport(turns: Turn[]) {
       setTimeout(() => {
         if (cancelled) return
         if ('hang' in turn) return
+        if ('cut' in turn) return cb.onDone()
         if ('tools' in turn) {
           turn.tools.forEach((tool, i) => cb.onToolCall({ id: `t${n}-${i}`, ...tool }))
         } else {
@@ -255,6 +261,20 @@ describe('the graphics AI panel', () => {
     await act(async () => stop.click())
     await settle()
     expect(unlock).toHaveBeenCalledTimes(1)
+    await act(async () => undoButton(el)!.click())
+    await settle()
+    expect(app.adapter.undo).toHaveBeenCalledWith(1)
+  })
+
+  it('a run ended by the security key lock unlocks the app frame and offers its undo', async () => {
+    const { el, app, unlock, onBusyChange } = await mount({
+      settings: vision(),
+      turns: [{ tools: [{ name: 'run_command', input: { id: 'shape.rect' } }] }, { cut: true }],
+    })
+    await send(el, 'Draw a lot of shapes')
+    await settle()
+    expect(unlock).toHaveBeenCalledTimes(1)
+    expect(onBusyChange.mock.calls.at(-1)).toEqual([false])
     await act(async () => undoButton(el)!.click())
     await settle()
     expect(app.adapter.undo).toHaveBeenCalledWith(1)

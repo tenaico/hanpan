@@ -67,6 +67,60 @@ describe('MCP server core', () => {
     expect(body.server).toBe('Hanpan')
   })
 
+  it('refuses tool calls while locked', async () => {
+    const port = await freePort()
+    let locked = false
+    service = new McpServerService({ port, tools: TOOLS, isLocked: () => locked })
+    await service.start()
+    const client = new Client({ name: 'test-client', version: '0.0.0' })
+    await client.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/mcp`)))
+    locked = true
+    // a session opened before the lock gets an error, not the tool's answer
+    await expect(client.callTool({ name: 'echo', arguments: { text: 'hi' } })).rejects.toThrow()
+    // a new client is refused with 423
+    const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        accept: 'application/json, text/event-stream',
+      },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }),
+    })
+    expect(res.status).toBe(423)
+    expect(await res.json()).toEqual({ error: 'locked' })
+    // /health still answers
+    expect((await fetch(`http://127.0.0.1:${port}/health`)).status).toBe(200)
+    locked = false
+    const ok = await client.callTool({ name: 'echo', arguments: { text: 'back' } })
+    expect(ok.isError).toBeFalsy()
+    await client.close()
+  })
+
+  it('a tool call already past the door while the lock comes on gets an error result', async () => {
+    const port = await freePort()
+    let locked = false
+    let release: () => void = () => {}
+    const slow: McpToolDefinition = {
+      name: 'slow',
+      description: 'waits',
+      handler: async () => {
+        locked = true
+        await new Promise<void>((r) => (release = r))
+        return { done: true }
+      },
+    }
+    service = new McpServerService({ port, tools: [slow], isLocked: () => locked })
+    await service.start()
+    const client = new Client({ name: 'test-client', version: '0.0.0' })
+    await client.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/mcp`)))
+    const call = client.callTool({ name: 'slow', arguments: {} })
+    await new Promise((r) => setTimeout(r, 50))
+    release()
+    const result = await call
+    expect(result.isError).toBe(true)
+    await client.close().catch(() => undefined)
+  })
+
   it('completes initialize and lists the registered tools', async () => {
     const port = await startService()
     const client = new Client({ name: 'test-client', version: '0.0.0' })

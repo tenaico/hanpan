@@ -14,6 +14,7 @@
 // is very often simply not running. The user agent it would have added is still
 // set by `withUserAgent`, since gateways reject a bare `node`.
 import { withUserAgent } from './fetch'
+import { assertAiUnlocked } from './ai-lock'
 import { ResponseBodyTooLargeError, endpointUrl, readCappedResponseText } from './protocols/shared'
 import { AiTimeoutError, createStreamWatchdog } from './watchdog'
 
@@ -172,6 +173,7 @@ async function requestText(
   const watchdog = createStreamWatchdog(signal, REQUEST_TIMEOUT_MS)
   try {
     return await watchdog.guard(async () => {
+      assertAiUnlocked()
       const response = await fetch(url, withUserAgent({ ...init, signal: watchdog.signal }))
       if (!response.ok) {
         // the refusal body is never read; only the status says anything

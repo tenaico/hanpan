@@ -61,6 +61,30 @@ describe('security key wiring', () => {
     expect(body.indexOf('secureKey?.pending()')).toBeLessThan(body.indexOf('revealShellWindow()'))
   })
 
+  it('locks AI in one turn: the lock, then every stream, then the programs', () => {
+    const start = at('function lockAi(): void {')
+    const body = source.slice(start, source.indexOf('\n}', start))
+    expect(body).not.toContain('await')
+    const order = [
+      'setAiLocked(true)',
+      'abortAllAiStreams()',
+      'stopAgentSessions()',
+      'shutdownSubscriptionChildren()',
+      'shutdownCodexAppServers()',
+    ].map((call) => body.indexOf(call))
+    expect(order.every((i) => i > 0)).toBe(true)
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+    const unlock = at('function unlockAi(): void {')
+    expect(source.slice(unlock, source.indexOf('\n}', unlock))).toContain('setAiLocked(false)')
+  })
+
+  it('refuses MCP and control requests while locked', () => {
+    expect(source).toMatch(/startControlServer\([\s\S]*?\{ isLocked: isAiLocked \}/)
+    for (const file of ['../../src/main/mcp/app-mcp.ts', '../../src/main/agent/agent-mcp.ts']) {
+      expect(readFileSync(join(__dirname, file), 'utf8')).toContain('isLocked: isAiLocked')
+    }
+  })
+
   it('reads the four build values from the environment', () => {
     const config = readFileSync(join(__dirname, '../../electron.vite.config.ts'), 'utf8')
     for (const name of [

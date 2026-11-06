@@ -3939,6 +3939,15 @@ export function activeAiStreamCount(): number {
   return activeAiStreams.size
 }
 
+/**
+ * End every AI stream in flight, as [Stop] does: each ends with a bare `done`.
+ * The shell calls it when the security key locks, right after setAiLocked(true)
+ * and in the same turn, so the run's catch already sees its controller aborted.
+ */
+export function abortAllAiStreams(): void {
+  for (const controller of [...activeAiStreams.values()]) controller.abort()
+}
+
 /** every renderer (tabs, home) re-reads ai-settings.json — the composer chip and
  *  the settings page edit the same file from different windows */
 function broadcastAiSettingsChanged(): void {

@@ -10,6 +10,7 @@
 // have added is still set, since gateways reject a bare `node`.
 import type { CodexModelCatalog } from './types'
 import { withUserAgent } from './fetch'
+import { assertAiUnlocked } from './ai-lock'
 import { endpointUrl, readCappedResponseText } from './protocols/shared'
 import { createStreamWatchdog } from './watchdog'
 
@@ -61,6 +62,7 @@ export async function listCustomModels(
   const watchdog = createStreamWatchdog(undefined, REQUEST_TIMEOUT_MS)
   try {
     return await watchdog.guard(async () => {
+      assertAiUnlocked()
       const response = await fetch(
         endpointUrl(base, 'models'),
         withUserAgent({ headers, signal: watchdog.signal }),

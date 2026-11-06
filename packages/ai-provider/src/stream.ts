@@ -9,6 +9,7 @@ import { streamChatGpt } from './chatgpt/responses'
 import type { StreamCallbacks } from './protocols/shared'
 import { getProviderAdapter, type AiProtocol } from './registry'
 import type { AiProviderConfig, AiProviderSelection } from './types'
+import { assertAiUnlocked } from './ai-lock'
 
 export { streamAnthropic } from './protocols/anthropic'
 export { streamGemini } from './protocols/gemini'
@@ -39,6 +40,8 @@ export async function streamForProvider(
   cb: StreamCallbacks,
   options: StreamForProviderOptions = {},
 ): Promise<void> {
+  // the callbacks have no error path: a locked security key throws (docs-main sends it as one error chunk)
+  assertAiUnlocked()
   const endpoint = getProviderAdapter(provider).resolveEndpoint(config)
   const { baseUrl } = endpoint
   if (endpoint.model) config = { ...config, model: endpoint.model }

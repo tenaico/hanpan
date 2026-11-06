@@ -10,6 +10,7 @@ import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, win32 } from 'node:path'
 import type { AiSubscriptionProviderId } from '../types'
+import { assertAiUnlocked } from '../ai-lock'
 import { subscriptionChildEnv } from './env'
 import type { SubscriptionProgram } from './locate'
 
@@ -314,6 +315,8 @@ export function spawnSubscriptionProgram(
   args: string[],
   options: SubscriptionSpawnOptions = {},
 ): ChildProcess {
+  // no subscription program starts while the security key is locked (spec 7-4)
+  assertAiUnlocked()
   const platform = options.platform ?? process.platform
   const spawn = options.spawn ?? nodeSpawn
   const child = spawn(program.command, [...program.prefixArgs, ...args], {

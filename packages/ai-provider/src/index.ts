@@ -108,6 +108,7 @@ export type {
   SubscriptionStatusMap,
 } from './subscription/contract'
 export { AiRunError, aiStreamErrorFields } from './run-error'
+export { AiLockedError, aiLockSignal, assertAiUnlocked, isAiLocked, setAiLocked } from './ai-lock'
 export {
   AI_PROVIDERS,
   DEFAULT_MAX_OUTPUT_TOKENS,

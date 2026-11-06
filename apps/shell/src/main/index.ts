@@ -203,6 +203,7 @@ import {
   uniquePathIn,
   authorizeMcpDocWrite,
   activeAiStreamCount,
+  abortAllAiStreams,
 } from '../../../docs/src/main/docs-main'
 import { blankXlsxBuffer } from '@genoffice/xlsx-gateway/gateway/csv-import'
 import { blankPdfBuffer } from '../../../pdf/src/main/blank-pdf'
@@ -502,7 +503,14 @@ import {
   startCodexAgentSession,
 } from '@genoffice/ai-provider/agent-session'
 import { normalizeAgentPrefs } from '../shared/agent-api'
-import { normalizeAiSettings, setAiSecretCodec, type AiSettings } from '@genoffice/ai-provider'
+import {
+  isAiLocked,
+  normalizeAiSettings,
+  setAiLocked,
+  setAiSecretCodec,
+  type AiSettings,
+} from '@genoffice/ai-provider'
+import { shutdownCodexAppServers } from '@genoffice/ai-provider/codex-app-server'
 import {
   REVEAL_FLAG,
   fileSearchHoldsPlainKeys,
@@ -9136,9 +9144,21 @@ async function runHeadlessExportEntry(
  */
 let secureKey: SecureKeyRuntime | null = null
 
-/** AI is refused while the security key is not open (plan Task 10 fills these in) */
-function lockAi(): void {}
-function unlockAi(): void {}
+/**
+ * AI is refused while the security key is not open (spec 7-4). The first two
+ * steps run in one turn: when a cut request's catch runs, its stream's
+ * controller is already aborted, so the run ends as [Stop] does, with a done.
+ */
+function lockAi(): void {
+  setAiLocked(true)
+  abortAllAiStreams()
+  stopAgentSessions()
+  shutdownSubscriptionChildren()
+  shutdownCodexAppServers()
+}
+function unlockAi(): void {
+  setAiLocked(false)
+}
 
 function createAppSecureKey(): SecureKeyRuntime {
   configureLockOverlays({
@@ -9754,6 +9774,8 @@ app.whenReady().then(async () => {
       },
       findTab: (path) => tabManager?.findTabByPath(path) ?? findDetachedTabByPath(path),
     }),
+    // refused while Hanpan's security key is locked (spec 7-4)
+    { isLocked: isAiLocked },
   ).then(
     (server) => {
       controlServer = server
