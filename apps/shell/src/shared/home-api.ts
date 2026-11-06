@@ -228,6 +228,8 @@ export interface HomeApi {
   starred(query?: RecentQuery): Promise<RecentPage>
   /** starred group names that currently have at least one file, in creation order */
   starredGroups(): Promise<string[]>
+  /** Hanpan: the security key grace line for the home banner (spec 7-9), or null outside the grace */
+  secureKeyGrace(): Promise<string | null>
   /** put each starred path into `group` (null = remove from its group) */
   setStarredGroup(paths: string[], group: string | null): Promise<void>
   /** stat a specific set of paths (project view); unstat-able files come back flagged `missing` */
@@ -567,6 +569,7 @@ export const HOME_CHANNELS = {
   toggleStar: 'home:toggle-star',
   unstarPaths: 'home:unstar-paths',
   starredGroups: 'home:starred-groups',
+  secureKeyGrace: 'home:securekey-grace',
   setStarredGroup: 'home:set-starred-group',
   openPath: 'home:open-path',
   browse: 'home:browse',

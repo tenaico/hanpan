@@ -20,6 +20,7 @@ import {
   ipcMain,
   nativeImage,
   nativeTheme,
+  net,
   screen,
   safeStorage,
   powerMonitor,
@@ -30,6 +31,15 @@ import {
 import type { MenuItemConstructorOptions, NativeImage, WebContents } from 'electron'
 import { atomicWriteFile } from './atomic-write'
 import { setupHanpan } from './hanpan/setup'
+import { windowsDeviceProbe } from './securekey/devices'
+import { readGateConfig } from './securekey/gate'
+import {
+  createSecureKeyRuntime,
+  secureKeyGraceLine,
+  type SecureKeyRuntime,
+} from './securekey/runtime'
+import { tSecureKey } from './securekey/strings'
+import { closeSecureKeyWindow, focusSecureKeyWindow, showSecureKeyWindow } from './securekey/window'
 import { configureDesignWindow, openDesignWithOutline } from './hanpan/design-window'
 import { tabStripOverlay } from './title-bar-overlay'
 import { shellWindowBackground } from './window-background'
@@ -5963,6 +5973,11 @@ function registerHomeIpc(): void {
   })
 
   ipcMain.handle(HOME_CHANNELS.starredGroups, (): string[] => readStarredGroups())
+  // the home banner during the security key grace (spec 7-9): the line in the UI language, or null
+  ipcMain.handle(HOME_CHANNELS.secureKeyGrace, (): string | null => {
+    const until = secureKey?.graceUntil() ?? null
+    return until ? secureKeyGraceLine(currentLang(), until) : null
+  })
 
   ipcMain.handle(HOME_CHANNELS.setStarredGroup, (_event, paths: unknown, group: unknown) => {
     setStarredGroup(stringPaths(paths), typeof group === 'string' && group ? group : null)
@@ -8799,6 +8814,12 @@ app.on('open-file', (event, filePath) => {
 
 app.on('second-instance', (_event, argv, _cwd, additionalData) => {
   const paths = collectLaunchPaths(argv, additionalData)
+  // the security key window is up: its files open once the key is checked
+  if (secureKey?.pending()) {
+    for (const path of paths) if (!pendingLaunchPaths.includes(path)) pendingLaunchPaths.push(path)
+    focusSecureKeyWindow()
+    return
+  }
   revealShellWindow()
   if (launchListGate.blocking()) deferredLaunchPaths.push(...paths)
   else openLaunchPaths(paths)
@@ -9107,20 +9128,47 @@ async function runHeadlessExportEntry(
   app.exit(headlessExitCode(outcome))
 }
 
+/**
+ * The security key (spec 7, Windows only): made once the app is ready, when
+ * userData is final. Null before that and in the second-instance handler of
+ * a process that never got this far.
+ */
+let secureKey: SecureKeyRuntime | null = null
+
+/** AI is refused while the security key is not open (plan Task 10 fills these in) */
+function lockAi(): void {}
+function unlockAi(): void {}
+
+function createAppSecureKey(): SecureKeyRuntime {
+  return createSecureKeyRuntime({
+    config: readGateConfig(),
+    userData: app.getPath('userData'),
+    probe: windowsDeviceProbe(process.env),
+    fetch: (input, init) => net.fetch(input as string, init),
+    now: () => new Date(),
+    lang: () => currentLang(),
+    showWindow: showSecureKeyWindow,
+    closeWindow: closeSecureKeyWindow,
+    lockAi,
+    unlockAi,
+  })
+}
+
 app.whenReady().then(async () => {
+  secureKey = createAppSecureKey()
   // safeStorage works only once the app is ready: keys read before this read as empty
   const secretCodec = safeStorageCodec(safeStorage, process.platform, () =>
     sealingKeyOnDisk(join(app.getPath('userData'), 'Local State')),
   )
   setAiSecretCodec(secretCodec)
   if (revealSecretsRun) {
+    // v2 keys open only while the security key's stick is in (spec 7-5)
+    await secureKey.openQuietly()
     app.exit(await runRevealEntry(secretCodec))
     return
   }
   // first scan waits for the windows to come up; later ones follow folder changes
   setTimeout(() => ensureFileIndexer()?.refresh(), 4000)
-  // Hanpan: a local AI server on this PC becomes the default AI (once, only while the choice is "auto")
-  hanpan.adoptLocalAi()
   installRendererProtocol(
     {
       docs: join(DOCS_OUT, 'renderer'),
@@ -9184,6 +9232,9 @@ app.whenReady().then(async () => {
   // a subscription CLI a force-killed previous run left behind is ended, then
   // this run records the ones it starts (userData is final by now)
   void initSubscriptionChildTracking(app.getPath('userData')).catch(() => undefined)
+  // the security key's vault, before any AI key is read or sealed again. A
+  // second launch never gets here, so it does not wait for the USB lookup.
+  await secureKey.openQuietly()
   // keys an earlier version (or a hand edit) left plain are sealed once this run holds the lock;
   // on the very first run the key is not on disk yet, so this only makes Chromium create it and
   // the keys are sealed on a later save or the next start
@@ -9221,6 +9272,21 @@ app.whenReady().then(async () => {
   currentLang()
   // native menus/dialogs/scrollbars follow the persisted theme from first paint
   nativeTheme.themeSource = currentTheme()
+  // the security key gate (spec 7-3): before any window, MCP server or AI
+  // settings write. whenReady has no catch, so a failure here must end the app.
+  try {
+    if ((await secureKey.runGate()) === 'quit') {
+      app.quit()
+      return
+    }
+  } catch (error) {
+    dialog.showErrorBox(tSecureKey(currentLang(), 'skTitle'), String(error))
+    app.quit()
+    return
+  }
+  // Hanpan: a local AI server on this PC becomes the default AI (once, only while the choice is "auto");
+  // it writes the AI settings, so it waits for the vault the gate may have opened
+  hanpan.adoptLocalAi()
   // off the startup path: a symlink / registry write nobody is waiting for
   setTimeout(() => installCliLinkBestEffort(APP_SETTINGS_PATH()), 3000)
   startSheetsCaptureServer()
@@ -9562,6 +9628,8 @@ app.whenReady().then(async () => {
   installPointerSize(app)
   installTabShortcuts()
   createShellWindow()
+  // the security key window stays up until the shell window exists, so the app is never windowless
+  secureKey.closeWindow()
   // deferred to ready: labels need currentLang(), which reads app.getLocale()
   installBackToHomeItems()
   installDocumentLinkMenuItems()
