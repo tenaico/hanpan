@@ -221,3 +221,12 @@ export function writeAgentProjectPref(
   writeAppSetting(path, AGENT_PROJECT_PREFS_KEY, prefs)
   return { ...DEFAULT_AGENT_PROJECT_PREF, ...next }
 }
+
+/**
+ * The document page theme from the stored value (0.17 리뷰 v2 shell #37): a
+ * person who never chose gets paper-white pages, as printed; "follow the app"
+ * stays a choice in Settings.
+ */
+export function documentThemeOf(saved: unknown): 'light' | 'dark' | 'follow' {
+  return saved === 'dark' || saved === 'follow' ? saved : 'light'
+}

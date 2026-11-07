@@ -29,34 +29,50 @@ const MARKDOWN = `# ACP215 홍보영상 3편 — v2 수정 내역
 test('the Markdown converter writes HWP, Word and PDF in one press', async () => {
   test.setTimeout(180_000)
   const out = mkdtempSync(join(tmpdir(), 'hp-md-convert-'))
-  const launched = await launchShell({ onboardingSeen: true, videoDir: 'hanpan-md-convert', lang: 'ko' })
+  const launched = await launchShell({
+    onboardingSeen: true,
+    videoDir: 'hanpan-md-convert',
+    lang: 'ko',
+  })
   const { app, page } = launched
   try {
-    // the converter writes to Documents\한판 변환 by default: point Documents at a temp folder
+    // the converter writes to the app's save folder (Documents\Hanpan) by default, not a
+    // separate Documents\한판 변환 (5b6aaab4): point Documents at a temp folder
     await app.evaluate(({ app: electronApp }, dir) => electronApp.setPath('documents', dir), out)
-    await page.locator('.quick-card[data-new="md-convert"]').click()
+    await page.locator('[data-new="md-convert"]').click()
     const dialog = page.locator('[data-hanpan="md-converter"]')
     await expect(dialog).toBeVisible()
-    await expect(dialog).toContainText(out)
+    const folder = join(out, 'Hanpan')
+    await expect(dialog).toContainText(folder)
 
     await dialog.locator('[data-hanpan="md-source"]').fill(MARKDOWN)
     const preview = dialog.locator('[data-hanpan="md-preview"]')
     await expect(preview.locator('h1')).toHaveText('ACP215 홍보영상 3편 — v2 수정 내역')
     await expect(preview.locator('table td').first()).toContainText('장비를 밝고 선명하게')
-    await expect(dialog.locator('[data-hanpan="md-name"]')).toHaveAttribute('placeholder', 'ACP215 홍보영상 3편 — v2 수정 내역')
+    await expect(dialog.locator('[data-hanpan="md-name"]')).toHaveAttribute(
+      'placeholder',
+      'ACP215 홍보영상 3편 — v2 수정 내역',
+    )
     await page.screenshot({ path: screenshotPath('hanpan-md-convert') })
 
-    for (const format of ['hwp', 'docx', 'pdf']) await expect(dialog.locator(`input[data-format="${format}"]`)).toBeChecked()
+    for (const format of ['hwp', 'docx', 'pdf'])
+      await expect(dialog.locator(`input[data-format="${format}"]`)).toBeChecked()
     await dialog.locator('[data-hanpan="md-convert"]').click()
     const result = dialog.locator('[data-hanpan="md-result"]')
     await expect(result).toContainText('파일 3개를 만들었습니다', { timeout: 120_000 })
     await page.screenshot({ path: screenshotPath('hanpan-md-convert-done') })
 
-    const folder = join(out, '한판 변환')
     const files = readdirSync(folder).sort()
-    expect(files).toEqual(['ACP215 홍보영상 3편 — v2 수정 내역.docx', 'ACP215 홍보영상 3편 — v2 수정 내역.hwp', 'ACP215 홍보영상 3편 — v2 수정 내역.pdf'])
+    expect(files).toEqual([
+      'ACP215 홍보영상 3편 — v2 수정 내역.docx',
+      'ACP215 홍보영상 3편 — v2 수정 내역.hwp',
+      'ACP215 홍보영상 3편 — v2 수정 내역.pdf',
+    ])
     expect(readFileSync(join(folder, files[2]!)).subarray(0, 5).toString()).toBe('%PDF-')
-    copyFileSync(join(folder, files[2]!), screenshotPath('hanpan-md-convert').replace(/\.png$/, '.pdf'))
+    copyFileSync(
+      join(folder, files[2]!),
+      screenshotPath('hanpan-md-convert').replace(/\.png$/, '.pdf'),
+    )
 
     // a second press never overwrites
     await dialog.locator('[data-hanpan="md-convert"]').click()

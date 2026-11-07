@@ -4,7 +4,7 @@ export const ko = {
   windowTitle: '새 문서 만들기',
   kindLabel: '만들 종류',
   kindSlides: 'PPT',
-  kindHtml: 'HTML',
+  kindHtml: '웹 문서',
   kindMindmap: '마인드맵',
   materialsLabel: '자료',
   addMaterials: '파일 더하기…',

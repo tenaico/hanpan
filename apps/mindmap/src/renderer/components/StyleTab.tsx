@@ -10,7 +10,13 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { useDismissablePopover } from '@genoffice/ui'
 import type { ViewTopicStyle } from '@genoffice/xmind-engine'
 import { useI18n } from '../i18n/locale'
-import { BASIC_COLORS, FONT_FAMILIES, LINE_WIDTH_STEPS, type StylePatch } from '../map/style-edit'
+import {
+  BASIC_COLORS,
+  FONT_FAMILIES,
+  fontFamilyName,
+  LINE_WIDTH_STEPS,
+  type StylePatch,
+} from '../map/style-edit'
 import { safeDecoration, SHAPE_CLASS, type TopicShape } from '../map/style-values'
 import {
   IconBold,
@@ -58,7 +64,7 @@ const SHAPES: readonly {
 const HEX = /^#?([0-9a-f]{6})$/i
 
 export function StyleTab(p: StyleTabProps) {
-  const { t } = useI18n()
+  const { lang, t } = useI18n()
   const decoration = safeDecoration(p.style.textDecoration)
   const bold = p.style.fontWeight === 'bold' || Number(p.style.fontWeight) >= 600
   const colors = [...new Set([...p.themeColors.map((c) => c.toLowerCase()), ...BASIC_COLORS])]
@@ -145,7 +151,7 @@ export function StyleTab(p: StyleTabProps) {
               )}
             {FONT_FAMILIES.map((family) => (
               <option key={family} value={family}>
-                {family}
+                {fontFamilyName(family, lang)}
               </option>
             ))}
           </select>

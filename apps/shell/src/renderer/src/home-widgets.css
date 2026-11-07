@@ -1,0 +1,554 @@
+/* 0.17 위젯 및 인터페이스 사용자화: Home's widget row and the 홈 꾸미기 panel */
+
+.home-widgets-wrap {
+  margin: 24px 0 24px;
+}
+
+.hw-row-head {
+  margin-bottom: 10px;
+}
+
+.home-widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-auto-flow: dense;
+  gap: 12px;
+}
+
+.hw-card[data-size='wide'] {
+  grid-column: span 2;
+}
+
+.hw-card.drop-target {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.hw-card[draggable='true'] .hw-head {
+  cursor: grab;
+}
+
+.hw-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hw-head .hw-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hw-icon-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast, 0.12s);
+}
+
+.hw-card:hover .hw-icon-btn,
+.hw-card:focus-within .hw-icon-btn,
+.hw-card[data-unset='true'] .hw-icon-btn[data-widget-settings],
+.hw-icon-btn[aria-pressed='true'] {
+  opacity: 1;
+}
+
+.hw-icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.hw-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.hw-shortcut:hover {
+  border-color: var(--accent);
+}
+
+.hw-shortcut img,
+.hw-shortcut svg,
+.hw-shortcut .quick-folder {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+
+.hw-glyph {
+  flex: none;
+  font-size: 18px;
+}
+
+.hw-clock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hw-clock-time {
+  font-size: 30px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.hw-clock-date {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.hw-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hw-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.hw-field > span:first-child {
+  flex: none;
+  min-width: 52px;
+}
+
+.hw-field input,
+.hw-field select {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* a shortcut's file/folder: the path or the hint wraps, the button goes under it */
+.hw-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.hw-pick .hw-path,
+.hw-pick .hw-hint {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.hw-unset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.hw-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.hw-form-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hw-form-row .hw-field {
+  flex: 1;
+}
+
+/* the size picker sizes to its words ("작게" was cut to "작" at 39px) and never
+ * slides under the move buttons; the row wraps instead (0.17 리뷰 v2 #18) */
+.hw-form-row .hw-field {
+  flex: 0 0 auto;
+}
+
+.hw-form-row .hw-field > span:first-child {
+  min-width: 0;
+}
+
+.hw-form-row .hw-field select[name='size'] {
+  flex: none;
+  width: auto;
+  min-width: 72px;
+}
+
+.hw-small-btn {
+  flex: none;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.hw-small-btn:hover {
+  border-color: var(--accent);
+}
+
+.hw-done {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hw-hint,
+.hw-error {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.hw-error {
+  color: var(--danger);
+}
+
+.hw-gallery-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hw-gallery-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hw-gallery-item:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.hw-gallery-item:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.hw-gallery-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hw-gallery-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.hc-type {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.hc-add {
+  margin-top: 6px;
+}
+
+.hw-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.hw-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hw-empty {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.hw-files {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hw-file,
+.hw-app {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 5px 6px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.hw-file:hover:not(:disabled),
+.hw-app:hover {
+  background: var(--bg-hover);
+}
+
+.hw-file:disabled {
+  color: var(--text-tertiary);
+  cursor: default;
+}
+
+.hw-ext {
+  flex: none;
+  min-width: 38px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.hw-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hw-apps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 2px;
+}
+
+.hw-app img,
+.hw-app svg,
+.hw-app .quick-folder {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.hw-memo {
+  flex: 1;
+  min-height: 84px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  resize: vertical;
+}
+
+.hw-memo:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.home-custom-open {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.home-custom-open:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.modal.home-custom {
+  width: min(520px, 92vw);
+  max-width: none;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.hc-body {
+  overflow-y: auto;
+  margin: 8px -4px 0;
+  padding: 0 4px;
+}
+
+.hc-group {
+  margin: 0 0 14px;
+  padding: 0;
+  border: none;
+}
+
+.hc-group legend {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hc-sublabel {
+  margin: 8px 0 4px !important;
+  font-size: 12px !important;
+  color: var(--text-tertiary);
+}
+
+.hc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hc-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  border-radius: 6px;
+}
+
+.hc-list li:hover {
+  background: var(--bg-hover);
+}
+
+.hc-check {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.hc-radios {
+  display: flex;
+  gap: 16px;
+  padding: 3px 4px;
+}
+
+.hc-radios .hc-check {
+  flex: none;
+}
+
+.hc-move {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.hc-move button,
+.hc-pin {
+  width: 26px;
+  height: 24px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.hc-move button:hover,
+.hc-pin:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hc-pin.is-pinned {
+  color: var(--accent);
+}
+
+.hc-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.hc-move button:disabled {
+  opacity: 0.35;
+  cursor: default;
+  border-color: var(--border-subtle);
+  color: var(--text-tertiary);
+}
+
+/* "기본값으로 되돌리기" asks in place before it wipes the arrangement */
+.hc-reset-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+}

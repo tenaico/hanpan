@@ -41,7 +41,8 @@ export const ko = {
   meteredMeaning:
     'API 키나 종량제 계정으로 로그인되어 있거나, 로그인 방식을 확인하지 못한 상태입니다. "그래도 사용"을 누르면 이 연결로 AI를 쓰게 되고, 요청할 때마다 그 계정에 요금이 청구됩니다.',
   connectTitle: 'AI를 쓰려면 먼저 연결하세요',
-  connectBody: '이미 쓰고 있는 Claude 또는 Codex 구독으로 AI를 씁니다. API 키는 필요 없습니다.',
+  connectBody:
+    'Claude·ChatGPT 계정 로그인이나 무료 AI로 씁니다. Claude·ChatGPT로 쓸 때는 API 키가 필요 없습니다.',
   connectProviderTitle: '{provider} 연결을 지금 쓸 수 없습니다',
   connectKeyBody:
     '{provider} 설정이 아직 끝나지 않았습니다. 설정에서 마무리하거나 다른 AI를 선택하세요.',
@@ -69,6 +70,8 @@ export const ko = {
   usageWindowFiveHour: '5시간 한도',
   usageWindowSevenDay: '7일 한도',
   noticeTitle: '구독으로 AI를 쓰기 전에',
+  noticeSummary: '문서와 대화는 본인 계정으로 Anthropic 또는 OpenAI에 전송됩니다.',
+  noticeMore: '자세히',
   noticeSend:
     '문서 내용과 대화는 사용자 본인 계정으로 Anthropic 또는 OpenAI에 전송됩니다. 요청마다 "스스로 쓰기"로 둔 스킬의 이름·제목·설명이 함께 가고, 쓰는 스킬의 글과 AI가 읽은 스킬 파일도 함께 전송됩니다.',
   noticeTraining: '그 내용이 AI 학습에 쓰이는지는 해당 회사의 사용자 계정 설정에 따라 정해집니다.',

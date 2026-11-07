@@ -172,7 +172,7 @@ describe('createDefaultAppService', () => {
     const svc = createDefaultAppService({ ...base, platform: 'win32', run, openExternal })
     expect(await svc.status()).toEqual({
       state: 'other',
-      others: ['Microsoft Word Document'],
+      others: ['Word'],
       manualOnly: true,
     })
     await svc.set()
@@ -203,5 +203,15 @@ describe('createDefaultAppService', () => {
     })
     const svc = createDefaultAppService({ ...base, platform: 'darwin', run })
     expect((await svc.status()).state).toBe('unknown')
+  })
+})
+
+describe('Office apps by their short names (0.17 review v2 shell #22)', () => {
+  it('reads Word, Excel and PowerPoint off their ProgIDs', async () => {
+    const { officeAppOfProgId } = await import('../src/main/default-app')
+    expect(officeAppOfProgId('Word.Document.12')).toBe('Word')
+    expect(officeAppOfProgId('Excel.Sheet.8')).toBe('Excel')
+    expect(officeAppOfProgId('PowerPoint.Show.12')).toBe('PowerPoint')
+    expect(officeAppOfProgId('LibreOffice.WriterDocument.1')).toBeUndefined()
   })
 })

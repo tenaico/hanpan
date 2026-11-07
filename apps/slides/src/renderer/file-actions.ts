@@ -148,28 +148,56 @@ export function exportBaseName(ctx: ActionCtx): string {
   return (baseName(ctx.path ?? '') || t('appUntitledPresentation')).replace(/\.pptx$/i, '')
 }
 
-/** Export as images: each page (skipping hidden ones) rendered offscreen to 2x PNG, written to disk by the main process */
-export async function exportImages(ctx: ActionCtx): Promise<void> {
-  const visible = ctx.slides.filter((s) => !s.hidden)
-  if (visible.length === 0) {
+export interface ExportImagesOptions {
+  format: 'png' | 'jpg'
+  /** 'current' = 지금 슬라이드 한 장(숨긴 슬라이드라도), 'all' = 숨기지 않은 모든 슬라이드 */
+  range: 'current' | 'all'
+  /** 슬라이드 크기의 배수(1 = 화면 크기, 2 = 인쇄·고해상도) */
+  scale: 1 | 2
+}
+
+const DEFAULT_IMAGE_EXPORT: ExportImagesOptions = { format: 'png', range: 'all', scale: 2 }
+
+/** Export as images: the chosen pages rendered offscreen at the chosen size and format, written to disk by the main process */
+export async function exportImages(
+  ctx: ActionCtx,
+  opts: ExportImagesOptions = DEFAULT_IMAGE_EXPORT,
+): Promise<void> {
+  const cur = ctx.slides[ctx.current]
+  const pages = opts.range === 'current' ? (cur ? [cur] : []) : ctx.slides.filter((s) => !s.hidden)
+  if (pages.length === 0) {
     ctx.setStatus(t('appExportNoSlides'))
     return
   }
   const dir = await window.slidesApi.pickExportDir()
   if (!dir) return
-  ctx.setStatus(t('appExportImagesProgress', { count: visible.length }))
+  ctx.setStatus(t('appExportImagesRendering', { done: 0, total: pages.length }))
   try {
-    const pngs = await renderSlidesToPngBase64(visible, ctx.images)
+    const data = await renderSlidesToPngBase64(
+      pages,
+      ctx.images,
+      opts.scale,
+      opts.format === 'jpg' ? 'image/jpeg' : 'image/png',
+      (done, total) => ctx.setStatus(t('appExportImagesRendering', { done, total })),
+    )
     const r = await window.slidesApi.exportImages({
       dir,
       baseName: exportBaseName(ctx),
-      pngsBase64: pngs,
+      pngsBase64: data,
+      ext: opts.format,
     })
-    ctx.setStatus(
-      r.ok
-        ? t('appExportImagesDone', { count: r.paths?.length ?? 0, dir })
-        : t('appExportImagesFailed', { error: r.error ?? t('appUnknownError') }),
-    )
+    if (!r.ok) {
+      ctx.setStatus(t('appExportImagesFailed', { error: r.error ?? t('appUnknownError') }))
+      return
+    }
+    // 상태줄이 좁아 긴 경로는 잘린다: 폴더 이름만 쓰고, 열어 보는 길은 알림의 단추로 준다
+    const folder = baseName(dir) || dir
+    const text = t('appExportImagesDone', { count: r.paths?.length ?? 0, dir: folder })
+    ctx.setStatus(text)
+    showToast(text, 'success', {
+      label: t('appExportOpenFolder'),
+      run: () => void window.slidesApi.revealExportFolder(dir),
+    })
   } catch (err) {
     ctx.setStatus(t('appExportImagesFailed', { error: String(err) }))
   }

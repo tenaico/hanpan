@@ -69,6 +69,8 @@ export const he = {
   usageWindowFiveHour: 'מכסה ל-5 שעות',
   usageWindowSevenDay: 'מכסה ל-7 ימים',
   noticeTitle: 'לפני השימוש בבינה המלאכותית עם המינוי שלכם',
+  noticeSummary: 'מסמכים ושיחות נשלחים ל-Anthropic או ל-OpenAI בחשבון שלך.',
+  noticeMore: 'פרטים',
   noticeSend:
     'תוכן המסמך והשיחה נשלחים אל Anthropic או אל OpenAI באמצעות החשבון האישי שלכם. כל בקשה כוללת גם את השם, הכותרת והתיאור של כל מיומנות שמוגדרת "ה-AI מחליט"; גם המיומנויות שבשימוש וקובצי המיומנויות שהבינה המלאכותית קוראת נשלחים יחד איתם.',
   noticeTraining:

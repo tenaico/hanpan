@@ -289,6 +289,11 @@ export const zh = {
   paneShowMenuScreen: '屏幕',
   paneShowMenuBlack: '黑屏',
   paneShowMenuWhite: '白屏',
+  paneShowMenuPointer: '指针选项',
+  paneShowMenuLaser: '激光笔',
+  paneShowMenuPen: '笔',
+  paneShowMenuArrow: '箭头（单击翻页）',
+  paneShowMenuEraseInk: '擦除幻灯片上的所有墨迹',
   paneShowMenuEnd: '结束放映',
   panePresenterWhiteOn: '白屏中（W 键恢复）',
 }

@@ -12,6 +12,7 @@
  * `.hpdesign` file (pictures inside), exported as PNG, JPG or PDF, or copied
  * as a picture to paste into a HWP, Word or PowerPoint tab.
  */
+import { DesignFileMenu } from './DesignFileMenu'
 import {
   useCallback,
   useEffect,
@@ -71,6 +72,8 @@ import {
   newId,
   parseDesign,
   pathElement,
+  printShortcut,
+  saveShortcut,
   qrElement,
   resizeDoc,
   shapeElement,
@@ -81,11 +84,14 @@ import {
   type DesignPage,
   type ShapeName,
 } from './model'
+import { loadPcFonts, readPcFontsOnFirstGesture, type FontChoice, type PcFontInfo } from './fonts'
 import { ICONS } from './icons'
-import { DESIGN_TEMPLATES } from './templates'
+import { templatesFor } from './templates'
 import { coverRect, inkPath, shapePath, textPadding } from './style'
 import { PagePreview, elementBox, elementLook, pageBackground } from './view'
-import { wordsFor } from './words'
+import { LANG_NATIVE_NAMES, iconLabel, wordsFor } from './words'
+import { DesignPrintDialog, type DesignPrintResult, type PrintRange } from './PrintDialog'
+import type { PrintSheet } from '@genoffice/ui'
 
 export interface DesignApi extends Partial<DesignAiApi & DesignAiSettingsApi & GonguApi> {
   savePng(bytes: Uint8Array, name: string, format?: 'png' | 'jpg'): Promise<string | null>
@@ -95,8 +101,24 @@ export interface DesignApi extends Partial<DesignAiApi & DesignAiSettingsApi & G
     name: string,
   ): Promise<string | null>
   copyImage(bytes: Uint8Array): Promise<boolean>
-  saveDesign(text: string, name: string): Promise<string | null>
+  /** prints pages drawn as the PNG export draws them, on the paper the preview showed */
+  print?(pages: Uint8Array[], sheet: PrintSheet): Promise<DesignPrintResult>
+  /** 'save' writes over the design's own file and asks only when there is none; 'saveAs' always asks */
+  saveDesign(text: string, name: string, mode?: 'save' | 'saveAs'): Promise<string | null>
+  /** a new design: its first save asks where */
+  newDesign?(): Promise<void>
+  /** Korean names and Hangul coverage of installed fonts, read from the font files */
+  fontFamilyInfo?(families: string[]): Promise<ReadonlyArray<[string, PcFontInfo]>>
   openDesign(): Promise<{ name: string; text: string } | null>
+  /** whether the design has changes not yet saved; the main process asks before closing */
+  setDirty?(dirty: boolean): void
+  /** 저장 / 저장 안 함 / 취소, before unsaved work is replaced */
+  askUnsaved?(): Promise<'save' | 'discard' | 'cancel'>
+  /** the window is closing and the person chose 저장: save, then closeAfterSave */
+  onSaveThenClose?(handler: () => void): () => void
+  closeAfterSave?(): void
+  /** opens Settings → Integrations in the main window (the Gongu key) */
+  openGonguSettings?(): void
   pickImage(): Promise<{ dataUrl: string; width: number; height: number } | null>
 }
 
@@ -247,12 +269,18 @@ const isTyping = (target: EventTarget | null) => {
 
 export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string | undefined }) {
   const w = wordsFor(p.lang)
-  // Gongu pictures and credits speak every UI language (the rest of the board: Korean or English)
+  // Gongu pictures and credits speak every UI language; the board's own words are Korean,
+  // English or Vietnamese (words.ts), and follow a language change without reopening
   const g = (key: GonguStringKey, params?: Record<string, string | number>) =>
     gonguUiText(p.lang as never, key, params)
   const [doc, setDoc] = useState<DesignDoc>(() =>
-    p.outline ? cardNewsFromOutline(p.outline) : DESIGN_TEMPLATES[0]!.make(),
+    p.outline ? cardNewsFromOutline(p.outline) : templatesFor(p.lang)[0]!.make(),
   )
+  /** the design as last saved, opened or started; anything else is unsaved work */
+  const [savedDoc, setSavedDoc] = useState<DesignDoc | null>(() => (p.outline ? null : doc))
+  const savedRef = useRef(savedDoc)
+  savedRef.current = savedDoc
+  const dirty = doc !== savedDoc
   const [pageIndex, setPageIndex] = useState(0)
   const [selected, setSelected] = useState<string[]>([])
   const [past, setPast] = useState<DesignDoc[]>([])
@@ -297,10 +325,13 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
   /** export draws a list of the Gongu credits at the foot of the page (not kept) */
   const [creditList, setCreditList] = useState(true)
   const [checkOpen, setCheckOpen] = useState(false)
+  /** the print preview is open: the board behind it takes no keys */
+  const [printOpen, setPrintOpen] = useState(false)
   const [panning, setPanning] = useState(false)
   const spaceDown = useRef(false)
   const clip = useRef<DesignElement[]>([])
   const fontInput = useRef<HTMLInputElement>(null)
+  const [pcFonts, setPcFonts] = useState<readonly FontChoice[]>([])
   const stageWrap = useRef<HTMLDivElement>(null)
   const pageRef = useRef<HTMLDivElement>(null)
   const drag = useRef<Drag | null>(null)
@@ -308,6 +339,7 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
   const docRef = useRef(doc)
   docRef.current = doc
   const lastMerge = useRef<{ key: string; at: number } | null>(null)
+  const saveRef = useRef<(mode?: 'save' | 'saveAs') => Promise<boolean>>(async () => false)
 
   const pi = Math.min(pageIndex, doc.pages.length - 1)
   const page: DesignPage = doc.pages[pi]!
@@ -317,7 +349,13 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
   const docColors = useMemo(() => colorsOf(doc), [doc])
   const credited = useMemo(() => creditsOf(doc.pages).length > 0, [doc.pages])
   const issues = useMemo(() => creditIssues(doc, creditList), [doc, creditList])
-  const templatePreviews = useMemo(() => DESIGN_TEMPLATES.map((t) => ({ t, doc: t.make() })), [])
+  const templatePreviews = useMemo(
+    () => templatesFor(p.lang).map((t) => ({ t, doc: t.make() })),
+    [p.lang],
+  )
+  // where a translation goes: a language the person picked, or null for the default
+  // (the UI language, or English for a text already in it)
+  const [translateTo, setTranslateTo] = useState<string | null>(null)
 
   // the page fits the space it has; zoom multiplies that
   useLayoutEffect(() => {
@@ -330,6 +368,18 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
   }, [doc.width, doc.height])
+
+  // the PC's fonts are read at the first press or key anywhere, so the font box already
+  // lists them when it first opens (점검 v2 hwp-design #17)
+  useEffect(
+    () =>
+      readPcFontsOnFirstGesture(window, () => {
+        void loadPcFonts(p.api.fontFamilyInfo?.bind(p.api)).then((list) => {
+          if (list.length) setPcFonts(list)
+        })
+      }),
+    [p.api],
+  )
 
   // fonts kept in the design are handed to the page (screen and export) as it opens
   useEffect(() => {
@@ -979,11 +1029,32 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      // the print preview has the keys (it closes on Esc itself)
+      if (printOpen) return
+      if (printShortcut(event)) {
+        event.preventDefault()
+        if (isTyping(event.target)) (event.target as HTMLElement).blur()
+        if (p.api.print) setPrintOpen(true)
+        return
+      }
+      // Esc closes the credit check first
+      if (event.key === 'Escape' && checkOpen) {
+        setCheckOpen(false)
+        return
+      }
       // Esc leaves the menu, crop mode or the pen even from a slider or field
       if (event.key === 'Escape' && (menu || cropping || pen)) {
         setMenu(null)
         if (cropping) setCropping(null)
         else if (pen) setPen(false)
+        return
+      }
+      const saving = saveShortcut(event)
+      if (saving) {
+        // also from a text being typed: leaving it keeps the text, then the design is saved
+        event.preventDefault()
+        if (isTyping(event.target)) (event.target as HTMLElement).blur()
+        setTimeout(() => void saveRef.current(saving), 0)
         return
       }
       if (isTyping(event.target)) return
@@ -1056,7 +1127,7 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
       stageWrap.current?.classList.remove('dz-can-pan')
     }
     const onCopy = (event: ClipboardEvent, cut: boolean) => {
-      if (isTyping(event.target) || !selection.length || !event.clipboardData) return
+      if (printOpen || isTyping(event.target) || !selection.length || !event.clipboardData) return
       event.preventDefault()
       clip.current = selection.map(clone)
       event.clipboardData.setData('application/x-hanpan-design', JSON.stringify(selection))
@@ -1072,7 +1143,7 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
     const copy = (event: ClipboardEvent) => onCopy(event, false)
     const cut = (event: ClipboardEvent) => onCopy(event, true)
     const paste = (event: ClipboardEvent) => {
-      if (isTyping(event.target) || !event.clipboardData) return
+      if (printOpen || isTyping(event.target) || !event.clipboardData) return
       const ours = event.clipboardData.getData('application/x-hanpan-design')
       if (ours) {
         event.preventDefault()
@@ -1255,6 +1326,12 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
     const path = await p.api.savePdf(pages, { width: doc.width, height: doc.height }, doc.name)
     if (path) saidAfterExport(`${w.saved}: ${path}`)
   }
+  /** What prints: the pages exactly as the PNG and PDF exports draw them. */
+  const printPages = (range: PrintRange): DesignPage[] => {
+    if (range === 'current') return [exportPage(page, [page])]
+    const last = doc.pages.length - 1
+    return doc.pages.map((pg, i) => (i === last ? exportPage(pg, doc.pages) : pg))
+  }
   const copyImage = async () => {
     const png = await pagePng(exportPage(page, [page]), doc.width, doc.height)
     if (await p.api.copyImage(png)) saidAfterExport(w.copied)
@@ -1289,14 +1366,66 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
       conditions: (issue.conditions ?? []).map((c) => names[c]).join(', '),
     })
   }
-  const save = async () => {
-    const path = await p.api.saveDesign(JSON.stringify(doc), doc.name)
-    if (path) say(`${w.saved}: ${path}`)
+  const save = async (mode: 'save' | 'saveAs' = 'save'): Promise<boolean> => {
+    const current = docRef.current
+    const path = await p.api.saveDesign(JSON.stringify(current), current.name, mode)
+    if (!path) return false
+    setSavedDoc(current)
+    say(`${w.saved}: ${path}`)
+    return true
+  }
+  saveRef.current = save
+  /** Unsaved work about to be replaced: asks once (저장 / 저장 안 함 / 취소); false keeps it. */
+  const confirmReplace = async (): Promise<boolean> => {
+    if (docRef.current === savedRef.current || !p.api.askUnsaved) return true
+    const answer = await p.api.askUnsaved()
+    if (answer === 'cancel') return false
+    return answer === 'save' ? saveRef.current() : true
+  }
+  /** a design that starts over (template, blank, outline): its first save asks where */
+  const startNew = async (make: () => DesignDoc): Promise<boolean> => {
+    if (!(await confirmReplace())) return false
+    void p.api.newDesign?.()
+    const next = make()
+    replaceDoc(next)
+    setSavedDoc(next)
+    return true
   }
   const open = async () => {
+    if (!(await confirmReplace())) return
     const file = await p.api.openDesign()
     const parsed = file ? parseDesign(file.text) : null
-    if (parsed) replaceDoc({ ...parsed, name: file!.name })
+    if (!parsed) return
+    const next = { ...parsed, name: file!.name }
+    replaceDoc(next)
+    setSavedDoc(next)
+  }
+  // the main process asks before the window closes on unsaved work
+  useEffect(() => {
+    p.api.setDirty?.(dirty)
+  }, [dirty, p.api])
+  useEffect(
+    () =>
+      p.api.onSaveThenClose?.(() => {
+        void saveRef.current().then((saved) => {
+          if (saved) p.api.closeAfterSave?.()
+        })
+      }),
+    [p.api],
+  )
+
+  /** A layer row's name: a text's first line, else the kind of element. */
+  const layerName = (e: DesignElement): string => {
+    if (e.kind === 'text') return (e.text ?? '').split('\n')[0] || w.text
+    if (e.kind === 'shape') return w.shapes[e.shape ?? 'star']
+    if (e.kind === 'qr') return w.qr
+    if (e.kind === 'image') return w.image
+    if (e.kind === 'draw') return w.drawing
+    if (e.kind === 'icon') {
+      const icon = ICONS.find((i) => i.name === e.icon)
+      return icon ? iconLabel(icon, p.lang) : w.icon
+    }
+    return w[e.kind]
   }
 
   // ---- drawing the page ----
@@ -1408,8 +1537,15 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
               key={m}
               type="button"
               disabled={ai.busy !== null}
-              onClick={() => ai.send({ mode: 'rewrite', id: e.id, rewrite: m })}
+              onClick={() =>
+                ai.send({ mode: 'rewrite', id: e.id, rewrite: m, target: translateTo })
+              }
               data-ai-quick={m}
+              title={
+                m === 'translate' && translateTo
+                  ? `${w.translateTo}: ${LANG_NATIVE_NAMES[translateTo] ?? translateTo}`
+                  : undefined
+              }
             >
               {w.rewrites[m]}
             </button>
@@ -1645,7 +1781,9 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
 
   const iconWords = iconQuery.trim().toLowerCase().split(/\s+/).filter(Boolean)
   const shownIcons = ICONS.filter((icon) =>
-    iconWords.every((q) => icon.label.includes(q) || icon.name.includes(q)),
+    iconWords.every(
+      (q) => icon.label.includes(q) || icon.name.includes(q) || iconLabel(icon, p.lang).includes(q),
+    ),
   )
 
   const tabs: Tab[] = ['templates', 'elements', 'text', 'layers']
@@ -1669,6 +1807,24 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
       onPointerCancel={endDrag}
     >
       <header className="dz-top">
+        {/* 저장·열기는 다른 편집기처럼 파일 메뉴에 모은다 */}
+        <DesignFileMenu
+          lang={p.lang}
+          canPrint={!!p.api.print}
+          actions={{
+            newDesign: () => {
+              const f = FORMATS.find((x) => x.id === formatId) ?? FORMATS[0]!
+              void startNew(() => blankDoc(f))
+            },
+            open: () => void open(),
+            save: () => void save(),
+            saveAs: () => void save('saveAs'),
+            exportPng: () => void exportPicture('png'),
+            exportJpg: () => void exportPicture('jpg'),
+            exportPdf: () => void exportPdf(),
+            print: () => setPrintOpen(true),
+          }}
+        />
         <div className="dz-name">
           <input
             value={doc.name}
@@ -1686,7 +1842,7 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
             {!formatId && <option value="">{`${doc.width}×${doc.height}`}</option>}
             {FORMATS.map((f) => (
               <option key={f.id} value={f.id}>
-                {f.name} {f.width}×{f.height}
+                {w.formats[f.id] ?? f.name} {f.width}×{f.height}
               </option>
             ))}
           </select>
@@ -1759,15 +1915,45 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
           >
             {w.copy}
           </button>
-          <button type="button" data-action="design-png" onClick={() => void exportPicture('png')}>
-            {w.png}
+          {/* 파일 메뉴와 같은 이름: 툴바는 "내보내기" 아래 형식만 보인다 (점검 v2 hwp-design #33) */}
+          <span className="dz-export-label">{w.exportLabel}</span>
+          <button
+            type="button"
+            data-action="design-png"
+            title={w.fileMenu.exportPng}
+            aria-label={w.fileMenu.exportPng}
+            onClick={() => void exportPicture('png')}
+          >
+            PNG
           </button>
-          <button type="button" data-action="design-jpg" onClick={() => void exportPicture('jpg')}>
-            {w.jpg}
+          <button
+            type="button"
+            data-action="design-jpg"
+            title={w.fileMenu.exportJpg}
+            aria-label={w.fileMenu.exportJpg}
+            onClick={() => void exportPicture('jpg')}
+          >
+            JPG
           </button>
-          <button type="button" data-action="design-pdf" onClick={() => void exportPdf()}>
-            {w.pdf}
+          <button
+            type="button"
+            data-action="design-pdf"
+            title={w.fileMenu.exportPdf}
+            aria-label={w.fileMenu.exportPdf}
+            onClick={() => void exportPdf()}
+          >
+            PDF
           </button>
+          {p.api.print && (
+            <button
+              type="button"
+              data-action="design-print"
+              title="Ctrl+P"
+              onClick={() => setPrintOpen(true)}
+            >
+              {w.print}
+            </button>
+          )}
           {credited && (
             <label className="dz-export-check">
               <input
@@ -1826,12 +2012,6 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
               </div>
             )}
           </span>
-          <button type="button" onClick={() => void save()}>
-            {w.save}
-          </button>
-          <button type="button" onClick={() => void open()}>
-            {w.open}
-          </button>
         </div>
       </header>
       <div className="dz-main">
@@ -1869,7 +2049,9 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                     type="button"
                     className="dz-template"
                     data-template={t.id}
-                    onClick={() => (replaceDoc(t.make()), setFromTemplate(true))}
+                    onClick={() =>
+                      void startNew(t.make).then((started) => started && setFromTemplate(true))
+                    }
                     title={t.name}
                   >
                     <PagePreview
@@ -1889,9 +2071,9 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                     key={f.id}
                     type="button"
                     className="ghost"
-                    onClick={() => replaceDoc(blankDoc(f))}
+                    onClick={() => void startNew(() => blankDoc(f))}
                   >
-                    + {f.name}
+                    + {w.formats[f.id] ?? f.name}
                   </button>
                 ))}
               </div>
@@ -1916,7 +2098,7 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                     className="primary"
                     data-action="design-outline-make"
                     onClick={() => {
-                      replaceDoc(cardNewsFromOutline(outlineText))
+                      void startNew(() => cardNewsFromOutline(outlineText))
                       setOutlineOpen(false)
                     }}
                   >
@@ -2038,6 +2220,12 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                     lang={p.lang}
                     api={{ gonguSearch: p.api.gonguSearch, gonguPicture: p.api.gonguPicture }}
                     insert={placeGonguPicture}
+                    {...(p.api.openGonguSettings
+                      ? {
+                          openSettings: () => p.api.openGonguSettings!(),
+                          openSettingsLabel: w.gonguOpenSettings,
+                        }
+                      : {})}
                   />
                 </>
               )}
@@ -2055,8 +2243,8 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                   <button
                     key={icon.name}
                     type="button"
-                    title={icon.label}
-                    aria-label={icon.label}
+                    title={iconLabel(icon, p.lang)}
+                    aria-label={iconLabel(icon, p.lang)}
                     onClick={() => addIcon(icon.name)}
                     data-add-icon={icon.name}
                   >
@@ -2069,7 +2257,6 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                 ))}
               </div>
               {!shownIcons.length && <p className="dz-muted">{w.iconNone}</p>}
-              <p className="dz-muted dz-credit">{w.iconCredit}</p>
               <h3>{w.qr}</h3>
               <div className="dz-col">
                 <input
@@ -2139,8 +2326,18 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                   <li key={e.id} className={selected.includes(e.id) ? 'on' : ''}>
                     <button
                       type="button"
+                      className={`dz-layer-lock${e.locked ? ' on' : ''}`}
+                      aria-label={e.locked ? w.unlock : w.lock}
+                      title={e.locked ? w.unlock : w.lock}
+                      onClick={() => changeElement(e.id, { locked: e.locked ? undefined : true })}
+                    >
+                      {e.locked ? '🔒' : '🔓'}
+                    </button>
+                    <button
+                      type="button"
                       className="dz-layer"
                       data-layer={e.id}
+                      title={layerName(e)}
                       onClick={(ev) =>
                         setSelected(
                           ev.shiftKey
@@ -2166,35 +2363,16 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                                     ? '✦'
                                     : '◆'}
                       </span>
-                      <span className="dz-layer-name">
-                        {e.kind === 'text'
-                          ? (e.text ?? '').split('\n')[0] || w.text
-                          : e.kind === 'shape'
-                            ? w.shapes[e.shape ?? 'star']
-                            : e.kind === 'qr'
-                              ? w.qr
-                              : e.kind === 'image'
-                                ? w.image
-                                : e.kind === 'draw'
-                                  ? w.drawing
-                                  : e.kind === 'icon'
-                                    ? (ICONS.find((i) => i.name === e.icon)?.label ?? w.icon)
-                                    : w[e.kind]}
-                      </span>
                       {e.group && (
-                        <span className="dz-layer-group" title={w.grouped}>
+                        <span
+                          className="dz-layer-group"
+                          title={w.layerGrouped}
+                          aria-label={w.layerGrouped}
+                        >
                           ⧉
                         </span>
                       )}
-                    </button>
-                    <button
-                      type="button"
-                      className={`dz-layer-lock${e.locked ? ' on' : ''}`}
-                      aria-label={e.locked ? w.unlock : w.lock}
-                      title={e.locked ? w.unlock : w.lock}
-                      onClick={() => changeElement(e.id, { locked: e.locked ? undefined : true })}
-                    >
-                      {e.locked ? '🔒' : '🔓'}
+                      <span className="dz-layer-name">{layerName(e)}</span>
                     </button>
                   </li>
                 ))}
@@ -2228,6 +2406,15 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                 }}
               >
                 {page.elements.map(renderElement)}
+                {page.elements.length === 0 && (
+                  <p
+                    className="dz-empty-hint"
+                    data-hanpan="design-empty"
+                    style={{ fontSize: 15 / scale }}
+                  >
+                    {w.emptyHint}
+                  </p>
+                )}
                 {guides.v.map((x) => (
                   <span
                     key={`v${x}`}
@@ -2344,6 +2531,7 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
           ) : (
             <Inspector
               w={w}
+              lang={p.lang}
               page={page}
               selection={selection}
               docColors={docColors}
@@ -2358,6 +2546,11 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
               fillPage={fillPage}
               replaceImage={(id) => void replaceImage(id)}
               fonts={(doc.fonts ?? []).map((f) => f.family)}
+              pcFonts={pcFonts}
+              loadPcFonts={() => {
+                if (!pcFonts.length)
+                  void loadPcFonts(p.api.fontFamilyInfo?.bind(p.api)).then(setPcFonts)
+              }}
               addFont={() => fontInput.current?.click()}
               group={group}
               ungroup={ungroup}
@@ -2369,7 +2562,10 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
                       busy: ai.busy !== null,
                       error:
                         ai.busy === null && ai.thread.at(-1)?.mode === 'rewrite' ? ai.error : null,
-                      rewrite: (id, rewrite) => ai.send({ mode: 'rewrite', id, rewrite }),
+                      rewrite: (id, rewrite) =>
+                        ai.send({ mode: 'rewrite', id, rewrite, target: translateTo }),
+                      translateTo,
+                      setTranslateTo,
                       stop: ai.stop,
                     }
                   : null
@@ -2395,6 +2591,19 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
         <div className="dz-notice" role="status">
           {w.cropping}
         </div>
+      )}
+      {printOpen && p.api.print && (
+        <DesignPrintDialog
+          width={doc.width}
+          height={doc.height}
+          pages={printPages}
+          words={w}
+          print={p.api.print}
+          onClose={(failed) => {
+            setPrintOpen(false)
+            if (failed) say(w.printFailed)
+          }}
+        />
       )}
       {notice && (
         <div className="dz-notice" role="status">

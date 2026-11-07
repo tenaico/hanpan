@@ -293,6 +293,21 @@
   margin-top: 2px;
 }
 
+.ai-sub-first-summary {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.ai-sub-first-more > summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.ai-sub-first-more[open] > summary {
+  margin-bottom: 4px;
+}
+
 /* the connect guide: which AI the user has, then that one path's steps and card */
 .ai-sub-guide {
   display: flex;

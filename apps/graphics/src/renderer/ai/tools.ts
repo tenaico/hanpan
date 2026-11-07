@@ -121,6 +121,17 @@ export function graphicsTools(kind: GraphicsKind): AgentToolDef[] {
         required: ['guides'],
       },
     },
+    {
+      name: 'pc_fonts',
+      description:
+        'The fonts installed on this PC. Without a family it lists their family names; with a family it loads that font into the app so text commands can use it by that family name.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          family: { type: 'string', description: 'a family name from the list, to load' },
+        },
+      },
+    },
   ]
 }
 
@@ -311,6 +322,16 @@ export async function executeGraphicsTool(
       return loaded.ok
         ? { output: loaded.content, summary: names.join(', ') }
         : { output: loaded.error, isError: true, summary: names.join(', ') }
+    }
+    case 'pc_fonts': {
+      // the web build's page API: request('fonts.local', {family?})
+      const family = typeof input.family === 'string' ? input.family.trim() : ''
+      try {
+        const answer = await deps.adapter.api.request('fonts.local', family ? { family } : {})
+        return { output: cut(json(answer), RESULT_MAX), summary: family || 'list' }
+      } catch (error) {
+        return { output: errorText(error), isError: true, summary: family || 'list' }
+      }
     }
     default:
       return { output: `Unknown tool: ${call.name}`, isError: true, summary: call.name }

@@ -156,7 +156,8 @@ export const ru = {
   dlgPivotAddValue: '+ Добавить поле значений',
   dlgPivotAddCalc: '+ Добавить вычисляемое поле',
   dlgPivotTargetCell: 'Начальная ячейка назначения',
-  dlgPivotTargetPlaceholder: 'напр. F1',
+  dlgPivotTargetPlaceholder: 'напр. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'При редактировании левая верхняя ячейка области вывода не меняется',
   dlgPivotNote:
     'Создаёт настоящую сводную таблицу OOXML, которую Excel/WPS распознаёт и может обновлять после сохранения.',

@@ -8,6 +8,7 @@ import {
   PAGE_NUMBER_DEFAULT,
   PAGE_NUMBER_FORMATS,
   PAGE_NUMBER_POSITIONS,
+  VI_TEXT,
   applyPageNumber,
   currentPageNumber,
   dateString,
@@ -350,6 +351,23 @@ describe('the menu items of the new commands', () => {
     }
   })
 
+  it('speak Vietnamese in a Vietnamese editor, not English', () => {
+    const { document } = new JSDOM(
+      [
+        '<div class="md-item" data-cmd="page:new-page-num"></div>',
+        '<div class="md-item" data-cmd="edit:find-again"></div>',
+        '<div class="md-item" data-cmd="insert:symbols"></div>',
+        '<div class="md-item" data-cmd="table:transpose-copy"></div>',
+      ].join(''),
+    ).window
+    installHancomMenuItems(document, 'vi')
+    const label = (id: string) =>
+      document.querySelector(`.md-item[data-cmd="${id}"] .md-label`)?.textContent
+    expect(label('ieum:page-number')).toBe('Đánh số trang')
+    expect(label('ieum:table-transpose')).toBe('Lật bảng')
+    for (const [id, , , en] of MENU_ITEMS) expect(label(id), id).not.toBe(en)
+  })
+
   it('name only commands there are', () => {
     const ids = new Set(hancomCommands('en').map((c) => c.id))
     for (const [id] of MENU_ITEMS) expect(ids).toContain(id)
@@ -418,5 +436,37 @@ describe("rhwp's Alt+V,T outside a Mac", () => {
     expect(document.querySelector('.md-shortcut')!.textContent).toBe('Alt+V,T')
     installHancomMenuItems(document, 'ko', false)
     expect(document.querySelector('.md-shortcut')!.textContent).toBe('')
+  })
+})
+
+describe('the new commands in Vietnamese', () => {
+  it('has every English name and message in Vietnamese', () => {
+    const vi = hancomCommands('vi')
+    const en = hancomCommands('en')
+    for (const [index, command] of vi.entries()) {
+      expect(command.label, command.id).not.toBe(en[index]!.label)
+    }
+    expect(vi.find((c) => c.id === 'ieum:style-3')!.label).toBe('Áp dụng kiểu 3')
+    for (const [key, value] of Object.entries(VI_TEXT)) expect(value, key).toBeTruthy()
+  })
+
+  it('tells the user in Vietnamese', () => {
+    const toast = vi.fn()
+    const flip = hancomCommands('vi', { showToast: toast }).find(
+      (c) => c.id === 'ieum:table-transpose',
+    )!
+    const nested = {
+      getInputHandler: () => ({
+        cursor: { isInTableObjectSelection: () => true },
+        getSelectedTableRef: () => ({ sec: 0, ppi: 0, ci: 0, cellPath: [{}, {}] }),
+        getCursorPosition: () => ({ sectionIndex: 0 }),
+      }),
+      wasm: { getTableDimensions: () => ({ rowCount: 2, colCount: 2, cellCount: 4 }) },
+      eventBus: { emit: vi.fn() },
+    }
+    flip.execute(nested as never)
+    expect(toast).toHaveBeenCalledWith({
+      message: VI_TEXT['A table inside a cell cannot be flipped yet.'],
+    })
   })
 })

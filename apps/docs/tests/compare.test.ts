@@ -64,8 +64,10 @@ describe('editorBlockTexts', () => {
 it('compares the live unsaved document after picking the original DOCX', async () => {
   const bytes = await buildDocx({ bodyXml: '<w:p><w:r><w:t>Saved</w:t></w:r></w:p>' })
   const parsed = await parseDocx(bytes)
+  // the compare target is read on the side: no recovery prompt, no write grant,
+  // and the tab's own document identity stays as it was (0.17 review #14)
   vi.stubGlobal('desktop', {
-    openDocx: async () => ({ name: 'original.docx', dataUrl: 'test://original' }),
+    openCompareDocx: async () => ({ name: 'original.docx', dataUrl: 'test://original' }),
   })
   vi.stubGlobal('fetch', async () => ({ ok: true, arrayBuffer: async () => bytes.buffer }))
   const setCompareResult = vi.fn()
@@ -89,6 +91,63 @@ it('compares the live unsaved document after picking the original DOCX', async (
   expect(setCompareResult).toHaveBeenCalledWith({
     otherName: 'original.docx',
     entries: expect.arrayContaining([{ kind: 'removed', left: 'Unsaved' }]),
+  })
+})
+
+describe('table comparison', () => {
+  const tableBlock = (rows: string[][]): Block =>
+    ({
+      id: 't',
+      type: 'table',
+      docxIndex: 0,
+      originalXml: null,
+      previewText: 'table',
+      table: { rows: rows.map((r) => r.map((text) => ({ paras: [text] }))) },
+    }) as unknown as Block
+
+  it('compares a table row by row', () => {
+    expect(
+      blockTexts([
+        tableBlock([
+          ['A', 'B'],
+          ['C', 'D'],
+        ]),
+      ]),
+    ).toEqual(['A | B', 'C | D'])
+  })
+
+  it('reads the live table the same way', () => {
+    const cell = (text: string) => ({
+      type: 'docTableCell',
+      content: [{ type: 'docParagraph', content: [{ type: 'text', text }] }],
+    })
+    const live = {
+      type: 'doc',
+      content: [
+        {
+          type: 'docTable',
+          attrs: { docxIndex: 0 },
+          content: [
+            { type: 'docTableRow', content: [cell('A'), cell('B')] },
+            { type: 'docTableRow', content: [cell('C'), cell('D')] },
+          ],
+        },
+      ],
+    }
+    expect(editorBlockTexts(live, [])).toEqual(['A | B', 'C | D'])
+  })
+
+  it('reports an added table row', () => {
+    const entries = compareParagraphs(
+      blockTexts([tableBlock([['A', 'B']])]),
+      blockTexts([
+        tableBlock([
+          ['A', 'B'],
+          ['new', 'row'],
+        ]),
+      ]),
+    )
+    expect(entries).toContainEqual({ kind: 'added', right: 'new | row' })
   })
 })
 

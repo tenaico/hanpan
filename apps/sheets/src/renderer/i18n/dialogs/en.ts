@@ -155,7 +155,8 @@ export const en = {
   dlgPivotAddValue: '+ Add value field',
   dlgPivotAddCalc: '+ Add calculated field',
   dlgPivotTargetCell: 'Destination cell',
-  dlgPivotTargetPlaceholder: 'e.g. F1',
+  dlgPivotTargetPlaceholder: 'e.g. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'The output range keeps its top-left cell when editing',
   dlgPivotNote:
     'Creates a real OOXML PivotTable that Excel/WPS can recognize and refresh after saving.',
@@ -368,8 +369,7 @@ export const en = {
   dlgFcNoFill: 'No fill',
   dlgFcLocked: 'Locked',
   dlgFcHidden: 'Hidden (formula)',
-  dlgFcProtectionNote:
-    'Locking and hiding take effect only when the worksheet is protected in Excel. These flags save to the file; the editor itself does not enforce them.',
+  dlgFcProtectionNote: 'Locking and hiding apply once the sheet is protected.',
 
   dlgAdvFilterNeedCondition: 'The advanced filter needs at least one condition.',
   dlgAdvFilterMaxTwo: 'The advanced filter supports at most two conditions.',

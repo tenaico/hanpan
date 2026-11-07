@@ -20,6 +20,9 @@ import {
   useSplitPaneFocusPing,
   useSplitPaneRole,
   type TemplateDocument,
+  DocumentPrintDialog,
+  type DocumentPrinter,
+  type DocumentPrintJob,
 } from '@genoffice/ui'
 import {
   pollUntilReady,
@@ -74,6 +77,7 @@ import { addQueueAnchor, clearQueueAnchors, removeQueueAnchors } from './editor/
 import { DOCX_MAX_IMAGE_PX, exportDocxBytes } from './export/docxExport'
 import { decodeImageDataUrl, toDocxImage } from './export/exportImage'
 import { buildPrintHtml } from './export/printHtml'
+import { exportedFileLabel } from './export-offer'
 import { diagramSvgToPng, renderDiagram } from './editor/diagrams'
 import type { DiagramLanguage } from './editor/diagrams'
 import type { ExportFormat, SaveMode } from '../shared/ipc'
@@ -176,6 +180,16 @@ export default function App() {
     key: StringKey
     params?: Record<string, string | number>
   } | null>(null)
+  // after an export: the written file (or image folder) for the status bar's buttons
+  const [exportOffer, setExportOffer] = useState<{ path: string; folder: boolean } | null>(null)
+  useEffect(() => {
+    if (!exportOffer) return
+    const timer = window.setTimeout(() => {
+      setExportOffer(null)
+      setImageExportStatus(null)
+    }, 20_000)
+    return () => window.clearTimeout(timer)
+  }, [exportOffer])
   const [slashState, setSlashState] = useState<SlashMenuState | null>(null)
   const [fmOpen, setFmOpen] = useState(false)
   const [fmText, setFmText] = useState('')
@@ -823,6 +837,16 @@ export default function App() {
         (filePathRef.current
           ? filePathRef.current.replace(/^.*[/\\]/, '').replace(/\.(md|markdown)$/i, '')
           : deriveAutoFileName(current)) || 'Untitled'
+      setExportOffer(null)
+      // a written file is offered in the status bar instead of opening a new tab
+      const offerFile = (result: { ok: boolean; path?: string; canceled?: boolean }) => {
+        if (!result.ok || result.canceled || !result.path) return
+        setImageExportStatus({
+          key: 'exportDone',
+          params: { name: exportedFileLabel(result.path) },
+        })
+        setExportOffer({ path: result.path, folder: false })
+      }
       if (format === 'png') {
         if (exportingImagesRef.current) return false
         exportingImagesRef.current = true
@@ -848,8 +872,9 @@ export default function App() {
           }
           setImageExportStatus({
             key: 'appExportImagesDone',
-            params: { count: result.count ?? 0, dir: result.path },
+            params: { count: result.count ?? 0, dir: exportedFileLabel(result.path) },
           })
+          if (result.path) setExportOffer({ path: result.path, folder: true })
           return true
         } catch (err) {
           setImageExportStatus({
@@ -870,6 +895,7 @@ export default function App() {
             ...(outPath ? { outPath } : {}),
           })
           if (!result.ok) console.error('[markdown] pdf export failed:', result.error)
+          else if (!outPath) offerFile(result)
           return result.ok && !('canceled' in result)
         }
         const loadImage = async (src: string) => {
@@ -888,6 +914,7 @@ export default function App() {
             suggestedName,
           })
           if (!result.ok) console.error('[markdown] odt export failed:', result.error)
+          else offerFile(result)
           return result.ok && !('canceled' in result)
         }
         const result = await window.markdownApi.exportDocx({
@@ -896,6 +923,7 @@ export default function App() {
           mode: format === 'docs' ? 'openInDocs' : 'dialog',
         })
         if (!result.ok) console.error('[markdown] docx export failed:', result.error)
+        else if (format === 'docx') offerFile(result)
         return result.ok && !('canceled' in result)
       } catch (err) {
         console.error('[markdown] export failed:', err)
@@ -952,11 +980,16 @@ export default function App() {
     [sourceRev, sourceMode],
   )
 
-  const printingRef = useRef(false)
+  // Print preview and job live in the app; the job itself runs in a main-process
+  // window, so this tab never blocks on a system print dialog (see print-document.ts)
+  const [printSheet, setPrintSheet] = useState<{
+    html: string
+    printers: DocumentPrinter[]
+    message: string | null
+  } | null>(null)
   const printDoc = useCallback(async () => {
     const current = editorRef.current
-    if (!current || statusRef.current !== 'ready' || printingRef.current) return
-    printingRef.current = true
+    if (!current || statusRef.current !== 'ready') return
     const title =
       (filePathRef.current
         ? filePathRef.current.replace(/^.*[/\\]/, '').replace(/\.(md|markdown|txt|json)$/i, '')
@@ -968,39 +1001,38 @@ export default function App() {
       pre.textContent = sourceTextRef.current
       printRoot.appendChild(pre)
     }
-    const frame = document.createElement('iframe')
-    frame.style.position = 'fixed'
-    frame.style.right = '100%'
-    frame.style.bottom = '100%'
-    frame.style.width = '0'
-    frame.style.height = '0'
-    frame.style.border = '0'
-    try {
-      await new Promise<void>((resolve) => {
-        frame.onload = () => resolve()
-        frame.srcdoc = buildPrintHtml(printRoot, title)
-        document.body.appendChild(frame)
-      })
-      const fdoc = frame.contentDocument
-      const fwin = frame.contentWindow
-      if (!fdoc || !fwin) return
-      // the export path passes printToPDF margins instead; the dialog needs @page
-      const pageStyle = fdoc.createElement('style')
-      pageStyle.textContent = '@page { margin: 0.6in; }'
-      fdoc.head.appendChild(pageStyle)
-      await Promise.all([...fdoc.images].map((img) => img.decode().catch(() => {})))
-      // resolve on afterprint so the frame survives until the dialog closes (cancel included)
-      await new Promise<void>((resolve) => {
-        fwin.addEventListener('afterprint', () => resolve())
-        fwin.print()
-      })
-    } catch (err) {
-      console.error('[markdown] print failed:', err)
-    } finally {
-      frame.remove()
-      printingRef.current = false
-    }
+    // the export path passes printToPDF margins instead; the print job needs @page
+    const html = buildPrintHtml(printRoot, title).replace(
+      '</head>',
+      '<style>@page { margin: 0.6in; }</style></head>',
+    )
+    setPrintSheet({ html, printers: [], message: null })
+    const printers = await window.markdownApi.listPrinters().catch(() => [])
+    setPrintSheet((sheet) => (sheet && sheet.html === html ? { ...sheet, printers } : sheet))
   }, [sourceMode])
+
+  const runPrintJob = useCallback(
+    async (html: string, job: DocumentPrintJob) => {
+      const outcome = await window.markdownApi
+        .printDocument({ html, job })
+        .catch((err: unknown) => ({
+          ok: false as const,
+          error: err instanceof Error ? err.message : String(err),
+        }))
+      if (!outcome.ok) {
+        console.error('[markdown] print failed:', outcome.error)
+        setPrintSheet((sheet) =>
+          sheet ? { ...sheet, message: t('printFailed', { error: outcome.error }) } : sheet,
+        )
+        return
+      }
+      // a system dialog the user canceled returns to the preview
+      if ('canceled' in outcome) return
+      setPrintSheet(null)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t is not referentially stable
+    [],
+  )
 
   useEffect(() => {
     const offExport = window.markdownApi.onExportRequest((format) => void runExport(format))
@@ -1362,6 +1394,13 @@ export default function App() {
         dirty={dirty}
         onSave={() => void doSave('save')}
         onSaveAs={() => void doSave('saveAs')}
+        onOpen={() =>
+          void window.markdownApi
+            .openFileDialog()
+            .catch((err) => console.error('[markdown] open dialog failed:', err))
+        }
+        onExport={(format) => void runExport(format)}
+        onPrint={() => void printDoc()}
         onFind={() => openFind(false)}
         autoSave={autoSave}
         onToggleAutoSave={setAutoSave}
@@ -1500,6 +1539,30 @@ export default function App() {
                   {t(imageExportStatus.key, imageExportStatus.params)}
                 </span>
               )}
+              {imageExportStatus && exportOffer && (
+                <span className="status-item status-export-actions">
+                  {!exportOffer.folder && (
+                    <button
+                      type="button"
+                      className="status-link"
+                      onClick={() => void window.markdownApi.openExported(exportOffer.path)}
+                    >
+                      {t('exportOpen')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="status-link"
+                    onClick={() =>
+                      void (exportOffer.folder
+                        ? window.markdownApi.openExported(exportOffer.path)
+                        : window.markdownApi.revealExported(exportOffer.path))
+                    }
+                  >
+                    {t('exportReveal')}
+                  </button>
+                </span>
+              )}
               {fileName && <span className="status-item status-file">{fileName}</span>}
               {fileName && docStats && (
                 <span className="status-item status-stats">
@@ -1560,6 +1623,26 @@ export default function App() {
             setGraphOpen(false)
             void window.markdownApi.openSourcePath(path)
           }}
+        />
+      )}
+      {printSheet && (
+        <DocumentPrintDialog
+          html={printSheet.html}
+          printers={printSheet.printers}
+          message={printSheet.message}
+          labels={{
+            title: t('printTitle'),
+            printer: t('printPrinter'),
+            defaultPrinter: t('printDefaultPrinter'),
+            systemDialog: t('printSystemDialog'),
+            copies: t('printCopies'),
+            print: t('printTitle'),
+            cancel: t('printCancel'),
+            preparing: t('printPreparing'),
+            printing: t('printPrinting'),
+          }}
+          onPrint={(job) => runPrintJob(printSheet.html, job)}
+          onClose={() => setPrintSheet(null)}
         />
       )}
       {imageHostOpen && (

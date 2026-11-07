@@ -1,8 +1,13 @@
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import { describe, expect, it } from 'vitest'
-import { PRINT_READY_SCRIPT, printHtmlDocument, type PrintDialogWindow } from '../src/print-window'
+import { describe, expect, it, vi } from 'vitest'
+import {
+  PRINT_READY_SCRIPT,
+  printHtmlDocument,
+  withPrintOptions,
+  type PrintDialogWindow,
+} from '../src/print-window'
 
 /** Records the call order, so the assertions can pin sequencing and not just
  * end state: the readiness probe has to happen BEFORE print(), and show() has
@@ -17,6 +22,9 @@ class TestPrintWindow implements PrintDialogWindow {
   focused = false
   failLoad = false
   printResult = { success: true, reason: '' }
+  /** print() never calls back: a wedged system dialog */
+  printHangs = false
+  printOptions: unknown[] = []
   readyScripts: string[] = []
   readyHangs = false
   readyRejects = false
@@ -41,6 +49,8 @@ class TestPrintWindow implements PrintDialogWindow {
       callback: (success: boolean, reason: string) => void,
     ): void => {
       this.calls.push('print')
+      this.printOptions.push(_options)
+      if (this.printHangs) return
       callback(this.printResult.success, this.printResult.reason)
     },
   }
@@ -175,5 +185,103 @@ describe('HTML print window', () => {
     }
     // Teardown must not turn a print failure into an unhandled rejection.
     await expect(run(win, 'win32')).rejects.toThrow('window already gone')
+  })
+})
+
+describe('HTML print window — in-app dialog jobs', () => {
+  it('prints silently to the chosen printer without showing the window', async () => {
+    // The in-app dialog already chose printer and copies: no system dialog, no
+    // throwaway window flashing on screen.
+    const win = new TestPrintWindow()
+    const outcome = await printHtmlDocument({
+      html: '<p>x</p>',
+      window: win,
+      platform: 'win32',
+      job: { silent: true, deviceName: 'Office Printer', copies: 2 },
+    })
+    expect(outcome).toEqual({ ok: true })
+    expect(win.shown).toBe(false)
+    expect(win.printOptions).toEqual([
+      { silent: true, printBackground: true, deviceName: 'Office Printer', copies: 2 },
+    ])
+  })
+
+  it('gives up on a silent job the spooler never answers, and destroys the window', async () => {
+    const win = new TestPrintWindow()
+    win.printHangs = true
+    const outcome = await printHtmlDocument({
+      html: '<p>x</p>',
+      window: win,
+      job: { silent: true },
+      silentTimeoutMs: 50,
+    })
+    expect(outcome).toEqual({ ok: false, error: 'timeout' })
+    expect(win.destroyed).toBe(true)
+  })
+
+  it('an abort (app quit, window closed) settles a wedged system dialog as canceled', async () => {
+    // A system print dialog that never comes back must not keep the app (and
+    // its process) alive after the user quits.
+    const win = new TestPrintWindow()
+    win.printHangs = true
+    const controller = new AbortController()
+    const pending = printHtmlDocument({
+      html: '<p>x</p>',
+      window: win,
+      platform: 'win32',
+      signal: controller.signal,
+    })
+    await vi.waitFor(() => expect(win.calls).toContain('print'))
+    controller.abort()
+    expect(await pending).toEqual({ ok: true, canceled: true })
+    expect(win.destroyed).toBe(true)
+  })
+
+  it('does not load anything when already aborted', async () => {
+    const win = new TestPrintWindow()
+    const controller = new AbortController()
+    controller.abort()
+    const outcome = await printHtmlDocument({ html: 'x', window: win, signal: controller.signal })
+    expect(outcome).toEqual({ ok: true, canceled: true })
+    expect(win.calls).not.toContain('print')
+  })
+})
+
+describe('withPrintOptions', () => {
+  it('tells the system dialog the paper on every print, and passes the rest through', async () => {
+    const seen: unknown[] = []
+    const calls: string[] = []
+    const win = {
+      loadFile: async () => void calls.push('load'),
+      webContents: {
+        executeJavaScript: async () => 'READY',
+        print: (options: unknown, callback: (ok: boolean, reason: string) => void) => {
+          seen.push(options)
+          callback(true, '')
+        },
+      },
+      show: () => void calls.push('show'),
+      focus: () => void calls.push('focus'),
+      isDestroyed: () => false,
+      destroy: () => void calls.push('destroy'),
+    }
+    const wrapped = withPrintOptions(win, { pageSize: 'A4', landscape: true })
+    await wrapped.loadFile('x.html')
+    wrapped.show()
+    wrapped.focus()
+    await new Promise<void>((resolve) =>
+      wrapped.webContents.print({ silent: false, printBackground: true }, () => resolve()),
+    )
+    wrapped.destroy()
+    expect(seen).toEqual([
+      {
+        silent: false,
+        printBackground: true,
+        pageSize: 'A4',
+        landscape: true,
+        margins: { marginType: 'none' },
+      },
+    ])
+    expect(calls).toEqual(['load', 'show', 'focus', 'destroy'])
   })
 })

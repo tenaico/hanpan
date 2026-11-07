@@ -64,10 +64,17 @@ test.describe('docs font and size combos', () => {
       await expect(fontBox).toHaveValue('Tahoma')
       expect((await attrs()).fontAscii).toBe('Tahoma')
 
-      // blur without Enter keeps the selection's font
+      // blur without Enter keeps the selection's font. The typed name keeps the list open, and
+      // below 1600px the compact Home ribbon puts the list over the page's middle, so the click
+      // goes to the page beside the list
       await fontBox.click()
       await editorPage.keyboard.type('Impact')
-      await editorPage.locator('.doc-page').click()
+      await expect(menu).toBeVisible()
+      const listBox = (await menu.boundingBox())!
+      const pageBox = (await editorPage.locator('.doc-page').boundingBox())!
+      await editorPage.locator('.doc-page').click({
+        position: { x: listBox.x + listBox.width + 40 - pageBox.x, y: 40 },
+      })
       await expect(fontBox).toHaveValue('Tahoma')
       expect((await attrs()).fontAscii).toBe('Tahoma')
       await editorPage.locator('.rb-font-group .rb-combo-caret').first().click()

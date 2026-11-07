@@ -170,7 +170,7 @@ export function cellContextMenuLayout(): readonly ContextMenuNode[] {
       group: ContextMenuGroup.OTHERS,
       order: 1,
       children: [
-        ...numberFormatCategories().map((category): ContextMenuLeaf => {
+        ...numberFormatCategories(getLang()).map((category): ContextMenuLeaf => {
           const titleKey = NUMBER_FORMAT_LABEL[category.label] ?? 'dlgFcNumGeneral'
           return {
             id: `${NUMBER_FORMAT_MENU_ID}.${category.label}`,

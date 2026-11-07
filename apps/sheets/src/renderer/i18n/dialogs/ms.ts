@@ -156,7 +156,8 @@ export const ms = {
   dlgPivotAddValue: '+ Tambah medan nilai',
   dlgPivotAddCalc: '+ Tambah medan terhitung',
   dlgPivotTargetCell: 'Sel destinasi',
-  dlgPivotTargetPlaceholder: 'cth. F1',
+  dlgPivotTargetPlaceholder: 'cth. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'Semasa mengedit, julat output mengekalkan sel kiri atasnya',
   dlgPivotNote:
     'Mencipta Jadual Pangsi OOXML sebenar yang boleh dikenali dan disegarkan oleh Excel/WPS selepas disimpan.',

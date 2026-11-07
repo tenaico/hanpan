@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
 import { isAbsolute, join } from 'node:path'
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { BrowserWindow, dialog, ipcMain, screen, shell } from 'electron'
 import type { IpcMainInvokeEvent, WebContents } from 'electron'
+import { fitWindowSize } from '../window-bounds'
 import type { SkillProposal } from '@genoffice/agent-core'
 import type {
   UserSkillPreviewInput,
@@ -630,11 +631,13 @@ export function openAgentWindow(): void {
     return
   }
   const lang = d.lang()
+  // the usual 560×760 inside the primary work area (760 is taller than a 1366×768 screen's)
+  const area = screen.getPrimaryDisplay().workArea
+  const size = fitWindowSize({ width: 560, height: 760 }, area)
   const next = new BrowserWindow({
-    width: 560,
-    height: 760,
+    ...size,
     minWidth: 440,
-    minHeight: 520,
+    minHeight: Math.min(520, size.height),
     show: false,
     center: true,
     fullscreenable: false,
@@ -650,6 +653,8 @@ export function openAgentWindow(): void {
   win = next
   const ownerId = next.webContents.id
   next.removeMenu()
+  // the page's own <title> ("Hanpan") must not replace "AI 폴더 작업 - 한판"
+  next.on('page-title-updated', (event) => event.preventDefault())
   next.webContents.setWindowOpenHandler(({ url }) => {
     const target = safeExternalUrl(url)
     if (target) void shell.openExternal(target)

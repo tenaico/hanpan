@@ -185,3 +185,63 @@ describe('system short date', () => {
     }
   })
 })
+
+describe('Korean defaults in the Format Cells number tab (X5)', () => {
+  it('ko starts currency at ₩ and lists Korean dates first', () => {
+    const ko = numfmtOptionsOf('General', 'ko')
+    expect(ko.symbol).toBe('₩')
+    expect(numfmtPattern({ ...ko, category: 'currency', decimals: 0 })).toBe('₩#,##0')
+    const dates = datePatterns('ko')
+    expect(dates[0]).toBe('yyyy"년" m"월" d"일"')
+    expect(dates).toContain('m"월" d"일"')
+    // the Chinese/Japanese year-month-day forms are for zh/ja users, not Korean ones
+    expect(dates.some((pattern) => pattern.includes('年'))).toBe(false)
+    expect(numfmtPreview(dates[0]!, 46333)).toBe('2026년 11월 7일')
+  })
+
+  it('keeps an existing Korean date pattern classified as a date', () => {
+    expect(numfmtOptionsOf('yyyy"년" m"월" d"일"', 'ko')).toMatchObject({
+      category: 'date',
+      datePattern: 'yyyy"년" m"월" d"일"',
+    })
+  })
+
+  it('other languages keep their defaults', () => {
+    expect(numfmtOptionsOf('General', 'en').symbol).toBe('$')
+    expect(numfmtOptionsOf('General').symbol).toBe('$')
+    expect(datePatterns('zh')).toContain('yyyy"年"m"月"d"日"')
+  })
+})
+
+describe('installed-build checks on a Korean-region PC (0.17 final)', () => {
+  it('keeps the Korean long date first when the system short date is yyyy. m. d.', () => {
+    const previous = getSystemShortDate()
+    try {
+      setSystemShortDate('yyyy. m. d.')
+      const dates = datePatterns('ko')
+      expect(dates[0]).toBe('yyyy"년" m"월" d"일"')
+      // the system short date stays in the list so the ribbon's Short Date classifies as Date
+      expect(dates).toContain('yyyy. m. d.')
+      expect(numfmtOptionsOf('yyyy. m. d.', 'ko').category).toBe('date')
+      // other languages still list the system short date first
+      expect(datePatterns('en')[0]).toBe('yyyy. m. d.')
+    } finally {
+      setSystemShortDate(previous)
+    }
+  })
+
+  it('the ribbon Currency item follows the UI language', () => {
+    const currencyOf = (lang?: string) =>
+      numberFormatCategories(lang).find((category) => category.label === 'Currency')!.pattern
+    expect(numfmtPreview(currencyOf('ko'), 20)).toBe('₩20')
+    expect(currencyOf('vi')).toContain('₫')
+    expect(currencyOf('ja')).toContain('¥')
+    expect(currencyOf('zh')).toContain('¥')
+    expect(currencyOf('en')).toBe(currencyOf())
+    expect(numfmtPreview(currencyOf('en'), 20)).toBe('$20.00')
+    const accountingOf = (lang?: string) =>
+      numberFormatCategories(lang).find((category) => category.label === 'Accounting')!.pattern
+    expect(accountingOf('ko')).toContain('₩')
+    expect(numfmtOptionsOf(currencyOf('ko'), 'ko').category).toBe('currency')
+  })
+})

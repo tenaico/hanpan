@@ -1312,6 +1312,18 @@
   display: none;
 }
 
+/* 0.17 UI/UX review v2 #13: at 1366 with the AI panel out, the memo column took the editor
+ * under the studio's 768px phone layout (status bar run together, toolbar on two rows). Below
+ * 1500px, while the AI panel is out, the column floats over the document's edge: it gives its
+ * width back to the editor and casts a shadow there. */
+@media (max-width: 1500px) {
+  .app-main:has(> .ai-dock:not(.collapsed)) > .memo-side:not(.collapsed) {
+    z-index: 30;
+    margin-inline-end: calc(-1 * var(--memo-width));
+    box-shadow: 6px 0 18px var(--hwp-shadow-soft);
+  }
+}
+
 /* drag handle on the edge toward the document */
 .memo-side-resizer {
   position: absolute;

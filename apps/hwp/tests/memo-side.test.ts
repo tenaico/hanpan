@@ -2,6 +2,8 @@
 // The memo column beside the document (MemoSide.tsx): what it remembers (open state,
 // the old shared dock's memo mode, width), and that closing it hides the column but
 // keeps the panel mounted, so the list and the memo editor's locks survive.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
@@ -192,5 +194,25 @@ describe('the memo column on screen', () => {
     expect(button.textContent).toBe('메모')
     await act(async () => button.click())
     expect(onToggle).toHaveBeenCalledTimes(1)
+  })
+})
+
+// 0.17 UI/UX review v2, hwp-design #13: at 1366 with the AI panel out, the memo column took the
+// editor under the studio's 768px phone layout (its status bar ran together: "1 / 2 쪽구역: 1 /
+// 1삽입", its toolbar went to two rows). There the column floats over the document's edge.
+describe('the memo column on a narrow window', () => {
+  it('tells the style sheet its width', async () => {
+    await mountSide(true)
+    const side = container.querySelector<HTMLElement>('.memo-side')!
+    expect(side.style.getPropertyValue('--memo-width')).toBe(`${MEMO_WIDTH_DEFAULT}px`)
+  })
+
+  it('floats over the document while the AI panel is out, below 1500px', () => {
+    const css = readFileSync(join(__dirname, '..', 'src', 'renderer', 'ai-panel.css'), 'utf8')
+    const block = css.slice(css.indexOf('@media (max-width: 1500px)'))
+    expect(block).toContain(
+      '.app-main:has(> .ai-dock:not(.collapsed)) > .memo-side:not(.collapsed)',
+    )
+    expect(block).toContain('margin-inline-end: calc(-1 * var(--memo-width))')
   })
 })

@@ -6,6 +6,7 @@ export const fr = {
   editBold: 'Gras',
   editItalic: 'Italique',
   editReplace: 'Remplacer',
+  editFindReplaceTitle: 'Rechercher et remplacer',
   editReplaceWith: 'Remplacer par',
   editReplaceOne: 'Remplacer',
   editReplaceAll: 'Tout remplacer',

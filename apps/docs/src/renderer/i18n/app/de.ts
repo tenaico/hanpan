@@ -54,11 +54,12 @@ export const de = {
   appVerticalTextNotice:
     'Dieses Dokument enthält vertikalen Text (vorerst horizontal angezeigt; das Speichern ist nicht betroffen)',
   appNewDocCreated:
-    'Leeres Dokument erstellt. Beschreiben Sie im KI-Bereich links, was generiert werden soll',
+    'Leeres Dokument erstellt. Beschreiben Sie im KI-Bereich, was generiert werden soll',
   appNewFailed: 'Erstellen des Dokuments fehlgeschlagen: {error}',
   appSaveFailed: 'Speichern fehlgeschlagen: {error}',
   appAutoSavedAt: 'Automatisch gespeichert ({time})',
   appSaved: 'Gespeichert',
+  appUnsaved: 'Nicht gespeichert',
   appSectionBreakInserted: 'Abschnittsumbruch eingefügt ({type})',
   appSectionBreakPending:
     'Abschnittsumbruch eingefügt; der neue Abschnitt wird nach dem Speichern wirksam',
@@ -125,6 +126,8 @@ export const de = {
   appExportingImages: 'Bilder werden exportiert…',
   appExportImagesProgress: '{count} Bilder werden exportiert…',
   appExportImagesDone: '{count} Bilder nach {dir} exportiert',
+  appOpenExported: 'Öffnen',
+  appRevealExported: 'Ordner öffnen',
   appExportImagesFailed: 'Bildexport fehlgeschlagen: {error}',
   appMixedExportOpening:
     'Gemischte Papierformate: Seitenvorschau wird geöffnet, um die Seiten zusammengeführt zu exportieren…',
@@ -499,6 +502,7 @@ export const de = {
   appMatchCase: 'Groß-/Kleinschreibung beachten',
   appWholeWord: 'Nur ganzes Wort suchen',
   appNoResults: 'Keine Ergebnisse',
+  appReplacedCount: '{count} ersetzt',
   appPrevMatch: 'Zurück (Umschalt+Eingabetaste)',
   appNextMatch: 'Weiter (Eingabetaste)',
   appCloseEsc: 'Schließen (Esc)',

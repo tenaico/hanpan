@@ -1873,6 +1873,9 @@ body.vib .home {
 
 .search-results {
   padding-bottom: 24px;
+  /* 0.17 리뷰 #19: room below the search row, so starting a search can scroll
+     it to the top of the window and show the results under it (1366x768) */
+  min-height: calc(100vh - 160px);
 }
 .search-rerank-badge {
   align-self: center;
@@ -2347,4 +2350,86 @@ html[dir='rtl'] .quick-title-row {
 }
 .kb-ask-assistant a:hover {
   text-decoration: underline;
+}
+
+/* the delete question names files that are open in a tab (they close first) */
+.modal-warn {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--danger-border);
+  border-radius: 6px;
+  background: var(--danger-bg);
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* a quiet action's confirmation (path copied, removed from the list) */
+.home-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 50;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--surface);
+  font-size: 13px;
+  box-shadow: var(--shadow-menu);
+  pointer-events: none;
+}
+
+/* the folder being shown, its path and the way back (0.17 리뷰 v2 shell #26) */
+.folder-heading-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.folder-heading-title b {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.folder-heading-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.folder-back-btn {
+  margin-left: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.folder-back-btn:hover {
+  border-color: var(--accent);
+}
+
+/* the smallest window (736px): the filter pills scroll in their own strip
+ * instead of giving the whole Home a sideways scrollbar (0.17 리뷰 v2 shell #32) */
+.toolbar-filters {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.filter-pills {
+  flex-shrink: 1;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-pill {
+  flex-shrink: 0;
 }

@@ -13,7 +13,7 @@
  *    (keeping the unstyled rendering).
  */
 import { XMLParser } from 'fast-xml-parser'
-import { applyColorMods } from './color'
+import { applyColorMods, contrastRatio, relativeLuminance } from './color'
 import { resolveSchemeColor, type Theme } from './theme'
 import type { Fill, Stroke } from './types'
 import { asXmlNode, xmlArray, type XmlNode } from './xml-utils'
@@ -52,6 +52,13 @@ export interface TableStyleDef {
   tblBg?: Fill
   /** <a:tblBg><a:fillRef>: theme fillStyleLst template ref (parse.ts instantiates it with phClr) */
   tblBgRef?: { idx: number; phClr?: string }
+  /**
+   * Set only when the theme keeps its light text colour in dk1 and its dark page colour in
+   * lt1 (the Design tab's dark presets). Table styles read dk1/lt1 directly, so their body
+   * text lands light-on-light; cellPartStyle then swaps a style text colour that falls under
+   * 4.5:1 against its style fill for whichever of these two reads better.
+   */
+  readableText?: [string, string]
 }
 
 /** Region toggles from a:tblPr. */
@@ -465,6 +472,20 @@ export function resolveTableStyle(
   tableStylesXml: string | undefined,
   theme: Theme | undefined,
 ): TableStyleDef | undefined {
+  const def = resolveTableStyleDef(styleId, tableStylesXml, theme)
+  const dk1 = resolveSchemeColor('dk1', theme)
+  const lt1 = resolveSchemeColor('lt1', theme)
+  if (def && dk1 && lt1 && relativeLuminance(dk1) > relativeLuminance(lt1)) {
+    def.readableText = [dk1, lt1]
+  }
+  return def
+}
+
+function resolveTableStyleDef(
+  styleId: string | undefined,
+  tableStylesXml: string | undefined,
+  theme: Theme | undefined,
+): TableStyleDef | undefined {
   if (!styleId) return undefined
   if (tableStylesXml && tableStylesXml.includes(styleId)) {
     const def = parseTableStylesXml(tableStylesXml, styleId, theme)
@@ -682,5 +703,13 @@ export function cellPartStyle(
   if (isFirstCol) out = merge(out, def.firstCol)
   if (isLastRow) out = merge(out, def.lastRow)
   if (isFirstRow) out = merge(out, def.firstRow)
+  const fill = out.fill?.type === 'solid' ? out.fill.color : undefined
+  if (def.readableText && out.textColor && fill && contrastRatio(out.textColor, fill) < 4.5) {
+    const [a, b] = def.readableText
+    const best = contrastRatio(a, fill) >= contrastRatio(b, fill) ? a : b
+    if (contrastRatio(best, fill) > contrastRatio(out.textColor, fill)) {
+      out = { ...out, textColor: best }
+    }
+  }
   return out
 }

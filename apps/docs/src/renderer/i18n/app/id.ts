@@ -53,12 +53,12 @@ export const id = {
   appFontsMissing: 'Font dokumen tidak tersedia: {names} (ditampilkan dengan font pengganti)',
   appVerticalTextNotice:
     'Dokumen ini berisi teks vertikal (sementara ditampilkan horizontal; penyimpanan tidak terpengaruh)',
-  appNewDocCreated:
-    'Dokumen kosong telah dibuat. Jelaskan konten yang ingin dibuat di panel AI sebelah kiri',
+  appNewDocCreated: 'Dokumen kosong telah dibuat. Jelaskan konten yang ingin dibuat di panel AI',
   appNewFailed: 'Gagal membuat dokumen: {error}',
   appSaveFailed: 'Gagal menyimpan: {error}',
   appAutoSavedAt: 'Disimpan otomatis ({time})',
   appSaved: 'Disimpan',
+  appUnsaved: 'Belum disimpan',
   appSectionBreakInserted: 'Pemisah bagian disisipkan ({type})',
   appSectionBreakPending: 'Pemisah bagian disisipkan; bagian baru berlaku setelah disimpan',
   appBreakNextPage: 'Halaman Berikutnya',
@@ -124,6 +124,8 @@ export const id = {
   appExportingImages: 'Mengekspor gambar…',
   appExportImagesProgress: 'Mengekspor {count} gambar…',
   appExportImagesDone: '{count} gambar diekspor ke {dir}',
+  appOpenExported: 'Buka',
+  appRevealExported: 'Buka folder',
   appExportImagesFailed: 'Gagal mengekspor gambar: {error}',
   appMixedExportOpening:
     'Ukuran kertas campuran: membuka pratinjau paginasi untuk mengekspor halaman yang digabungkan…',
@@ -489,6 +491,7 @@ export const id = {
   appMatchCase: 'Cocokkan huruf besar/kecil',
   appWholeWord: 'Hanya kata utuh',
   appNoResults: 'Tidak ada hasil',
+  appReplacedCount: '{count} diganti',
   appPrevMatch: 'Sebelumnya (Shift+Enter)',
   appNextMatch: 'Berikutnya (Enter)',
   appCloseEsc: 'Tutup (Esc)',

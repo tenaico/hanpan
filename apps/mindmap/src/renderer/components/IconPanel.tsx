@@ -15,6 +15,7 @@ import { markerName } from '../map/decorate'
 import { MARKER_GROUPS, type MarkerFamily } from '../map/marker-families'
 import { markerElement } from '../map/markers'
 import { IconClose } from './icons'
+import { useEscapeToClose } from './dialogs'
 
 export interface IconPanelProps {
   /** the markers every selected topic carries; empty without a selection */
@@ -41,6 +42,7 @@ export const FAMILY_NAME: Readonly<Record<MarkerFamily, StringKey>> = {
 
 export function IconPanel(p: IconPanelProps) {
   const { lang, t } = useI18n()
+  useEscapeToClose(p.onClose)
   const names = mapStrings(lang).decoration
   const off = !p.hasTopic
   return (

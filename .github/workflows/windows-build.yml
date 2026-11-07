@@ -106,7 +106,7 @@ jobs:
           for bin in \
             "$dir/Hanpan.exe" \
             "$dir/resources/native/xlsx-sidecar.exe" \
-            "$dir/resources/ocr/win-ocr.exe" \
+            "$dir/resources/ocr/win-ocr.exe"             "$dir/resources/share/win-share.exe" \
             "$dir/resources/cli/genoffice.cjs" \
             "$dir/resources/cli/ieumoffice.cmd" \
             "$dir/resources/modules/graphics/renderer/web/photo/index.html" \

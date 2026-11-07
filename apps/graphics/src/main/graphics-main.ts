@@ -12,6 +12,9 @@
  *   target's format; `commit-save` writes them, but only to the target this
  *   side chose. A renderer cannot name another path.
  * - Exports and the picture an illustration traces go through dialogs here too.
+ * - Crash recovery (`recovery-main.ts`): while the document has unsaved changes
+ *   the page hands over a copy now and then; it goes into the profile's recovery
+ *   folder through the shared store, and the shell offers it at the next launch.
  *
  * The view keeps running in the background (`backgroundThrottling: false`): the
  * web builds answer their page API on animation frames, and an AI run or a
@@ -33,14 +36,42 @@ import {
   installRendererProtocol,
   isPathOpenElsewhere,
   recordDiskState,
+  registerRecoveryEditor,
   registerRendererScheme,
   rendererUrl,
   showSaveDialogWithMemory,
 } from '@genoffice/electron-utils'
-import type { SaveDiskState } from '@genoffice/electron-utils'
+import type {
+  RecoveryIdentity,
+  RecoveryOpenFileRequest,
+  RecoveryOpenUntitledRequest,
+  SaveDiskState,
+} from '@genoffice/electron-utils'
 import { atomicWriteFile } from '@genoffice/electron-utils/atomic-write'
+import { printHtmlDocument, withPrintOptions } from '@genoffice/electron-utils/print-window'
+import {
+  buildImagePrintHtml,
+  isPrintSheet,
+  pngSize,
+  printPageOptions,
+  type PrintSheet,
+} from '@genoffice/ui/image-print'
 import { getUiLang, normalizeLang, setUiLang } from '@genoffice/i18n'
-import { tm } from './i18n-main'
+import { closeUnsavedMessage, tm } from './i18n-main'
+import {
+  fileNameBase,
+  resolveViewOpen,
+  setViewOpenDecision,
+  takeRestored,
+  takeUntitledCopy,
+  viewCrashed,
+  viewDropped,
+  viewGone,
+  viewRecoveryIdentity,
+  viewSaveAsDefault,
+  viewSaved,
+  writeViewCopy,
+} from './recovery-main'
 import { APP_CHANNELS, GRAPHICS_CHANNELS } from '../shared/ipc'
 import type {
   BeginSaveResult,
@@ -50,6 +81,8 @@ import type {
   GraphicsMenuCommand,
   PendingOpen,
   PickedImage,
+  PrintResult,
+  RecoveryWriteAnswer,
   SaveMode,
 } from '../shared/ipc'
 import { APP_GLOBAL, WRITABLE_EXTS, extOf, graphicsKindForPath } from '../shared/kinds'
@@ -66,6 +99,8 @@ export interface GraphicsRuntime {
   goHome?: () => void
   /** Ctrl+N in a graphics tab: a new tab of the same kind */
   newDocument?: (kind: GraphicsKind) => void
+  /** prints a finished page through the system dialog; left out: a hidden window here */
+  printHtml?: (html: string, sheet: PrintSheet, owner: WebContents) => Promise<PrintResult>
 }
 
 let runtime: GraphicsRuntime = { preloadPath: '' }
@@ -88,6 +123,45 @@ const closeSaveWaiters = new Map<number, (ok: boolean) => void>()
 const saveWaiters = new Map<number, (ok: boolean) => void>()
 /** Disk state of each view's file at its last read or write, for the split-copy save guard */
 const diskStates = new Map<number, SaveDiskState>()
+/** Each view's contents, for asking every changed tab for a recovery copy */
+const contentsByWc = new Map<number, WebContents>()
+/** A recovery copy queued for a new view: handed to its page instead of a file */
+const recoveredOpenByWc = new Map<number, { name: string; bytes: Uint8Array }>()
+/** Views asked for a copy right now (the OS is ending the session), until they answer */
+const copyNowWaiters = new Map<number, () => void>()
+const COPY_NOW_TIMEOUT_MS = 8_000
+
+/** The tab title the shell shows for a view (its untitled name, or the file name) */
+let titleSource: ((contents: WebContents) => string | null | undefined) | null = null
+
+/** The shell names the tabs: the close question and an untitled copy use the tab title. */
+export function setGraphicsRecoveryTitleSource(
+  source: ((contents: WebContents) => string | null | undefined) | null,
+): void {
+  titleSource = source
+}
+
+function untitledName(kind: GraphicsKind): string {
+  return tm(kind === 'photo' ? 'untitledPhoto' : 'untitledIllust')
+}
+
+/** The tab's own title, else the untitled name of its kind. */
+function tabTitle(contents: WebContents): string {
+  let title: string | null | undefined
+  try {
+    title = titleSource?.(contents)
+  } catch {
+    title = undefined
+  }
+  const trimmed = typeof title === 'string' ? title.trim() : ''
+  return trimmed || untitledName(kindByWc.get(contents.id) ?? 'photo')
+}
+
+/** What the close question calls the document: the saved file's name, else the tab title. */
+function documentName(contents: WebContents): string {
+  const path = savePathByWc.get(contents.id)
+  return path ? basename(path) : tabTitle(contents)
+}
 
 let fileSavedHook: ((wc: WebContents, path: string) => void) | null = null
 
@@ -143,7 +217,7 @@ const closingByWc = new Map<number, Promise<boolean>>()
 async function askAndClose(contents: WebContents, parent?: BrowserWindow | null): Promise<boolean> {
   const options = {
     type: 'warning' as const,
-    message: tm('closeUnsavedMsg'),
+    message: closeUnsavedMessage(documentName(contents)),
     detail: tm('closeUnsavedDetail'),
     buttons: [tm('btnSave'), tm('btnDontSave'), tm('btnCancel')],
     defaultId: 0,
@@ -155,7 +229,11 @@ async function askAndClose(contents: WebContents, parent?: BrowserWindow | null)
       ? await dialog.showMessageBox(parent, options)
       : await dialog.showMessageBox(options)
   if (response === 2) return false
-  if (response === 1) return true
+  if (response === 1) {
+    // "Don't Save": the unsaved work is dropped, its recovery copy with it
+    discardGraphicsRecovery(contents)
+    return true
+  }
   return new Promise<boolean>((resolve) => {
     const timer = setTimeout(() => {
       closeSaveWaiters.delete(contents.id)
@@ -193,7 +271,7 @@ export function sendGraphicsMenuCommand(contents: WebContents, command: Graphics
   if (!contents.isDestroyed()) contents.send(GRAPHICS_CHANNELS.menuCommand, command)
 }
 
-export type GraphicsShortcut = 'save' | 'saveAs' | 'open' | 'new' | 'swallow'
+export type GraphicsShortcut = 'save' | 'saveAs' | 'open' | 'new' | 'print'
 
 /**
  * Keys a graphics tab takes before the page sees them: the web app would
@@ -221,7 +299,7 @@ export function shortcutFor(
     case 'n':
       return input.shift ? null : 'new'
     case 'p':
-      return 'swallow'
+      return 'print'
     default:
       return null
   }
@@ -315,6 +393,36 @@ async function mayReplaceAddedName(
   return response === 0
 }
 
+const MAX_PRINT_BYTES = 64 * 1024 * 1024
+
+/**
+ * The page in a hidden window of its own, handed to the system print dialog
+ * (the window Hanpan's other editors print from). The window runs no page
+ * script; the paper is told to the dialog as well.
+ */
+async function printInWindow(
+  html: string,
+  sheet: PrintSheet,
+  owner: WebContents,
+): Promise<PrintResult> {
+  const parent = parentWindowOf(owner)
+  const win = new BrowserWindow({
+    show: false,
+    ...(parent && !parent.isDestroyed() ? { parent } : {}),
+    ...(process.platform === 'win32'
+      ? { width: 900, height: 700, autoHideMenuBar: true, closable: false, skipTaskbar: true }
+      : {}),
+    webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
+  })
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+  return printHtmlDocument({
+    html,
+    fileName: 'picture.html',
+    dirPrefix: 'hanpan-graphics-print-',
+    window: withPrintOptions(win, printPageOptions(sheet)),
+  })
+}
+
 let ipcRegistered = false
 
 function registerGraphicsIpc(): void {
@@ -331,12 +439,22 @@ function registerGraphicsIpc(): void {
   })
 
   ipcMain.handle(GRAPHICS_CHANNELS.consumeOpen, async (e): Promise<PendingOpen | null> => {
-    const path = pendingOpenByWc.get(e.sender.id)
-    if (!path) return null
-    pendingOpenByWc.delete(e.sender.id)
-    handedOpenByWc.set(e.sender.id, path)
-    const bytes = new Uint8Array(await readFile(path))
-    await rememberDiskState(e.sender.id, path)
+    const wcId = e.sender.id
+    const recovered = recoveredOpenByWc.get(wcId)
+    if (recovered) {
+      // an untitled document again: no path, so the app's open never makes it a save target
+      recoveredOpenByWc.delete(wcId)
+      return { name: recovered.name, path: '', bytes: recovered.bytes }
+    }
+    const path = pendingOpenByWc.get(wcId)
+    const kind = kindByWc.get(wcId)
+    if (!path || !kind) return null
+    pendingOpenByWc.delete(wcId)
+    // a recovery copy left for this file is settled before the file is handed over
+    const restored = await resolveViewOpen(wcId, kind, path, parentWindowOf(e.sender))
+    handedOpenByWc.set(wcId, path)
+    const bytes = restored ?? new Uint8Array(await readFile(path))
+    await rememberDiskState(wcId, path)
     return { name: basename(path), path, bytes }
   })
 
@@ -349,11 +467,15 @@ function registerGraphicsIpc(): void {
       const { mode: rawMode, layered } = (request ?? {}) as { mode?: unknown; layered?: unknown }
       const mode: SaveMode = rawMode === 'saveAs' ? 'saveAs' : 'save'
       const current = savePathByWc.get(wcId) ?? null
+      // a restored copy that names a file offers that file's place; else the tab title
+      const restoredPath = current ? undefined : viewSaveAsDefault(wcId)
       const decision = decideSaveTarget({
         kind,
         mode,
         filePath: current,
-        docTitle: tm('untitledFile'),
+        docTitle: restoredPath
+          ? basename(restoredPath)
+          : fileNameBase(tabTitle(e.sender)) || untitledName(kind),
         layered: layered === true,
       })
       if (decision.action === 'write') {
@@ -363,7 +485,11 @@ function registerGraphicsIpc(): void {
         pendingTargetByWc.set(wcId, decision.path)
         return { ok: true, path: decision.path, format: decision.format }
       }
-      const dir = current ? dirname(current) : configuredDefaultSaveDir(app)
+      const dir = current
+        ? dirname(current)
+        : restoredPath
+          ? dirname(restoredPath)
+          : configuredDefaultSaveDir(app)
       const picked = await showSaveDialogWithMemory(dialog, parentWindowOf(e.sender), {
         title: tm('dlgSaveTitle'),
         defaultPath: join(dir, decision.defaultName),
@@ -407,6 +533,9 @@ function registerGraphicsIpc(): void {
       }
       const isNewPath = savePathByWc.get(wcId) !== target
       savePathByWc.set(wcId, target)
+      // the document is on disk: its recovery copies have done their part
+      viewSaved(wcId)
+      if (!e.sender.isDestroyed()) e.sender.send(GRAPHICS_CHANNELS.recoveryReset)
       // the changed mark stays the page's: an edit made while this was written keeps it
       await rememberDiskState(wcId, target)
       if (isNewPath) fileSavedHook?.(e.sender, target)
@@ -467,6 +596,23 @@ function registerGraphicsIpc(): void {
     },
   )
 
+  ipcMain.handle(GRAPHICS_CHANNELS.print, async (e, request: unknown): Promise<PrintResult> => {
+    if (!kindByWc.has(e.sender.id)) return { ok: false, error: 'graphics: not a graphics view' }
+    const { bytes: rawBytes, sheet } = (request ?? {}) as Record<string, unknown>
+    const bytes = bytesOf(rawBytes)
+    // the picture's size is read from the PNG itself, not taken from the page
+    const size = bytes && bytes.byteLength <= MAX_PRINT_BYTES ? pngSize(bytes) : null
+    if (!bytes || !size || !isPrintSheet(sheet))
+      return { ok: false, error: 'graphics: bad print request' }
+    const src = `data:image/png;base64,${Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString('base64')}`
+    const html = buildImagePrintHtml([{ src, ...size }], sheet)
+    try {
+      return await (runtime.printHtml ?? printInWindow)(html, sheet, e.sender)
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) }
+    }
+  })
+
   ipcMain.handle(GRAPHICS_CHANNELS.pickImage, async (e): Promise<PickedImage | null> => {
     const options = {
       title: tm('dlgPickImageTitle'),
@@ -511,6 +657,25 @@ function registerGraphicsIpc(): void {
     waiter?.(ok === true)
   })
 
+  // crash-recovery copies: bytes from the page, kept in the profile's recovery folder only
+  ipcMain.handle(
+    GRAPHICS_CHANNELS.recoveryWrite,
+    async (e, request: unknown): Promise<RecoveryWriteAnswer> => {
+      const wcId = e.sender.id
+      const kind = kindByWc.get(wcId)
+      const { bytes: rawBytes, ext } = (request ?? {}) as { bytes?: unknown; ext?: unknown }
+      const bytes = bytesOf(rawBytes)
+      if (!kind || !bytes || bytes.byteLength === 0 || typeof ext !== 'string') return 'refused'
+      return writeViewCopy(wcId, kind, savePathByWc.get(wcId), bytes, ext, () =>
+        documentName(e.sender),
+      )
+    },
+  )
+
+  ipcMain.handle(GRAPHICS_CHANNELS.recoveryRestored, (e): boolean => takeRestored(e.sender.id))
+
+  ipcMain.on(GRAPHICS_CHANNELS.recoveryCopyNowDone, (e) => copyNowWaiters.get(e.sender.id)?.())
+
   // Language channel shared with other modules; removeHandler tolerates duplicate registration
   ipcMain.removeHandler(APP_CHANNELS.getLanguage)
   ipcMain.handle(APP_CHANNELS.getLanguage, () => getUiLang())
@@ -534,8 +699,16 @@ function track(wc: WebContents, kind: GraphicsKind, openPath?: string | null): v
     if (shortcut === 'save' || shortcut === 'saveAs') void requestGraphicsSave(wc, shortcut)
     else if (shortcut === 'open') runtime.openFileDialog?.()
     else if (shortcut === 'new') runtime.newDocument?.(kind)
+    else if (shortcut === 'print') sendGraphicsMenuCommand(wc, 'print')
   })
+  contentsByWc.set(wcId, wc)
+  // a crashed page's copies outlive it: the shell reopens the document from them
+  wc.on('render-process-gone', () => viewCrashed(wcId))
   wc.once('destroyed', () => {
+    viewGone(wcId, dirtyByWc.has(wcId))
+    contentsByWc.delete(wcId)
+    recoveredOpenByWc.delete(wcId)
+    copyNowWaiters.get(wcId)?.()
     kindByWc.delete(wcId)
     pendingOpenByWc.delete(wcId)
     handedOpenByWc.delete(wcId)
@@ -568,6 +741,114 @@ export function createGraphicsView(kind: GraphicsKind, openPath?: string | null)
   track(view.webContents, kind, openPath)
   void view.webContents.loadURL(rendererUrl(runtime.rendererUrl, kind, { kind }))
   return view
+}
+
+/**
+ * The copy this view writes (its file's, or its untitled copy once written), for
+ * the shell's session record and for reopening a tab whose page crashed.
+ */
+export function graphicsRecoveryIdentity(webContentsId: number): RecoveryIdentity | null {
+  const kind = kindByWc.get(webContentsId)
+  if (!kind) return null
+  return viewRecoveryIdentity(webContentsId, kind, savePathByWc.get(webContentsId))
+}
+
+/**
+ * "Don't Save" for the copy: the close question's answer, or a tool closing the
+ * tab without saving. If the tab is still open a little later, the page is
+ * told to write a fresh copy.
+ */
+export function discardGraphicsRecovery(contents: WebContents): void {
+  const kind = kindByWc.get(contents.id)
+  if (!kind || contents.isDestroyed()) return
+  viewDropped(contents.id, kind, () => {
+    if (!contents.isDestroyed()) contents.send(GRAPHICS_CHANNELS.recoveryReset)
+  })
+}
+
+/**
+ * The OS is ending the session: every view of this kind with unsaved changes
+ * writes a copy now. Resolves when each has answered or its time ran out;
+ * never throws.
+ */
+export async function writeGraphicsCopiesNow(
+  kind: GraphicsKind,
+  timeoutMs = COPY_NOW_TIMEOUT_MS,
+): Promise<void> {
+  const waits: Promise<void>[] = []
+  for (const [wcId, contents] of contentsByWc) {
+    if (kindByWc.get(wcId) !== kind || contents.isDestroyed() || !dirtyByWc.has(wcId)) continue
+    waits.push(
+      new Promise<void>((resolve) => {
+        const finish = (): void => {
+          clearTimeout(timer)
+          if (copyNowWaiters.get(wcId) === finish) copyNowWaiters.delete(wcId)
+          resolve()
+        }
+        const timer = setTimeout(finish, timeoutMs)
+        copyNowWaiters.get(wcId)?.()
+        copyNowWaiters.set(wcId, finish)
+        try {
+          contents.send(GRAPHICS_CHANNELS.recoveryCopyNow)
+        } catch {
+          finish()
+        }
+      }),
+    )
+  }
+  await Promise.all(waits)
+}
+
+/**
+ * Open `filePath` in a view the shell made for it, with the recovery question
+ * already answered. A view made for another file is pointed at this one and
+ * loaded again.
+ */
+export function openGraphicsFileWithDecision(
+  contents: WebContents,
+  request: RecoveryOpenFileRequest,
+): void {
+  const kind = kindByWc.get(contents.id)
+  if (!kind) return
+  setViewOpenDecision(contents.id, kind, request.decision)
+  if (pendingOpenByWc.get(contents.id) === request.filePath) return
+  pendingOpenByWc.set(contents.id, request.filePath)
+  savePathByWc.delete(contents.id)
+  dirtyByWc.delete(contents.id)
+  if (!contents.isDestroyed()) contents.reload()
+}
+
+/**
+ * Load a recovery copy into a new view the shell made (in the same tick): the
+ * document opens untitled and changed; its first save asks where.
+ */
+export function openGraphicsUntitledCopy(
+  contents: WebContents,
+  request: RecoveryOpenUntitledRequest,
+): void {
+  const kind = kindByWc.get(contents.id)
+  if (!kind) {
+    console.warn('[graphics] the recovery copy has no graphics view to open in')
+    return
+  }
+  const taken = takeUntitledCopy(contents.id, kind, request)
+  if (!taken) {
+    console.warn('[graphics] the recovery copy could not be read')
+    return
+  }
+  const base = fileNameBase(request.title) || untitledName(kind)
+  recoveredOpenByWc.set(contents.id, { name: `${base}.${taken.ext}`, bytes: taken.bytes })
+}
+
+for (const kind of ['photo', 'illust'] as const) {
+  registerRecoveryEditor({
+    kind,
+    writeCopiesNow: () => writeGraphicsCopiesNow(kind),
+    openFileWithDecision: openGraphicsFileWithDecision,
+    openUntitledCopy: openGraphicsUntitledCopy,
+    // every graphics document can be copied as it is
+    isUnprotectable: () => false,
+  })
 }
 
 /** Standalone window: `npm run dev -w @genoffice/graphics`, a file path passed via argv picks the kind. */

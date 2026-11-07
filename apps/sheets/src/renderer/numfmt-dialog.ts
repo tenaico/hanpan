@@ -50,7 +50,7 @@ export const NUMFMT_CATEGORIES: readonly NumfmtCategory[] = [
 
 export const NEGATIVE_STYLES: readonly NegativeStyle[] = ['minus', 'red', 'parens', 'red-parens']
 
-export const CURRENCY_SYMBOLS: readonly string[] = ['¥', '$', '€', '£', 'US$', 'HK$', '₩']
+export const CURRENCY_SYMBOLS: readonly string[] = ['¥', '$', '€', '£', 'US$', 'HK$', '₩', '₫']
 
 export const DATE_PATTERNS: readonly string[] = [
   'yyyy-mm-dd',
@@ -67,9 +67,48 @@ export const DATE_PATTERNS: readonly string[] = [
 
 /// The Date list with the workbook's system short date first, so a pattern
 /// applied by the ribbon's Short Date category classifies as Date.
-export function datePatterns(): readonly string[] {
+export function datePatterns(lang?: string): readonly string[] {
   const system = getSystemShortDate()
+  if (lang === 'ko') {
+    // 한국 지역 PC의 시스템 짧은 날짜(yyyy. m. d.)가 맨 앞을 차지하면 한국식
+    // 긴 날짜가 밀려났다(설치판 점검): 한국어 화면은 한국식을 맨 앞에 두고
+    // 시스템 짧은 날짜는 그다음에 둔다.
+    if (KO_DATE_PATTERNS.includes(system)) return KO_DATE_PATTERNS
+    const [first, ...rest] = KO_DATE_PATTERNS
+    return [first!, system, ...rest]
+  }
   return DATE_PATTERNS.includes(system) ? DATE_PATTERNS : [system, ...DATE_PATTERNS]
+}
+
+/// Korean UI date list: the Korean long form ("2026년 11월 7일") first; the CJK year/month/day forms meant for zh and ja are left out.
+export const KO_DATE_PATTERNS: readonly string[] = [
+  'yyyy"년" m"월" d"일"',
+  'yyyy"년" m"월" d"일" dddd',
+  'm"월" d"일"',
+  'yyyy"년" m"월"',
+  ...DATE_PATTERNS.filter((pattern) => !pattern.includes('年') && !pattern.includes('月')),
+]
+
+/// 화면 언어의 기본 통화 기호(셀 서식 › 통화·회계를 처음 고를 때)
+export function defaultCurrencySymbol(lang?: string): string {
+  if (lang === 'ko') return '₩'
+  if (lang === 'vi') return '₫'
+  if (lang === 'ja' || lang === 'zh') return '¥'
+  return '$'
+}
+
+/// 기호 목록: 화면 언어의 기본 기호를 맨 앞에
+export function currencySymbolsFor(lang?: string): readonly string[] {
+  const first = defaultCurrencySymbol(lang)
+  return [first, ...CURRENCY_SYMBOLS.filter((symbol) => symbol !== first)]
+}
+
+export function defaultNumfmtOptions(lang?: string): NumfmtOptions {
+  return {
+    ...DEFAULT_NUMFMT_OPTIONS,
+    symbol: defaultCurrencySymbol(lang),
+    datePattern: lang === 'ko' ? KO_DATE_PATTERNS[0]! : DEFAULT_NUMFMT_OPTIONS.datePattern,
+  }
 }
 
 export const TIME_PATTERNS: readonly string[] = [
@@ -182,11 +221,11 @@ export function isAccountingPattern(pattern: string): boolean {
 
 /// Best-effort reverse of numfmtPattern: extract candidate options, rebuild,
 /// and only accept on an exact round-trip; anything else lands in Custom.
-export function numfmtOptionsOf(pattern: string): NumfmtOptions {
-  const defaults = DEFAULT_NUMFMT_OPTIONS
+export function numfmtOptionsOf(pattern: string, lang?: string): NumfmtOptions {
+  const defaults = defaultNumfmtOptions(lang)
   if (!pattern || pattern === 'General') return { ...defaults, category: 'general' }
   if (pattern === '@') return { ...defaults, category: 'text' }
-  if (datePatterns().includes(pattern))
+  if (datePatterns(lang).includes(pattern) || datePatterns().includes(pattern))
     return { ...defaults, category: 'date', datePattern: pattern }
   if (TIME_PATTERNS.includes(pattern))
     return { ...defaults, category: 'time', timePattern: pattern }

@@ -1,5 +1,11 @@
 import { getSystemShortDate } from '@genoffice/xlsx-gateway/shared/short-date'
-import { DEFAULT_NUMFMT_OPTIONS, numfmtPattern, type NumfmtOptions } from './numfmt-dialog'
+import { ribbonCurrency } from './excel-format-shortcuts'
+import {
+  DEFAULT_NUMFMT_OPTIONS,
+  defaultCurrencySymbol,
+  numfmtPattern,
+  type NumfmtOptions,
+} from './numfmt-dialog'
 import { numberFormatLabel } from './selection-format'
 import type { StringKey } from './i18n/locale'
 
@@ -23,16 +29,22 @@ const pattern = (overrides: Partial<NumfmtOptions>): string =>
 
 /// Excel's Number-group category dropdown: label → representative pattern,
 /// built by the same builders as the Format Cells dialog (numfmt-dialog.ts).
-/// A function because Short Date follows the workbook's system pattern.
-export function numberFormatCategories(): ReadonlyArray<{
+/// A function because Short Date follows the workbook's system pattern and
+/// Currency/Accounting follow the UI language (ko ₩, vi ₫, ja·zh ¥, others $),
+/// like the ₩ button and the Format Cells dialog.
+export function numberFormatCategories(lang?: string): ReadonlyArray<{
   readonly label: string
   readonly pattern: string
 }> {
+  const symbol = defaultCurrencySymbol(lang)
+  const button = ribbonCurrency(lang ?? '')
+  // 원·동·엔은 소수 자릿수 없이(₩ 단추와 같게), 나머지는 두 자리
+  const decimals = button.symbol === symbol ? button.decimals : DEFAULT_NUMFMT_OPTIONS.decimals
   return [
     { label: 'General', pattern: pattern({ category: 'general' }) },
     { label: 'Number', pattern: pattern({ category: 'number' }) },
-    { label: 'Currency', pattern: pattern({ category: 'currency' }) },
-    { label: 'Accounting', pattern: pattern({ category: 'accounting' }) },
+    { label: 'Currency', pattern: pattern({ category: 'currency', symbol, decimals }) },
+    { label: 'Accounting', pattern: pattern({ category: 'accounting', symbol, decimals }) },
     {
       label: 'Short Date',
       pattern: pattern({ category: 'date', datePattern: getSystemShortDate() }),

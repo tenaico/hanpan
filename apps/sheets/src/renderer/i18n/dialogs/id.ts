@@ -156,7 +156,8 @@ export const id = {
   dlgPivotAddValue: '+ Tambahkan bidang nilai',
   dlgPivotAddCalc: '+ Tambahkan bidang terhitung',
   dlgPivotTargetCell: 'Sel awal tujuan',
-  dlgPivotTargetPlaceholder: 'mis. F1',
+  dlgPivotTargetPlaceholder: 'mis. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'Sel kiri atas area keluaran tidak berubah saat mengedit',
   dlgPivotNote:
     'Membuat PivotTable OOXML asli yang dapat dikenali dan disegarkan oleh Excel/WPS setelah disimpan.',

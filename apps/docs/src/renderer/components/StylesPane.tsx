@@ -7,6 +7,7 @@ import {
   type StyleUpsert,
 } from '@genoffice/docx-engine'
 import { useI18n } from '../i18n/locale'
+import { uiThemeIsDark } from '../ui-theme'
 import {
   activeStyleKey,
   allStyleEntries,
@@ -206,7 +207,10 @@ export function StylesPane({
               onClick={() => applyGalleryStyle(editor, fs.sub, info, styles, fs.charStyleId)}
               onContextMenu={(e) => openMenu(e, info)}
             >
-              <span className="style-card-preview" style={stylePreviewCss(info, docDefaults)}>
+              <span
+                className="style-card-preview"
+                style={stylePreviewCss(info, docDefaults, uiThemeIsDark())}
+              >
                 {label}
               </span>
               <span className="style-pane-kind" aria-hidden="true">

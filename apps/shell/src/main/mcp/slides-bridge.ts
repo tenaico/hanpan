@@ -52,6 +52,11 @@ async function waitSession(wcId: number): Promise<Session> {
   }
 }
 
+/** 다른 앱으로 보내기: the deck of an open slides tab as it is now (unsaved edits included); null without a session */
+export function liveDeckOf(wcId: number): Session['opened']['deck'] | null {
+  return sessions.get(wcId)?.opened.deck ?? null
+}
+
 function requireSession(wcId: number): Session {
   const session = sessions.get(wcId)
   if (!session) {

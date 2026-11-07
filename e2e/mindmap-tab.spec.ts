@@ -318,7 +318,9 @@ test.describe('mind map editor in the shell', () => {
       })
       const labels = items.map((item) => item.label)
       expect(labels).toContain('Mind Map')
-      expect(labels.indexOf('Mind Map')).toBe(labels.indexOf('AI HTML') + 1)
+      // Home's order (0.17 review v2 shell #38): the mind map leads the New section, AI HWP next
+      expect(labels.indexOf('Mind Map')).toBe(labels.indexOf('New') + 1)
+      expect(labels.indexOf('AI HWP')).toBe(labels.indexOf('Mind Map') + 1)
       expect(items.find((item) => item.label === 'Mind Map')!.hasIcon).toBe(true)
       expect(labels.join(' ')).not.toMatch(/xmind/i)
 
@@ -379,11 +381,11 @@ test.describe('mind map editor in the shell', () => {
       await expectMindMapTabIcon(tab, tile)
       await page.screenshot({ path: screenshotPath('mindmap-home-recent-row') })
 
-      // ── the sidebar filter keeps it under "Mind Map" and hides it under "HTML"
+      // ── the sidebar filter keeps it under "Mind maps & images" and hides it under "Documents"
       const pills = page.locator('.filter-pills')
-      await pills.locator('.filter-pill', { hasText: /^HTML$/ }).click()
+      await pills.locator('.filter-pill', { hasText: /^Documents$/ }).click()
       await expect(row).toHaveCount(0)
-      await pills.locator('.filter-pill', { hasText: /^Mind Map$/ }).click()
+      await pills.locator('.filter-pill', { hasText: /^Mind maps & images$/ }).click()
       await expect(row).toBeVisible()
 
       // a clean map closes without a question; the recent row opens it again

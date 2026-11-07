@@ -15,6 +15,9 @@ const tDlg = createI18n({
     btnSave: '保存',
     btnDontSave: '不保存',
     btnCancel: '取消',
+    exportTitlePng: '导出为图片',
+    exportTitlePdf: '导出为 PDF',
+    exportTitleMarkdown: '导出为 Markdown 大纲',
   },
   en: {
     dlgSaveTitle: 'Save Mind Map',
@@ -25,6 +28,9 @@ const tDlg = createI18n({
     btnSave: 'Save',
     btnDontSave: "Don't Save",
     btnCancel: 'Cancel',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   vi: {
     dlgSaveTitle: 'Lưu sơ đồ tư duy',
@@ -35,6 +41,9 @@ const tDlg = createI18n({
     btnSave: 'Lưu',
     btnDontSave: 'Không lưu',
     btnCancel: 'Hủy',
+    exportTitlePng: 'Xuất thành hình ảnh',
+    exportTitlePdf: 'Xuất thành PDF',
+    exportTitleMarkdown: 'Xuất dàn ý Markdown',
   },
   ja: {
     dlgSaveTitle: 'マインドマップを保存',
@@ -45,6 +54,9 @@ const tDlg = createI18n({
     btnSave: '保存',
     btnDontSave: '保存しない',
     btnCancel: 'キャンセル',
+    exportTitlePng: '画像として書き出す',
+    exportTitlePdf: 'PDF として書き出す',
+    exportTitleMarkdown: 'Markdown アウトラインとして書き出す',
   },
   ko: {
     dlgSaveTitle: '마인드맵 저장',
@@ -55,6 +67,9 @@ const tDlg = createI18n({
     btnSave: '저장',
     btnDontSave: '저장 안 함',
     btnCancel: '취소',
+    exportTitlePng: '이미지로 내보내기',
+    exportTitlePdf: 'PDF로 내보내기',
+    exportTitleMarkdown: '마크다운 개요로 내보내기',
   },
   fr: {
     dlgSaveTitle: 'Enregistrer la carte mentale',
@@ -65,6 +80,9 @@ const tDlg = createI18n({
     btnSave: 'Enregistrer',
     btnDontSave: 'Ne pas enregistrer',
     btnCancel: 'Annuler',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   de: {
     dlgSaveTitle: 'Mindmap speichern',
@@ -75,6 +93,9 @@ const tDlg = createI18n({
     btnSave: 'Speichern',
     btnDontSave: 'Nicht speichern',
     btnCancel: 'Abbrechen',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   es: {
     dlgSaveTitle: 'Guardar mapa mental',
@@ -85,6 +106,9 @@ const tDlg = createI18n({
     btnSave: 'Guardar',
     btnDontSave: 'No guardar',
     btnCancel: 'Cancelar',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   th: {
     dlgSaveTitle: 'บันทึกแผนที่ความคิด',
@@ -95,6 +119,9 @@ const tDlg = createI18n({
     btnSave: 'บันทึก',
     btnDontSave: 'ไม่บันทึก',
     btnCancel: 'ยกเลิก',
+    exportTitlePng: 'ส่งออกเป็นรูปภาพ',
+    exportTitlePdf: 'ส่งออกเป็น PDF',
+    exportTitleMarkdown: 'ส่งออกเป็นเค้าร่าง Markdown',
   },
   id: {
     dlgSaveTitle: 'Simpan peta pikiran',
@@ -105,6 +132,9 @@ const tDlg = createI18n({
     btnSave: 'Simpan',
     btnDontSave: 'Jangan Simpan',
     btnCancel: 'Batal',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   ru: {
     dlgSaveTitle: 'Сохранить интеллект-карту',
@@ -115,6 +145,9 @@ const tDlg = createI18n({
     btnSave: 'Сохранить',
     btnDontSave: 'Не сохранять',
     btnCancel: 'Отмена',
+    exportTitlePng: 'Экспорт в изображение',
+    exportTitlePdf: 'Экспорт в PDF',
+    exportTitleMarkdown: 'Экспорт в план Markdown',
   },
   ar: {
     dlgSaveTitle: 'حفظ الخريطة الذهنية',
@@ -125,6 +158,9 @@ const tDlg = createI18n({
     btnSave: 'حفظ',
     btnDontSave: 'عدم الحفظ',
     btnCancel: 'إلغاء',
+    exportTitlePng: 'تصدير كصورة',
+    exportTitlePdf: 'تصدير كملف PDF',
+    exportTitleMarkdown: 'تصدير كمخطط Markdown',
   },
   pt: {
     dlgSaveTitle: 'Salvar mapa mental',
@@ -135,6 +171,9 @@ const tDlg = createI18n({
     btnSave: 'Salvar',
     btnDontSave: 'Não Salvar',
     btnCancel: 'Cancelar',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   it: {
     dlgSaveTitle: 'Salva mappa mentale',
@@ -145,6 +184,9 @@ const tDlg = createI18n({
     btnSave: 'Salva',
     btnDontSave: 'Non salvare',
     btnCancel: 'Annulla',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   pl: {
     dlgSaveTitle: 'Zapisz mapę myśli',
@@ -155,6 +197,9 @@ const tDlg = createI18n({
     btnSave: 'Zapisz',
     btnDontSave: 'Nie zapisuj',
     btnCancel: 'Anuluj',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   cs: {
     dlgSaveTitle: 'Uložit myšlenkovou mapu',
@@ -165,6 +210,9 @@ const tDlg = createI18n({
     btnSave: 'Uložit',
     btnDontSave: 'Neukládat',
     btnCancel: 'Zrušit',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   nl: {
     dlgSaveTitle: 'Mindmap opslaan',
@@ -175,6 +223,9 @@ const tDlg = createI18n({
     btnSave: 'Opslaan',
     btnDontSave: 'Niet opslaan',
     btnCancel: 'Annuleren',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   ms: {
     dlgSaveTitle: 'Simpan peta minda',
@@ -185,6 +236,9 @@ const tDlg = createI18n({
     btnSave: 'Simpan',
     btnDontSave: 'Jangan Simpan',
     btnCancel: 'Batal',
+    exportTitlePng: 'Export as Image',
+    exportTitlePdf: 'Export as PDF',
+    exportTitleMarkdown: 'Export as Markdown Outline',
   },
   he: {
     dlgSaveTitle: 'שמירת מפת חשיבה',
@@ -195,6 +249,9 @@ const tDlg = createI18n({
     btnSave: 'שמירה',
     btnDontSave: 'אל תשמור',
     btnCancel: 'ביטול',
+    exportTitlePng: 'ייצוא כתמונה',
+    exportTitlePdf: 'ייצוא כ-PDF',
+    exportTitleMarkdown: 'ייצוא כמתאר Markdown',
   },
   hi: {
     dlgSaveTitle: 'माइंड मैप सहेजें',
@@ -205,6 +262,9 @@ const tDlg = createI18n({
     btnSave: 'सहेजें',
     btnDontSave: 'न सहेजें',
     btnCancel: 'रद्द करें',
+    exportTitlePng: 'छवि के रूप में निर्यात करें',
+    exportTitlePdf: 'PDF के रूप में निर्यात करें',
+    exportTitleMarkdown: 'Markdown रूपरेखा के रूप में निर्यात करें',
   },
   'zh-TW': {
     dlgSaveTitle: '儲存心智圖',
@@ -215,6 +275,9 @@ const tDlg = createI18n({
     btnSave: '儲存',
     btnDontSave: '不儲存',
     btnCancel: '取消',
+    exportTitlePng: '匯出為圖片',
+    exportTitlePdf: '匯出為 PDF',
+    exportTitleMarkdown: '匯出為 Markdown 大綱',
   },
 })
 
@@ -227,6 +290,9 @@ export type MainTextKey =
   | 'btnSave'
   | 'btnDontSave'
   | 'btnCancel'
+  | 'exportTitlePng'
+  | 'exportTitlePdf'
+  | 'exportTitleMarkdown'
 
 /** A text of the main process in the language the app currently shows. */
 export function tm(key: MainTextKey): string {

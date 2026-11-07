@@ -8,6 +8,7 @@ import { createAdapter, type GraphicsAdapter } from './adapters'
 import { GraphicsAiDock } from './ai/AiDock'
 import { lockFrameInput } from './ai/input-lock'
 import { ExportDialog } from './quick/ExportDialog'
+import { PrintDialog } from './quick/PrintDialog'
 import { QuickBar } from './quick/QuickBar'
 import { runQuickAction, type ExportChoice, type QuickActionId } from './quick/quick-actions'
 import { measureImage, resizeImage, type PixelSize } from './quick/resize'
@@ -15,6 +16,7 @@ import { watchCaptures, type CaptureWatch } from './doc/capture-watch'
 import { createDirtyState, type DirtyState } from './doc/dirty-state'
 import { watchDoc, type DocWatch } from './doc/doc-watch'
 import { openPending } from './doc/open-flow'
+import { startRecoveryLoop } from './doc/recovery-loop'
 import { runSave, type SaveNoticeKey } from './doc/save-flow'
 import { singleFlight } from './doc/single-flight'
 import { copyBytes } from './frame/bytes'
@@ -45,17 +47,23 @@ export default function App({
   pollMs = 1000,
   connect = (frame) => connectPageApi(frame),
 }: AppProps) {
-  const { t } = useI18n()
+  const { t, lang: uiLang } = useI18n()
+  /** the language the frame was started in: a change reloads an empty tab only (G9) */
+  const [frameLang, setFrameLang] = useState<Lang>(lang)
   const [status, setStatus] = useState<Status>('checking')
   const [notice, setNotice] = useState<{ id: number; text: string } | null>(null)
   const noticeSeq = useRef(0)
   /** the AI or a quick action works on the document: the quick buttons wait */
   const [appBusy, setAppBusy] = useState(false)
+  /** the app has a document open: the quick buttons need one */
+  const [hasDocument, setHasDocument] = useState(false)
   /** the export dialog, open while an export asks for its format and size */
   const [exportAsk, setExportAsk] = useState<{
     size: PixelSize
     answer: (choice: ExportChoice | null) => void
   } | null>(null)
+  /** the print preview, open on the app's adapter */
+  const [printOn, setPrintOn] = useState<GraphicsAdapter | null>(null)
   const [attempt, setAttempt] = useState(0)
   /** the app's adapter once it is up: the AI panel works through it */
   const [aiAdapter, setAiAdapter] = useState<GraphicsAdapter | null>(null)
@@ -120,9 +128,10 @@ export default function App({
         ),
       lock: lockApp,
       measure: measureImage,
-      resize: (bytes, width, height, format) => resizeImage(bytes, width, height, format),
+      resize: (bytes, width, height, format, quality) =>
+        resizeImage(bytes, width, height, format, quality),
     })
-    if (result.messageKey) notify(result.messageKey, result.detail)
+    if (result.messageKey) notify(result.messageKey)
   }
 
   // one save at a time: a second request while one runs gets that run's outcome
@@ -176,6 +185,23 @@ export default function App({
     }
   }, [kind, probeWeb, attempt])
 
+  // Hanpan's language changed: a tab without a document starts its editor again in the new
+  // language; a tab with one keeps it (reloading would drop it) and says when it changes (G9)
+  const langSeen = useRef(lang)
+  useEffect(() => {
+    if (uiLang === langSeen.current) return
+    langSeen.current = uiLang
+    if (uiLang === frameLang) return
+    if (status === 'ready' && hasDocument) {
+      notify('editorLangOnReopen')
+      return
+    }
+    setFrameLang(uiLang)
+    setAttempt((n) => n + 1)
+    // notify reads refs and state setters only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uiLang])
+
   // the frame stands while the app loads and runs; a change between the two must not unwire it
   const frameOn = status === 'loading' || status === 'ready'
 
@@ -205,6 +231,25 @@ export default function App({
         )
         if (!live) return
         if (opened === 'failed') notify('openFailed')
+        // an opened file is shown whole, not cut at the app's starting zoom (W14)
+        if (opened === 'opened') {
+          window.setTimeout(
+            () =>
+              void api
+                .execute(kind === 'photo' ? 'view.fitOnScreen' : 'view.fitAll', {})
+                .catch(() => {}),
+            300,
+          )
+        }
+        // Save, Save As and Print inside the frame (its menus, its keys) are Hanpan's: the file
+        // is written by Hanpan's save, and only then is the tab marked saved (G1-G3)
+        api.onHostRequest?.((request) => {
+          if (request === 'print') {
+            if (appLocks.current === 0) setPrintOn(adapter)
+            return
+          }
+          void save(request)
+        })
         const captures = watchCaptures({
           adapter,
           intervalMs: pollMs,
@@ -229,12 +274,21 @@ export default function App({
           adapter,
           (info) => {
             titleRef.current = info.title
+            setHasDocument(info.hasDocument)
             dirtyRef.current.fromApp(info.hasDocument && info.dirty)
             captures.noteDoc(info)
           },
           pollMs,
         )
         docWatchRef.current = docWatch
+        stops.push(
+          startRecoveryLoop({
+            adapter,
+            dirty: dirtyRef.current,
+            busy: () => hostOps.current > 0 || appLocks.current > 0,
+            api: graphicsApi(),
+          }),
+        )
         stops.push(() => docWatch.stop())
         setStatus('ready')
       } catch {
@@ -272,6 +326,10 @@ export default function App({
             .catch(() => {})
           return
         }
+        if (command === 'print') {
+          setPrintOn(adapter)
+          return
+        }
         // the menu's Export: the export dialog, as the quick button does
         void runQuick(kind === 'photo' ? 'exportAtSize' : 'exportPngSvg')
       }),
@@ -285,7 +343,12 @@ export default function App({
   return (
     <div className="gx-app" data-kind={kind} data-status={status}>
       {status === 'ready' && (
-        <QuickBar kind={kind} disabled={appBusy} onRun={(id) => void runQuick(id)} />
+        <QuickBar
+          kind={kind}
+          disabled={appBusy}
+          hasDocument={hasDocument}
+          onRun={(id) => void runQuick(id)}
+        />
       )}
       <div className="gx-body">
         <div className="gx-stage">
@@ -294,8 +357,8 @@ export default function App({
               ref={frameRef}
               className="gx-frame"
               title={kind}
-              src={appFrameUrl(kind, lang)}
-              allow="clipboard-read; clipboard-write"
+              src={appFrameUrl(kind, frameLang)}
+              allow="clipboard-read; clipboard-write; local-fonts"
             />
           )}
           {/* takes the pointer while the AI works: the person's edits stay out of its undo step */}
@@ -332,6 +395,15 @@ export default function App({
         )}
       </div>
       {exportAsk && <ExportDialog kind={kind} size={exportAsk.size} onDone={exportAsk.answer} />}
+      {printOn && (
+        <PrintDialog
+          adapter={printOn}
+          onClose={(message) => {
+            setPrintOn(null)
+            if (message) notify(message)
+          }}
+        />
+      )}
       {notice && (
         <div className="gx-notice" role="status">
           {notice.text}

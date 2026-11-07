@@ -23,6 +23,12 @@ test('a bundled sound effect lands in the pptx with its credit', async () => {
   try {
     const slides = await waitForPageWithUrl(app, '://slides/')
     await slides.locator('.ribbon-tab', { hasText: /^(Insert|삽입)$/ }).click()
+    // a window too narrow for the whole Insert tab folds the Media group first into one
+    // "Media ▾" button (4e92491f); Sound Effects is inside it then
+    const mediaFold = slides.locator('[data-rbgroup="media"] .rb-big', {
+      hasText: /^(Media|미디어)$/,
+    })
+    if (await mediaFold.isVisible()) await mediaFold.click()
     await slides.locator('.rb-big', { hasText: /^(Sound Effects|효과음)$/ }).click()
     await expect(slides.locator('.rb-sound-item')).toHaveCount(6)
     await expect(slides.locator('.rb-sound-credit')).toContainText('CC BY')

@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { LANGS } from '@genoffice/i18n'
 import { strings } from '../src/renderer/src/strings'
+import { HOME_FILTER_GROUPS } from '../src/shared/home-filter-groups'
 
 /**
  * The EPUB editor is hosted like the mind map editor: every place the shell
@@ -168,7 +169,9 @@ describe('the home screen', () => {
   it('lists, filters and draws books, and makes no new one', () => {
     expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('.epub')
     expect(literal(home, 'FILE_ICONS')).toContain('epub: iconEpub')
-    expect(literal(home, 'FILTERS')).toContain("{ key: 'epub', label: 'filterEpub' }")
+    // Hanpan's Home lists books under the "documents" tab (0.17 #12)
+    expect(literal(home, 'FILTERS')).toContain("{ key: 'documents', label: 'hpFilterDocuments' }")
+    expect(HOME_FILTER_GROUPS.documents).toContain('epub')
     expect(home).not.toMatch(/newEpub/)
     for (const lang of Object.keys(strings) as Array<keyof typeof strings>) {
       expect(strings[lang].filterEpub).toBe('EPUB')

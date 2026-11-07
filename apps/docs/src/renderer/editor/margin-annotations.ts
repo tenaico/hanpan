@@ -43,6 +43,14 @@ const REV_SELECTOR =
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
+/** narrowest markup column: still one short word per balloon line */
+export const MARKUP_AREA_MIN_W = 120
+
+/** markup column width that removes `overflowPx` of sideways scroll, floored at the minimum */
+export function markupWidthFor(overflowPx: number): number {
+  return Math.max(MARKUP_AREA_MIN_W, Math.floor(MARKUP_AREA_W - Math.max(0, overflowPx)))
+}
+
 export type ChangeLine = { top: number; bottom: number; pos?: number }
 
 /** touching / overlapping changed lines collapse into one bar that keeps its first document position */
@@ -438,7 +446,19 @@ export function syncMarginAnnotations(
   layer.textContent = ''
 
   wrap.classList.toggle('has-markup-area', placed.length > 0 && !simple)
-  if (placed.length > 0 && !simple) wrap.style.setProperty('--markup-w', `${MARKUP_AREA_W}px`)
+  let bubbleW = BUBBLE_W
+  if (placed.length > 0 && !simple) {
+    wrap.style.setProperty('--markup-w', `${MARKUP_AREA_W}px`)
+    // a narrow window (1366 with the AI panel open) must not scroll sideways
+    // for the balloons: give the markup column only the room that is there
+    const scroller = wrap.closest('.editor-scroll') as HTMLElement | null
+    const overflow = scroller ? (scroller.scrollWidth - scroller.clientWidth) / f : 0
+    if (overflow > 0) {
+      const markupW = markupWidthFor(overflow)
+      wrap.style.setProperty('--markup-w', `${markupW}px`)
+      bubbleW = markupW - (MARKUP_AREA_W - BUBBLE_W)
+    }
+  }
 
   const barX = (pmRect.left - wrapRect.left) / f + CHANGE_BAR_X
   for (const b of bars) {
@@ -485,7 +505,7 @@ export function syncMarginAnnotations(
     }
     const bubble = p.make()
     bubble.style.left = `${bubbleLeft}px`
-    bubble.style.width = `${BUBBLE_W}px`
+    bubble.style.width = `${bubbleW}px`
     const top = Math.max(p.top, prevBottom + BUBBLE_STACK_GAP, bands[bandIdx].top)
     bubble.style.top = `${top}px`
     layer.appendChild(bubble)

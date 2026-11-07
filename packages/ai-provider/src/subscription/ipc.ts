@@ -441,6 +441,18 @@ export function sharedSubscriptionStatuses(): Partial<SubscriptionStatusMap> {
   return statuses
 }
 
+/**
+ * Ask every subscription program again through the process-wide registration
+ * and answer the statuses as `sharedSubscriptionStatuses` gives them; null when
+ * no editor registered the channels yet. For a main-process decision that
+ * cannot wait for a window to ask (Hanpan's default AI at start).
+ */
+export async function checkSharedSubscriptionStatuses(): Promise<Partial<SubscriptionStatusMap> | null> {
+  if (!sharedRegistration) return null
+  await sharedRegistration.deps.service.check()
+  return sharedSubscriptionStatuses()
+}
+
 /** Drop the process-wide registration (tests, and an app that tears its IPC down). */
 export function resetSharedSubscriptionIpc(): void {
   sharedRegistration?.unregister()

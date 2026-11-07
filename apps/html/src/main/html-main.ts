@@ -44,10 +44,10 @@ import {
   registerRecoveryEditor,
   rendererUrl,
   printHtmlDocument,
-  type PrintDialogOutcome,
   assertFileSaved,
 } from '@genoffice/electron-utils'
 import { fetchImageBytes } from '@genoffice/electron-utils/fetch-image-bytes'
+import { createDocumentPrinter } from '@genoffice/electron-utils/document-printer'
 import { createI18n, getUiLang } from '@genoffice/i18n'
 import {
   sharedSubscriptionStatuses,
@@ -85,6 +85,8 @@ import {
   extensionlessAssetMime,
 } from './asset-mime'
 import { buildPreviewDocument } from './preview-document'
+import { closePromptDocName } from './close-prompt-name'
+import { ExportedFiles } from './exported-files'
 import { confirmOdtReport, exportOdt, odtFilterName } from './odt-export'
 import { inlineImagesForSingleFile, singleFileExportBaseName } from './single-file-html'
 import { registerHtmlHandoffIpc } from './generate-handoff-ipc'
@@ -120,11 +122,16 @@ import type {
 const tDlg = createI18n({
   zh: {
     dlgSaveTitle: '保存 HTML 文档',
+    dlgExportDocx: '导出为 Word',
+    dlgExportOdt: '导出为 ODT',
+    dlgExportPdf: '导出为 PDF',
+    dlgExportHtml: '导出为单文件 HTML',
     filterHtml: 'HTML 文档',
     dlgPickImage: '选择图片',
     filterImages: '图片',
     untitledFile: '未命名文档',
     closeUnsavedMsg: '此文档有未保存的更改。',
+    closeUnsavedNamedMsg: '“{name}”有未保存的更改。',
     closeUnsavedDetail: '关闭前是否保存？',
     btnSave: '保存',
     btnDontSave: '不保存',
@@ -144,11 +151,16 @@ const tDlg = createI18n({
   },
   en: {
     dlgSaveTitle: 'Save HTML Document',
+    dlgExportDocx: 'Export as Word',
+    dlgExportOdt: 'Export as ODT',
+    dlgExportPdf: 'Export as PDF',
+    dlgExportHtml: 'Export as Single-File HTML',
     filterHtml: 'HTML Documents',
     dlgPickImage: 'Choose an Image',
     filterImages: 'Images',
     untitledFile: 'Untitled',
     closeUnsavedMsg: 'This document has unsaved changes.',
+    closeUnsavedNamedMsg: '“{name}” has unsaved changes.',
     closeUnsavedDetail: 'Do you want to save them before closing?',
     btnSave: 'Save',
     btnDontSave: "Don't Save",
@@ -168,11 +180,16 @@ const tDlg = createI18n({
   },
   vi: {
     dlgSaveTitle: 'Lưu tài liệu HTML',
+    dlgExportDocx: 'Xuất dưới dạng Word',
+    dlgExportOdt: 'Xuất dưới dạng ODT',
+    dlgExportPdf: 'Xuất dưới dạng PDF',
+    dlgExportHtml: 'Xuất dưới dạng HTML một tệp',
     filterHtml: 'Tài liệu HTML',
     dlgPickImage: 'Chọn một hình ảnh',
     filterImages: 'Hình ảnh',
     untitledFile: 'Không có tiêu đề',
     closeUnsavedMsg: 'Tài liệu này có những thay đổi chưa được lưu.',
+    closeUnsavedNamedMsg: '“{name}” có những thay đổi chưa được lưu.',
     closeUnsavedDetail: 'Bạn có muốn lưu các thay đổi trước khi đóng không?',
     btnSave: 'Lưu',
     btnDontSave: 'Không lưu',
@@ -193,11 +210,16 @@ const tDlg = createI18n({
   },
   ja: {
     dlgSaveTitle: 'HTML ドキュメントを保存',
+    dlgExportDocx: 'Word として書き出す',
+    dlgExportOdt: 'ODT として書き出す',
+    dlgExportPdf: 'PDF として書き出す',
+    dlgExportHtml: '単一ファイル HTML として書き出す',
     filterHtml: 'HTML ドキュメント',
     dlgPickImage: '画像を選択',
     filterImages: '画像',
     untitledFile: '無題',
     closeUnsavedMsg: 'このドキュメントに未保存の変更があります。',
+    closeUnsavedNamedMsg: '「{name}」に未保存の変更があります。',
     closeUnsavedDetail: '閉じる前に保存しますか？',
     btnSave: '保存',
     btnDontSave: '保存しない',
@@ -218,11 +240,16 @@ const tDlg = createI18n({
   },
   ko: {
     dlgSaveTitle: 'HTML 문서 저장',
+    dlgExportDocx: 'Word로 내보내기',
+    dlgExportOdt: 'ODT로 내보내기',
+    dlgExportPdf: 'PDF로 내보내기',
+    dlgExportHtml: '단일 파일 HTML로 내보내기',
     filterHtml: 'HTML 문서',
     dlgPickImage: '이미지 선택',
     filterImages: '이미지',
     untitledFile: '제목 없음',
     closeUnsavedMsg: '이 문서에 저장하지 않은 변경 사항이 있습니다.',
+    closeUnsavedNamedMsg: '‘{name}’에 저장하지 않은 변경 사항이 있습니다.',
     closeUnsavedDetail: '닫기 전에 저장하시겠습니까?',
     btnSave: '저장',
     btnDontSave: '저장 안 함',
@@ -243,11 +270,16 @@ const tDlg = createI18n({
   },
   fr: {
     dlgSaveTitle: 'Enregistrer le document HTML',
+    dlgExportDocx: 'Exporter en Word',
+    dlgExportOdt: 'Exporter en ODT',
+    dlgExportPdf: 'Exporter en PDF',
+    dlgExportHtml: 'Exporter en HTML (fichier unique)',
     filterHtml: 'Documents HTML',
     dlgPickImage: 'Choisir une image',
     filterImages: 'Images',
     untitledFile: 'Sans titre',
     closeUnsavedMsg: 'Ce document contient des modifications non enregistrées.',
+    closeUnsavedNamedMsg: '« {name} » contient des modifications non enregistrées.',
     closeUnsavedDetail: 'Voulez-vous les enregistrer avant de fermer ?',
     btnSave: 'Enregistrer',
     btnDontSave: 'Ne pas enregistrer',
@@ -268,11 +300,16 @@ const tDlg = createI18n({
   },
   de: {
     dlgSaveTitle: 'HTML-Dokument speichern',
+    dlgExportDocx: 'Als Word exportieren',
+    dlgExportOdt: 'Als ODT exportieren',
+    dlgExportPdf: 'Als PDF exportieren',
+    dlgExportHtml: 'Als Einzeldatei-HTML exportieren',
     filterHtml: 'HTML-Dokumente',
     dlgPickImage: 'Bild auswählen',
     filterImages: 'Bilder',
     untitledFile: 'Unbenannt',
     closeUnsavedMsg: 'Dieses Dokument enthält ungespeicherte Änderungen.',
+    closeUnsavedNamedMsg: '„{name}“ enthält ungespeicherte Änderungen.',
     closeUnsavedDetail: 'Vor dem Schließen speichern?',
     btnSave: 'Speichern',
     btnDontSave: 'Nicht speichern',
@@ -293,11 +330,16 @@ const tDlg = createI18n({
   },
   es: {
     dlgSaveTitle: 'Guardar documento HTML',
+    dlgExportDocx: 'Exportar como Word',
+    dlgExportOdt: 'Exportar como ODT',
+    dlgExportPdf: 'Exportar como PDF',
+    dlgExportHtml: 'Exportar como HTML de archivo único',
     filterHtml: 'Documentos HTML',
     dlgPickImage: 'Elegir imagen',
     filterImages: 'Imágenes',
     untitledFile: 'Sin título',
     closeUnsavedMsg: 'Este documento tiene cambios sin guardar.',
+    closeUnsavedNamedMsg: '«{name}» tiene cambios sin guardar.',
     closeUnsavedDetail: '¿Quieres guardarlos antes de cerrar?',
     btnSave: 'Guardar',
     btnDontSave: 'No guardar',
@@ -318,11 +360,16 @@ const tDlg = createI18n({
   },
   th: {
     dlgSaveTitle: 'บันทึกเอกสาร HTML',
+    dlgExportDocx: 'ส่งออกเป็น Word',
+    dlgExportOdt: 'ส่งออกเป็น ODT',
+    dlgExportPdf: 'ส่งออกเป็น PDF',
+    dlgExportHtml: 'ส่งออกเป็น HTML ไฟล์เดียว',
     filterHtml: 'เอกสาร HTML',
     dlgPickImage: 'เลือกรูปภาพ',
     filterImages: 'รูปภาพ',
     untitledFile: 'ไม่มีชื่อ',
     closeUnsavedMsg: 'เอกสารนี้มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
+    closeUnsavedNamedMsg: '“{name}” มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
     closeUnsavedDetail: 'ต้องการบันทึกก่อนปิดหรือไม่?',
     btnSave: 'บันทึก',
     btnDontSave: 'ไม่บันทึก',
@@ -343,11 +390,16 @@ const tDlg = createI18n({
   },
   id: {
     dlgSaveTitle: 'Simpan dokumen HTML',
+    dlgExportDocx: 'Ekspor sebagai Word',
+    dlgExportOdt: 'Ekspor sebagai ODT',
+    dlgExportPdf: 'Ekspor sebagai PDF',
+    dlgExportHtml: 'Ekspor sebagai HTML satu file',
     filterHtml: 'Dokumen HTML',
     dlgPickImage: 'Pilih gambar',
     filterImages: 'Gambar',
     untitledFile: 'Tanpa judul',
     closeUnsavedMsg: 'Dokumen ini memiliki perubahan yang belum disimpan.',
+    closeUnsavedNamedMsg: '“{name}” memiliki perubahan yang belum disimpan.',
     closeUnsavedDetail: 'Simpan sebelum menutup?',
     btnSave: 'Simpan',
     btnDontSave: 'Jangan Simpan',
@@ -368,11 +420,16 @@ const tDlg = createI18n({
   },
   ru: {
     dlgSaveTitle: 'Сохранить документ HTML',
+    dlgExportDocx: 'Экспортировать в Word',
+    dlgExportOdt: 'Экспортировать в ODT',
+    dlgExportPdf: 'Экспортировать в PDF',
+    dlgExportHtml: 'Экспортировать в один файл HTML',
     filterHtml: 'Документы HTML',
     dlgPickImage: 'Выберите изображение',
     filterImages: 'Изображения',
     untitledFile: 'Без названия',
     closeUnsavedMsg: 'В этом документе есть несохранённые изменения.',
+    closeUnsavedNamedMsg: 'В «{name}» есть несохранённые изменения.',
     closeUnsavedDetail: 'Сохранить их перед закрытием?',
     btnSave: 'Сохранить',
     btnDontSave: 'Не сохранять',
@@ -393,11 +450,16 @@ const tDlg = createI18n({
   },
   ar: {
     dlgSaveTitle: 'حفظ مستند HTML',
+    dlgExportDocx: 'تصدير كملف Word',
+    dlgExportOdt: 'تصدير كملف ODT',
+    dlgExportPdf: 'تصدير بتنسيق PDF',
+    dlgExportHtml: 'تصدير كملف HTML واحد',
     filterHtml: 'مستندات HTML',
     dlgPickImage: 'اختر صورة',
     filterImages: 'صور',
     untitledFile: 'بدون عنوان',
     closeUnsavedMsg: 'يحتوي هذا المستند على تغييرات غير محفوظة.',
+    closeUnsavedNamedMsg: 'يحتوي ”{name}“ على تغييرات غير محفوظة.',
     closeUnsavedDetail: 'هل تريد حفظها قبل الإغلاق؟',
     btnSave: 'حفظ',
     btnDontSave: 'عدم الحفظ',
@@ -418,11 +480,16 @@ const tDlg = createI18n({
   },
   pt: {
     dlgSaveTitle: 'Salvar documento HTML',
+    dlgExportDocx: 'Exportar como Word',
+    dlgExportOdt: 'Exportar como ODT',
+    dlgExportPdf: 'Exportar como PDF',
+    dlgExportHtml: 'Exportar como HTML de arquivo único',
     filterHtml: 'Documentos HTML',
     dlgPickImage: 'Escolher imagem',
     filterImages: 'Imagens',
     untitledFile: 'Sem título',
     closeUnsavedMsg: 'Este documento tem alterações não salvas.',
+    closeUnsavedNamedMsg: '“{name}” tem alterações não salvas.',
     closeUnsavedDetail: 'Deseja salvá-las antes de fechar?',
     btnSave: 'Salvar',
     btnDontSave: 'Não Salvar',
@@ -443,11 +510,16 @@ const tDlg = createI18n({
   },
   it: {
     dlgSaveTitle: 'Salva documento HTML',
+    dlgExportDocx: 'Esporta come Word',
+    dlgExportOdt: 'Esporta come ODT',
+    dlgExportPdf: 'Esporta come PDF',
+    dlgExportHtml: 'Esporta come HTML a file singolo',
     filterHtml: 'Documenti HTML',
     dlgPickImage: 'Scegli immagine',
     filterImages: 'Immagini',
     untitledFile: 'Senza titolo',
     closeUnsavedMsg: 'Questo documento contiene modifiche non salvate.',
+    closeUnsavedNamedMsg: '“{name}” contiene modifiche non salvate.',
     closeUnsavedDetail: 'Vuoi salvarle prima di chiudere?',
     btnSave: 'Salva',
     btnDontSave: 'Non salvare',
@@ -468,11 +540,16 @@ const tDlg = createI18n({
   },
   pl: {
     dlgSaveTitle: 'Zapisz dokument HTML',
+    dlgExportDocx: 'Eksportuj jako Word',
+    dlgExportOdt: 'Eksportuj jako ODT',
+    dlgExportPdf: 'Eksportuj jako PDF',
+    dlgExportHtml: 'Eksportuj jako pojedynczy plik HTML',
     filterHtml: 'Dokumenty HTML',
     dlgPickImage: 'Wybierz obraz',
     filterImages: 'Obrazy',
     untitledFile: 'Bez tytułu',
     closeUnsavedMsg: 'Ten dokument ma niezapisane zmiany.',
+    closeUnsavedNamedMsg: '„{name}” zawiera niezapisane zmiany.',
     closeUnsavedDetail: 'Czy zapisać je przed zamknięciem?',
     btnSave: 'Zapisz',
     btnDontSave: 'Nie zapisuj',
@@ -493,11 +570,16 @@ const tDlg = createI18n({
   },
   cs: {
     dlgSaveTitle: 'Uložit dokument HTML',
+    dlgExportDocx: 'Exportovat jako Word',
+    dlgExportOdt: 'Exportovat jako ODT',
+    dlgExportPdf: 'Exportovat jako PDF',
+    dlgExportHtml: 'Exportovat jako samostatné HTML',
     filterHtml: 'Dokumenty HTML',
     dlgPickImage: 'Vyberte obrázek',
     filterImages: 'Obrázky',
     untitledFile: 'Bez názvu',
     closeUnsavedMsg: 'Tento dokument obsahuje neuložené změny.',
+    closeUnsavedNamedMsg: '„{name}“ obsahuje neuložené změny.',
     closeUnsavedDetail: 'Chcete je před zavřením uložit?',
     btnSave: 'Uložit',
     btnDontSave: 'Neukládat',
@@ -518,11 +600,16 @@ const tDlg = createI18n({
   },
   nl: {
     dlgSaveTitle: 'HTML-document opslaan',
+    dlgExportDocx: 'Exporteren als Word',
+    dlgExportOdt: 'Exporteren als ODT',
+    dlgExportPdf: 'Exporteren als PDF',
+    dlgExportHtml: 'Exporteren als één HTML-bestand',
     filterHtml: 'HTML-documenten',
     dlgPickImage: 'Kies een afbeelding',
     filterImages: 'Afbeeldingen',
     untitledFile: 'Naamloos',
     closeUnsavedMsg: 'Dit document bevat niet-opgeslagen wijzigingen.',
+    closeUnsavedNamedMsg: '“{name}” bevat niet-opgeslagen wijzigingen.',
     closeUnsavedDetail: 'Wilt u ze opslaan voordat u sluit?',
     btnSave: 'Opslaan',
     btnDontSave: 'Niet opslaan',
@@ -543,11 +630,16 @@ const tDlg = createI18n({
   },
   ms: {
     dlgSaveTitle: 'Simpan dokumen HTML',
+    dlgExportDocx: 'Eksport sebagai Word',
+    dlgExportOdt: 'Eksport sebagai ODT',
+    dlgExportPdf: 'Eksport sebagai PDF',
+    dlgExportHtml: 'Eksport sebagai HTML fail tunggal',
     filterHtml: 'Dokumen HTML',
     dlgPickImage: 'Pilih imej',
     filterImages: 'Imej',
     untitledFile: 'Tanpa tajuk',
     closeUnsavedMsg: 'Dokumen ini mempunyai perubahan yang belum disimpan.',
+    closeUnsavedNamedMsg: '“{name}” mempunyai perubahan yang belum disimpan.',
     closeUnsavedDetail: 'Simpan sebelum menutup?',
     btnSave: 'Simpan',
     btnDontSave: 'Jangan Simpan',
@@ -568,11 +660,16 @@ const tDlg = createI18n({
   },
   he: {
     dlgSaveTitle: 'שמירת מסמך HTML',
+    dlgExportDocx: 'ייצוא כ-Word',
+    dlgExportOdt: 'ייצוא כ-ODT',
+    dlgExportPdf: 'ייצוא כ-PDF',
+    dlgExportHtml: 'ייצוא כ-HTML בקובץ יחיד',
     filterHtml: 'מסמכי HTML',
     dlgPickImage: 'בחרו תמונה',
     filterImages: 'תמונות',
     untitledFile: 'ללא שם',
     closeUnsavedMsg: 'במסמך הזה יש שינויים שלא נשמרו.',
+    closeUnsavedNamedMsg: 'ב„{name}” יש שינויים שלא נשמרו.',
     closeUnsavedDetail: 'האם לשמור אותם לפני הסגירה?',
     btnSave: 'שמירה',
     btnDontSave: 'אל תשמור',
@@ -593,11 +690,16 @@ const tDlg = createI18n({
   },
   hi: {
     dlgSaveTitle: 'HTML दस्तावेज़ सहेजें',
+    dlgExportDocx: 'Word के रूप में निर्यात करें',
+    dlgExportOdt: 'ODT के रूप में निर्यात करें',
+    dlgExportPdf: 'PDF के रूप में निर्यात',
+    dlgExportHtml: 'एकल-फ़ाइल HTML के रूप में निर्यात',
     filterHtml: 'HTML दस्तावेज़',
     dlgPickImage: 'छवि चुनें',
     filterImages: 'छवियाँ',
     untitledFile: 'शीर्षकहीन',
     closeUnsavedMsg: 'इस दस्तावेज़ में सहेजे नहीं गए परिवर्तन हैं।',
+    closeUnsavedNamedMsg: '“{name}” में सहेजे नहीं गए परिवर्तन हैं।',
     closeUnsavedDetail: 'क्या बंद करने से पहले उन्हें सहेजना चाहते हैं?',
     btnSave: 'सहेजें',
     btnDontSave: 'न सहेजें',
@@ -618,11 +720,16 @@ const tDlg = createI18n({
   },
   'zh-TW': {
     dlgSaveTitle: '儲存 HTML 文件',
+    dlgExportDocx: '匯出為 Word',
+    dlgExportOdt: '匯出為 ODT',
+    dlgExportPdf: '匯出為 PDF',
+    dlgExportHtml: '匯出為單檔 HTML',
     filterHtml: 'HTML 文件',
     dlgPickImage: '選擇圖片',
     filterImages: '圖片',
     untitledFile: '未命名文件',
     closeUnsavedMsg: '此文件有未儲存的變更。',
+    closeUnsavedNamedMsg: '「{name}」有未儲存的變更。',
     closeUnsavedDetail: '關閉前是否儲存？',
     btnSave: '儲存',
     btnDontSave: '不儲存',
@@ -643,11 +750,16 @@ const tDlg = createI18n({
 })
 type DlgKey =
   | 'dlgSaveTitle'
+  | 'dlgExportDocx'
+  | 'dlgExportOdt'
+  | 'dlgExportPdf'
+  | 'dlgExportHtml'
   | 'filterHtml'
   | 'dlgPickImage'
   | 'filterImages'
   | 'untitledFile'
   | 'closeUnsavedMsg'
+  | 'closeUnsavedNamedMsg'
   | 'closeUnsavedDetail'
   | 'btnSave'
   | 'btnDontSave'
@@ -790,18 +902,23 @@ export function configureHtmlRuntime(paths: RuntimePaths): void {
 
 export { registerPrivilegedSchemes }
 
-/** After a successful Html → PDF export: open the file in a PDF tab (shell)
- * or reveal it in the folder (standalone). Tab-opening failure must not
- * report the export itself as failed — the file is already persisted. */
-function openExportedPdf(path: string): void {
-  // Headless export must stay silent: no tab, no Finder window.
-  if (isHeadlessMode()) return
+/** what each tab exported, for the status bar's Open / Open folder */
+const exportedFiles = new ExportedFiles()
+
+/** The status bar's Open after an export: a PDF in a PDF tab, a Word/ODT file in
+ * a Word tab (shell), anything else (or standalone) with its own program. */
+function openExported(path: string): void {
+  const ext = extname(path).toLowerCase()
   try {
-    if (runtime.openGeneratedPath?.(path)) return
+    if (ext === '.pdf' && runtime.openGeneratedPath?.(path)) return
+    if ((ext === '.docx' || ext === '.odt') && docxExportedHook) {
+      docxExportedHook(path)
+      return
+    }
   } catch (err) {
-    console.warn('[html] Failed to open exported PDF:', err)
+    console.warn('[html] Failed to open exported file:', err)
   }
-  shell.showItemInFolder(path)
+  void shell.openPath(path)
 }
 
 /** Open path per view, queued at tab creation; the renderer consumes it after mount.
@@ -947,19 +1064,6 @@ export function setHtmlDocxExportPrepareHook(hook: (path: string) => Promise<boo
   docxExportPrepareHook = hook
 }
 
-function openExportedDocx(path: string): void {
-  if (isHeadlessMode()) return
-  try {
-    if (docxExportedHook) {
-      docxExportedHook(path)
-      return
-    }
-  } catch (err) {
-    console.warn('[html] Failed to open exported Word file:', err)
-  }
-  shell.showItemInFolder(path)
-}
-
 function exportFileName(suggested: unknown): string {
   return (
     String(suggested || tm('untitledFile'))
@@ -1086,15 +1190,22 @@ export function sendHtmlPrintRequest(contents: WebContents): void {
 // Scripting stays on here, unlike the PDF export window: Chromium rejects
 // executeJavaScript under `javascript: false`, and the fonts/images readiness
 // probe needs it. Print and Export-PDF therefore differ for <script>-built content.
-function printHtml(html: string, docPath: string | undefined): Promise<PrintDialogOutcome> {
-  const base = docPath ? assetBaseHref(dirname(docPath)) : null
-  return printHtmlDocument({
-    html: buildPreviewDocument(html, base),
-    window: new BrowserWindow({ show: false, webPreferences: { sandbox: true } }),
-    fileName: 'print.html',
-    dirPrefix: 'genoffice-html-print-',
-  })
-}
+// The shared printer aborts a pending job when the tab or the print window
+// closes and when the app quits, so a system dialog that never came back
+// cannot keep the window alive.
+const documentPrinter = createDocumentPrinter({
+  app: 'html',
+  createWindow: () => {
+    const win = new BrowserWindow({ show: false, webPreferences: { sandbox: true } })
+    win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+    return { window: win, onClosed: (listener) => win.once('closed', listener) }
+  },
+  print: printHtmlDocument,
+  prepare: (html, sender) => {
+    const docPath = savePathByWc.get((sender as WebContents).id)
+    return buildPreviewDocument(html, docPath ? assetBaseHref(dirname(docPath)) : null)
+  },
+})
 
 export function htmlIsDirty(webContentsId: number): boolean {
   return dirtyByWc.has(webContentsId)
@@ -1134,9 +1245,14 @@ export async function requestHtmlClose(
   parent?: BrowserWindow | null,
 ): Promise<boolean> {
   if (!dirtyByWc.has(contents.id) || contents.isDestroyed()) return true
+  // with several edited tabs, "this document" alone does not say which one asks
+  const docName = closePromptDocName(
+    savePathByWc.get(contents.id),
+    typeof contents.getTitle === 'function' ? contents.getTitle() : null,
+  )
   const options = {
     type: 'warning' as const,
-    message: tm('closeUnsavedMsg'),
+    message: docName ? tm('closeUnsavedNamedMsg', { name: docName }) : tm('closeUnsavedMsg'),
     detail: tm('closeUnsavedDetail'),
     buttons: [tm('btnSave'), tm('btnDontSave'), tm('btnCancel')],
     defaultId: 0,
@@ -1406,6 +1522,9 @@ let ipcRegistered = false
 function registerHtmlIpc(): void {
   if (ipcRegistered) return
   ipcRegistered = true
+
+  // a print dialog that never came back must not outlive the app
+  app.on('before-quit', () => documentPrinter.abortAll())
 
   registerImageProtocol()
   registerPreviewProtocol((wcId) => {
@@ -1800,6 +1919,7 @@ function registerHtmlIpc(): void {
               dialog,
               win,
               {
+                title: tm('dlgExportDocx'),
                 defaultPath: `${exportFileName(request.suggestedName)}.docx`,
                 filters: [{ name: 'Word', extensions: ['docx'] }],
               },
@@ -1813,7 +1933,8 @@ function registerHtmlIpc(): void {
       try {
         const docx = await renderHtmlDocx(request.html, savePathByWc.get(e.sender.id), workDir)
         await writeFile(picked.filePath, docx)
-        openExportedDocx(picked.filePath)
+        // offered as status-bar Open / Open folder buttons, not opened in a new tab
+        if (!isHeadlessMode()) exportedFiles.remember(e.sender.id, picked.filePath)
         return { ok: true, path: picked.filePath }
       } catch (err) {
         return { ok: false, error: err instanceof Error ? err.message : String(err) }
@@ -1845,6 +1966,7 @@ function registerHtmlIpc(): void {
             dialog,
             win,
             {
+              title: tm('dlgExportOdt'),
               defaultPath: `${exportFileName(request.suggestedName)}.odt`,
               filters: [{ name: odtFilterName(), extensions: ['odt'] }],
             },
@@ -1869,7 +1991,7 @@ function registerHtmlIpc(): void {
         prepare: async (path) => !docxExportPrepareHook || docxExportPrepareHook(path),
         write: (path, bytes) => writeFile(path, bytes),
       })
-      if ('path' in outcome) openExportedDocx(outcome.path)
+      if ('path' in outcome && !isHeadlessMode()) exportedFiles.remember(e.sender.id, outcome.path)
       return outcome
     },
   )
@@ -1890,6 +2012,7 @@ function registerHtmlIpc(): void {
               dialog,
               win,
               {
+                title: tm('dlgExportPdf'),
                 defaultPath: `${exportFileName(request.suggestedName)}.pdf`,
                 filters: [{ name: 'PDF', extensions: ['pdf'] }],
               },
@@ -1900,7 +2023,8 @@ function registerHtmlIpc(): void {
       try {
         const docPath = savePathByWc.get(e.sender.id)
         await writeFile(picked.filePath, await renderPrintPdf(request.html, docPath, workDir))
-        openExportedPdf(picked.filePath)
+        // offered as status-bar Open / Open folder buttons, not opened in a new tab
+        if (!isHeadlessMode()) exportedFiles.remember(e.sender.id, picked.filePath)
         return { ok: true, path: picked.filePath }
       } catch (err) {
         return { ok: false, error: err instanceof Error ? err.message : String(err) }
@@ -1938,9 +2062,21 @@ function registerHtmlIpc(): void {
       // user closed from a real failure, so the outcome maps straight onto
       // PrintResult: the renderer can stay silent on cancel and must surface
       // a failure instead of swallowing it.
-      return printHtml(request.html, savePathByWc.get(e.sender.id))
+      return documentPrinter.print(e.sender, request)
     },
   )
+
+  // status-bar buttons after an export: only for files this tab exported
+  ipcMain.handle(HTML_CHANNELS.openExported, (e, path: unknown) => {
+    if (!exportedFiles.allows(e.sender.id, path)) return false
+    openExported(path)
+    return true
+  })
+  ipcMain.handle(HTML_CHANNELS.revealExported, (e, path: unknown) => {
+    if (!exportedFiles.allows(e.sender.id, path)) return false
+    shell.showItemInFolder(path)
+    return true
+  })
 
   ipcMain.handle(
     HTML_CHANNELS.exportHtml,
@@ -1958,6 +2094,7 @@ function registerHtmlIpc(): void {
               dialog,
               win,
               {
+                title: tm('dlgExportHtml'),
                 defaultPath: `${singleFileExportBaseName(exportFileName(request.suggestedName))}.html`,
                 filters: [{ name: 'HTML', extensions: ['html'] }],
               },
@@ -1972,7 +2109,7 @@ function registerHtmlIpc(): void {
       try {
         const { html, skipped } = await inlineImagesForSingleFile(request.html, docPath)
         await writeFile(picked.filePath, html, 'utf8')
-        if (!isHeadlessMode()) shell.showItemInFolder(picked.filePath)
+        if (!isHeadlessMode()) exportedFiles.remember(e.sender.id, picked.filePath)
         return skipped.length
           ? { ok: true, path: picked.filePath, skipped }
           : { ok: true, path: picked.filePath }
@@ -2040,6 +2177,7 @@ function grantAndTrack(wc: WebContents, openPath?: string | null): void {
     openPathByWc.delete(wcId)
     allowedByWc.delete(wcId)
     savePathByWc.delete(wcId)
+    exportedFiles.forget(wcId)
     dirtyByWc.delete(wcId)
     docDiskStates.delete(wcId)
     previewTextByWc.delete(wcId)

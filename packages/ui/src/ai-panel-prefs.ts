@@ -35,7 +35,8 @@ export const AI_PANEL_STARTS = ['off', 'collapsed', 'last'] as const
 export type AiPanelStart = (typeof AI_PANEL_STARTS)[number]
 
 export const DEFAULT_AI_PANEL_PREFS: AiPanelPrefs = {
-  side: 'left',
+  // Hanpan 0.17: the assistant sits on the right in every app unless moved
+  side: 'right',
   fontSize: 'default',
   customFontSize: AI_FONT_BASE_PX,
   spellcheck: true,
@@ -95,7 +96,7 @@ export function sameAiPanelPrefs(a: AiPanelPrefs, b: AiPanelPrefs): boolean {
 export function normalizeAiPanelPrefs(raw: unknown): AiPanelPrefs {
   const obj = raw !== null && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   return {
-    side: obj.side === 'right' ? 'right' : 'left',
+    side: obj.side === 'left' ? 'left' : 'right',
     fontSize: isAiFontSize(obj.fontSize) ? obj.fontSize : DEFAULT_AI_PANEL_PREFS.fontSize,
     customFontSize:
       clampAiCustomFontSize(obj.customFontSize) ?? DEFAULT_AI_PANEL_PREFS.customFontSize,

@@ -36,6 +36,8 @@ function actions(): TabMenuActions {
     move: vi.fn(),
     closeTabs: vi.fn(),
     reopenClosed: vi.fn(),
+    share: vi.fn(),
+    saveMyForm: vi.fn(),
   }
 }
 
@@ -55,6 +57,7 @@ function menu(
     canDetach: true,
     fileExists: true,
     canReopen: true,
+    canShare: true,
     tm,
     actions: given,
     ...extra,
@@ -221,7 +224,7 @@ describe('the tab context menu', () => {
     const { items, actions: given } = menu(b, all)
     click(items.get('Move left'))
     click(items.get('Move right'))
-    click(items.get('Split side by side'))
+    click(items.get('Move to a new window, half the screen each'))
     click(items.get('Open in New Window'))
     expect(given.move).toHaveBeenNthCalledWith(1, 'b', 1)
     expect(given.move).toHaveBeenNthCalledWith(2, 'b', 3)
@@ -229,9 +232,64 @@ describe('the tab context menu', () => {
     expect(given.openInNewWindow).toHaveBeenCalledWith('b')
 
     const stuck = menu(b, all, { canDetach: false }).items
-    expect(enabled(stuck.get('Split side by side'))).toBe(false)
+    expect(enabled(stuck.get('Move to a new window, half the screen each'))).toBe(false)
     expect(enabled(stuck.get('Open in New Window'))).toBe(false)
   })
+
+  it('switches off Print for a book, whose editor has no print, but keeps Save', () => {
+    const current = tab('a', { kind: 'epub', filePath: '/x/a.epub' })
+    const { items } = menu(current, [home, current])
+    expect(enabled(items.get(tm('menuTabPrint')))).toBe(false)
+    expect(enabled(items.get(tm('menuTabSave')))).toBe(true)
+    expect(enabled(items.get(tm('menuTabSaveAs')))).toBe(true)
+  })
+
+  it.each(['mindmap', 'hwp', 'photo', 'illust'] as const)(
+    'keeps Save and Print on for a %s tab',
+    (kind) => {
+      const current = tab('a', { kind, filePath: '/x/a' })
+      const { items } = menu(current, [home, current])
+      expect(enabled(items.get(tm('menuTabPrint')))).toBe(true)
+      expect(enabled(items.get(tm('menuTabSave')))).toBe(true)
+    },
+  )
+
+  it.each(['mindmap', 'hwp'] as const)('keeps Save and Print on for a %s tab', (kind) => {
+    const current = tab('a', { kind, filePath: '/x/a' })
+    const { items } = menu(current, [home, current])
+    expect(enabled(items.get(tm('menuTabPrint')))).toBe(true)
+    expect(enabled(items.get(tm('menuTabSave')))).toBe(true)
+  })
+
+  it('shares the clicked tab, saved or not, where the system can share', () => {
+    for (const current of [a, b]) {
+      const { items, actions: given } = menu(current, all)
+      expect(enabled(items.get('Share…'))).toBe(true)
+      click(items.get('Share…'))
+      expect(given.share).toHaveBeenCalledWith(current.id)
+    }
+    // no share sheet on this system (Linux), the manual, the Present tab
+    expect(enabled(menu(a, all, { canShare: false }).items.get('Share…'))).toBe(false)
+    const help = tab('help', { kind: 'help' })
+    expect(enabled(menu(help, [home, help]).items.get('Share…'))).toBe(false)
+    expect(enabled(menu(a, all, { canDetach: false }).items.get('Share…'))).toBe(false)
+  })
+
+  it.each(['docs', 'hwp'] as const)('offers Save as My Form for a %s tab', (kind) => {
+    const current = tab('a', { kind, filePath: '/x/a' })
+    const { items, actions: given } = menu(current, [home, current])
+    expect(enabled(items.get('Save as My Form…'))).toBe(true)
+    click(items.get('Save as My Form…'))
+    expect(given.saveMyForm).toHaveBeenCalledWith('a')
+  })
+
+  it.each(['sheets', 'slides', 'pdf', 'markdown', 'mindmap', 'photo'] as const)(
+    'has no Save as My Form for a %s tab (forms are Word or HWP)',
+    (kind) => {
+      const current = tab('a', { kind, filePath: '/x/a' })
+      expect(menu(current, [home, current]).items.has('Save as My Form…')).toBe(false)
+    },
+  )
 
   it('disables document commands for the chrome-free Present tab', () => {
     const preview = tab('preview', { kind: 'html', filePath: '/tmp/x/page.html' })

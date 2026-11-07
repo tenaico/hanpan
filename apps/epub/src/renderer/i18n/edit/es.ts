@@ -6,6 +6,7 @@ export const es = {
   editBold: 'Negrita',
   editItalic: 'Cursiva',
   editReplace: 'Reemplazar',
+  editFindReplaceTitle: 'Buscar y reemplazar',
   editReplaceWith: 'Reemplazar por',
   editReplaceOne: 'Reemplazar',
   editReplaceAll: 'Reemplazar todo',

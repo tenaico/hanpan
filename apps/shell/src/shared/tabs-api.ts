@@ -27,6 +27,8 @@ export interface TabSummary {
   active: boolean
   /** absolute path behind the tab; absent while the document is untitled */
   filePath?: string
+  /** the editor reports unsaved changes (tab strip dot); absent when clean */
+  dirty?: boolean
 }
 
 /**

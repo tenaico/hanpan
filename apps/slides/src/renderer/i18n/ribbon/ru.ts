@@ -59,7 +59,8 @@ export const ru = {
     'Формат по образцу (щёлкните, чтобы скопировать и применить формат; ⌘⇧C копировать формат / ⌘⇧V вставить формат)',
   ribbonGroupSlides: 'Слайды',
   ribbonNewSlide: 'Создать слайд',
-  ribbonNewSlideTip: 'Новый пустой слайд (наследует фон макета текущего слайда)',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'Выбрать макет',
   ribbonChooseLayoutNew: 'Новый слайд с макетом',
   ribbonChooseLayoutChange: 'Изменить макет текущего слайда',
@@ -788,4 +789,8 @@ export const ru = {
   ribbonZoomSectionItem: 'Слайд {n} Раздел {k}: {name}',
   ribbonZoomSelectedSlides: 'Выбрано слайдов: {n}',
   ribbonZoomSelectedSections: 'Выбрано разделов: {n}',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

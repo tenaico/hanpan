@@ -86,7 +86,7 @@ const tUpd = createI18n({
     updRestartNote: '重启后将显示安装进度窗口。安装完成后，应用和之前打开的文档会重新打开。',
   },
   en: {
-    updTitle: 'Software Update',
+    updTitle: 'GenOffice Update',
     updHeadline: 'A new version is available',
     updDesc:
       'This update includes performance improvements and bug fixes. We recommend updating now.',
@@ -114,7 +114,7 @@ const tUpd = createI18n({
       'After the restart an installer window shows the progress. When it finishes, the app and the documents you had open come back.',
   },
   vi: {
-    updTitle: 'Cập nhật phần mềm',
+    updTitle: 'Cập nhật GenOffice',
     updHeadline: 'Đã có phiên bản mới',
     updDesc:
       'Bản cập nhật này bao gồm các cải tiến hiệu suất và sửa lỗi. Chúng tôi khuyên bạn nên cập nhật ngay bây giờ.',
@@ -170,7 +170,7 @@ const tUpd = createI18n({
       '再起動するとインストールの進行状況を示すウィンドウが表示されます。完了すると、アプリと開いていた文書が再び開きます。',
   },
   ko: {
-    updTitle: '소프트웨어 업데이트',
+    updTitle: 'GenOffice 업데이트',
     updHeadline: '새 버전이 있습니다',
     updDesc:
       '이 업데이트에는 성능 개선과 버그 수정이 포함되어 있습니다. 지금 업데이트하는 것을 권장합니다.',

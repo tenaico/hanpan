@@ -155,7 +155,8 @@ export const vi = {
   dlgPivotAddValue: '+ Thêm trường giá trị',
   dlgPivotAddCalc: '+ Thêm trường tính toán',
   dlgPivotTargetCell: 'Ô đích',
-  dlgPivotTargetPlaceholder: 'Ví dụ: F1',
+  dlgPivotTargetPlaceholder: 'Ví dụ: {cell}',
+  dlgPivotTargetEmptyHint: 'Để trống thì PivotTable được đặt ở {cell}, bên phải vùng nguồn.',
   dlgPivotTargetLocked: 'Vùng kết quả giữ nguyên ô trên cùng bên trái khi chỉnh sửa',
   dlgPivotNote:
     'Tạo một PivotTable OOXML chuẩn mà Excel/WPS có thể nhận diện và làm mới sau khi lưu.',
@@ -366,8 +367,7 @@ export const vi = {
   dlgFcNoFill: 'Không tô màu',
   dlgFcLocked: 'Đã khóa',
   dlgFcHidden: 'Ẩn (công thức)',
-  dlgFcProtectionNote:
-    'Khóa và ẩn chỉ có hiệu lực khi trang tính được bảo vệ trong Excel. Các cờ này được lưu vào tệp; bản thân trình chỉnh sửa không bắt buộc thực thi.',
+  dlgFcProtectionNote: 'Khóa và ẩn chỉ có hiệu lực khi trang tính được bảo vệ.',
 
   dlgAdvFilterNeedCondition: 'Bộ lọc nâng cao cần ít nhất một điều kiện.',
   dlgAdvFilterMaxTwo: 'Bộ lọc nâng cao chỉ hỗ trợ tối đa hai điều kiện.',

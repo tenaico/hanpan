@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { writeJsonAtomic } from '@genoffice/electron-utils/atomic-write'
 import type { RecoveryStore } from '@genoffice/electron-utils'
 import type { DocumentTabKind } from '../shared/tabs-api'
+import { isScratchDocument } from './recent-files'
 import type { SplitOrientation, SplitViewState } from '../shared/split-view-api'
 
 /**
@@ -49,7 +50,7 @@ const DOCUMENT_KINDS: readonly DocumentTabKind[] = [
 
 /** the same shape the recovery store accepts for an untitled copy */
 const UNTITLED_ID_RE = /^[A-Za-z0-9_-]{1,64}$/
-const EXT_RE = /^\.[a-z0-9]{1,10}$/
+const EXT_RE = /^\.[a-z0-9]{1,12}$/
 const MIN_RATIO = 0.05
 const MAX_RATIO = 0.95
 
@@ -216,6 +217,8 @@ function normalizeTab(raw: unknown, strict: boolean): SessionRecordTab | null {
   const tab: SessionRecordTab = { kind: record.kind, title: record.title }
   if (record.filePath !== undefined) {
     if (typeof record.filePath === 'string' && record.filePath.length > 0) {
+      // a test scratch file is never a person's document: not kept, not brought back
+      if (isScratchDocument(record.filePath)) return null
       tab.filePath = record.filePath
     } else if (strict) {
       return null

@@ -99,6 +99,7 @@ describe('the frame agent and the host client', () => {
         'execute',
         'files',
         'inspect',
+        'onHostRequest',
         'openFile',
         'readFile',
         'request',
@@ -140,5 +141,38 @@ describe('the frame agent and the host client', () => {
     fromText(frame.contentWindow!, 'vectorcraft', '*', pair.agent)
     const api = await connectPageApi(frame, 2000, pair.host)
     expect(await api.commands()).toEqual([])
+  })
+})
+
+describe('save, save as and print from inside the frame go to the host (G1, G2, G3)', () => {
+  it('the web build asking the host (window event) reaches the host as a request', async () => {
+    const frame = frameWithApp('photocraft', new FakePage())
+    const api = await connect(frame, 2000)
+    const asked: string[] = []
+    api.onHostRequest?.((request) => asked.push(request))
+    frame.contentWindow!.dispatchEvent(new Event('hanpan-host-save'))
+    frame.contentWindow!.dispatchEvent(new Event('hanpan-host-saveAs'))
+    frame.contentWindow!.dispatchEvent(new Event('hanpan-host-print'))
+    await vi.waitFor(() => expect(asked).toEqual(['save', 'saveAs', 'print']))
+  })
+
+  it('Ctrl+S, Ctrl+Shift+S and Ctrl+P never reach the app: the host saves or prints', async () => {
+    const frame = frameWithApp('vectorcraft', new FakePage())
+    const api = await connect(frame, 2000)
+    const asked: string[] = []
+    api.onHostRequest?.((request) => asked.push(request))
+    const doc = frame.contentDocument!
+    const appSaw = vi.fn()
+    doc.body.addEventListener('keydown', appSaw)
+    const key = (init: KeyboardEventInit) =>
+      doc.body.dispatchEvent(
+        new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init }),
+      )
+    key({ key: 's', code: 'KeyS', ctrlKey: true })
+    key({ key: 'S', code: 'KeyS', ctrlKey: true, shiftKey: true })
+    key({ key: 'p', code: 'KeyP', ctrlKey: true })
+    key({ key: 'a', code: 'KeyA', ctrlKey: true })
+    await vi.waitFor(() => expect(asked).toEqual(['save', 'saveAs', 'print']))
+    expect(appSaw).toHaveBeenCalledTimes(1)
   })
 })

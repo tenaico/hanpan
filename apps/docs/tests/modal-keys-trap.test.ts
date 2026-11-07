@@ -1,7 +1,7 @@
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, expect, it, vi } from 'vitest'
-import { trapTab, useModalKeys } from '../src/renderer/components/modal-keys'
+import { isModalOpen, trapTab, useModalKeys } from '../src/renderer/components/modal-keys'
 
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -134,5 +134,18 @@ describe('useModalKeys Escape fallback', () => {
     } finally {
       cleanup()
     }
+  })
+})
+
+// 0.17 v2 #7: document shortcuts (Ctrl+F/H/G) must not open panels behind a modal
+describe('isModalOpen', () => {
+  it('is true only while a modal backdrop is mounted', () => {
+    expect(isModalOpen()).toBe(false)
+    const backdrop = document.createElement('div')
+    backdrop.className = 'modal-backdrop'
+    document.body.appendChild(backdrop)
+    expect(isModalOpen()).toBe(true)
+    backdrop.remove()
+    expect(isModalOpen()).toBe(false)
   })
 })

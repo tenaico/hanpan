@@ -2790,6 +2790,58 @@ export const workbookExportCsvResultSchema = z.union([
 export type WorkbookExportCsvRequest = z.infer<typeof workbookExportCsvRequestSchema>
 export type WorkbookExportCsvResult = z.infer<typeof workbookExportCsvResultSchema>
 
+/// Every sheet as its own CSV (0.17): the renderer serializes each sheet's display grid,
+/// the main process asks for a folder and writes `<baseName>-<sheet>.csv` files there.
+export const workbookExportCsvAllRequestSchema = z
+  .object({
+    baseName: z.string().min(1).max(255),
+    sheets: z
+      .array(
+        z
+          .object({
+            name: z.string().min(1).max(255),
+            content: z.string().max(MAX_CSV_EXPORT_CHARS),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(1024),
+    /// Some sheet carries formulas: the main process warns first, as for one sheet.
+    hasFormulas: z.boolean(),
+  })
+  .strict()
+
+export const workbookExportCsvAllResultSchema = z.union([
+  z.object({ canceled: z.literal(true), saveAsXlsxInstead: z.boolean().optional() }).strict(),
+  z
+    .object({
+      canceled: z.literal(false),
+      folder: z.string().min(1),
+      count: z.number().int().nonnegative(),
+    })
+    .strict(),
+])
+
+export type WorkbookExportCsvAllRequest = z.infer<typeof workbookExportCsvAllRequestSchema>
+export type WorkbookExportCsvAllResult = z.infer<typeof workbookExportCsvAllResultSchema>
+
+/// The sheet (or the selected range) as a PNG (0.17): the renderer lays it out as one
+/// page sized to the cells and draws it; the main process asks where and writes the bytes.
+export const workbookExportImageRequestSchema = z
+  .object({
+    fileName: z.string().min(1).max(255),
+    png: z.instanceof(Uint8Array).refine((bytes) => bytes.length <= 512 * 1024 * 1024),
+  })
+  .strict()
+
+export const workbookExportImageResultSchema = z.union([
+  z.object({ canceled: z.literal(true) }).strict(),
+  z.object({ canceled: z.literal(false), path: z.string().min(1) }).strict(),
+])
+
+export type WorkbookExportImageRequest = z.infer<typeof workbookExportImageRequestSchema>
+export type WorkbookExportImageResult = z.infer<typeof workbookExportImageResultSchema>
+
 /// AI create_document: a new standalone file written into the default save
 /// folder (no dialog) under a unique sanitized name and opened in a new tab.
 /// xlsx/csv carry one worksheet's serialized CSV in content (the renderer
@@ -2991,6 +3043,8 @@ export interface DesktopApi {
   printWorkbook(request: WorkbookExportPdfRequest): Promise<WorkbookPrintResult>
   listPrinters(): Promise<PrinterInfo[]>
   exportCsv(request: WorkbookExportCsvRequest): Promise<WorkbookExportCsvResult>
+  exportCsvAll(request: WorkbookExportCsvAllRequest): Promise<WorkbookExportCsvAllResult>
+  exportImage(request: WorkbookExportImageRequest): Promise<WorkbookExportImageResult>
   /// First Save of a CSV session: native "keep this format?" dialog.
   confirmCsvSave(): Promise<'csv' | 'xlsx' | 'cancel'>
   /// AI create_document: write a new standalone file into the default save
@@ -3076,7 +3130,16 @@ export interface DesktopApi {
 }
 
 export type MenuAction =
-  'open' | 'save' | 'save-as' | 'print' | 'export-pdf' | 'export-csv' | 'undo' | 'redo'
+  | 'open'
+  | 'save'
+  | 'save-as'
+  | 'print'
+  | 'export-pdf'
+  | 'export-png'
+  | 'export-csv'
+  | 'export-csv-all'
+  | 'undo'
+  | 'redo'
 
 export interface WebSearchResult {
   results: Array<{ title: string; url: string; snippet: string }>

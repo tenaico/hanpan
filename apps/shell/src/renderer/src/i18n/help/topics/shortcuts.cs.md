@@ -4,14 +4,26 @@ Každý editor má vlastní přiřazení kláves a funguje všude jen několik z
 
 ## Přečtěte si nejprve
 
-**Tady téměř nic není globální.** Následující tři přístupové klávesy ano; vše za nimi patří aplikaci, která je před vámi, a mění se při přepnutí panelů.
+### Kdekoli v Hanpan (panely a okna)
 
-| Akce                                                       | macOS | Windows / Linux |
-| ---------------------------------------------------------- | ----- | --------------- |
-| Otevřít uživatelskou příručku — funguje kdekoli v aplikaci | F1    | F1              |
-| Složit / rozbalit pás — každý editor                       | ⌥⌘R   | Ctrl+F1         |
-| Kompaktní pás — jen Docs                                   | ⌥⌘K   | Ctrl+Alt+K      |
-| Otevřít list Klávesové zkratky — pouze Word                | ⌘/    | Ctrl+/          |
+| Akce                                                                                  | Windows / Linux               | macOS                         |
+| ------------------------------------------------------------------------------------- | ----------------------------- | ----------------------------- |
+| Další panel / předchozí panel                                                         | Ctrl+Tab / Ctrl+Shift+Tab     | ⌃Tab / ⌃⇧Tab                  |
+| Zavřít aktuální panel (na kartě Domů: okno, s dotazem, pokud jsou otevřené dokumenty) | Ctrl+W                        | ⌘W                            |
+| Otevřít Nastavení — na kartě Domů                                                     | Ctrl+,                        | ⌘,                            |
+| Otevřít uživatelskou příručku                                                         | F1                            | F1                            |
+| Vybrat panel v pruhu karet — když má panel fokus                                      | ← / →, Enter, Delete (zavřít) | ← / →, Enter, Delete (zavřít) |
+
+### Každý editor
+
+**Odtud dál patří klávesy editoru, který je před vámi, a mění se při přepnutí panelů.**
+
+| Akce                                                       | Windows / Linux | macOS |
+| ---------------------------------------------------------- | --------------- | ----- |
+| Otevřít uživatelskou příručku — funguje kdekoli v aplikaci | F1              | F1    |
+| Složit / rozbalit pás — každý editor                       | Ctrl+F1         | ⌥⌘R   |
+| Kompaktní pás — jen Docs                                   | Ctrl+Alt+K      | ⌥⌘K   |
+| Otevřít list Klávesové zkratky — pouze Word                | Ctrl+/          | ⌘/    |
 
 - **F1 otevírá tuto příručku**, ne list zkratek. Patří do menu aplikace, takže funguje z Wordu, Sheets, Slides, PDF i panelu Home.
 - **Přepínač pásu je `Ctrl+F1`, nebo `⌥⌘R` na macOS.** Samotné `F1` nic neudělá — F1 je příručka a klávesa pásu ji záměrně nesdílí. `Ctrl+F1` se na macOS také přijímá, ale `⌥⌘R` je klávesa, kterou používá Office pro Mac.
@@ -41,123 +53,123 @@ Word má plnou lištu nabídky, takže níže uvedené zkratky souboru a formát
 
 ### Soubor
 
-| Akce           | macOS | Windows / Linux |
-| -------------- | ----- | --------------- |
-| Nový           | ⌘N    | Ctrl+N          |
-| Nové okno      | ⇧⌘N   | Ctrl+Shift+N    |
-| Otevřít…       | ⌘O    | Ctrl+O          |
-| Uložit         | ⌘S    | Ctrl+S          |
-| Uložit jako…   | ⇧⌘S   | Ctrl+Shift+S    |
-| Tisk           | ⌘P    | Ctrl+P          |
-| Zavřít (panel) | ⌘W    | Ctrl+W          |
+| Akce           | Windows / Linux | macOS |
+| -------------- | --------------- | ----- |
+| Nový           | Ctrl+N          | ⌘N    |
+| Nové okno      | Ctrl+Shift+N    | ⇧⌘N   |
+| Otevřít…       | Ctrl+O          | ⌘O    |
+| Uložit         | Ctrl+S          | ⌘S    |
+| Uložit jako…   | Ctrl+Shift+S    | ⇧⌘S   |
+| Tisk           | Ctrl+P          | ⌘P    |
+| Zavřít (panel) | Ctrl+W          | ⌘W    |
 
 ⌘P není tisk prohlížeče. Word nejdřív sestaví náhled tisku, takže jeden vytištěný list je přesně jedna stránka na obrazovce, a pak otevře vlastní tiskové dialogové okno.
 
 ### Úpravy
 
-| Akce                    | macOS | Windows / Linux |
-| ----------------------- | ----- | --------------- |
-| Zpět                    | ⌘Z    | Ctrl+Z          |
-| Znovu                   | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Vyjmout                 | ⌘X    | Ctrl+X          |
-| Kopírovat               | ⌘C    | Ctrl+C          |
-| Vložit                  | ⌘V    | Ctrl+V          |
-| Vložit jako prostý text | ⌥⇧⌘V  | Ctrl+Shift+V    |
-| Vybrat vše              | ⌘A    | Ctrl+A          |
-| Najít                   | ⌘F    | Ctrl+F          |
-| Nahradit                | ⌃H    | Ctrl+H          |
-| Přejít na               | ⌥⌘G   | Ctrl+G          |
-| Klávesové zkratky       | ⌘/    | Ctrl+/          |
+| Akce                    | Windows / Linux | macOS |
+| ----------------------- | --------------- | ----- |
+| Zpět                    | Ctrl+Z          | ⌘Z    |
+| Znovu                   | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Vyjmout                 | Ctrl+X          | ⌘X    |
+| Kopírovat               | Ctrl+C          | ⌘C    |
+| Vložit                  | Ctrl+V          | ⌘V    |
+| Vložit jako prostý text | Ctrl+Shift+V    | ⌥⇧⌘V  |
+| Vybrat vše              | Ctrl+A          | ⌘A    |
+| Najít                   | Ctrl+F          | ⌘F    |
+| Nahradit                | Ctrl+H          | ⌃H    |
+| Přejít na               | Ctrl+G          | ⌥⌘G   |
+| Klávesové zkratky       | Ctrl+/          | ⌘/    |
 
 Nahradit je na obou platformách Ctrl+H, protože ⌘H na macOS skrývá okno a nikdy se nedostane do Wordu. Přejít na kopíruje vlastní rozdělení Wordu: ⌥⌘G na Macu, aby ⇧⌘G zůstal volný pro Počet slov.
 
 ### Formátování textu
 
-| Akce                                          | macOS    | Windows / Linux       |
-| --------------------------------------------- | -------- | --------------------- |
-| Tučné                                         | ⌘B       | Ctrl+B                |
-| Kurzíva                                       | ⌘I       | Ctrl+I                |
-| Podtržení                                     | ⌘U       | Ctrl+U                |
-| Písmo… (dialogové okno)                       | ⌘D       | Ctrl+D                |
-| Zvětšit velikost písma                        | ⇧⌘.      | Ctrl+Shift+.          |
-| Zmenšit velikost písma                        | ⇧⌘,      | Ctrl+Shift+,          |
-| Zvětšit velikost písma o 1 pt                 | ⌘]       | Ctrl+]                |
-| Zmenšit velikost písma o 1 pt                 | ⌘[       | Ctrl+[                |
-| Horní index                                   | ⇧⌘= / ⌘. | Ctrl+Shift+= / Ctrl+. |
-| Dolní index                                   | ⌘,       | Ctrl+,                |
-| Změnit velikost písmen                        | ⇧F3      | Shift+F3              |
-| Kopírovat formátování (s vybraným textem)     | ⇧⌘C      | Ctrl+Shift+C          |
-| Vložit formátování (po Kopírovat formátování) | ⇧⌘V      | Ctrl+Alt+Shift+V      |
-| Vymazat veškeré formátování                   | ⌃␣       | Ctrl+Space            |
+| Akce                                          | Windows / Linux       | macOS    |
+| --------------------------------------------- | --------------------- | -------- |
+| Tučné                                         | Ctrl+B                | ⌘B       |
+| Kurzíva                                       | Ctrl+I                | ⌘I       |
+| Podtržení                                     | Ctrl+U                | ⌘U       |
+| Písmo… (dialogové okno)                       | Ctrl+D                | ⌘D       |
+| Zvětšit velikost písma                        | Ctrl+Shift+.          | ⇧⌘.      |
+| Zmenšit velikost písma                        | Ctrl+Shift+,          | ⇧⌘,      |
+| Zvětšit velikost písma o 1 pt                 | Ctrl+]                | ⌘]       |
+| Zmenšit velikost písma o 1 pt                 | Ctrl+[                | ⌘[       |
+| Horní index                                   | Ctrl+Shift+= / Ctrl+. | ⇧⌘= / ⌘. |
+| Dolní index                                   | Ctrl+,                | ⌘,       |
+| Změnit velikost písmen                        | Shift+F3              | ⇧F3      |
+| Kopírovat formátování (s vybraným textem)     | Ctrl+Shift+C          | ⇧⌘C      |
+| Vložit formátování (po Kopírovat formátování) | Ctrl+Alt+Shift+V      | ⇧⌘V      |
+| Vymazat veškeré formátování                   | Ctrl+Space            | ⌃␣       |
 
 Dvě zkratky malíře formátování jsou jediné místo, kde klávesa Windows není prosté přejmenování: Vložit formátování má Alt, protože Ctrl+Shift+V tam už vkládá a přebírá styl.
 
 ### Formátování odstavce
 
-| Akce                                                | macOS | Windows / Linux |
-| --------------------------------------------------- | ----- | --------------- |
-| Zarovnat doleva                                     | ⌘L    | Ctrl+L          |
-| Vycentrovat                                         | ⌘E    | Ctrl+E          |
-| Zarovnat doprava                                    | ⌘R    | Ctrl+R          |
-| Zarovnat přes šířku                                 | ⌘J    | Ctrl+J          |
-| Řádkování 1,0                                       | ⌘1    | Ctrl+1          |
-| Řádkování 1,5                                       | ⌘5    | Ctrl+5          |
-| Řádkování 2,0                                       | ⌘2    | Ctrl+2          |
-| Zvětšit odsazení                                    | ⌃M    | Ctrl+M          |
-| Zmenšit odsazení                                    | ⌃⇧M   | Ctrl+Shift+M    |
-| Převislé odsazení                                   | ⌘T    | Ctrl+T          |
-| Odebrat převislé odsazení                           | ⇧⌘T   | Ctrl+Shift+T    |
-| Vymazat formátování odstavce                        | ⌃Q    | Ctrl+Q          |
-| Normální (styl)                                     | ⌥⌘0   | Ctrl+Alt+0      |
-| Nadpis 1 (styl)                                     | ⌥⌘1   | Ctrl+Alt+1      |
-| Nadpis 2 (styl)                                     | ⌥⌘2   | Ctrl+Alt+2      |
-| Nadpis 3 (styl)                                     | ⌥⌘3   | Ctrl+Alt+3      |
-| Odstavec… (dialogové okno)                          | ⌥⌘M   | Ctrl+Alt+M      |
-| Přesunout odstavec nahoru                           | ⌥⇧↑   | Alt+Shift+↑     |
-| Přesunout odstavec dolů                             | ⌥⇧↓   | Alt+Shift+↓     |
-| Přesunout položku seznamu níže (na začátku položky) | Tab   | Tab             |
-| Přesunout položku seznamu výše (na začátku položky) | ⇧Tab  | Shift+Tab       |
+| Akce                                                | Windows / Linux | macOS |
+| --------------------------------------------------- | --------------- | ----- |
+| Zarovnat doleva                                     | Ctrl+L          | ⌘L    |
+| Vycentrovat                                         | Ctrl+E          | ⌘E    |
+| Zarovnat doprava                                    | Ctrl+R          | ⌘R    |
+| Zarovnat přes šířku                                 | Ctrl+J          | ⌘J    |
+| Řádkování 1,0                                       | Ctrl+1          | ⌘1    |
+| Řádkování 1,5                                       | Ctrl+5          | ⌘5    |
+| Řádkování 2,0                                       | Ctrl+2          | ⌘2    |
+| Zvětšit odsazení                                    | Ctrl+M          | ⌃M    |
+| Zmenšit odsazení                                    | Ctrl+Shift+M    | ⌃⇧M   |
+| Převislé odsazení                                   | Ctrl+T          | ⌘T    |
+| Odebrat převislé odsazení                           | Ctrl+Shift+T    | ⇧⌘T   |
+| Vymazat formátování odstavce                        | Ctrl+Q          | ⌃Q    |
+| Normální (styl)                                     | Ctrl+Alt+0      | ⌥⌘0   |
+| Nadpis 1 (styl)                                     | Ctrl+Alt+1      | ⌥⌘1   |
+| Nadpis 2 (styl)                                     | Ctrl+Alt+2      | ⌥⌘2   |
+| Nadpis 3 (styl)                                     | Ctrl+Alt+3      | ⌥⌘3   |
+| Odstavec… (dialogové okno)                          | Ctrl+Alt+M      | ⌥⌘M   |
+| Přesunout odstavec nahoru                           | Alt+Shift+↑     | ⌥⇧↑   |
+| Přesunout odstavec dolů                             | Alt+Shift+↓     | ⌥⇧↓   |
+| Přesunout položku seznamu níže (na začátku položky) | Tab             | Tab   |
+| Přesunout položku seznamu výše (na začátku položky) | Shift+Tab       | ⇧Tab  |
 
 Odsazení, převislé odsazení a Vymazat formátování odstavce fungují na obou platformách jen přes Ctrl: ⌘M okno minimalizuje a ⌘Q ukončí aplikaci, takže chord s Command by byl tichou úpravou při ukončování. Tab změní úroveň seznamu jen tehdy, když je kurzor na začátku položky nebo přesahuje několik položek; uvnitř textu vloží tabulátorový znak a ⇧Tab vždy zvedne úroveň.
 
 ### Vkládání
 
-| Akce                      | macOS | Windows / Linux  |
-| ------------------------- | ----- | ---------------- |
-| Zlom stránky              | ⌘⏎    | Ctrl+Enter       |
-| Zlom sloupce              | ⇧⌘⏎   | Ctrl+Shift+Enter |
-| Zlom řádku                | ⇧⏎    | Shift+Enter      |
-| Odkaz…                    | ⌘K    | Ctrl+K           |
-| Nový komentář             | ⌥⌘A   | Ctrl+Alt+A       |
-| Vložit poznámku pod čarou | ⌥⌘F   | Ctrl+Alt+F       |
-| Vložit poznámku na konec  | ⌥⌘E   | Ctrl+Alt+D       |
-| Datum (pole)              | ⌥⇧D   | Alt+Shift+D      |
-| Čas (pole)                | ⌥⇧T   | Alt+Shift+T      |
-| Nedělitelná mezera        | ⇧⌘␣   | Ctrl+Shift+Space |
-| Nedělitelná spojovník     | ⇧⌘-   | Ctrl+Shift+-     |
+| Akce                      | Windows / Linux  | macOS |
+| ------------------------- | ---------------- | ----- |
+| Zlom stránky              | Ctrl+Enter       | ⌘⏎    |
+| Zlom sloupce              | Ctrl+Shift+Enter | ⇧⌘⏎   |
+| Zlom řádku                | Shift+Enter      | ⇧⏎    |
+| Odkaz…                    | Ctrl+K           | ⌘K    |
+| Nový komentář             | Ctrl+Alt+A       | ⌥⌘A   |
+| Vložit poznámku pod čarou | Ctrl+Alt+F       | ⌥⌘F   |
+| Vložit poznámku na konec  | Ctrl+Alt+D       | ⌥⌘E   |
+| Datum (pole)              | Alt+Shift+D      | ⌥⇧D   |
+| Čas (pole)                | Alt+Shift+T      | ⌥⇧T   |
+| Nedělitelná mezera        | Ctrl+Shift+Space | ⇧⌘␣   |
+| Nedělitelná spojovník     | Ctrl+Shift+-     | ⇧⌘-   |
 
 Vložit poznámku na konec je skutečné rozdělení platforem, ne přejmenování: Word na Macu používá ⌥⌘E, protože ⌥⌘D tam patří do Docku.
 
 ### Kontrola a nástroje
 
-| Akce               | macOS | Windows / Linux |
-| ------------------ | ----- | --------------- |
-| Sledovat změny     | ⇧⌘E   | Ctrl+Shift+E    |
-| Počet slov         | ⇧⌘G   | Ctrl+Shift+G    |
-| Zkontrolovat       | F7    | F7              |
-| Aktualizovat pole  | F9    | F9              |
-| Přepnout kódy polí | ⌥F9   | Alt+F9          |
+| Akce               | Windows / Linux | macOS |
+| ------------------ | --------------- | ----- |
+| Sledovat změny     | Ctrl+Shift+E    | ⇧⌘E   |
+| Počet slov         | Ctrl+Shift+G    | ⇧⌘G   |
+| Zkontrolovat       | F7              | F7    |
+| Aktualizovat pole  | F9              | F9    |
+| Přepnout kódy polí | Alt+F9          | ⌥F9   |
 
 F7 spouští kontrolu pomocí AI a F9 aktualizuje pole; obojí potřebuje načtený dokument. Jakmile omezení úprav zapne Sledovat změny, už se nedá vypnout.
 
 ### Zobrazení
 
-| Akce                              | macOS | Windows / Linux |
-| --------------------------------- | ----- | --------------- |
-| Přiblížit                         | ⌘=    | Ctrl+=          |
-| Oddálit                           | ⌘-    | Ctrl+-          |
-| Přiblížit na 100%                 | ⌘0    | Ctrl+0          |
-| Zobrazit/skrýt značky formátování | ⌘8    | Ctrl+Shift+8    |
+| Akce                              | Windows / Linux | macOS |
+| --------------------------------- | --------------- | ----- |
+| Přiblížit                         | Ctrl+=          | ⌘=    |
+| Oddálit                           | Ctrl+-          | ⌘-    |
+| Přiblížit na 100%                 | Ctrl+0          | ⌘0    |
+| Zobrazit/skrýt značky formátování | Ctrl+Shift+8    | ⌘8    |
 
 Zkratka značek formátování kopíruje vlastní rozdělení Wordu, ⌘8 proti Ctrl+Shift+8. Word řídí přiblížení jen třemi výše uvedenými klávesami menu — ⌘+ tu nic neudělá.
 
@@ -173,123 +185,123 @@ Dvě konvence jsou specifické pro Sheets. `⌘` a `⌃` jsou stejná pozice mod
 
 ### Navigace
 
-| Akce                                                              | macOS      | Windows / Linux |
-| ----------------------------------------------------------------- | ---------- | --------------- |
-| Další list                                                        | ⌘PgDn      | Ctrl+PgDn       |
-| Předchozí list                                                    | ⌘PgUp      | Ctrl+PgUp       |
-| Další list (v souladu s Excelem pro Mac)                          | ⌥→         |                 |
-| Předchozí list (v souladu s Excelem pro Mac)                      | ⌥←         |                 |
-| Přejít na první nezmrazenou buňku                                 | ⌘Home      | Ctrl+Home       |
-| Přejít na poslední použitou buňku (obsah nebo formátování)        | ⌘End       | Ctrl+End        |
-| Dialogové okno Přejít na                                          | ⌘G, F5     | Ctrl+G, F5      |
-| Vložit nový list                                                  | ⇧F11       | Shift+F11       |
-| Posunout aktivní buňku o obrazovku dolů (a posunout zobrazení)    | Page Down  | Page Down       |
-| Posunout aktivní buňku o obrazovku nahoru (a posunout zobrazení)  | Page Up    | Page Up         |
-| Posunout aktivní buňku o obrazovku doprava (a posunout zobrazení) | ⌥Page Down | Alt+Page Down   |
-| Posunout aktivní buňku o obrazovku doleva (a posunout zobrazení)  | ⌥Page Up   | Alt+Page Up     |
+| Akce                                                              | Windows / Linux | macOS      |
+| ----------------------------------------------------------------- | --------------- | ---------- |
+| Další list                                                        | Ctrl+PgDn       | ⌘PgDn      |
+| Předchozí list                                                    | Ctrl+PgUp       | ⌘PgUp      |
+| Další list (v souladu s Excelem pro Mac)                          |                 | ⌥→         |
+| Předchozí list (v souladu s Excelem pro Mac)                      |                 | ⌥←         |
+| Přejít na první nezmrazenou buňku                                 | Ctrl+Home       | ⌘Home      |
+| Přejít na poslední použitou buňku (obsah nebo formátování)        | Ctrl+End        | ⌘End       |
+| Dialogové okno Přejít na                                          | Ctrl+G, F5      | ⌘G, F5     |
+| Vložit nový list                                                  | Shift+F11       | ⇧F11       |
+| Posunout aktivní buňku o obrazovku dolů (a posunout zobrazení)    | Page Down       | Page Down  |
+| Posunout aktivní buňku o obrazovku nahoru (a posunout zobrazení)  | Page Up         | Page Up    |
+| Posunout aktivní buňku o obrazovku doprava (a posunout zobrazení) | Alt+Page Down   | ⌥Page Down |
+| Posunout aktivní buňku o obrazovku doleva (a posunout zobrazení)  | Alt+Page Up     | ⌥Page Up   |
 
 ### Výběr
 
-| Akce                                                              | macOS           | Windows / Linux                                     |
-| ----------------------------------------------------------------- | --------------- | --------------------------------------------------- |
-| Vybrat celý sloupec aktivní buňky                                 | ⌃Space          | Ctrl+Space                                          |
-| Vybrat celý řádek aktivní buňky                                   | ⇧Space          | Shift+Space                                         |
-| Přejít na okraj bloku dat — kterákoli ze čtyř šipek               | ⌘↑ ⌘↓ ⌘← ⌘→     | Ctrl+↑ Ctrl+↓ Ctrl+← Ctrl+→                         |
-| Roztáhnout výběr k okraji bloku dat; stisknutím znovu ho zmenšíte | ⌘⇧↑ ⌘⇧↓ ⌘⇧← ⌘⇧→ | Ctrl+Shift+↑ Ctrl+Shift+↓ Ctrl+Shift+← Ctrl+Shift+→ |
-| Přejít na první sloupec aktuálního řádku                          | Home            | Home                                                |
+| Akce                                                              | Windows / Linux                                     | macOS           |
+| ----------------------------------------------------------------- | --------------------------------------------------- | --------------- |
+| Vybrat celý sloupec aktivní buňky                                 | Ctrl+Space                                          | ⌃Space          |
+| Vybrat celý řádek aktivní buňky                                   | Shift+Space                                         | ⇧Space          |
+| Přejít na okraj bloku dat — kterákoli ze čtyř šipek               | Ctrl+↑ Ctrl+↓ Ctrl+← Ctrl+→                         | ⌘↑ ⌘↓ ⌘← ⌘→     |
+| Roztáhnout výběr k okraji bloku dat; stisknutím znovu ho zmenšíte | Ctrl+Shift+↑ Ctrl+Shift+↓ Ctrl+Shift+← Ctrl+Shift+→ | ⌘⇧↑ ⌘⇧↓ ⌘⇧← ⌘⇧→ |
+| Přejít na první sloupec aktuálního řádku                          | Home                                                | Home            |
 
 ### Úpravy
 
-| Akce                                                                                                | macOS                      | Windows / Linux       |
-| --------------------------------------------------------------------------------------------------- | -------------------------- | --------------------- |
-| Vyplnit celý výběr aktuálním zadáním                                                                | ⌃⏎ nebo ⌘⏎                 | Ctrl+Enter            |
-| Začít nový řádek v buňce                                                                            | ⌥⏎, nebo ⌃⌥⏎ / ⌘⌥⏎ na Macu | Alt+Enter             |
-| Upravit aktivní buňku na místě                                                                      | F2                         | F2                    |
-| Tučné                                                                                               | ⌘B                         | Ctrl+B                |
-| Kurzíva                                                                                             | ⌘I                         | Ctrl+I                |
-| Podtržení                                                                                           | ⌘U                         | Ctrl+U                |
-| Najít                                                                                               | ⌘F                         | Ctrl+F                |
-| Vyplnit doprava z nejlevějšího vybraného sloupce                                                    | ⌘R                         | Ctrl+R                |
-| Přepnout odkaz ve vzorci mezi relativní a absolutní                                                 | F4                         | F4                    |
-| Přepnout odkaz ve vzorci mezi relativní a absolutní (v souladu s Excelem pro Mac, při úpravě buňky) | ⌘T                         |                       |
-| Kopírovat                                                                                           | ⌘C                         | Ctrl+C                |
-| Vyjmout                                                                                             | ⌘X                         | Ctrl+X                |
-| Vložit                                                                                              | ⌘V                         | Ctrl+V                |
-| Vložit pouze hodnoty                                                                                | ⌘⇧V                        | Ctrl+Shift+V          |
-| Rychlé vyplnění podle vzoru nad                                                                     | ⌘E                         | Ctrl+E                |
-| Zpět                                                                                                | ⌘Z                         | Ctrl+Z                |
-| Znovu                                                                                               | ⇧⌘Z                        | Ctrl+Shift+Z          |
-| Vybrat celý list                                                                                    | ⌘A                         | Ctrl+A                |
-| Vložit dnešní datum                                                                                 | ⌘;                         | Ctrl+;                |
-| Vložit aktuální čas                                                                                 | ⌘⇧;                        | Ctrl+Shift+;          |
-| Vymazat obsah všech vybraných buněk                                                                 | ⌫ nebo ⌦                   | Backspace nebo Delete |
+| Akce                                                                                                | Windows / Linux       | macOS                      |
+| --------------------------------------------------------------------------------------------------- | --------------------- | -------------------------- |
+| Vyplnit celý výběr aktuálním zadáním                                                                | Ctrl+Enter            | ⌃⏎ nebo ⌘⏎                 |
+| Začít nový řádek v buňce                                                                            | Alt+Enter             | ⌥⏎, nebo ⌃⌥⏎ / ⌘⌥⏎ na Macu |
+| Upravit aktivní buňku na místě                                                                      | F2                    | F2                         |
+| Tučné                                                                                               | Ctrl+B                | ⌘B                         |
+| Kurzíva                                                                                             | Ctrl+I                | ⌘I                         |
+| Podtržení                                                                                           | Ctrl+U                | ⌘U                         |
+| Najít                                                                                               | Ctrl+F                | ⌘F                         |
+| Vyplnit doprava z nejlevějšího vybraného sloupce                                                    | Ctrl+R                | ⌘R                         |
+| Přepnout odkaz ve vzorci mezi relativní a absolutní                                                 | F4                    | F4                         |
+| Přepnout odkaz ve vzorci mezi relativní a absolutní (v souladu s Excelem pro Mac, při úpravě buňky) |                       | ⌘T                         |
+| Kopírovat                                                                                           | Ctrl+C                | ⌘C                         |
+| Vyjmout                                                                                             | Ctrl+X                | ⌘X                         |
+| Vložit                                                                                              | Ctrl+V                | ⌘V                         |
+| Vložit pouze hodnoty                                                                                | Ctrl+Shift+V          | ⌘⇧V                        |
+| Rychlé vyplnění podle vzoru nad                                                                     | Ctrl+E                | ⌘E                         |
+| Zpět                                                                                                | Ctrl+Z                | ⌘Z                         |
+| Znovu                                                                                               | Ctrl+Shift+Z          | ⇧⌘Z                        |
+| Vybrat celý list                                                                                    | Ctrl+A                | ⌘A                         |
+| Vložit dnešní datum                                                                                 | Ctrl+;                | ⌘;                         |
+| Vložit aktuální čas                                                                                 | Ctrl+Shift+;          | ⌘⇧;                        |
+| Vymazat obsah všech vybraných buněk                                                                 | Backspace nebo Delete | ⌫ nebo ⌦                   |
 
 AutoSum existuje jen na macOS. Stiskněte ⌘⇧T.
 
 ### Formátování
 
-| Akce                                                              | macOS | Windows / Linux |
-| ----------------------------------------------------------------- | ----- | --------------- |
-| Dialogové okno Formát buněk                                       | ⌘1    | Ctrl+1          |
-| Přeškrtnutí (s vybranými buňkami)                                 | ⌘5    | Ctrl+5          |
-| Zvětšit velikost písma (s vybranými buňkami)                      | ⌘⇧.   | Ctrl+Shift+.    |
-| Zmenšit velikost písma (s vybranými buňkami)                      | ⌘⇧,   | Ctrl+Shift+,    |
-| Formát čísla: Obecný                                              | ⌘⇧`   | Ctrl+Shift+`    |
-| Formát čísla: číslo se dvěma desetinnými místy                    | ⌘⇧1   | Ctrl+Shift+1    |
-| Formát čísla: čas `h:mm AM/PM`                                    | ⌘⇧2   | Ctrl+Shift+2    |
-| Formát čísla: datum `d-mmm-yy`                                    | ⌘⇧3   | Ctrl+Shift+3    |
-| Formát čísla: měna                                                | ⌘⇧4   | Ctrl+Shift+4    |
-| Formát čísla: procenta                                            | ⌘⇧5   | Ctrl+Shift+5    |
-| Formát čísla: vědecký                                             | ⌘⇧6   | Ctrl+Shift+6    |
-| Všechny okraje (s vybranými buňkami)                              | ⌘⇧7   | Ctrl+Shift+7    |
-| Bez okrajů (s vybranými buňkami)                                  | ⌘⇧-   | Ctrl+Shift+-    |
-| Zrušit malíře formátování (jen když je malíř formátování zapnutý) | Esc   | Esc             |
+| Akce                                                              | Windows / Linux | macOS |
+| ----------------------------------------------------------------- | --------------- | ----- |
+| Dialogové okno Formát buněk                                       | Ctrl+1          | ⌘1    |
+| Přeškrtnutí (s vybranými buňkami)                                 | Ctrl+5          | ⌘5    |
+| Zvětšit velikost písma (s vybranými buňkami)                      | Ctrl+Shift+.    | ⌘⇧.   |
+| Zmenšit velikost písma (s vybranými buňkami)                      | Ctrl+Shift+,    | ⌘⇧,   |
+| Formát čísla: Obecný                                              | Ctrl+Shift+`    | ⌘⇧`   |
+| Formát čísla: číslo se dvěma desetinnými místy                    | Ctrl+Shift+1    | ⌘⇧1   |
+| Formát čísla: čas `h:mm AM/PM`                                    | Ctrl+Shift+2    | ⌘⇧2   |
+| Formát čísla: datum `d-mmm-yy`                                    | Ctrl+Shift+3    | ⌘⇧3   |
+| Formát čísla: měna                                                | Ctrl+Shift+4    | ⌘⇧4   |
+| Formát čísla: procenta                                            | Ctrl+Shift+5    | ⌘⇧5   |
+| Formát čísla: vědecký                                             | Ctrl+Shift+6    | ⌘⇧6   |
+| Všechny okraje (s vybranými buňkami)                              | Ctrl+Shift+7    | ⌘⇧7   |
+| Bez okrajů (s vybranými buňkami)                                  | Ctrl+Shift+-    | ⌘⇧-   |
+| Zrušit malíře formátování (jen když je malíř formátování zapnutý) | Esc             | Esc   |
 
 ### Vkládání a mazání
 
-| Akce                                                                                                       | macOS                                  | Windows / Linux                           |
-| ---------------------------------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------- |
-| Vložit buňky — celé řádky nebo sloupce se vloží přímo, cokoli jiného otevře dialogové okno Vložit          | ⌘⇧=                                    | Ctrl+Shift+=                              |
-| Vložit buňky — `+` na číselné klávesnici, stejné dialogové okno                                            | ⌘ společně s `+` na číselné klávesnici | Ctrl společně s `+` na číselné klávesnici |
-| Odstranit buňky — celé řádky nebo sloupce se odstraní přímo, cokoli jiného otevře dialogové okno Odstranit | ⌘-                                     | Ctrl+-                                    |
-| Odstranit buňky — `-` na číselné klávesnici, stejné dialogové okno                                         | ⌘ společně s `-` na číselné klávesnici | Ctrl společně s `-` na číselné klávesnici |
-| Skrýt vybrané řádky                                                                                        | ⌘9                                     | Ctrl+9                                    |
-| Zobrazit skryté řádky ve výběru                                                                            | ⌘⇧9                                    | Ctrl+Shift+9                              |
-| Skrýt vybrané sloupce                                                                                      | ⌘0                                     | Ctrl+0                                    |
-| Zobrazit skryté sloupce ve výběru                                                                          | ⌘⇧0                                    | Ctrl+Shift+0                              |
+| Akce                                                                                                       | Windows / Linux                           | macOS                                  |
+| ---------------------------------------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------- |
+| Vložit buňky — celé řádky nebo sloupce se vloží přímo, cokoli jiného otevře dialogové okno Vložit          | Ctrl+Shift+=                              | ⌘⇧=                                    |
+| Vložit buňky — `+` na číselné klávesnici, stejné dialogové okno                                            | Ctrl společně s `+` na číselné klávesnici | ⌘ společně s `+` na číselné klávesnici |
+| Odstranit buňky — celé řádky nebo sloupce se odstraní přímo, cokoli jiného otevře dialogové okno Odstranit | Ctrl+-                                    | ⌘-                                     |
+| Odstranit buňky — `-` na číselné klávesnici, stejné dialogové okno                                         | Ctrl společně s `-` na číselné klávesnici | ⌘ společně s `-` na číselné klávesnici |
+| Skrýt vybrané řádky                                                                                        | Ctrl+9                                    | ⌘9                                     |
+| Zobrazit skryté řádky ve výběru                                                                            | Ctrl+Shift+9                              | ⌘⇧9                                    |
+| Skrýt vybrané sloupce                                                                                      | Ctrl+0                                    | ⌘0                                     |
+| Zobrazit skryté sloupce ve výběru                                                                          | Ctrl+Shift+0                              | ⌘⇧0                                    |
 
 ### Data a kontrola
 
-| Akce                                              | macOS | Windows / Linux |
-| ------------------------------------------------- | ----- | --------------- |
-| Dialogové okno Vložit funkci                      | ⇧F3   | Shift+F3        |
-| Správce názvů                                     | ⌃F3   | Ctrl+F3         |
-| Přidat nebo upravit poznámku k aktivní buňce      | ⇧F2   | Shift+F2        |
-| Vložit hypertextový odkaz                         | ⌘K    | Ctrl+K          |
-| sledovat předchůdce (buňka musí obsahovat vzorec) | ⌘[    | Ctrl+[          |
-| Sledovat následující                              | ⌘]    | Ctrl+]          |
-| Skupovat vybrané řádky                            | ⌥⇧→   | Alt+Shift+→     |
-| Zrušit skupování vybraných řádků                  | ⌥⇧←   | Alt+Shift+←     |
-| Přepočítat celý sešit                             | F9    | F9              |
-| Přepočítat jen aktivní list                       | ⇧F9   | Shift+F9        |
-| Zapnout nebo vypnout filtr v označeném rozsahu    | ⌘⇧F   |                 |
+| Akce                                              | Windows / Linux | macOS |
+| ------------------------------------------------- | --------------- | ----- |
+| Dialogové okno Vložit funkci                      | Shift+F3        | ⇧F3   |
+| Správce názvů                                     | Ctrl+F3         | ⌃F3   |
+| Přidat nebo upravit poznámku k aktivní buňce      | Shift+F2        | ⇧F2   |
+| Vložit hypertextový odkaz                         | Ctrl+K          | ⌘K    |
+| sledovat předchůdce (buňka musí obsahovat vzorec) | Ctrl+[          | ⌘[    |
+| Sledovat následující                              | Ctrl+]          | ⌘]    |
+| Skupovat vybrané řádky                            | Alt+Shift+→     | ⌥⇧→   |
+| Zrušit skupování vybraných řádků                  | Alt+Shift+←     | ⌥⇧←   |
+| Přepočítat celý sešit                             | F9              | F9    |
+| Přepočítat jen aktivní list                       | Shift+F9        | ⇧F9   |
+| Zapnout nebo vypnout filtr v označeném rozsahu    |                 | ⌘⇧F   |
 
 Zkratka filtru Excelu, Ctrl+Shift+L, na Windows ani Linuxu nedělá nic. Na macOS stiskněte ⌘⇧F, nebo na jakékoli platformě použijte příkaz filtru na pásu.
 
 ### Okno
 
-| Akce                                                      | macOS         | Windows / Linux  |
-| --------------------------------------------------------- | ------------- | ---------------- |
-| Uložit sešit                                              | ⌘S            | Ctrl+S           |
-| Uložit jako                                               | ⇧⌘S           | Ctrl+Shift+S     |
-| Otevřít sešit                                             | ⌘O            | Ctrl+O           |
-| Tisk                                                      | ⌘P            | Ctrl+P           |
-| Zavřít sešit (macOS) / Ukončit aplikaci (Windows a Linux) | ⌘W            | Ctrl+Q           |
-| Otevřít uživatelskou příručku                             | F1            | F1               |
-| Přiblížit                                                 | ⌘=            | Ctrl+=           |
-| Přiblížení kolečkem myši                                  | ⌘ + posouvání | Ctrl + posouvání |
-| Zobrazit nebo skrýt vzorce v buňkách                      | ⌘`            | Ctrl+`           |
-| Rozbalit nebo sbalit řádek vzorců                         | ⌘⇧U           | Ctrl+Shift+U     |
+| Akce                                                      | Windows / Linux  | macOS         |
+| --------------------------------------------------------- | ---------------- | ------------- |
+| Uložit sešit                                              | Ctrl+S           | ⌘S            |
+| Uložit jako                                               | Ctrl+Shift+S     | ⇧⌘S           |
+| Otevřít sešit                                             | Ctrl+O           | ⌘O            |
+| Tisk                                                      | Ctrl+P           | ⌘P            |
+| Zavřít sešit (macOS) / Ukončit aplikaci (Windows a Linux) | Ctrl+Q           | ⌘W            |
+| Otevřít uživatelskou příručku                             | F1               | F1            |
+| Přiblížit                                                 | Ctrl+=           | ⌘=            |
+| Přiblížení kolečkem myši                                  | Ctrl + posouvání | ⌘ + posouvání |
+| Zobrazit nebo skrýt vzorce v buňkách                      | Ctrl+`           | ⌘`            |
+| Rozbalit nebo sbalit řádek vzorců                         | Ctrl+Shift+U     | ⌘⇧U           |
 
 ## Slides
 
@@ -297,31 +309,31 @@ GenOffice Slides je editor prezentací ve stylu PowerPointu. Většina kláves d
 
 ### Soubor a aplikace
 
-| Akce                       | macOS | Windows / Linux |
-| -------------------------- | ----- | --------------- |
-| Uložit                     | ⌘S    | Ctrl+S          |
-| Uložit jako                | ⇧⌘S   | Ctrl+Shift+S    |
-| Otevřít                    | ⌘O    | Ctrl+O          |
-| Zavřít aktuální panel      | ⌘W    | Ctrl+Q          |
-| Tisk                       | ⌘P    | Ctrl+P          |
-| Zpět                       | ⌘Z    | Ctrl+Z          |
-| Znovu                      | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Znovu (alternativní chord) | ⌘Y    | Ctrl+Y          |
+| Akce                       | Windows / Linux | macOS |
+| -------------------------- | --------------- | ----- |
+| Uložit                     | Ctrl+S          | ⌘S    |
+| Uložit jako                | Ctrl+Shift+S    | ⇧⌘S   |
+| Otevřít                    | Ctrl+O          | ⌘O    |
+| Zavřít aktuální panel      | Ctrl+Q          | ⌘W    |
+| Tisk                       | Ctrl+P          | ⌘P    |
+| Zpět                       | Ctrl+Z          | ⌘Z    |
+| Znovu                      | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Znovu (alternativní chord) | Ctrl+Y          | ⌘Y    |
 
 Zavírání panelu je jediné místo, kde se dvě platformy zcela rozdělí: ⌘W na macOS a na Windows a Linuxu Ctrl+Q, který ukončí celou aplikaci, ne panel.
 
 ### Úpravy
 
-| Akce                                         | macOS  | Windows / Linux |
-| -------------------------------------------- | ------ | --------------- |
-| Nový snímek                                  | ⇧⌘N    | Ctrl+M          |
-| Najít (ne při úpravě textu v tvaru)          | ⌘F     | Ctrl+F          |
-| Opatrnit výběr pomocí AI (s vybranými tvary) | ⌘K     | Ctrl+K          |
-| Přiblížit                                    | ⌘=     | Ctrl+=          |
-| Oddálit                                      | ⌘-     | Ctrl+-          |
-| Skutečná velikost (100%)                     | ⌘0     | Ctrl+0          |
-| Vybrat vše                                   | ⌘A     | Ctrl+A          |
-| Přecházet výběrem tvarů vpřed / vzad         | ⇥ / ⇧⇥ | Tab / Shift+Tab |
+| Akce                                         | Windows / Linux | macOS  |
+| -------------------------------------------- | --------------- | ------ |
+| Nový snímek                                  | Ctrl+M          | ⇧⌘N    |
+| Najít (ne při úpravě textu v tvaru)          | Ctrl+F          | ⌘F     |
+| Opatrnit výběr pomocí AI (s vybranými tvary) | Ctrl+K          | ⌘K     |
+| Přiblížit                                    | Ctrl+=          | ⌘=     |
+| Oddálit                                      | Ctrl+-          | ⌘-     |
+| Skutečná velikost (100%)                     | Ctrl+0          | ⌘0     |
+| Vybrat vše                                   | Ctrl+A          | ⌘A     |
+| Přecházet výběrem tvarů vpřed / vzad         | Tab / Shift+Tab | ⇥ / ⇧⇥ |
 
 Nový snímek je druhé rozdělení platforem. Každá platforma má vlastní klávesu a druhá nic nedělá: ⇧⌘N na macOS, Ctrl+M na Windows a Linuxu. ⌘M to na macOS nemůže udělat, protože je to systémová klávesa Minimalizovat.
 
@@ -331,39 +343,39 @@ Vybrat vše sleduje fokus: s fokusem na panel náhledů, panel osnovy nebo tří
 
 Ty působí na text vybraného tvaru, nebo na odstavec s kurzorem, když jste uvnitř textového pole.
 
-| Akce                                  | macOS | Windows / Linux |
-| ------------------------------------- | ----- | --------------- |
-| Tučné                                 | ⌘B    | Ctrl+B          |
-| Kurzíva                               | ⌘I    | Ctrl+I          |
-| Podtržení                             | ⌘U    | Ctrl+U          |
-| Zarovnat doleva                       | ⌘L    | Ctrl+L          |
-| Vycentrovat                           | ⌘E    | Ctrl+E          |
-| Zarovnat doprava                      | ⌘R    | Ctrl+R          |
-| Zarovnat přes šířku                   | ⌘J    | Ctrl+J          |
-| Zvětšit velikost písma o 1 pt         | ⌘]    | Ctrl+]          |
-| Zmenšit velikost písma o 1 pt         | ⌘[    | Ctrl+[          |
-| Písmo na další velikost v žebříku     | ⇧⌘>   | Ctrl+Shift+>    |
-| Písmo na předchozí velikost v žebříku | ⇧⌘<   | Ctrl+Shift+<    |
+| Akce                                  | Windows / Linux | macOS |
+| ------------------------------------- | --------------- | ----- |
+| Tučné                                 | Ctrl+B          | ⌘B    |
+| Kurzíva                               | Ctrl+I          | ⌘I    |
+| Podtržení                             | Ctrl+U          | ⌘U    |
+| Zarovnat doleva                       | Ctrl+L          | ⌘L    |
+| Vycentrovat                           | Ctrl+E          | ⌘E    |
+| Zarovnat doprava                      | Ctrl+R          | ⌘R    |
+| Zarovnat přes šířku                   | Ctrl+J          | ⌘J    |
+| Zvětšit velikost písma o 1 pt         | Ctrl+]          | ⌘]    |
+| Zmenšit velikost písma o 1 pt         | Ctrl+[          | ⌘[    |
+| Písmo na další velikost v žebříku     | Ctrl+Shift+>    | ⇧⌘>   |
+| Písmo na předchozí velikost v žebříku | Ctrl+Shift+<    | ⇧⌘<   |
 
 Klávesy žebříku písma berou také klávesy . a , s drženým Shift, pro rozvržení klávesnice, které je hlásí místo kláves s interpunkcí.
 
 ### Schránka a objekty
 
-| Akce                                            | macOS       | Windows / Linux    |
-| ----------------------------------------------- | ----------- | ------------------ |
-| Kopírovat                                       | ⌘C          | Ctrl+C             |
-| Vyjmout                                         | ⌘X          | Ctrl+X             |
-| Vložit                                          | ⌘V          | Ctrl+V             |
-| Vložit pouze formát                             | ⇧⌘V         | Ctrl+Shift+V       |
-| Kopírovat pouze formát (s vybranými tvary)      | ⇧⌘C         | Ctrl+Shift+C       |
-| Duplikovat na místě (s vybranými tvary)         | ⌘D          | Ctrl+D             |
-| Skupovat výběr (s vybranými tvary)              | ⌘G          | Ctrl+G             |
-| Zrušit skupování výběru (s vybranými tvary)     | ⇧⌘G         | Ctrl+Shift+G       |
-| Odstranit výběr (s vybranými tvary)             | ⌫ / Delete  | Backspace / Delete |
-| Odstranit vybraný vrchol (v režimu Úprava bodů) | ⌫ / Delete  | Backspace / Delete |
-| Posunout výběr (s vybranými tvary)              | ↑ ↓ ← →     | Arrow keys         |
-| Posunout o jeden pixel obrazovky                | ⌘↑ ⌘↓ ⌘← ⌘→ | Ctrl+Arrow keys    |
-| Změnit velikost kolem středu                    | ⇧↑ ⇧↓ ⇧← ⇧→ | Shift+Arrow keys   |
+| Akce                                            | Windows / Linux    | macOS       |
+| ----------------------------------------------- | ------------------ | ----------- |
+| Kopírovat                                       | Ctrl+C             | ⌘C          |
+| Vyjmout                                         | Ctrl+X             | ⌘X          |
+| Vložit                                          | Ctrl+V             | ⌘V          |
+| Vložit pouze formát                             | Ctrl+Shift+V       | ⇧⌘V         |
+| Kopírovat pouze formát (s vybranými tvary)      | Ctrl+Shift+C       | ⇧⌘C         |
+| Duplikovat na místě (s vybranými tvary)         | Ctrl+D             | ⌘D          |
+| Skupovat výběr (s vybranými tvary)              | Ctrl+G             | ⌘G          |
+| Zrušit skupování výběru (s vybranými tvary)     | Ctrl+Shift+G       | ⇧⌘G         |
+| Odstranit výběr (s vybranými tvary)             | Backspace / Delete | ⌫ / Delete  |
+| Odstranit vybraný vrchol (v režimu Úprava bodů) | Backspace / Delete | ⌫ / Delete  |
+| Posunout výběr (s vybranými tvary)              | Arrow keys         | ↑ ↓ ← →     |
+| Posunout o jeden pixel obrazovky                | Ctrl+Arrow keys    | ⌘↑ ⌘↓ ⌘← ⌘→ |
+| Změnit velikost kolem středu                    | Shift+Arrow keys   | ⇧↑ ⇧↓ ⇧← ⇧→ |
 
 Uvnitř textového pole fungují kopírovat, vyjmout a vložit na text, ne na tvar. Shift se šipkami mění velikost každého tvaru kolem jeho vlastního středu, Spojovatele nechává být a vícenásobný výběr potvrzuje jako jeden krok Zpět.
 
@@ -371,57 +383,57 @@ Uvnitř textového pole fungují kopírovat, vyjmout a vložit na text, ne na tv
 
 Příkazy na úrovni snímku typu PowerPointu fungují jen tehdy, když má fokus klávesnice některé ze těchto tří podoken.
 
-| Akce                                        | macOS                          | Windows / Linux                                |
-| ------------------------------------------- | ------------------------------ | ---------------------------------------------- |
-| Předchozí / další snímek                    | ↑ ↓ (také Page Up / Page Down) | ArrowUp / ArrowDown (také Page Up / Page Down) |
-| První / poslední snímek                     | Home / End                     | Home / End                                     |
-| Roztáhnout výběr na první / poslední snímek | ⇧Home / ⇧End                   | Shift+Home / Shift+End                         |
-| Vybrat všechny snímky                       | ⌘A                             | Ctrl+A                                         |
-| Odstranit vybrané snímky                    | ⌫ / Delete                     | Backspace / Delete                             |
-| Kopírovat snímky                            | ⌘C                             | Ctrl+C                                         |
-| Vyjmout snímky                              | ⌘X                             | Ctrl+X                                         |
+| Akce                                        | Windows / Linux                                | macOS                          |
+| ------------------------------------------- | ---------------------------------------------- | ------------------------------ |
+| Předchozí / další snímek                    | ArrowUp / ArrowDown (také Page Up / Page Down) | ↑ ↓ (také Page Up / Page Down) |
+| První / poslední snímek                     | Home / End                                     | Home / End                     |
+| Roztáhnout výběr na první / poslední snímek | Shift+Home / Shift+End                         | ⇧Home / ⇧End                   |
+| Vybrat všechny snímky                       | Ctrl+A                                         | ⌘A                             |
+| Odstranit vybrané snímky                    | Backspace / Delete                             | ⌫ / Delete                     |
+| Kopírovat snímky                            | Ctrl+C                                         | ⌘C                             |
+| Vyjmout snímky                              | Ctrl+X                                         | ⌘X                             |
 
 Pohyb mezi snímky šipkami je výjimka — funguje i z plátna, bez jakékoli vybrané položky. Odstraňování snímků neplatí, když je aktivní pero ani v **režimu čtení**.
 
 ### Uvnitř textového pole
 
-| Akce                                                   | macOS                                 | Windows / Linux                           |
-| ------------------------------------------------------ | ------------------------------------- | ----------------------------------------- |
-| Začít úpravu textu ve vybraném textovém tvaru          | libovolný tisknutelný znak, ⏎ nebo F2 | libovolný tisknutelný znak, Enter nebo F2 |
-| Potvrdit text a znovu vybrat tvar                      | Esc nebo F2                           | Esc nebo F2                               |
-| Potvrdit text a znovu vybrat tvar (alternativní chord) | ⌘⏎                                    | Ctrl+⏎                                    |
-| Přejít na další zástupný symbol                        | ⌃⏎                                    | Ctrl+⏎                                    |
-| Přesunout úroveň seznamu níže / výše                   | ⇥ / ⇧⇥                                | Tab / Shift+Tab                           |
-| Další / předchozí buňka tabulky                        | ⇥ / ⇧⇥                                | Tab / Shift+Tab                           |
-| Měkký zlom řádku                                       | ⇧⏎                                    | Shift+⏎                                   |
+| Akce                                                   | Windows / Linux                           | macOS                                 |
+| ------------------------------------------------------ | ----------------------------------------- | ------------------------------------- |
+| Začít úpravu textu ve vybraném textovém tvaru          | libovolný tisknutelný znak, Enter nebo F2 | libovolný tisknutelný znak, ⏎ nebo F2 |
+| Potvrdit text a znovu vybrat tvar                      | Esc nebo F2                               | Esc nebo F2                           |
+| Potvrdit text a znovu vybrat tvar (alternativní chord) | Ctrl+⏎                                    | ⌘⏎                                    |
+| Přejít na další zástupný symbol                        | Ctrl+⏎                                    | ⌃⏎                                    |
+| Přesunout úroveň seznamu níže / výše                   | Tab / Shift+Tab                           | ⇥ / ⇧⇥                                |
+| Další / předchozí buňka tabulky                        | Tab / Shift+Tab                           | ⇥ / ⇧⇥                                |
+| Měkký zlom řádku                                       | Shift+⏎                                   | ⇧⏎                                    |
 
 Tab znamená dvě různé věci: další buňku v tabulce a přesunutí úrovně seznamu níže v textovém tvaru.
 
 ### Prezentace
 
-| Akce                          | macOS             | Windows / Linux                      |
-| ----------------------------- | ----------------- | ------------------------------------ |
-| Spustit od začátku            | F5                | F5                                   |
-| Spustit od aktuálního snímku  | ⇧F5 nebo ⌘⏎       | ⇧F5                                  |
-| Další snímek                  | → ↓ ␣ ⏎ Page Down | Right, Down, Space, Enter, Page Down |
-| Předchozí snímek              | ← ↑ Page Up       | Left, Up, Page Up                    |
-| První snímek                  | Home              | Home                                 |
-| Poslední snímek               | End               | End                                  |
-| Přejít na snímek N            | napište N, pak ⏎  | napište N, pak Enter                 |
-| Černá obrazovka               | B nebo .          | B nebo .                             |
-| Bílá obrazovka                | W nebo ,          | W nebo ,                             |
-| Obnovit po zhasnutí obrazovky | libovolná klávesa | libovolná klávesa                    |
-| Ukončit prezentaci            | Esc               | Esc                                  |
+| Akce                          | Windows / Linux                      | macOS             |
+| ----------------------------- | ------------------------------------ | ----------------- |
+| Spustit od začátku            | F5                                   | F5                |
+| Spustit od aktuálního snímku  | ⇧F5                                  | ⇧F5 nebo ⌘⏎       |
+| Další snímek                  | Right, Down, Space, Enter, Page Down | → ↓ ␣ ⏎ Page Down |
+| Předchozí snímek              | Left, Up, Page Up                    | ← ↑ Page Up       |
+| První snímek                  | Home                                 | Home              |
+| Poslední snímek               | End                                  | End               |
+| Přejít na snímek N            | napište N, pak Enter                 | napište N, pak ⏎  |
+| Černá obrazovka               | B nebo .                             | B nebo .          |
+| Bílá obrazovka                | W nebo ,                             | W nebo ,          |
+| Obnovit po zhasnutí obrazovky | libovolná klávesa                    | libovolná klávesa |
+| Ukončit prezentaci            | Esc                                  | Esc               |
 
 Spuštění od aktuálního snímku bere na macOS ⌘⏎ i ⇧F5. Ve Windows zůstává stejná klávesa vyhrazena pro pohyb mezi zástupnými symboly.
 
 ### Režim čtení
 
-| Akce                | macOS             | Windows / Linux                      |
-| ------------------- | ----------------- | ------------------------------------ |
-| Další snímek        | → ↓ ␣ ⏎ Page Down | Right, Down, Space, Enter, Page Down |
-| Předchozí snímek    | ← ↑ Page Up       | Left, Up, Page Up                    |
-| Ukončit režim čtení | Esc               | Esc                                  |
+| Akce                | Windows / Linux                      | macOS             |
+| ------------------- | ------------------------------------ | ----------------- |
+| Další snímek        | Right, Down, Space, Enter, Page Down | → ↓ ␣ ⏎ Page Down |
+| Předchozí snímek    | Left, Up, Page Up                    | ← ↑ Page Up       |
+| Ukončit režim čtení | Esc                                  | Esc               |
 
 Stiskněte **Esc**, abyste se dostali ven z čehokoli, v čem právě jste — výřezu, tvaru, který kreslíte, **Úpravy bodů**, skupiny, pera, zvýrazňovače nebo gumy, přehrávače nebo **režimu čtení** — a abyste zrušili výběr.
 
@@ -433,30 +445,30 @@ PDF nemá vlastní menu, takže každý chord níže sleduje aktivní panel a fu
 
 ### Soubor a úpravy
 
-| Akce                    | macOS | Windows / Linux |
-| ----------------------- | ----- | --------------- |
-| Uložit                  | ⌘S    | Ctrl+S          |
-| Zpět                    | ⌘Z    | Ctrl+Z          |
-| Znovu                   | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Najít (otevřít hledání) | ⌘F    | Ctrl+F          |
-| Tisk                    | ⌘P    | Ctrl+P          |
+| Akce                    | Windows / Linux | macOS |
+| ----------------------- | --------------- | ----- |
+| Uložit                  | Ctrl+S          | ⌘S    |
+| Zpět                    | Ctrl+Z          | ⌘Z    |
+| Znovu                   | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Najít (otevřít hledání) | Ctrl+F          | ⌘F    |
+| Tisk                    | Ctrl+P          | ⌘P    |
 
 Zpět a Znovu procházejí historií dokumentu; když je kurzor v textovém poli, nechají ⌘Z tomu poli. ⌘P otevírá stejné dialogové okno tisku v aplikaci jako tlačítko Tisk na panelu nástrojů.
 
 ### Zobrazení
 
-| Akce                 | macOS            | Windows / Linux     |
-| -------------------- | ---------------- | ------------------- |
-| Přiblížit            | ⌘=               | Ctrl+=              |
-| Oddálit              | ⌘-               | Ctrl+-              |
-| Přizpůsobit šířce    | ⌘0               | Ctrl+0              |
-| Plynulé přiblížování | ⌘ + kolečko myši | Ctrl + kolečko myši |
+| Akce                 | Windows / Linux     | macOS            |
+| -------------------- | ------------------- | ---------------- |
+| Přiblížit            | Ctrl+=              | ⌘=               |
+| Oddálit              | Ctrl+-              | ⌘-               |
+| Přizpůsobit šířce    | Ctrl+0              | ⌘0               |
+| Plynulé přiblížování | Ctrl + kolečko myši | ⌘ + kolečko myši |
 
 Přiblížit reagují také ⌘+ a Ctrl++.
 
 ### Pohyb po stránkách
 
-| Akce                        | macOS               | Windows / Linux     |
+| Akce                        | Windows / Linux     | macOS               |
 | --------------------------- | ------------------- | ------------------- |
 | Další strana                | →                   | →                   |
 | Předchozí strana            | ←                   | ←                   |
@@ -471,7 +483,7 @@ Ty nemají modifikátor, takže obě platformy vypadají stejně. ↓ a ↑ jsou
 
 ### Výběr a úpravy
 
-| Akce                        | macOS                 | Windows / Linux       |
+| Akce                        | Windows / Linux       | macOS                 |
 | --------------------------- | --------------------- | --------------------- |
 | Odstranit vybranou poznámku | Delete nebo Backspace | Delete nebo Backspace |
 
@@ -479,21 +491,21 @@ Funguje jen tehdy, když je vybrána poznámka, razítko, redakce nebo obrázek.
 
 ### Panel miniatur
 
-| Akce                          | macOS                 | Windows / Linux       |
+| Akce                          | Windows / Linux       | macOS                 |
 | ----------------------------- | --------------------- | --------------------- |
-| Vybírat stránky po jedné      | ⌘ + kliknutí          | Ctrl + kliknutí       |
-| Vybrat souvislou řadu stránek | ⇧ + kliknutí          | Shift + kliknutí      |
-| Vybrat všechny stránky        | ⌘A                    | Ctrl+A                |
+| Vybírat stránky po jedné      | Ctrl + kliknutí       | ⌘ + kliknutí          |
+| Vybrat souvislou řadu stránek | Shift + kliknutí      | ⇧ + kliknutí          |
+| Vybrat všechny stránky        | Ctrl+A                | ⌘A                    |
 | Odstranit vybrané stránky     | Delete nebo Backspace | Delete nebo Backspace |
 
 Vybrané stránky jsou podbarvené. Kliknutím pravým tlačítkem na jednu z nich nebo kartou Stránka je společně otočíte, odstraníte nebo extrahujete; přetažením jedné přesunete všechny. Escape nebo obyčejné kliknutí na stránku výběr zruší. ⌘A a Delete fungují, když má panel fokus.
 
 ### Escape a dialogová okna
 
-| Akce                             | macOS  | Windows / Linux |
-| -------------------------------- | ------ | --------------- |
-| Zrušit nejvyšší stav             | Escape | Escape          |
-| Potvrdit otevřené dialogové okno | Enter  | Enter           |
+| Akce                             | Windows / Linux | macOS  |
+| -------------------------------- | --------------- | ------ |
+| Zrušit nejvyšší stav             | Escape          | Escape |
+| Potvrdit otevřené dialogové okno | Enter           | Enter  |
 
 Escape rozvinuje jednu vrstvu po druhé — nejdřív otevřené dialogové okno, pak překryv AI, koncept textu, panel hledání a nakonec samotný výběr. Když je kurzor ve vyhledávacím poli, Enter a ⇧Enter přecházejí na další a předchozí shodu a Escape zavírá panel; když je kurzor v nové textové poznámce, ⌘⏎ ji potvrzuje.
 
@@ -503,38 +515,38 @@ GenOffice Markdown upravuje Markdown s živým náhledem vedle sebe.
 
 ### Soubor a zobrazení
 
-| Akce                     | macOS      | Windows / Linux    |
-| ------------------------ | ---------- | ------------------ |
-| Uložit                   | ⌘S         | Ctrl+S             |
-| Uložit jako              | ⇧⌘S        | Ctrl+Shift+S       |
-| Tisk                     | ⌘P         | Ctrl+P             |
-| Najít                    | ⌘F         | Ctrl+F             |
-| Přepnout zdroj / náhled  | ⌘E         | Ctrl+E             |
-| Přiblížit                | ⌘= nebo ⌘+ | Ctrl+= nebo Ctrl++ |
-| Oddálit                  | ⌘-         | Ctrl+-             |
-| Skutečná velikost (100%) | ⌘0         | Ctrl+0             |
+| Akce                     | Windows / Linux    | macOS      |
+| ------------------------ | ------------------ | ---------- |
+| Uložit                   | Ctrl+S             | ⌘S         |
+| Uložit jako              | Ctrl+Shift+S       | ⇧⌘S        |
+| Tisk                     | Ctrl+P             | ⌘P         |
+| Najít                    | Ctrl+F             | ⌘F         |
+| Přepnout zdroj / náhled  | Ctrl+E             | ⌘E         |
+| Přiblížit                | Ctrl+= nebo Ctrl++ | ⌘= nebo ⌘+ |
+| Oddálit                  | Ctrl+-             | ⌘-         |
+| Skutečná velikost (100%) | Ctrl+0             | ⌘0         |
 
 Oddálit bere také ⌘_ a Ctrl+_. Přibližuje také sevření trackpadu, nebo držení ⌘ nebo Ctrl a posouvání nad dokumentem.
 
 ### Bloky
 
-| Akce                                                   | macOS | Windows / Linux      |
-| ------------------------------------------------------ | ----- | -------------------- |
-| Duplikovat vybrané bloky                               | ⌘D    | Ctrl+D               |
-| Odstranit vybrané bloky                                | ⇧⌘⌫   | Ctrl+Shift+Backspace |
-| Posunout vybraný blok nahoru                           | ⇧⌘↑   | Ctrl+Shift+ArrowUp   |
-| Posunout vybraný blok dolů                             | ⇧⌘↓   | Ctrl+Shift+ArrowDown |
-| Vložit odkaz na výběr                                  | ⌘K    | Ctrl+K               |
-| Odebrat odkaz (stiskněte znovu, když je odkaz aktivní) | ⌘K    | Ctrl+K               |
+| Akce                                                   | Windows / Linux      | macOS |
+| ------------------------------------------------------ | -------------------- | ----- |
+| Duplikovat vybrané bloky                               | Ctrl+D               | ⌘D    |
+| Odstranit vybrané bloky                                | Ctrl+Shift+Backspace | ⇧⌘⌫   |
+| Posunout vybraný blok nahoru                           | Ctrl+Shift+ArrowUp   | ⇧⌘↑   |
+| Posunout vybraný blok dolů                             | Ctrl+Shift+ArrowDown | ⇧⌘↓   |
+| Vložit odkaz na výběr                                  | Ctrl+K               | ⌘K    |
+| Odebrat odkaz (stiskněte znovu, když je odkaz aktivní) | Ctrl+K               | ⌘K    |
 
 ### Uvnitř matematického bloku
 
 Ty platí jen, když je otevřen plovoucí editor LaTeX.
 
-| Akce                      | macOS | Windows / Linux |
-| ------------------------- | ----- | --------------- |
-| Použít vzorec             | ⌘⏎    | Ctrl+⏎          |
-| Zavřít editor bez použití | Esc   | Esc             |
+| Akce                      | Windows / Linux | macOS |
+| ------------------------- | --------------- | ----- |
+| Použít vzorec             | Ctrl+⏎          | ⌘⏎    |
+| Zavřít editor bez použití | Esc             | Esc   |
 
 Použití prázdného vzorce místo toho smaže blok. Editor se také zavře při jakékoli změně dokumentu a kliknutím mimo se zavře.
 
@@ -544,54 +556,54 @@ GenOffice HTML zobrazuje editor kódu vedle živého náhledu. Klávesy, které 
 
 ### Soubor a zobrazení zdroje
 
-| Akce                                             | macOS      | Windows / Linux    |
-| ------------------------------------------------ | ---------- | ------------------ |
-| Uložit                                           | ⌘S         | Ctrl+S             |
-| Uložit jako                                      | ⇧⌘S        | Ctrl+Shift+S       |
-| Přepínat zobrazení (úpravy / rozdělení / náhled) | ⌘\         | Ctrl+\             |
-| Najít                                            | ⌘F         | Ctrl+F             |
-| Přiblížit                                        | ⌘= nebo ⌘+ | Ctrl+= nebo Ctrl++ |
-| Oddálit                                          | ⌘-         | Ctrl+-             |
-| Skutečná velikost (100%)                         | ⌘0         | Ctrl+0             |
+| Akce                                             | Windows / Linux    | macOS      |
+| ------------------------------------------------ | ------------------ | ---------- |
+| Uložit                                           | Ctrl+S             | ⌘S         |
+| Uložit jako                                      | Ctrl+Shift+S       | ⇧⌘S        |
+| Přepínat zobrazení (úpravy / rozdělení / náhled) | Ctrl+\             | ⌘\         |
+| Najít                                            | Ctrl+F             | ⌘F         |
+| Přiblížit                                        | Ctrl+= nebo Ctrl++ | ⌘= nebo ⌘+ |
+| Oddálit                                          | Ctrl+-             | ⌘-         |
+| Skutečná velikost (100%)                         | Ctrl+0             | ⌘0         |
 
 Oddálit bere také ⌘_ a Ctrl+_.
 
 ### Formátování a historie
 
-| Akce                       | macOS | Windows / Linux |
-| -------------------------- | ----- | --------------- |
-| Tučné                      | ⌘B    | Ctrl+B          |
-| Kurzíva                    | ⌘I    | Ctrl+I          |
-| Zpět                       | ⌘Z    | Ctrl+Z          |
-| Znovu                      | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Znovu (alternativní chord) | ⌘Y    | Ctrl+Y          |
+| Akce                       | Windows / Linux | macOS |
+| -------------------------- | --------------- | ----- |
+| Tučné                      | Ctrl+B          | ⌘B    |
+| Kurzíva                    | Ctrl+I          | ⌘I    |
+| Zpět                       | Ctrl+Z          | ⌘Z    |
+| Znovu                      | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Znovu (alternativní chord) | Ctrl+Y          | ⌘Y    |
 
 Uvnitř editoru kódu nebo formulářového pole přebírají vlastní klávesy úprav daného pole.
 
 ### V rámci náhledu, s vybraným prvkem
 
-| Akce                           | macOS      | Windows / Linux    |
-| ------------------------------ | ---------- | ------------------ |
-| Zeptej se AI na prvek          | ⌘K         | Ctrl+K             |
-| Odstranit prvek                | ⌫ / Delete | Backspace / Delete |
-| Předchozí sourozenec           | ↑          | ArrowUp            |
-| Následující sourozenec         | ↓          | ArrowDown          |
-| Vybrat nadřazený prvek         | ←          | ArrowLeft          |
-| Vybrat prvního potomka         | →          | ArrowRight         |
-| Posunout prvek výš v dokumentu | ⌥↑         | Alt+ArrowUp        |
-| Posunout prvek níž v dokumentu | ⌥↓         | Alt+ArrowDown      |
-| Zrušit výběr                   | Esc        | Esc                |
+| Akce                           | Windows / Linux    | macOS      |
+| ------------------------------ | ------------------ | ---------- |
+| Zeptej se AI na prvek          | Ctrl+K             | ⌘K         |
+| Odstranit prvek                | Backspace / Delete | ⌫ / Delete |
+| Předchozí sourozenec           | ArrowUp            | ↑          |
+| Následující sourozenec         | ArrowDown          | ↓          |
+| Vybrat nadřazený prvek         | ArrowLeft          | ←          |
+| Vybrat prvního potomka         | ArrowRight         | →          |
+| Posunout prvek výš v dokumentu | Alt+ArrowUp        | ⌥↑         |
+| Posunout prvek níž v dokumentu | Alt+ArrowDown      | ⌥↓         |
+| Zrušit výběr                   | Esc                | Esc        |
 
 Každá z nich potřebuje už vybraný prvek; když nic není vybráno, klávesa nedělá nic.
 
 ### V rámci náhledu, při úpravě textu na místě
 
-| Akce                                 | macOS | Windows / Linux |
-| ------------------------------------ | ----- | --------------- |
-| Potvrdit úpravu                      | Esc   | Esc             |
-| Potvrdit úpravu (alternativní chord) | ⌘⏎    | Ctrl+⏎          |
-| Ztučnit vybraný rozsah               | ⌘B    | Ctrl+B          |
-| Nastavit kurzívu vybranému rozsahu   | ⌘I    | Ctrl+I          |
+| Akce                                 | Windows / Linux | macOS |
+| ------------------------------------ | --------------- | ----- |
+| Potvrdit úpravu                      | Esc             | Esc   |
+| Potvrdit úpravu (alternativní chord) | Ctrl+⏎          | ⌘⏎    |
+| Ztučnit vybraný rozsah               | Ctrl+B          | ⌘B    |
+| Nastavit kurzívu vybranému rozsahu   | Ctrl+I          | ⌘I    |
 
 Potvrzení zachová to, co jste napsali, a vrátí prvek do vybrané polohy.
 
@@ -601,147 +613,147 @@ Tyto klávesy fungují, když je karta HWP/HWPX vpředu a dokument má fokus. Dv
 
 ### Soubor
 
-| Akce          | macOS | Windows / Linux      |
-| ------------- | ----- | -------------------- |
-| Nový dokument |       | Alt+N                |
-| Otevřít…      | ⌘O    | Ctrl+O / Alt+O       |
-| Uložit        | ⌘S    | Ctrl+S / Alt+S       |
-| Uložit jako…  | ⇧⌘S   | Ctrl+Shift+S / Alt+V |
-| Tisk          | ⌘P    | Ctrl+P / Alt+P       |
+| Akce          | Windows / Linux      | macOS |
+| ------------- | -------------------- | ----- |
+| Nový dokument | Alt+N                |       |
+| Otevřít…      | Ctrl+O / Alt+O       | ⌘O    |
+| Uložit        | Ctrl+S / Alt+S       | ⌘S    |
+| Uložit jako…  | Ctrl+Shift+S / Alt+V | ⇧⌘S   |
+| Tisk          | Ctrl+P / Alt+P       | ⌘P    |
 
 ### Úpravy
 
-| Akce                  | macOS       | Windows / Linux              |
-| --------------------- | ----------- | ---------------------------- |
-| Zpět                  | ⌃Z          | Ctrl+Z                       |
-| Znovu                 | ⌃⇧Z         | Ctrl+Shift+Z                 |
-| Odstranit řádek       | ⌃Y          | Ctrl+Y                       |
-| Vyjmout               | ⌃X          | Ctrl+X                       |
-| Kopírovat             | ⌃C          | Ctrl+C                       |
-| Vložit                | ⌃V          | Ctrl+V                       |
-| Odstranit             | ⌃E          | Ctrl+E                       |
-| Vybrat vše            | ⌃A          | Ctrl+A                       |
-| Kopírovat formátování | ⌥C          | Alt+C                        |
-| Najít                 | ⌃F / ⌃Q, F  | Ctrl+F / Ctrl+Q, F           |
-| Najít a nahradit      | ⌃F2 / ⌃Q, A | Ctrl+H / Ctrl+F2 / Ctrl+Q, A |
-| Najít další           | ⌃L          | Ctrl+L                       |
-| Hledat zpět           | ⌃Q, L       | Ctrl+Q, L                    |
-| Přejít na             | ⌥G          | Alt+G                        |
-| Porovnat dokumenty    | ⌥⇧V         | Alt+Shift+V                  |
+| Akce                  | Windows / Linux              | macOS       |
+| --------------------- | ---------------------------- | ----------- |
+| Zpět                  | Ctrl+Z                       | ⌃Z          |
+| Znovu                 | Ctrl+Shift+Z                 | ⌃⇧Z         |
+| Odstranit řádek       | Ctrl+Y                       | ⌃Y          |
+| Vyjmout               | Ctrl+X                       | ⌃X          |
+| Kopírovat             | Ctrl+C                       | ⌃C          |
+| Vložit                | Ctrl+V                       | ⌃V          |
+| Odstranit             | Ctrl+E                       | ⌃E          |
+| Vybrat vše            | Ctrl+A                       | ⌃A          |
+| Kopírovat formátování | Alt+C                        | ⌥C          |
+| Najít                 | Ctrl+F / Ctrl+Q, F           | ⌃F / ⌃Q, F  |
+| Najít a nahradit      | Ctrl+H / Ctrl+F2 / Ctrl+Q, A | ⌃F2 / ⌃Q, A |
+| Najít další           | Ctrl+L                       | ⌃L          |
+| Hledat zpět           | Ctrl+Q, L                    | ⌃Q, L       |
+| Přejít na             | Alt+G                        | ⌥G          |
+| Porovnat dokumenty    | Alt+Shift+V                  | ⌥⇧V         |
 
 ### Znak
 
-| Akce                      | macOS    | Windows / Linux      |
-| ------------------------- | -------- | -------------------- |
-| Tučné                     | ⌃B / ⌥⇧B | Ctrl+B / Alt+Shift+B |
-| Kurzíva                   | ⌃I / ⌥⇧I | Ctrl+I / Alt+Shift+I |
-| Podtržení                 | ⌃U / ⌥⇧U | Ctrl+U / Alt+Shift+U |
-| Normální formát           | ⌥⇧C      | Alt+Shift+C          |
-| Horní index               | ⌥⇧P      | Alt+Shift+P          |
-| Dolní index               | ⌥⇧S      | Alt+Shift+S          |
-| Formát znaku…             | ⌥L       | Alt+L                |
-| Zvětšit velikost písma    | ⌥⇧E / ⌃] | Alt+Shift+E / Ctrl+] |
-| Zmenšit velikost písma    | ⌥⇧R / ⌃[ | Alt+Shift+R / Ctrl+[ |
-| Zvětšit šířku znaků       | ⌥⇧K      | Alt+Shift+K          |
-| Zmenšit šířku znaků       | ⌥⇧J      | Alt+Shift+J          |
-| Zvětšit mezery mezi znaky | ⌥⇧W      | Alt+Shift+W          |
-| Zmenšit mezery mezi znaky | ⌥⇧N      | Alt+Shift+N          |
-| Černý text                | ⌃M, K    | Ctrl+M, K            |
-| Červený text              | ⌃M, R    | Ctrl+M, R            |
-| Modrý text                | ⌃M, B    | Ctrl+M, B            |
-| Švestkový text            | ⌃M, D    | Ctrl+M, D            |
-| Zelený text               | ⌃M, G    | Ctrl+M, G            |
-| Žlutý text                | ⌃M, Y    | Ctrl+M, Y            |
-| Tyrkysový text            | ⌃M, C    | Ctrl+M, C            |
-| Bílý text                 | ⌃M, W    | Ctrl+M, W            |
+| Akce                      | Windows / Linux      | macOS    |
+| ------------------------- | -------------------- | -------- |
+| Tučné                     | Ctrl+B / Alt+Shift+B | ⌃B / ⌥⇧B |
+| Kurzíva                   | Ctrl+I / Alt+Shift+I | ⌃I / ⌥⇧I |
+| Podtržení                 | Ctrl+U / Alt+Shift+U | ⌃U / ⌥⇧U |
+| Normální formát           | Alt+Shift+C          | ⌥⇧C      |
+| Horní index               | Alt+Shift+P          | ⌥⇧P      |
+| Dolní index               | Alt+Shift+S          | ⌥⇧S      |
+| Formát znaku…             | Alt+L                | ⌥L       |
+| Zvětšit velikost písma    | Alt+Shift+E / Ctrl+] | ⌥⇧E / ⌃] |
+| Zmenšit velikost písma    | Alt+Shift+R / Ctrl+[ | ⌥⇧R / ⌃[ |
+| Zvětšit šířku znaků       | Alt+Shift+K          | ⌥⇧K      |
+| Zmenšit šířku znaků       | Alt+Shift+J          | ⌥⇧J      |
+| Zvětšit mezery mezi znaky | Alt+Shift+W          | ⌥⇧W      |
+| Zmenšit mezery mezi znaky | Alt+Shift+N          | ⌥⇧N      |
+| Černý text                | Ctrl+M, K            | ⌃M, K    |
+| Červený text              | Ctrl+M, R            | ⌃M, R    |
+| Modrý text                | Ctrl+M, B            | ⌃M, B    |
+| Švestkový text            | Ctrl+M, D            | ⌃M, D    |
+| Zelený text               | Ctrl+M, G            | ⌃M, G    |
+| Žlutý text                | Ctrl+M, Y            | ⌃M, Y    |
+| Tyrkysový text            | Ctrl+M, C            | ⌃M, C    |
+| Bílý text                 | Ctrl+M, W            | ⌃M, W    |
 
 ### Odstavec
 
-| Akce                        | macOS   | Windows / Linux |
-| --------------------------- | ------- | --------------- |
-| Zarovnat doleva             | ⌃⇧L     | Ctrl+Shift+L    |
-| Na střed                    | ⌃⇧C     | Ctrl+Shift+C    |
-| Zarovnat doprava            | ⌃⇧R     | Ctrl+Shift+R    |
-| Zarovnat přes šířku         | ⌃⇧M     | Ctrl+Shift+M    |
-| Rozdělit                    | ⌃⇧T     | Ctrl+Shift+T    |
-| Zvětšit řádkování           | ⌥⇧Z     | Alt+Shift+Z     |
-| Zmenšit řádkování           | ⌥⇧A     | Alt+Shift+A     |
-| Formát odstavce…            | ⌥T      | Alt+T           |
-| Styl…                       | F6      | F6              |
-| Použít první až desátý styl | ⌃1 … ⌃0 | Ctrl+1 … Ctrl+0 |
-| Formát číslování odstavců   | ⌃K, N   | Ctrl+K, N       |
+| Akce                        | Windows / Linux | macOS   |
+| --------------------------- | --------------- | ------- |
+| Zarovnat doleva             | Ctrl+Shift+L    | ⌃⇧L     |
+| Na střed                    | Ctrl+Shift+C    | ⌃⇧C     |
+| Zarovnat doprava            | Ctrl+Shift+R    | ⌃⇧R     |
+| Zarovnat přes šířku         | Ctrl+Shift+M    | ⌃⇧M     |
+| Rozdělit                    | Ctrl+Shift+T    | ⌃⇧T     |
+| Zvětšit řádkování           | Alt+Shift+Z     | ⌥⇧Z     |
+| Zmenšit řádkování           | Alt+Shift+A     | ⌥⇧A     |
+| Formát odstavce…            | Alt+T           | ⌥T      |
+| Styl…                       | F6              | F6      |
+| Použít první až desátý styl | Ctrl+1 … Ctrl+0 | ⌃1 … ⌃0 |
+| Formát číslování odstavců   | Ctrl+K, N       | ⌃K, N   |
 
 ### Vložení
 
-| Akce                                    | macOS       | Windows / Linux    |
-| --------------------------------------- | ----------- | ------------------ |
-| Vložit tabulku                          | ⌃N, T       | Ctrl+N, T          |
-| Poznámka pod čarou                      | ⌃N, N       | Ctrl+N, N          |
-| Poznámka na konci                       | ⌃N, E       | Ctrl+N, E          |
-| Záhlaví                                 | ⌃N, H       | Ctrl+N, H          |
-| Číslo stránky                           | ⌃N, P       | Ctrl+N, P          |
-| Vložit obrázek                          | ⌃N, I       | Ctrl+N, I          |
-| Textové pole                            | ⌃N, B       | Ctrl+N, B          |
-| Rovnice                                 | ⌃N, M       | Ctrl+N, M          |
-| Vložit popisek                          | ⌃N, C       | Ctrl+N, C          |
-| Hypertextový odkaz                      | ⌃K, H       | Ctrl+K, H          |
-| Záložka                                 | ⌃K, B       | Ctrl+K, B          |
-| Vložit pole                             | ⌃K, E       | Ctrl+K, E          |
-| Řetězec data a času                     | ⌃K, D       | Ctrl+K, D          |
-| Upravit objekt, pole nebo tabulku/buňku | ⌃N, K       | Ctrl+N, K          |
-| Symboly                                 | ⌃F10 / ⌥F10 | Ctrl+F10 / Alt+F10 |
+| Akce                                    | Windows / Linux    | macOS       |
+| --------------------------------------- | ------------------ | ----------- |
+| Vložit tabulku                          | Ctrl+N, T          | ⌃N, T       |
+| Poznámka pod čarou                      | Ctrl+N, N          | ⌃N, N       |
+| Poznámka na konci                       | Ctrl+N, E          | ⌃N, E       |
+| Záhlaví                                 | Ctrl+N, H          | ⌃N, H       |
+| Číslo stránky                           | Ctrl+N, P          | ⌃N, P       |
+| Vložit obrázek                          | Ctrl+N, I          | ⌃N, I       |
+| Textové pole                            | Ctrl+N, B          | ⌃N, B       |
+| Rovnice                                 | Ctrl+N, M          | ⌃N, M       |
+| Vložit popisek                          | Ctrl+N, C          | ⌃N, C       |
+| Hypertextový odkaz                      | Ctrl+K, H          | ⌃K, H       |
+| Záložka                                 | Ctrl+K, B          | ⌃K, B       |
+| Vložit pole                             | Ctrl+K, E          | ⌃K, E       |
+| Řetězec data a času                     | Ctrl+K, D          | ⌃K, D       |
+| Upravit objekt, pole nebo tabulku/buňku | Ctrl+N, K          | ⌃N, K       |
+| Symboly                                 | Ctrl+F10 / Alt+F10 | ⌃F10 / ⌥F10 |
 
 ### Tabulka
 
-| Akce                    | macOS        | Windows / Linux        |
-| ----------------------- | ------------ | ---------------------- |
-| Přidat řádek/sloupec    | ⌥⏎ / ⌥Insert | Alt+Enter / Alt+Insert |
-| Odstranit řádek/sloupec | ⌥⌫           | Alt+Delete             |
-| Rozdělit buňku          | F5 → S       | F5 → S                 |
-| Sloučit buňky           | F5 → M       | F5 → M                 |
-| Součet bloku            | F5 → ⇧⌘S     | F5 → Ctrl+Shift+S      |
-| Průměr bloku            | F5 → ⌃⇧A     | F5 → Ctrl+Shift+A      |
-| Součin bloku            | F5 → ⌃⇧P     | F5 → Ctrl+Shift+P      |
-| Rozdělit tabulku        | ⌃N, A        | Ctrl+N, A              |
-| Spojit tabulky          | ⌃N, Z        | Ctrl+N, Z              |
-| Výpočtový vzorec        | ⌃N, F        | Ctrl+N, F              |
+| Akce                    | Windows / Linux        | macOS        |
+| ----------------------- | ---------------------- | ------------ |
+| Přidat řádek/sloupec    | Alt+Enter / Alt+Insert | ⌥⏎ / ⌥Insert |
+| Odstranit řádek/sloupec | Alt+Delete             | ⌥⌫           |
+| Rozdělit buňku          | F5 → S                 | F5 → S       |
+| Sloučit buňky           | F5 → M                 | F5 → M       |
+| Součet bloku            | F5 → Ctrl+Shift+S      | F5 → ⇧⌘S     |
+| Průměr bloku            | F5 → Ctrl+Shift+A      | F5 → ⌃⇧A     |
+| Součin bloku            | F5 → Ctrl+Shift+P      | F5 → ⌃⇧P     |
+| Rozdělit tabulku        | Ctrl+N, A              | ⌃N, A        |
+| Spojit tabulky          | Ctrl+N, Z              | ⌃N, Z        |
+| Výpočtový vzorec        | Ctrl+N, F              | ⌃N, F        |
 
 ### Výpočty v tabulce
 
 Fungují jen tehdy, když je kurzor v prázdné buňce tabulky. Samostatné klávesy počítají z buněk vlevo a z buněk nad.
 
-| Akce          | macOS | Windows / Linux |
-| ------------- | ----- | --------------- |
-| Součet vlevo  | ⇧⌘H   | Ctrl+Shift+H    |
-| Součet nahoře | ⌃⇧V   | Ctrl+Shift+V    |
-| Průměr vlevo  | ⌃⇧J   | Ctrl+Shift+J    |
-| Průměr nahoře | ⌃⇧B   | Ctrl+Shift+B    |
-| Součin vlevo  | ⌃⇧K   | Ctrl+Shift+K    |
-| Součin nahoře | ⌃⇧N   | Ctrl+Shift+N    |
+| Akce          | Windows / Linux | macOS |
+| ------------- | --------------- | ----- |
+| Součet vlevo  | Ctrl+Shift+H    | ⇧⌘H   |
+| Součet nahoře | Ctrl+Shift+V    | ⌃⇧V   |
+| Průměr vlevo  | Ctrl+Shift+J    | ⌃⇧J   |
+| Průměr nahoře | Ctrl+Shift+B    | ⌃⇧B   |
+| Součin vlevo  | Ctrl+Shift+K    | ⌃⇧K   |
+| Součin nahoře | Ctrl+Shift+N    | ⌃⇧N   |
 
 ### Stránka
 
-| Akce                   | macOS | Windows / Linux  |
-| ---------------------- | ----- | ---------------- |
-| Nastavení stránky      | F7    | F7               |
-| Zlom stránky           | ⌃⏎    | Ctrl+Enter       |
-| Zlom sloupce           | ⌃⇧⏎   | Ctrl+Shift+Enter |
-| Zlom nastavení sloupců | ⌃⌥⏎   | Ctrl+Alt+Enter   |
-| Nastavení oddílu       | ⌃N, G | Ctrl+N, G        |
-| Skrýt stránku          | ⌃N, S | Ctrl+N, S        |
+| Akce                   | Windows / Linux  | macOS |
+| ---------------------- | ---------------- | ----- |
+| Nastavení stránky      | F7               | F7    |
+| Zlom stránky           | Ctrl+Enter       | ⌃⏎    |
+| Zlom sloupce           | Ctrl+Shift+Enter | ⌃⇧⏎   |
+| Zlom nastavení sloupců | Ctrl+Alt+Enter   | ⌃⌥⏎   |
+| Nastavení oddílu       | Ctrl+N, G        | ⌃N, G |
+| Skrýt stránku          | Ctrl+N, S        | ⌃N, S |
 
 ### Zobrazení
 
-| Akce                                | macOS | Windows / Linux |
-| ----------------------------------- | ----- | --------------- |
-| Přiblížit                           | ⌃=    | Ctrl+=          |
-| Oddálit                             | ⌃-    | Ctrl+-          |
-| Přizpůsobit stránce                 | ⌃G, P | Ctrl+G, P       |
-| Přizpůsobit šířce                   | ⌃G, W | Ctrl+G, W       |
-| Přiblížit na 100 %                  | ⌃G, Q | Ctrl+G, Q       |
-| Sbalit nebo rozbalit sadu nástrojů  | ⌃F1   | Ctrl+F1         |
-| Zobrazit nebo skrýt značky odstavců | ⌃G, T | Ctrl+G, T       |
-| Zobrazit nebo skrýt řídicí značky   | ⌃G, C | Ctrl+G, C       |
-| Přejít na kartu Domů (mimo tabulku) | ⇧⌘H   | Ctrl+Shift+H    |
+| Akce                                | Windows / Linux | macOS |
+| ----------------------------------- | --------------- | ----- |
+| Přiblížit                           | Ctrl+=          | ⌃=    |
+| Oddálit                             | Ctrl+-          | ⌃-    |
+| Přizpůsobit stránce                 | Ctrl+G, P       | ⌃G, P |
+| Přizpůsobit šířce                   | Ctrl+G, W       | ⌃G, W |
+| Přiblížit na 100 %                  | Ctrl+G, Q       | ⌃G, Q |
+| Sbalit nebo rozbalit sadu nástrojů  | Ctrl+F1         | ⌃F1   |
+| Zobrazit nebo skrýt značky odstavců | Ctrl+G, T       | ⌃G, T |
+| Zobrazit nebo skrýt řídicí značky   | Ctrl+G, C       | ⌃G, C |
+| Přejít na kartu Domů (mimo tabulku) | Ctrl+Shift+H    | ⇧⌘H   |
 
 Klávesa zapsaná jako `Ctrl+N,T` znamená: stiskněte Ctrl+N, uvolněte a potom stiskněte T. `F5 → S` znamená vybrat blok buněk klávesou F5 a potom stisknout S. `Ctrl+1 … Ctrl+0` označují první až desátý styl dokumentu; `Ctrl+Alt+1 … Ctrl+Alt+0` použijí stejné styly. Když je vybraný blok buněk, `Ctrl+Shift+S` (v macOS `⇧⌘S`) je součet bloku; jinde tato klávesa ukládá jako.

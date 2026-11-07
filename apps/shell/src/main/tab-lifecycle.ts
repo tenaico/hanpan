@@ -42,12 +42,14 @@ export async function closeTabsInOrder(
 export interface ClosedTabEntry {
   kind: TabKind
   filePath: string
+  /** where the tab sat in the strip, so it comes back there (0.17 리뷰 v2 shell #39) */
+  index?: number
 }
 
 export interface RecentlyClosedTracker {
-  push(closed: { kind?: TabKind; filePath?: string }): void
+  push(closed: { kind?: TabKind; filePath?: string; index?: number }): void
   reopenNext(
-    openDocument: (filePath: string) => boolean,
+    openDocument: (filePath: string, entry?: ClosedTabEntry) => boolean,
     fileExists?: (filePath: string) => boolean,
   ): boolean
   getEntries(): readonly ClosedTabEntry[]
@@ -71,14 +73,18 @@ export function createRecentlyClosedTracker(
       if (closed.kind === 'home' || closed.kind === 'help') return
       const at = stack.findIndex((entry) => entry.filePath === closed.filePath)
       if (at >= 0) stack.splice(at, 1)
-      stack.push({ kind: closed.kind ?? 'docs', filePath: closed.filePath })
+      stack.push({
+        kind: closed.kind ?? 'docs',
+        filePath: closed.filePath,
+        ...(closed.index !== undefined ? { index: closed.index } : {}),
+      })
       if (stack.length > maxEntries) stack.shift()
     },
     reopenNext(openDocument, fileExists) {
       while (stack.length > 0) {
         const closed = stack.pop()!
         if (fileExists && !fileExists(closed.filePath)) continue
-        if (openDocument(closed.filePath)) return true
+        if (openDocument(closed.filePath, closed)) return true
       }
       return false
     },

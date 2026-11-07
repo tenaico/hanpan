@@ -54,12 +54,12 @@ export const ko = {
   appFontsMissing: '문서 글꼴이 설치되어 있지 않습니다: {names} (대체 글꼴로 표시)',
   appVerticalTextNotice:
     '세로쓰기 텍스트가 포함된 문서입니다(현재 가로쓰기로 표시되며 저장에는 영향이 없습니다)',
-  appNewDocCreated:
-    '빈 문서를 만들었습니다. 왼쪽 AI 패널에서 생성할 내용을 바로 입력할 수 있습니다',
+  appNewDocCreated: '빈 문서를 만들었습니다. 오른쪽 AI 패널에 만들 내용을 적어 보세요',
   appNewFailed: '새로 만들기 실패: {error}',
   appSaveFailed: '저장 실패: {error}',
   appAutoSavedAt: '자동 저장됨 ({time})',
   appSaved: '저장됨',
+  appUnsaved: '저장 안 됨',
   // Section breaks
   appSectionBreakInserted: '구역 나누기를 삽입했습니다({type})',
   appSectionBreakPending: '구역 나누기를 삽입했습니다. 새 구역은 저장 후 적용됩니다',
@@ -118,8 +118,8 @@ export const ko = {
   appPrintDuplexLong: '긴 쪽으로 넘김',
   appPrintDuplexShort: '짧은 쪽으로 넘김',
   appExportedPdf: 'PDF를 내보냈습니다: {path}',
-  appExportedHtml: 'HTML를 내보냈습니다: {path}',
-  appExportedMarkdown: 'Markdown를 내보냈습니다: {path}',
+  appExportedHtml: 'HTML을 내보냈습니다: {path}',
+  appExportedMarkdown: 'Markdown을 내보냈습니다: {path}',
   appExportMarkdownImagesDropped: '({count}개 이미지를 읽을 수 없어 건너뛰었습니다)',
   appExportedPdfMixed:
     'PDF를 내보냈습니다: {path}(용지 크기 혼합, {n}개 그룹을 페이지 순서로 병합)',
@@ -129,6 +129,8 @@ export const ko = {
   appExportingImages: '이미지 내보내는 중…',
   appExportImagesProgress: '이미지 {count}장 내보내는 중…',
   appExportImagesDone: '이미지 {count}장을 {dir}에 내보냈습니다',
+  appOpenExported: '열기',
+  appRevealExported: '폴더 열기',
   appExportImagesFailed: '이미지 내보내기 실패: {error}',
   appMixedExportOpening:
     '용지 크기가 혼합된 문서: 페이지 미리 보기를 열어 페이지별로 병합하여 내보내는 중…',
@@ -144,7 +146,7 @@ export const ko = {
   appCommentReopenedMsg: '메모를 다시 열었습니다',
   appCommentsTitle: '메모 ({n})',
   appCommentPlaceholder: '메모 입력…',
-  appCommentBtn: '메모',
+  appCommentBtn: '게시',
   appUnknownAuthor: '(작성자 알 수 없음)',
   appResolved: '해결됨',
   appResolvedComments: '해결된 메모 ({n})',
@@ -511,6 +513,7 @@ export const ko = {
   appMatchCase: '대/소문자 구분',
   appWholeWord: '단어 단위로',
   appNoResults: '결과 없음',
+  appReplacedCount: '{count}개를 바꿨습니다',
   appPrevMatch: '이전 (Shift+Enter)',
   appNextMatch: '다음 (Enter)',
   appCloseEsc: '닫기 (Esc)',
@@ -548,7 +551,7 @@ export const ko = {
   appPaginationPreview: '페이지 미리 보기',
   appPvCommented: '메모',
   appTotalPagesN: '전체 {n}페이지',
-  appPvHint: '읽기 전용 스냅숏입니다. 편집 후 다시 여세요 · Esc로 닫기',
+  appPvHint: '읽기 전용 화면입니다. 편집한 뒤 다시 여세요 · Esc로 닫기',
   appPvExportTip:
     '미리 보기 그대로 페이지 단위로 내보냅니다. 머리글/바닥글과 페이지 번호가 화면과 일치합니다',
   // Styles pane

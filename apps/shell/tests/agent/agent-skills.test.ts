@@ -1,6 +1,6 @@
 /**
  * The person's skills in the agent window (spec 6.2 to 6.6, 9.4): the session
- * MCP server's 13 tools, the two skill tools that only show something, the
+ * MCP server's 14 tools, the two skill tools that only show something, the
  * three management calls the agent window may make, a chip's instruction,
  * the template candidates and their redaction check, the one-time notice and
  * the "next session" line. Nothing here starts a program or calls a model.
@@ -93,11 +93,15 @@ const CONTROLS = {
   slidesControl: {} as never,
   openDocumentsControl: { list: async () => [] } as never,
   resolveTarget: async () => ({ id: 1 }) as never,
+  sendToAppControl: {
+    list: async () => [],
+    send: async () => ({ ok: false, problem: 'failed' }),
+  } as never,
 }
 
 describe('the session MCP server', () => {
-  it('has the 13 tools, the same list the programs’ start checks hold a session to', () => {
-    expect(AGENT_MCP_TOOL_NAMES).toHaveLength(13)
+  it('has the 14 tools, the same list the programs’ start checks hold a session to', () => {
+    expect(AGENT_MCP_TOOL_NAMES).toHaveLength(14)
     expect([...AGENT_MCP_TOOL_NAMES]).toEqual([...AGENT_APP_MCP_TOOLS])
     const names = buildAgentMcpTools(
       { version: '0.0.0', defaultSaveDir: () => 'C:\\Out', ...CONTROLS },
@@ -107,7 +111,7 @@ describe('the session MCP server', () => {
     expect(names.sort()).toEqual([...AGENT_MCP_TOOL_NAMES].sort())
   })
 
-  it('lists the 13 tools to a client that connects with the token (no program, no model)', async () => {
+  it('lists the 14 tools to a client that connects with the token (no program, no model)', async () => {
     const project = temp()
     const server = await startAgentMcpServer(
       { version: '0.0.0', defaultSaveDir: () => project, ...CONTROLS },

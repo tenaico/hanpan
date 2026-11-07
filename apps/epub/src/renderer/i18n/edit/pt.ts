@@ -6,6 +6,7 @@ export const pt = {
   editBold: 'Negrito',
   editItalic: 'Itálico',
   editReplace: 'Substituir',
+  editFindReplaceTitle: 'Localizar e substituir',
   editReplaceWith: 'Substituir por',
   editReplaceOne: 'Substituir',
   editReplaceAll: 'Substituir tudo',

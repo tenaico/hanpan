@@ -154,7 +154,8 @@ export const ar = {
   dlgPivotAddValue: '+ إضافة حقل قيم',
   dlgPivotAddCalc: '+ إضافة حقل محسوب',
   dlgPivotTargetCell: 'خلية البداية الوجهة',
-  dlgPivotTargetPlaceholder: 'مثل F1',
+  dlgPivotTargetPlaceholder: 'مثل {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'تبقى الخلية العلوية اليسرى لمنطقة الإخراج ثابتة أثناء التحرير',
   dlgPivotNote:
     'ينشئ PivotTable حقيقيًا بتنسيق OOXML يمكن لـ Excel/WPS التعرف عليه وتحديثه بعد الحفظ.',

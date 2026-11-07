@@ -67,6 +67,11 @@ export const ja = {
   ribbonOpen: '開く…',
   ribbonSave: '保存',
   ribbonSaveAs: '名前を付けて保存…',
+  ribbonExportPdf: 'PDF としてエクスポート…',
+  ribbonExportHtml: 'HTML としてエクスポート…',
+  ribbonExportMarkdown: 'Markdown としてエクスポート…',
+  ribbonExportImages: '画像としてエクスポート…',
+  ribbonPrint: '印刷…',
   // Home · Clipboard
   ribbonPaste: '貼り付け',
   ribbonCutTip: '切り取り (⌘X)',
@@ -963,4 +968,10 @@ export const ja = {
   ribbonMailingsMerged: '{n} 個のドキュメントを差し込みました',
   ribbonMailingsMergeFailed: '差し込みに失敗しました',
   ribbonMailingsClose: '閉じる',
+  ribbonThemeFontOfficeKo: 'Office (Malgun Gothic)',
+  ribbonThemeFontMalgun: 'Malgun Gothic',
+  ribbonThemeFontPretendard: 'Pretendard',
+  ribbonThemeFontNoto: 'Noto Sans KR · Noto Serif KR',
+  ribbonThemeFontDotumBatang: 'Dotum · Batang',
+  ribbonStyleTableGrid: '表 (格子)',
 } satisfies Record<keyof typeof zh, string>

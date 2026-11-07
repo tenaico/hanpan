@@ -6,6 +6,7 @@ export const ja = {
   editBold: '太字',
   editItalic: '斜体',
   editReplace: '置換',
+  editFindReplaceTitle: '検索と置換',
   editReplaceWith: '置換後の文字',
   editReplaceOne: '置換',
   editReplaceAll: 'すべて置換',

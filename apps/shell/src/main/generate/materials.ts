@@ -60,6 +60,11 @@ export const SUPPORTED_MATERIAL_EXTS: ReadonlySet<string> = new Set([
   'xlsm',
   'pdf',
   'xmind',
+  // Hangul, ODT and EPUB: the attachment reader takes them too (0.17 리뷰 v2 shell #6)
+  'hwp',
+  'hwpx',
+  'odt',
+  'epub',
   ...IMAGE_MATERIAL_EXTS,
 ])
 

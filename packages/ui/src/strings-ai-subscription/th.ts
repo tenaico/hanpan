@@ -72,6 +72,8 @@ export const th = {
   usageWindowFiveHour: 'โควตา 5 ชั่วโมง',
   usageWindowSevenDay: 'โควตา 7 วัน',
   noticeTitle: 'ก่อนใช้ AI ด้วยการสมัครสมาชิกของคุณ',
+  noticeSummary: 'เอกสารและการสนทนาจะส่งไปยัง Anthropic หรือ OpenAI ด้วยบัญชีของคุณเอง',
+  noticeMore: 'รายละเอียด',
   noticeSend:
     'เนื้อหาเอกสารและบทสนทนาจะถูกส่งไปยัง Anthropic หรือ OpenAI ภายใต้บัญชีของคุณเอง ทุกคำขอจะมีชื่อ หัวข้อ และคำอธิบายของสกิลทุกตัวที่ตั้งเป็น "ให้ AI ตัดสินใจ" ไปด้วย สกิลที่ใช้และไฟล์สกิลที่ AI อ่านก็จะถูกส่งไปด้วย',
   noticeTraining:

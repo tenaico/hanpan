@@ -27,6 +27,9 @@ export function GonguPanel(p: {
   api: GonguApi
   /** the board places the picture; false when it was not inserted (the person said no) */
   insert(picked: Picked): boolean
+  /** opens Settings → Integrations, where the key goes; shown when there is no usable key */
+  openSettings?: () => void
+  openSettingsLabel?: string
 }) {
   const t = (key: GonguStringKey, params?: Record<string, string | number>) =>
     gonguUiText(p.lang as never, key, params)
@@ -96,6 +99,18 @@ export function GonguPanel(p: {
       {error && (
         <p className="dz-muted dz-gongu-error" role="status">
           {t(error)}
+          {/* the board is a window of its own: the way to Settings is a button (점검 v2 #16) */}
+          {(error === 'gpNoKey' || error === 'gonguErrBadKey' || error === 'gonguErrExpired') &&
+            p.openSettings && (
+              <button
+                type="button"
+                className="dz-gongu-settings"
+                onClick={p.openSettings}
+                data-action="gongu-open-settings"
+              >
+                {p.openSettingsLabel}
+              </button>
+            )}
         </p>
       )}
       {!error && asked && !busy && works.length === 0 && (

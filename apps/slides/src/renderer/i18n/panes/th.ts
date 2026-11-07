@@ -291,6 +291,11 @@ export const th = {
   paneShowMenuScreen: 'หน้าจอ',
   paneShowMenuBlack: 'หน้าจอสีดำ',
   paneShowMenuWhite: 'หน้าจอสีขาว',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'จบการนำเสนอ',
   panePresenterWhiteOn: 'หน้าจอสีขาว (กด W เพื่อกลับ)',
 } satisfies Record<keyof typeof zh, string>

@@ -26,6 +26,7 @@ import {
   EXPORT_KINDS,
   exportFileBase,
   exportRequestAllowed,
+  mindmapPrintOptions,
   registerMindmapExportIpc,
   withExportExtension,
 } from '../src/main/export-main'
@@ -89,6 +90,21 @@ describe('the outline', () => {
     const options = dialogOptions()
     expect(options.defaultPath).toBe(join(dir, 'maps', 'Plan.md'))
     expect(options.filters).toEqual([{ name: 'Markdown', extensions: ['md'] }])
+  })
+
+  it('each save dialog is titled with what it exports, not a bare "Save As"', async () => {
+    const titles: unknown[] = []
+    for (const [channel, request] of [
+      [MINDMAP_CHANNELS.exportPng, { bytes: PNG, suggestedName: 'x' }],
+      [MINDMAP_CHANNELS.exportPdf, { html: '<p>x</p>', suggestedName: 'x' }],
+      [MINDMAP_CHANNELS.exportMarkdown, { text: 'x', suggestedName: 'x' }],
+    ] as const) {
+      showSaveDialog.mockReset()
+      pick(null)
+      await call(channel, request)
+      titles.push((dialogOptions() as unknown as { title?: string }).title)
+    }
+    expect(titles).toEqual(['Export as Image', 'Export as PDF', 'Export as Markdown Outline'])
   })
 
   it('a cancelled dialog writes nothing and is no failure', async () => {
@@ -161,5 +177,46 @@ describe('the PDF and print', () => {
     const result = await call(MINDMAP_CHANNELS.exportPdf, { html: '<p>x</p>', suggestedName: 'x' })
     expect(result).toEqual({ ok: true, canceled: true })
     expect(existsSync(join(dir, 'x.pdf'))).toBe(false)
+  })
+})
+
+describe('printing from the in-app print dialog', () => {
+  const base = { silent: false, printBackground: true }
+
+  it('a printer picked in the dialog prints without the system dialog, so the app is not held up', () => {
+    const named = mindmapPrintOptions(base, { deviceName: 'Office printer', copies: 2 })
+    expect(named).toMatchObject({ silent: true, deviceName: 'Office printer', copies: 2 })
+    const fallback = mindmapPrintOptions(base, { deviceName: '' })
+    expect(fallback.silent).toBe(true)
+    expect('deviceName' in fallback).toBe(false)
+  })
+
+  it('the system dialog only when asked for, and always one landscape A4 page with no margin', () => {
+    for (const job of [undefined, { deviceName: null }, 'junk']) {
+      const options = mindmapPrintOptions(base, job)
+      expect(options.silent).toBe(false)
+      expect(options).toMatchObject({
+        landscape: true,
+        pageSize: 'A4',
+        printBackground: true,
+        margins: { marginType: 'none' },
+      })
+    }
+  })
+
+  it('lists the printers of the calling view', async () => {
+    const list = handlers.get(MINDMAP_CHANNELS.printers)!
+    const printers = await list({
+      sender: {
+        getPrintersAsync: async () => [
+          { name: 'p1', displayName: 'Front desk' },
+          { name: 'p2', displayName: '' },
+        ],
+      },
+    })
+    expect(printers).toEqual([
+      { name: 'p1', displayName: 'Front desk' },
+      { name: 'p2', displayName: 'p2' },
+    ])
   })
 })

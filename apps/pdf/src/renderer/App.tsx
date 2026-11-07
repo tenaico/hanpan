@@ -12,7 +12,7 @@ import { handlePdfControl, type ControlRequest } from './control'
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react'
 // legacy build: the modern build relies on new APIs like Math.sumPrecise that the current
 // Electron V8 lacks, making embedded font parsing fail and whole pages render as garbled raw char codes
-import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
+import { GlobalWorkerOptions, OPS, getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
 import { AiPanel } from './ai/AiPanel'
@@ -81,6 +81,8 @@ type Arrange =
 const PASTE_OFFSET_PTS = 12
 /** Auto-detect stops here so a long scanned form cannot flood the document with fields */
 const DETECT_FIELD_CAP = 300
+/** Raster width (CSS px) of the page drawn in the print dialog's preview */
+const PRINT_PREVIEW_W = 120
 
 /** Field names still taken once pending widget removals are applied (a fully removed field frees its name) */
 function liveFieldNames(
@@ -144,7 +146,15 @@ import { buildHeadingOutline, remapOutlinePages } from './heading-outline'
 import { printPdf } from './print'
 import { PasswordDialog } from './PasswordDialog'
 import { PropertiesDialog } from './PropertiesDialog'
+import { InlineModal } from './InlineModal'
+import { splitFileCount } from './split-preview'
+import { printPreviewTarget } from './print-preview'
+import { shouldShowFormBanner } from './form-banner'
+import { shouldFoldAiForBilingual } from './bilingual/fold-ai'
+import { documentLooksBlank } from './blank-document'
+import { markupButtonAction, selectionPopupPosition, type MarkupToolType } from './markup-tool'
 import { ConvertDialog } from './convert/ConvertDialog'
+import { FileMenu } from './FileMenu'
 import { ExportImagesMenu } from './convert/ExportImagesMenu'
 import { exportEmbeddedImages } from './convert/embedded-images'
 import { AiPageReading, type AiPageReadingHandle } from './ai-read/AiPageReading'
@@ -352,6 +362,7 @@ import type { LocalTextEdit, LocalTextInsert, TextDraft } from './text-edit-prev
 import { planEditOps, reduceBucket } from './edit-ops'
 import type { Bucket, Op, OpContext, PlanResult } from './edit-ops'
 import { rectsNear } from './edit-state'
+import { useRibbonFit } from './ribbon-fit'
 import type {
   StampConfig,
   SavedMarkupAnnot,
@@ -621,6 +632,9 @@ export default function App() {
   /** One-shot prompt pushed by the ribbon AI buttons; the panel auto-runs it (docs preset pattern) */
   const [aiPreset, setAiPreset] = useState<{ text: string; nonce: number } | null>(null)
   const [ribbonTab, setRibbonTab] = useState<RibbonTab>('home')
+  /** the ribbon band: it takes a denser layout when its tools run past the window edge */
+  const [ribbonBody, setRibbonBody] = useState<HTMLDivElement | null>(null)
+  useRibbonFit(ribbonBody, [lang, ribbonTab, collapse.rootClass])
   const [spread, setSpread] = useState<1 | 2>(1)
   // side-by-side translation view; the revision rebuilds its tree after a save
   const [bilingualOn, setBilingualOn] = useState(false)
@@ -1106,6 +1120,27 @@ export default function App() {
     y: number
     quads: Map<number, number[][]>
   } | null>(null)
+  /** Markup button pressed with nothing selected: the next text drag gets this markup */
+  const [markupTool, setMarkupTool] = useState<MarkupToolType | null>(null)
+  /** Nothing drawn on any page yet (a new blank PDF): the AI panel offers no summaries */
+  const [documentBlank, setDocumentBlank] = useState(false)
+  useEffect(() => {
+    setDocumentBlank(false)
+    if (!doc) return
+    let cancelled = false
+    void documentLooksBlank(doc, OPS).then((blank) => {
+      if (!cancelled) setDocumentBlank(blank)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [doc])
+  /** The "this PDF has fields to fill" strip was closed or acted on for this file */
+  const [formBannerDismissed, setFormBannerDismissed] = useState(false)
+  // Another pointer mode takes over the drag: the armed markup tool steps aside
+  useEffect(() => {
+    if (drawTool || editTextMode || editImageMode) setMarkupTool(null)
+  }, [drawTool, editTextMode, editImageMode])
   /** AI scope selection cached at mouseup — the native DOM selection collapses the
       moment focus moves into the AI panel, so the chip/context read this snapshot.
       Cleared by clicking elsewhere on the document or the chip's ×. */
@@ -1379,9 +1414,13 @@ export default function App() {
     ) => {
       const data = await window.pdfApi.readFile(path)
       const bytes = new Uint8Array(data)
+      // pdf.js moves the buffer to its worker, after which byteLength reads 0
+      // (the properties dialog then showed every file as "1 KB")
+      const fileByteLength = bytes.byteLength
       setFormHasXfa(hasXfaMarker(bytes))
       if (!saved) {
         setFormCatalog(null)
+        setFormBannerDismissed(false)
         setSavedStaticFormFills([])
         setActiveFormWidgetId(null)
         formControlRefs.current.clear()
@@ -1678,7 +1717,7 @@ export default function App() {
           return mapped.every((n, i) => n === i) ? null : mapped
         })
       }
-      setFileSize(data.byteLength)
+      setFileSize(fileByteLength)
       setSelected(null)
       setMarkupMenu(null)
       setPageSel(EMPTY_PAGE_SELECTION)
@@ -2989,14 +3028,38 @@ export default function App() {
           text: selText,
         })
       }
+      // A markup tool armed from the ribbon applies the moment the drag ends
+      if (markupTool && !readOnly) {
+        applyMarkup(markupTool)
+        sel.removeAllRanges()
+        setSelPopup(null)
+        setAiSelection(null)
+        return
+      }
       // Read-only documents still get the bar for its Ask-AI entry (Q&A works);
       // the markup buttons themselves are hidden in that state
       setSelPopup({
-        x: Math.min(Math.max(box.left + box.width / 2, 70), window.innerWidth - 70),
-        y: box.top >= 52 ? box.top - 44 : Math.min(box.bottom + 8, window.innerHeight - 44),
+        ...selectionPopupPosition(box, { width: window.innerWidth, height: window.innerHeight }),
         quads,
       })
     }, 0)
+  }
+
+  /** Ribbon markup button: apply to the selection, or arm/disarm the tool when nothing is selected */
+  const onMarkupButton = (type: MarkupToolType) => {
+    if (readOnly) return
+    const action = markupButtonAction({
+      hasSelection: selectionQuads() !== null,
+      tool: markupTool,
+      type,
+    })
+    if (action.kind === 'apply') {
+      applyMarkup(type)
+      return
+    }
+    setMarkupTool(action.tool)
+    setSelPopup(null)
+    if (action.tool) setDrawTool(null)
   }
 
   /** The existing markup of `type` whose quads equal this page selection (tolerance-
@@ -7762,8 +7825,22 @@ export default function App() {
       }
       if (e.key === 'Escape') {
         // Modal dialogs own Escape; the states behind them must not react too
-        if (signDlg || stampDlg || propsDlg) return
+        if (
+          signDlg ||
+          stampDlg ||
+          propsDlg ||
+          pageSizeDlg ||
+          splitPagesDlg ||
+          splitDlg ||
+          extractDlg ||
+          printDlg ||
+          saveCopyDlg ||
+          mergePagesDlg ||
+          replaceDlg
+        )
+          return
         if (askPop) setAskPop(null)
+        else if (markupTool) setMarkupTool(null)
         else if (textDraft) setTextDraft(null)
         else if (pendingTextInsert) setPendingTextInsert(null)
         else if (imagePick) setImagePick(null)
@@ -8075,10 +8152,11 @@ export default function App() {
           className="rb-drop-wrap rb-highlight-drop-wrap rb-highlight-split"
         >
           <button
-            className="rb-big rb-highlight-main"
+            className={`rb-big rb-highlight-main${markupTool === 'highlight' ? ' active' : ''}`}
             disabled={readOnly}
-            data-tip={t('highlight')}
-            onClick={() => applyMarkup('highlight')}
+            aria-pressed={markupTool === 'highlight'}
+            data-tip={markupTool === 'highlight' ? t('markupToolOn') : t('highlight')}
+            onClick={() => onMarkupButton('highlight')}
           >
             <span className="rb-big-icon">
               <span className="rb-big-icon-colored">
@@ -8107,10 +8185,11 @@ export default function App() {
           )}
         </div>
         <button
-          className="rb-big"
+          className={`rb-big${markupTool === 'underline' ? ' active' : ''}`}
           disabled={readOnly}
-          data-tip={t('underline')}
-          onClick={() => applyMarkup('underline')}
+          aria-pressed={markupTool === 'underline'}
+          data-tip={markupTool === 'underline' ? t('markupToolOn') : t('underline')}
+          onClick={() => onMarkupButton('underline')}
         >
           <span className="rb-big-icon">
             <IconUnderline />
@@ -8118,10 +8197,11 @@ export default function App() {
           <span>{t('underline')}</span>
         </button>
         <button
-          className="rb-big"
+          className={`rb-big${markupTool === 'strikeout' ? ' active' : ''}`}
           disabled={readOnly}
-          data-tip={t('strikeout')}
-          onClick={() => applyMarkup('strikeout')}
+          aria-pressed={markupTool === 'strikeout'}
+          data-tip={markupTool === 'strikeout' ? t('markupToolOn') : t('strikeout')}
+          onClick={() => onMarkupButton('strikeout')}
         >
           <span className="rb-big-icon">
             <IconStrike />
@@ -8393,6 +8473,16 @@ export default function App() {
             const next = toggleBilingual(!bilingualOn, spread)
             setSpread(next.spread)
             setBilingualOn(next.bilingual)
+            // On a narrow window four columns (thumbnails, page, translation, AI)
+            // shrink the page to two-thirds: fold the AI panel to its rail
+            if (
+              shouldFoldAiForBilingual({
+                enabled: next.bilingual,
+                aiOpen: !aiCollapsed,
+                windowWidth: window.innerWidth,
+              })
+            )
+              setAiCollapsed(true)
           }}
         >
           <span className="rb-big-icon">
@@ -8445,6 +8535,26 @@ export default function App() {
     >
       <div className={`ribbon ${collapse.rootClass}`} ref={collapse.rootRef}>
         <div className="ribbon-tabs" onDoubleClick={collapse.onTabsDoubleClick}>
+          <FileMenu
+            t={t}
+            saveDisabled={!dirty || saveState === 'saving'}
+            busy={convertBusy}
+            onOpen={() =>
+              void window.pdfApi
+                .openFileDialog()
+                .catch((err) => console.error('[pdf] open dialog failed:', err))
+            }
+            onSave={() => void save()}
+            onSaveAs={() =>
+              void window.pdfApi
+                .saveAsDialog()
+                .catch((err) => console.error('[pdf] save as failed:', err))
+            }
+            onConvert={(format) => void convertTo(format)}
+            onConvertDialog={openConvertDialog}
+            onPrint={openPrintDlg}
+            onExportImages={() => void exportImages(true)}
+          />
           <button
             className="qa-btn"
             data-tip={`${t('save')} (${platformShortcuts('⌘S')})`}
@@ -8541,7 +8651,7 @@ export default function App() {
             </span>
           )}
         </div>
-        <div className="ribbon-body" data-ribbon-body="">
+        <div className="ribbon-body" data-ribbon-body="" ref={setRibbonBody}>
           {ribbonTab === 'home' && (
             <>
               {/* ---- AI (first slot: entry + one-click AI actions, docs parity) ---- */}
@@ -9404,6 +9514,7 @@ export default function App() {
                   <button
                     className="rb-big"
                     disabled={pageCount <= 1 || readOnly}
+                    data-tip={t('splitPdfTip')}
                     onClick={openSplitDlg}
                   >
                     <span className="rb-big-icon">
@@ -9430,6 +9541,7 @@ export default function App() {
                   <button
                     className="rb-big"
                     disabled={pageCount === 0 || readOnly}
+                    data-tip={t('splitPagesTip')}
                     onClick={() => setSplitPagesDlg(true)}
                   >
                     <span className="rb-big-icon">
@@ -9514,6 +9626,7 @@ export default function App() {
             onCitation={openCitation}
             templateDocument={templateDocument}
             onSkillHandoff={() => setAiCollapsed(false)}
+            documentBlank={documentBlank}
             overview={
               <InsightsCard
                 insights={documentInsights}
@@ -9551,6 +9664,33 @@ export default function App() {
               </span>
               <button className="pdf-modal-btn" onClick={() => setSignaturesDlg(true)}>
                 {t('sigBannerView')}
+              </button>
+            </div>
+          )}
+          {shouldShowFormBanner({
+            fileFieldCount: formCatalog?.widgets.length ?? 0,
+            ribbonTab,
+            dismissed: formBannerDismissed,
+            readOnly,
+          }) && (
+            <div className="pdf-form-banner" role="status">
+              <span>{t('formBannerText')}</span>
+              <button
+                className="pdf-modal-btn primary"
+                onClick={() => {
+                  setFormBannerDismissed(true)
+                  setRibbonTab('fillForm')
+                }}
+              >
+                {t('formBannerOpen')}
+              </button>
+              <button
+                className="pdf-form-banner-close"
+                aria-label={t('formBannerClose')}
+                data-tip={t('formBannerClose')}
+                onClick={() => setFormBannerDismissed(true)}
+              >
+                ×
               </button>
             </div>
           )}
@@ -12070,41 +12210,43 @@ export default function App() {
               </div>
             )}
             {extractDlg && (
-              <div className="pdf-modal-mask" onClick={() => setExtractDlg(false)}>
-                <div className="pdf-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="pdf-modal-title">{t('extractRangeTitle')}</div>
-                  <input
-                    className={`pdf-modal-input${extractInvalid ? ' invalid' : ''}`}
-                    value={extractInput}
-                    placeholder={t('extractRangeHint', { total: pageCount })}
-                    autoFocus
-                    onChange={(e) => {
-                      setExtractInput(e.target.value)
-                      setExtractInvalid(false)
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') confirmExtract()
-                      else if (e.key === 'Escape') setExtractDlg(false)
-                    }}
-                  />
-                  <div className="pdf-modal-actions">
-                    <button className="pdf-modal-btn" onClick={() => setExtractDlg(false)}>
-                      {t('cancel')}
-                    </button>
-                    <button className="pdf-modal-btn primary" onClick={confirmExtract}>
-                      {t('ok')}
-                    </button>
-                  </div>
+              <InlineModal label={t('extractRangeTitle')} onCancel={() => setExtractDlg(false)}>
+                <div className="pdf-modal-title">{t('extractRangeTitle')}</div>
+                <input
+                  className={`pdf-modal-input${extractInvalid ? ' invalid' : ''}`}
+                  value={extractInput}
+                  placeholder={t('extractRangeHint', { total: pageCount })}
+                  autoFocus
+                  onChange={(e) => {
+                    setExtractInput(e.target.value)
+                    setExtractInvalid(false)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') confirmExtract()
+                  }}
+                />
+                <div className="pdf-modal-actions">
+                  <button className="pdf-modal-btn" onClick={() => setExtractDlg(false)}>
+                    {t('cancel')}
+                  </button>
+                  <button className="pdf-modal-btn primary" onClick={confirmExtract}>
+                    {t('ok')}
+                  </button>
                 </div>
-              </div>
+              </InlineModal>
             )}
             {splitDlg && (
-              <div className="pdf-modal-mask" onClick={() => setSplitDlg(false)}>
-                <div className="pdf-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="pdf-modal-title">{t('splitDlgTitle')}</div>
+              <InlineModal label={t('splitDlgTitle')} onCancel={() => setSplitDlg(false)}>
+                <div className="pdf-modal-title">{t('splitDlgTitle')}</div>
+                <label className="pdf-modal-hint" htmlFor="pdf-split-every">
+                  {t('splitDlgPrompt')}
+                </label>
+                <div className="pdf-modal-row pdf-split-row">
                   <input
-                    className={`pdf-modal-input${splitInvalid ? ' invalid' : ''}`}
+                    id="pdf-split-every"
+                    className={`pdf-modal-input pdf-split-input${splitInvalid ? ' invalid' : ''}`}
                     value={splitInput}
+                    inputMode="numeric"
                     placeholder={t('splitDlgHint', { total: pageCount })}
                     autoFocus
                     onChange={(e) => {
@@ -12113,275 +12255,299 @@ export default function App() {
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') confirmSplit()
-                      else if (e.key === 'Escape') setSplitDlg(false)
                     }}
                   />
-                  <div className="pdf-modal-actions">
-                    <button className="pdf-modal-btn" onClick={() => setSplitDlg(false)}>
-                      {t('cancel')}
-                    </button>
-                    <button className="pdf-modal-btn primary" onClick={confirmSplit}>
-                      {t('ok')}
-                    </button>
-                  </div>
+                  <span>{t('splitDlgUnit')}</span>
                 </div>
-              </div>
+                {(() => {
+                  const per = Number(splitInput.trim())
+                  const files = per < pageCount ? splitFileCount(pageCount, per) : null
+                  return (
+                    <div className="pdf-modal-hint" role="status">
+                      {files !== null && files >= 2
+                        ? t('splitDlgPreview', { total: pageCount, files })
+                        : t('splitDlgHint', { total: pageCount })}
+                    </div>
+                  )
+                })()}
+                <div className="pdf-modal-actions">
+                  <button className="pdf-modal-btn" onClick={() => setSplitDlg(false)}>
+                    {t('cancel')}
+                  </button>
+                  <button className="pdf-modal-btn primary" onClick={confirmSplit}>
+                    {t('ok')}
+                  </button>
+                </div>
+              </InlineModal>
             )}
             {printDlg && (
-              <div className="pdf-modal-mask" onClick={() => setPrintDlg(false)}>
-                <div className="pdf-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="pdf-modal-title">{t('print')}</div>
-                  <label className="pdf-modal-row">
-                    <input
-                      type="radio"
-                      name="print-range"
-                      checked={printMode === 'all'}
-                      onChange={() => setPrintMode('all')}
-                    />
-                    <span>{t('printRangeAll')}</span>
-                  </label>
-                  <label className="pdf-modal-row">
-                    <input
-                      type="radio"
-                      name="print-range"
-                      checked={printMode === 'current'}
-                      onChange={() => setPrintMode('current')}
-                    />
-                    <span>
-                      {t('printRangeCurrent')} ({printCurrentPage})
-                    </span>
-                  </label>
-                  <label className="pdf-modal-row">
-                    <input
-                      type="radio"
-                      name="print-range"
-                      checked={printMode === 'custom'}
-                      onChange={() => setPrintMode('custom')}
-                    />
-                    <span>{t('printRangeCustom')}</span>
-                  </label>
-                  {printMode === 'custom' && (
-                    <input
-                      className={`pdf-modal-input${printInvalid ? ' invalid' : ''}`}
-                      value={printInput}
-                      placeholder={t('printRangeHint')}
-                      autoFocus
-                      onChange={(e) => {
-                        setPrintInput(e.target.value)
-                        setPrintInvalid(false)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') confirmPrint()
-                        else if (e.key === 'Escape') setPrintDlg(false)
-                      }}
-                    />
-                  )}
-                  <label className="pdf-modal-row">
-                    <input
-                      type="checkbox"
-                      checked={printAnnots}
-                      onChange={(e) => setPrintAnnots(e.target.checked)}
-                    />
-                    <span>{t('printIncludeAnnots')}</span>
-                  </label>
-                  <div className="pdf-modal-actions">
-                    <button className="pdf-modal-btn" onClick={() => setPrintDlg(false)}>
-                      {t('cancel')}
-                    </button>
-                    <button className="pdf-modal-btn primary" onClick={confirmPrint}>
-                      {t('print')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {saveCopyDlg && (
-              <div className="pdf-modal-mask" onClick={cancelSaveCopy}>
-                <div className="pdf-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="pdf-modal-title">{t('saveCopyTitle')}</div>
-                  <div className="pdf-modal-hint">{t('saveCopyHint')}</div>
-                  <label className="pdf-modal-row">
-                    <input
-                      type="radio"
-                      name="save-copy-annotations"
-                      checked={saveCopyMode === 'keep'}
-                      onChange={() => setSaveCopyMode('keep')}
-                    />
-                    <span>{t('saveCopyKeep')}</span>
-                  </label>
-                  <label className="pdf-modal-row">
-                    <input
-                      type="radio"
-                      name="save-copy-annotations"
-                      checked={saveCopyMode === 'flatten'}
-                      onChange={() => setSaveCopyMode('flatten')}
-                    />
-                    <span>{t('saveCopyFlatten')}</span>
-                  </label>
-                  <label className="pdf-modal-row">
-                    <input
-                      type="radio"
-                      name="save-copy-annotations"
-                      checked={saveCopyMode === 'strip'}
-                      onChange={() => setSaveCopyMode('strip')}
-                    />
-                    <span>{t('saveCopyStrip')}</span>
-                  </label>
-                  <div className="pdf-modal-actions">
-                    <button className="pdf-modal-btn" onClick={cancelSaveCopy}>
-                      {t('cancel')}
-                    </button>
-                    <button className="pdf-modal-btn primary" onClick={confirmSaveCopy}>
-                      {t('save')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {mergePagesDlg && (
-              <div className="pdf-modal-mask" onClick={() => setMergePagesDlg(false)}>
-                <div className="pdf-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="pdf-modal-title">{t('mergePages')}</div>
-                  <div className="pdf-modal-hint">{t('mergePagesHint', { total: pageCount })}</div>
-                  <label className="pdf-modal-row">
-                    <span>{t('mergePagesCount')}</span>
-                    <input
-                      className={`pdf-modal-input${mergeCountInvalid ? ' invalid' : ''}`}
-                      value={mergeCount}
-                      autoFocus
-                      onChange={(e) => {
-                        setMergeCount(e.target.value)
-                        setMergeCountInvalid(false)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') confirmMergePages()
-                        else if (e.key === 'Escape') setMergePagesDlg(false)
-                      }}
-                    />
-                  </label>
-                  <div className="pdf-modal-row">
-                    <span>{t('mergePagesSeq')}</span>
-                    <label className="pdf-modal-check">
-                      <input
-                        type="radio"
-                        name="merge-seq"
-                        checked={mergeDirection === 'horizontal'}
-                        onChange={() => setMergeDirection('horizontal')}
-                      />
-                      {t('seqHorizontal')}
-                    </label>
-                    <label className="pdf-modal-check">
-                      <input
-                        type="radio"
-                        name="merge-seq"
-                        checked={mergeDirection === 'vertical'}
-                        onChange={() => setMergeDirection('vertical')}
-                      />
-                      {t('seqVertical')}
-                    </label>
-                  </div>
-                  <label className="pdf-modal-check">
-                    <input
-                      type="checkbox"
-                      checked={mergeSeparator}
-                      onChange={(e) => setMergeSeparator(e.target.checked)}
-                    />
-                    {t('mergePagesSeparator')}
-                  </label>
-                  <div className="pdf-modal-actions">
-                    <button className="pdf-modal-btn" onClick={() => setMergePagesDlg(false)}>
-                      {t('cancel')}
-                    </button>
-                    <button className="pdf-modal-btn primary" onClick={confirmMergePages}>
-                      {t('ok')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {replaceDlg && (
-              <div className="pdf-modal-mask" onClick={() => setReplaceDlg(false)}>
-                <div className="pdf-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="pdf-modal-title">{t('replacePages')}</div>
+              <InlineModal label={t('print')} onCancel={() => setPrintDlg(false)}>
+                <div className="pdf-modal-title">{t('print')}</div>
+                {(() => {
+                  const target = printPreviewTarget({
+                    mode: printMode,
+                    current: printCurrentPage,
+                    input: printInput,
+                    pageCount,
+                  })
+                  const origIdx = target ? visList[target.firstPage - 1] : undefined
+                  return (
+                    <div className="pdf-print-preview">
+                      <div className="pdf-print-preview-page" aria-label={t('printPreview')}>
+                        {doc && origIdx !== undefined && !isBlankPage(origIdx) && (
+                          <PdfThumb
+                            doc={doc}
+                            pageNo={origIdx + 1}
+                            rotationDelta={rotDelta(origIdx)}
+                            visible
+                            rasterW={PRINT_PREVIEW_W}
+                          />
+                        )}
+                      </div>
+                      <div className="pdf-print-preview-text">
+                        {target && <strong>{t('printSummary', { pages: target.count })}</strong>}
+                        <span>{t('printNextStepHint')}</span>
+                      </div>
+                    </div>
+                  )
+                })()}
+                <label className="pdf-modal-row">
                   <input
-                    className={`pdf-modal-input${replaceInvalid ? ' invalid' : ''}`}
-                    value={replaceInput}
-                    placeholder={t('replaceRangeHint', { total: pageCount })}
+                    type="radio"
+                    name="print-range"
+                    checked={printMode === 'all'}
+                    onChange={() => setPrintMode('all')}
+                  />
+                  <span>{t('printRangeAll')}</span>
+                </label>
+                <label className="pdf-modal-row">
+                  <input
+                    type="radio"
+                    name="print-range"
+                    checked={printMode === 'current'}
+                    onChange={() => setPrintMode('current')}
+                  />
+                  <span>
+                    {t('printRangeCurrent')} ({printCurrentPage})
+                  </span>
+                </label>
+                <label className="pdf-modal-row">
+                  <input
+                    type="radio"
+                    name="print-range"
+                    checked={printMode === 'custom'}
+                    onChange={() => setPrintMode('custom')}
+                  />
+                  <span>{t('printRangeCustom')}</span>
+                </label>
+                {printMode === 'custom' && (
+                  <input
+                    className={`pdf-modal-input${printInvalid ? ' invalid' : ''}`}
+                    value={printInput}
+                    placeholder={t('printRangeHint')}
                     autoFocus
                     onChange={(e) => {
-                      setReplaceInput(e.target.value)
-                      setReplaceInvalid(false)
+                      setPrintInput(e.target.value)
+                      setPrintInvalid(false)
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') confirmReplace()
-                      else if (e.key === 'Escape') setReplaceDlg(false)
+                      if (e.key === 'Enter') confirmPrint()
                     }}
                   />
-                  <div className="pdf-modal-actions">
-                    <button className="pdf-modal-btn" onClick={() => setReplaceDlg(false)}>
-                      {t('cancel')}
-                    </button>
-                    <button className="pdf-modal-btn primary" onClick={confirmReplace}>
-                      {t('ok')}
-                    </button>
-                  </div>
+                )}
+                <label className="pdf-modal-row">
+                  <input
+                    type="checkbox"
+                    checked={printAnnots}
+                    onChange={(e) => setPrintAnnots(e.target.checked)}
+                  />
+                  <span>{t('printIncludeAnnots')}</span>
+                </label>
+                <div className="pdf-modal-actions">
+                  <button className="pdf-modal-btn" onClick={() => setPrintDlg(false)}>
+                    {t('cancel')}
+                  </button>
+                  <button className="pdf-modal-btn primary" onClick={confirmPrint}>
+                    {t('print')}
+                  </button>
                 </div>
-              </div>
+              </InlineModal>
+            )}
+            {saveCopyDlg && (
+              <InlineModal label={t('saveCopyTitle')} onCancel={cancelSaveCopy}>
+                <div className="pdf-modal-title">{t('saveCopyTitle')}</div>
+                <div className="pdf-modal-hint">{t('saveCopyHint')}</div>
+                <label className="pdf-modal-row">
+                  <input
+                    type="radio"
+                    name="save-copy-annotations"
+                    checked={saveCopyMode === 'keep'}
+                    onChange={() => setSaveCopyMode('keep')}
+                  />
+                  <span>{t('saveCopyKeep')}</span>
+                </label>
+                <label className="pdf-modal-row">
+                  <input
+                    type="radio"
+                    name="save-copy-annotations"
+                    checked={saveCopyMode === 'flatten'}
+                    onChange={() => setSaveCopyMode('flatten')}
+                  />
+                  <span>{t('saveCopyFlatten')}</span>
+                </label>
+                <label className="pdf-modal-row">
+                  <input
+                    type="radio"
+                    name="save-copy-annotations"
+                    checked={saveCopyMode === 'strip'}
+                    onChange={() => setSaveCopyMode('strip')}
+                  />
+                  <span>{t('saveCopyStrip')}</span>
+                </label>
+                <div className="pdf-modal-actions">
+                  <button className="pdf-modal-btn" onClick={cancelSaveCopy}>
+                    {t('cancel')}
+                  </button>
+                  <button className="pdf-modal-btn primary" onClick={confirmSaveCopy}>
+                    {t('save')}
+                  </button>
+                </div>
+              </InlineModal>
+            )}
+            {mergePagesDlg && (
+              <InlineModal label={t('mergePages')} onCancel={() => setMergePagesDlg(false)}>
+                <div className="pdf-modal-title">{t('mergePages')}</div>
+                <div className="pdf-modal-hint">{t('mergePagesHint', { total: pageCount })}</div>
+                <label className="pdf-modal-row">
+                  <span>{t('mergePagesCount')}</span>
+                  <input
+                    className={`pdf-modal-input${mergeCountInvalid ? ' invalid' : ''}`}
+                    value={mergeCount}
+                    autoFocus
+                    onChange={(e) => {
+                      setMergeCount(e.target.value)
+                      setMergeCountInvalid(false)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') confirmMergePages()
+                    }}
+                  />
+                </label>
+                <div className="pdf-modal-row">
+                  <span>{t('mergePagesSeq')}</span>
+                  <label className="pdf-modal-check">
+                    <input
+                      type="radio"
+                      name="merge-seq"
+                      checked={mergeDirection === 'horizontal'}
+                      onChange={() => setMergeDirection('horizontal')}
+                    />
+                    {t('seqHorizontal')}
+                  </label>
+                  <label className="pdf-modal-check">
+                    <input
+                      type="radio"
+                      name="merge-seq"
+                      checked={mergeDirection === 'vertical'}
+                      onChange={() => setMergeDirection('vertical')}
+                    />
+                    {t('seqVertical')}
+                  </label>
+                </div>
+                <label className="pdf-modal-check">
+                  <input
+                    type="checkbox"
+                    checked={mergeSeparator}
+                    onChange={(e) => setMergeSeparator(e.target.checked)}
+                  />
+                  {t('mergePagesSeparator')}
+                </label>
+                <div className="pdf-modal-actions">
+                  <button className="pdf-modal-btn" onClick={() => setMergePagesDlg(false)}>
+                    {t('cancel')}
+                  </button>
+                  <button className="pdf-modal-btn primary" onClick={confirmMergePages}>
+                    {t('ok')}
+                  </button>
+                </div>
+              </InlineModal>
+            )}
+            {replaceDlg && (
+              <InlineModal label={t('replacePages')} onCancel={() => setReplaceDlg(false)}>
+                <div className="pdf-modal-title">{t('replacePages')}</div>
+                <input
+                  className={`pdf-modal-input${replaceInvalid ? ' invalid' : ''}`}
+                  value={replaceInput}
+                  placeholder={t('replaceRangeHint', { total: pageCount })}
+                  autoFocus
+                  onChange={(e) => {
+                    setReplaceInput(e.target.value)
+                    setReplaceInvalid(false)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') confirmReplace()
+                  }}
+                />
+                <div className="pdf-modal-actions">
+                  <button className="pdf-modal-btn" onClick={() => setReplaceDlg(false)}>
+                    {t('cancel')}
+                  </button>
+                  <button className="pdf-modal-btn primary" onClick={confirmReplace}>
+                    {t('ok')}
+                  </button>
+                </div>
+              </InlineModal>
             )}
             {pageSizeDlg && (
-              <div className="pdf-modal-mask" onClick={() => setPageSizeDlg(false)}>
-                <div className="pdf-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="pdf-modal-title">{t('pageSize')}</div>
-                  <div className="pdf-modal-hint">{t('pageSizeHint', { total: pageCount })}</div>
-                  <div className="pdf-modal-actions merge-pages-options">
-                    {PAPER_SIZES.slice(0, 3).map((p) => (
-                      <button
-                        key={p.label}
-                        className="pdf-modal-btn"
-                        onClick={() => applyPageSize(p.w, p.h)}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="pdf-modal-actions merge-pages-options">
-                    {PAPER_SIZES.slice(3).map((p) => (
-                      <button
-                        key={p.label}
-                        className="pdf-modal-btn"
-                        onClick={() => applyPageSize(p.w, p.h)}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="pdf-modal-actions">
-                    <button className="pdf-modal-btn" onClick={() => setPageSizeDlg(false)}>
-                      {t('cancel')}
+              <InlineModal label={t('pageSize')} onCancel={() => setPageSizeDlg(false)}>
+                <div className="pdf-modal-title">{t('pageSize')}</div>
+                <div className="pdf-modal-hint">{t('pageSizeHint', { total: pageCount })}</div>
+                <div className="pdf-modal-actions merge-pages-options">
+                  {PAPER_SIZES.slice(0, 3).map((p) => (
+                    <button
+                      key={p.label}
+                      className="pdf-modal-btn"
+                      onClick={() => applyPageSize(p.w, p.h)}
+                    >
+                      {p.label}
                     </button>
-                  </div>
+                  ))}
                 </div>
-              </div>
+                <div className="pdf-modal-actions merge-pages-options">
+                  {PAPER_SIZES.slice(3).map((p) => (
+                    <button
+                      key={p.label}
+                      className="pdf-modal-btn"
+                      onClick={() => applyPageSize(p.w, p.h)}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="pdf-modal-actions">
+                  <button className="pdf-modal-btn" onClick={() => setPageSizeDlg(false)}>
+                    {t('cancel')}
+                  </button>
+                </div>
+              </InlineModal>
             )}
             {splitPagesDlg && (
-              <div className="pdf-modal-mask" onClick={() => setSplitPagesDlg(false)}>
-                <div className="pdf-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="pdf-modal-title">{t('splitPages')}</div>
-                  <div className="pdf-modal-hint">{t('splitPagesHint', { total: pageCount })}</div>
-                  <div className="pdf-modal-actions merge-pages-options">
-                    {([2, 4, 9] as const).map((n) => (
-                      <button key={n} className="pdf-modal-btn" onClick={() => runSplitPages(n)}>
-                        {t('splitNLabel', { n })}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="pdf-modal-actions">
-                    <button className="pdf-modal-btn" onClick={() => setSplitPagesDlg(false)}>
-                      {t('cancel')}
+              <InlineModal label={t('splitPages')} onCancel={() => setSplitPagesDlg(false)}>
+                <div className="pdf-modal-title">{t('splitPages')}</div>
+                <div className="pdf-modal-hint">{t('splitPagesHint', { total: pageCount })}</div>
+                <div className="pdf-modal-actions merge-pages-options">
+                  {([2, 4, 9] as const).map((n) => (
+                    <button key={n} className="pdf-modal-btn" onClick={() => runSplitPages(n)}>
+                      {t('splitNLabel', { n })}
                     </button>
-                  </div>
+                  ))}
                 </div>
-              </div>
+                <div className="pdf-modal-actions">
+                  <button className="pdf-modal-btn" onClick={() => setSplitPagesDlg(false)}>
+                    {t('cancel')}
+                  </button>
+                </div>
+              </InlineModal>
             )}
             {pageCropDlg && (
               <CropDialog

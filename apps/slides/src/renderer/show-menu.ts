@@ -16,7 +16,13 @@ export interface ShowMenuState {
   pending: boolean
   hasLastViewed: boolean
   screen: ShowScreen
+  /** 쇼 화면의 포인터: 화살표(none)·펜·레이저 */
+  tool: ShowTool
+  /** 지금 장에 펜 필기가 있는지 */
+  hasInk: boolean
 }
+
+export type ShowTool = 'none' | 'pen' | 'laser'
 
 export interface ShowMenuActions {
   next: () => void
@@ -25,6 +31,8 @@ export interface ShowMenuActions {
   seeAll: () => void
   setScreen: (screen: Exclude<ShowScreen, 'none'>) => void
   end: () => void
+  setTool: (tool: ShowTool) => void
+  clearInk: () => void
 }
 
 export function buildShowMenu(
@@ -57,6 +65,24 @@ export function buildShowMenu(
           checked: s.screen === 'white',
           onClick: () => a.setScreen('white'),
         },
+      ],
+    },
+    {
+      label: t('paneShowMenuPointer'),
+      sub: [
+        {
+          label: t('paneShowMenuLaser'),
+          checked: s.tool === 'laser',
+          onClick: () => a.setTool('laser'),
+        },
+        { label: t('paneShowMenuPen'), checked: s.tool === 'pen', onClick: () => a.setTool('pen') },
+        {
+          label: t('paneShowMenuArrow'),
+          checked: s.tool === 'none',
+          onClick: () => a.setTool('none'),
+        },
+        null,
+        { label: t('paneShowMenuEraseInk'), hint: 'E', disabled: !s.hasInk, onClick: a.clearInk },
       ],
     },
     null,

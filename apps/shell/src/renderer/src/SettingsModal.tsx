@@ -55,6 +55,7 @@ import { ProviderLogo } from './provider-logos'
 import { IntegrationsPane, skillUpdateDue } from './IntegrationsPane'
 import { AiSection, SubscriptionSummary } from './SettingsAiSection'
 import { QuickLookField } from './SettingsQuickLook'
+import { SHOW_ONBOARDING_EVENT } from './onboarding-steps'
 import { ResultStoreField } from './SettingsResultStore'
 import { useSubscriptionConnection } from './subscription-client'
 import { SkillsPane } from './skills/SkillsPane'
@@ -1623,6 +1624,9 @@ export interface SettingsModalProps {
   onSkillUpdateDue?: (due: boolean) => void
   /** open on this section / block instead of the account page */
   target?: SettingsTarget | null
+  /** the first-connection notice is owed: the AI section shows it in place */
+  noticeDue?: boolean
+  onNoticeAcknowledge?: () => void
 }
 
 export function SettingsModal({
@@ -1631,6 +1635,8 @@ export function SettingsModal({
   skillUpdateDue: updateDue = false,
   onSkillUpdateDue,
   target,
+  noticeDue = false,
+  onNoticeAcknowledge,
 }: SettingsModalProps) {
   const { lang, setLang, t } = useI18n()
   const [section, setSection] = useState<SectionId>(target?.section ?? 'account')
@@ -1638,7 +1644,7 @@ export function SettingsModal({
     if (target) setSection(target.section)
   }, [target])
   const [theme, setTheme] = useState<UiTheme>('system')
-  const [docTheme, setDocTheme] = useState<DocTheme>('follow')
+  const [docTheme, setDocTheme] = useState<DocTheme>('light')
   const [saveDir, setSaveDir] = useState('')
   const [autoSaveOn, setAutoSaveOn] = useState(false)
   // Hanpan: the Korean document features switch as stored (null: the UI language decides)
@@ -1833,6 +1839,8 @@ export function SettingsModal({
                 t={t}
                 lang={lang}
                 connection={connection}
+                noticeDue={noticeDue}
+                onNoticeAcknowledge={onNoticeAcknowledge}
                 openTab={section === 'aiMedia' ? 'media' : undefined}
                 advanced={(tab) =>
                   tab === 'model' ? (
@@ -1863,6 +1871,21 @@ export function SettingsModal({
                     options={LANG_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
                     onPick={(v) => setLang(v as typeof lang)}
                   />
+                </div>
+                <div className="set-field">
+                  <div className="set-field-text">
+                    <label className="set-field-label">{t('setOnboardingAgain')}</label>
+                  </div>
+                  <button
+                    className="set-btn"
+                    data-onboarding-again=""
+                    onClick={() => {
+                      onClose()
+                      window.dispatchEvent(new Event(SHOW_ONBOARDING_EVENT))
+                    }}
+                  >
+                    {t('setOnboardingAgainOpen')}
+                  </button>
                 </div>
                 <div className="set-field">
                   <div className="set-field-text">
@@ -2183,9 +2206,11 @@ export function SettingsModal({
                 </div>
                 <div className="set-field">
                   <div className="set-field-text">
-                    <label className="set-field-label">{t('setRightsContact')}</label>
-                    <div className="set-field-desc">{t('setRightsContactDesc')}</div>
-                    <div className="set-field-value">{PRODUCT_CONTACT_EMAIL}</div>
+                    <div className="set-field-stack">
+                      <label className="set-field-label">{t('setRightsContact')}</label>
+                      <div className="set-field-desc">{t('setRightsContactDesc')}</div>
+                      <div className="set-field-value set-field-email">{PRODUCT_CONTACT_EMAIL}</div>
+                    </div>
                   </div>
                   <button
                     className="set-btn"
@@ -2195,7 +2220,8 @@ export function SettingsModal({
                   </button>
                 </div>
                 <div className="set-field">
-                  <div className="set-field-text">
+                  {/* one column: side by side they broke every word or two (#19) */}
+                  <div className="set-field-stack set-about-notices" data-about-notices="">
                     <div className="set-field-desc">{t('setBasedOn')}</div>
                     <div className="set-field-desc">{t('setHwpNotice')}</div>
                     <div className="set-field-desc">{t('setTrademarks')}</div>

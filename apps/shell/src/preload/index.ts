@@ -37,6 +37,7 @@ import type {
   FileSearchSettings,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
+import { normalizeHomeLayout } from '../shared/home-layout'
 import { RECOVERY_LIST_CHANNELS } from '../shared/recovery-list-api'
 import type {
   RecoveryListApi,
@@ -291,6 +292,10 @@ const homeApi: HomeApi = {
   async deleteFiles(paths) {
     await ipcRenderer.invoke(HOME_CHANNELS.deleteFiles, paths)
   },
+  async openTabPaths(paths) {
+    const open: unknown = await ipcRenderer.invoke(HOME_CHANNELS.openTabPaths, paths)
+    return Array.isArray(open) ? open.filter((p): p is string => typeof p === 'string') : []
+  },
   async folderRoots() {
     return (await ipcRenderer.invoke(HOME_CHANNELS.folderRoots)) as FolderRoot[]
   },
@@ -431,6 +436,20 @@ const homeApi: HomeApi = {
   async setKoreanDocFeatures(on) {
     if (typeof on !== 'boolean') throw new Error('Invalid Korean document features switch.')
     await ipcRenderer.invoke(HOME_CHANNELS.setKoreanDocFeatures, on)
+  },
+  async getHomeLayout() {
+    return normalizeHomeLayout(await ipcRenderer.invoke(HOME_CHANNELS.getHomeLayout))
+  },
+  async setHomeLayout(layout) {
+    return normalizeHomeLayout(await ipcRenderer.invoke(HOME_CHANNELS.setHomeLayout, layout))
+  },
+  async openWidgetTarget(target) {
+    return (await ipcRenderer.invoke(HOME_CHANNELS.openWidgetTarget, target)) === true
+  },
+  async pickWidgetTarget(kind) {
+    if (kind !== 'file' && kind !== 'folder') throw new Error('Invalid shortcut kind.')
+    const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.pickWidgetTarget, kind)
+    return typeof result === 'string' && result ? result : null
   },
   onKoreanDocFeaturesChanged(handler) {
     const listener = (_event: Electron.IpcRendererEvent, stored: unknown) =>
@@ -857,6 +876,27 @@ contextBridge.exposeInMainWorld('hanpanApi', {
     ipcRenderer.invoke('hanpan:open-template', id, target),
   openDesign: () => ipcRenderer.invoke('hanpan:open-design'),
   newMap: (topic: string) => ipcRenderer.invoke('hanpan:new-map', topic),
+  // 내 양식: ids and names only; the main process picks every path
+  myForms: () => ipcRenderer.invoke('hanpan:my-forms'),
+  myFormSources: () => ipcRenderer.invoke('hanpan:my-forms-sources'),
+  saveMyForm: (tabId: string, name: string) =>
+    ipcRenderer.invoke('hanpan:my-forms-save', tabId, name),
+  importMyForm: () => ipcRenderer.invoke('hanpan:my-forms-import'),
+  openMyForm: (id: string) => ipcRenderer.invoke('hanpan:my-forms-open', id),
+  deleteMyForm: (id: string) => ipcRenderer.invoke('hanpan:my-forms-delete', id),
+  /** the tab strip's "+" menu asked for 한판 양식 (0.17 리뷰 v2 shell #38) */
+  onOpenTemplatesRequest: (listener: () => void) => {
+    const handler = () => listener()
+    ipcRenderer.on('hanpan:templates-open-request', handler)
+    return () => ipcRenderer.removeListener('hanpan:templates-open-request', handler)
+  },
+  onSaveMyFormRequest: (listener: (tabId: string) => void) => {
+    const handler = (_event: unknown, tabId: unknown) => {
+      if (typeof tabId === 'string') listener(tabId)
+    }
+    ipcRenderer.on('hanpan:my-forms-save-request', handler)
+    return () => ipcRenderer.removeListener('hanpan:my-forms-save-request', handler)
+  },
   mdFolder: () => ipcRenderer.invoke('hanpan:md-folder'),
   mdPickFile: () => ipcRenderer.invoke('hanpan:md-pick-file'),
   mdPickFolder: () => ipcRenderer.invoke('hanpan:md-pick-folder'),

@@ -4,6 +4,7 @@ import type { SplitViewState } from '../../shared/split-view-api'
 import { useFirstConnectionNotice } from './FirstConnectionNotice'
 import { Home } from './Home'
 import { Onboarding } from './Onboarding'
+import { SHOW_ONBOARDING_EVENT } from './onboarding-steps'
 import {
   SPLIT_EVEN_RATIO,
   dividerRect,
@@ -183,6 +184,13 @@ export function AppFrame({ initialOnboardingSeen }: AppFrameProps) {
     return window.aiOfficeTabs.onChanged(applyTabs)
   }, [])
 
+  // Settings → General can bring the guide back (0.17 리뷰 v2 shell #7)
+  useEffect(() => {
+    const show = () => setShowOnboarding(true)
+    window.addEventListener(SHOW_ONBOARDING_EVENT, show)
+    return () => window.removeEventListener(SHOW_ONBOARDING_EVENT, show)
+  }, [])
+
   const finishOnboarding = async (): Promise<boolean> => {
     try {
       const persisted = await window.aiOffice.setOnboardingSeen()
@@ -207,7 +215,7 @@ export function AppFrame({ initialOnboardingSeen }: AppFrameProps) {
         <Home
           connection={connection}
           aiSettings={notice.settings}
-          // during the onboarding its connect step shows the notice instead
+          // the notice waits until the first run is over (it never covers the onboarding)
           noticeDue={notice.due && !showOnboarding}
           onNoticeAcknowledge={notice.acknowledge}
         />
@@ -215,12 +223,7 @@ export function AppFrame({ initialOnboardingSeen }: AppFrameProps) {
       {/* editor WebContentsViews paint above ALL shell DOM, so the overlay only
        * renders while the home tab is active — it comes back when home does */}
       {showOnboarding && homeActive && (
-        <Onboarding
-          onDone={finishOnboarding}
-          connection={connection}
-          noticeDue={notice.due}
-          onNoticeAcknowledge={notice.acknowledge}
-        />
+        <Onboarding onDone={finishOnboarding} connection={connection} />
       )}
     </div>
   )

@@ -3,7 +3,7 @@
  * Word builds a merged revision document; this lightweight version reports
  * per-paragraph additions / removals / edits for a side panel.
  */
-import type { Block } from '@genoffice/docx-engine'
+import type { Block, TableModel } from '@genoffice/docx-engine'
 import { inlineToRuns, type PmNode } from './convert'
 
 export interface CompareEntry {
@@ -14,14 +14,37 @@ export interface CompareEntry {
   right?: string
 }
 
-/** visible block -> comparable plain text (tables/objects fall back to previews) */
+/** one comparable line per table row: "cell | cell" (a table edit shows as row adds/removes/changes) */
+const rowLine = (cells: string[]): string => cells.join(' | ')
+
+function tableModelLines(table: TableModel): string[] {
+  return table.rows.map((row) =>
+    rowLine(
+      row
+        .filter((cell) => !cell.gridGap && cell.vMerge !== 'continue')
+        .map((cell) => cell.paras.join(' ')),
+    ),
+  )
+}
+
+/** visible block -> comparable plain text (tables row by row, objects fall back to previews) */
 export function blockTexts(blocks: Block[]): string[] {
   return blocks
     .filter((b) => !b.hidden)
-    .map((b) => {
-      if (b.runs) return b.runs.map((r) => r.text).join('')
-      return b.previewText ?? ''
+    .flatMap((b) => {
+      if (b.runs) return [b.runs.map((r) => r.text).join('')]
+      if (b.table?.rows?.length) return tableModelLines(b.table)
+      return [b.previewText ?? '']
     })
+}
+
+function pmText(node: PmNode): string {
+  if (node.type === 'docTableCell' || node.type === 'docTableHeader') {
+    return (node.content ?? []).map(pmText).join(' ')
+  }
+  return inlineToRuns(node.content ?? [])
+    .map((run) => run.text)
+    .join('')
 }
 
 /** Comparable text from the live editor, including paragraphs not yet saved to the DOCX. */
@@ -31,15 +54,19 @@ export function editorBlockTexts(doc: PmNode, originalBlocks: Block[]): string[]
       .filter((block) => block.docxIndex !== null)
       .map((block) => [block.docxIndex, block]),
   )
-  return (doc.content ?? []).map((node) => {
-    if (node.type === 'docProtected') return String(node.attrs?.previewText ?? '')
-    if (node.type === 'docTable') {
-      const original = originalByIndex.get(node.attrs?.docxIndex as number)
-      return original?.previewText ?? ''
+  return (doc.content ?? []).flatMap((node) => {
+    if (node.type === 'docProtected') {
+      const table = node.attrs?.table as TableModel | undefined
+      if (table?.rows?.length) return tableModelLines(table)
+      return [String(node.attrs?.previewText ?? '')]
     }
-    return inlineToRuns(node.content ?? [])
-      .map((run) => run.text)
-      .join('')
+    if (node.type === 'docTable') {
+      const rows = (node.content ?? []).filter((row) => row.type === 'docTableRow')
+      if (rows.length) return rows.map((row) => rowLine((row.content ?? []).map(pmText)))
+      const original = originalByIndex.get(node.attrs?.docxIndex as number)
+      return [original?.previewText ?? '']
+    }
+    return [pmText(node)]
   })
 }
 

@@ -12,6 +12,19 @@
     "hi": "दस्तावेज़ में भेजें (HWP, PPT, Word)",
     "vi": "Gửi sang tài liệu (HWP, PPT, Word)"
   },
+  "tbSendToLabel": {
+    "ko": "한판으로 보내기",
+    "en": "Send to a document",
+    "zh": "发送到文档",
+    "zh-TW": "傳送到文件",
+    "ja": "文書へ送る",
+    "th": "ส่งไปยังเอกสาร",
+    "ru": "Отправить в документ",
+    "ar": "إرسال إلى مستند",
+    "he": "שליחה למסמך",
+    "hi": "दस्तावेज़ में भेजें",
+    "vi": "Gửi sang tài liệu"
+  },
   "sendHwp": {
     "ko": "한글 보고서로 보내기",
     "en": "Send to a Hangul (HWP) report",

@@ -31,6 +31,7 @@ import {
   AGENT_PLUGIN_MODULE,
   FORMAT_COPY_MODULE,
   HANCOM_KEYS_MODULE,
+  STUDIO_LOCALES_MODULE,
   STUDIO_PATCHES,
   missingHancomCommands,
   missingPluginHooks,
@@ -76,6 +77,8 @@ const AGENT_PLUGIN = join(APP, 'studio-plugin', 'agent-plugin.mjs')
 const DIALOG_THEME = join(APP, 'studio-plugin', 'dialog-theme.mjs')
 const HANCOM_KEYS = join(APP, 'studio-plugin', 'hancom-keys.mjs')
 const FORMAT_COPY = join(APP, 'studio-plugin', 'format-copy.mjs')
+const STUDIO_LOCALES = join(APP, 'studio-plugin', 'studio-locales.mjs')
+const STUDIO_LOCALE_DIR = join(APP, 'studio-plugin', 'studio-locales')
 const STAMP = join(OUT, '.stamp')
 
 function git(args, cwd) {
@@ -87,7 +90,12 @@ function git(args, cwd) {
 function stampValue() {
   const hash = createHash('sha256')
   hash.update(TAG)
-  for (const file of ['build-studio.mjs', 'rhwp-patches.mjs']) {
+  for (const file of [
+    'build-studio.mjs',
+    'rhwp-patches.mjs',
+    'studio-dialog-text.mjs',
+    'studio-ux-patches.mjs',
+  ]) {
     hash.update(readFileSync(join(SCRIPTS, file)))
   }
   // the app's own plugin and the Hangul keys are compiled into the studio
@@ -95,6 +103,12 @@ function stampValue() {
   hash.update(readFileSync(DIALOG_THEME))
   hash.update(readFileSync(HANCOM_KEYS))
   hash.update(readFileSync(FORMAT_COPY))
+  // the studio languages the app adds, and their catalogs
+  hash.update(readFileSync(STUDIO_LOCALES))
+  for (const file of readdirSync(STUDIO_LOCALE_DIR).sort()) {
+    hash.update(file)
+    hash.update(readFileSync(join(STUDIO_LOCALE_DIR, file)))
+  }
   // and so is the engine: a rebuilt WASM must reach the studio
   hash.update(readFileSync(join(CORE_DIR, 'rhwp_bg.wasm')))
   return hash.digest('hex')
@@ -187,6 +201,7 @@ async function buildStudio() {
         [AGENT_PLUGIN_MODULE]: AGENT_PLUGIN,
         [HANCOM_KEYS_MODULE]: HANCOM_KEYS,
         [FORMAT_COPY_MODULE]: FORMAT_COPY,
+        [STUDIO_LOCALES_MODULE]: STUDIO_LOCALES,
       },
     },
     // upstream registers a service worker for its website build; this build

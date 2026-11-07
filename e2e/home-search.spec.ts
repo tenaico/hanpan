@@ -89,7 +89,7 @@ test.describe('home file search', () => {
       await box.fill('quart')
       await expect(rows).toHaveCount(1)
       await expect(page.locator('.search-name .search-hit')).toHaveText('quart')
-      await page.locator('.filter-pill', { hasText: 'Markdown' }).click()
+      await page.locator('.filter-pill', { hasText: /^PDF$/ }).click()
       await expect(page.locator('.search-results .empty-hint')).toContainText('quart')
       await page.locator('.filter-pill', { hasText: 'All' }).click()
       await expect(rows).toHaveCount(1)

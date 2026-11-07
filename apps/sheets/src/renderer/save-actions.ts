@@ -54,6 +54,8 @@ export interface SaveContext {
     opened: WorkbookFile,
     opts?: { continueChat?: boolean; onInitialRangeLoaded?: () => void },
   ) => void | Promise<boolean>
+  /** 저장 뒤 다시 열기 동안 격자 입력을 막는다. 돌려받은 함수로 푼다. */
+  holdInput?: () => () => void
   /** pending-edit badge; the reopen resets it to 0 before late edits are carried over */
   setPendingEdits?: (count: number) => void
   /** live cell readout, for the cached values of formulas an MCP batch wrote (optional in tests) */
@@ -617,7 +619,23 @@ async function reopenCarryingLateEdits(
   cellsAtSave: JournalCellSnapshot,
   file: WorkbookFile,
 ): Promise<boolean> {
-  if ((await ctx.openLazyWorkbook(file, { continueChat: true })) === false) return false
+  // 다시 여는 동안 격자 입력을 막는다(reload-input-guard.ts). 새 세션의 첫
+  // 범위가 들어오면 openLazyWorkbook이 onInitialRangeLoaded로 푼다.
+  const release = ctx.holdInput?.()
+  let reopened: void | boolean
+  try {
+    reopened = await ctx.openLazyWorkbook(
+      file,
+      release ? { continueChat: true, onInitialRangeLoaded: release } : { continueChat: true },
+    )
+  } catch (error: unknown) {
+    release?.()
+    throw error
+  }
+  if (reopened === false) {
+    release?.()
+    return false
+  }
   const next = ctx.lazyWorkbookRef.current
   if (!next || next === state) return true
   if (carryLateJournalCells(state.editJournal, cellsAtSave, next.editJournal) > 0) {

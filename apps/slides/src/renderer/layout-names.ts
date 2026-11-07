@@ -8,6 +8,11 @@ const LAYOUT_NAME_KEYS: Record<string, StringKey> = {
   'Two Content': 'ribbonLayoutTwoContent',
   'Title Only': 'ribbonLayoutTitleOnly',
   Blank: 'ribbonLayoutBlank',
+  Comparison: 'appLayoutComparison',
+  'Content with Caption': 'appLayoutContentCaption',
+  'Picture with Caption': 'appLayoutPictureCaption',
+  'Title and Vertical Text': 'appLayoutTitleVertText',
+  'Vertical Title and Text': 'appLayoutVertTitleText',
 }
 
 export function layoutLabel(name: string, tf: (key: StringKey) => string): string {

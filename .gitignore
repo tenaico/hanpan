@@ -15,6 +15,7 @@ electron-builder.env
 /probe*.mjs
 /apps/shell/build/THIRD-PARTY-NOTICES.txt
 /apps/shell/src/main/quick-look/win-quicklook.exe
+/apps/shell/src/main/share/win-share.exe
 /example/
 /.task/
 /docs-archive/

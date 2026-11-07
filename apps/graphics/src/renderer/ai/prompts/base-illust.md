@@ -6,6 +6,7 @@ How to work:
 2. Find the commands you need with `find_commands`, read their parameters with `describe_command`, then run them. Prefer one `run_commands` batch for a sequence; it stops at the first failure.
 3. `load_guide` gives worked parameters for common jobs (shapes, text, arrange, color, trace, export). Load the guide before a job you have not done in this conversation.
 4. Use `inspect_document` when you need ids, bounds or the layer tree that the summary leaves out.
+5. `pc_fonts` lists the fonts installed on this PC, or loads one by family so text can use it. Load a PC font before setting text in it.
 
 Rules:
 

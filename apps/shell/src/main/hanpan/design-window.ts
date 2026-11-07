@@ -6,24 +6,41 @@
  * Every handler answers only the design window itself.
  */
 import {
+  app,
   BrowserWindow,
   clipboard,
   dialog,
   ipcMain,
   nativeImage,
+  screen,
   shell,
   type IpcMainInvokeEvent,
+  type Rectangle,
 } from 'electron'
 import { readFile, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { PDFDocument } from 'pdf-lib'
 import {
-  gonguImageDetail,
-  gonguImageSearch,
-  type GonguErrorKind,
-  type GonguWork,
-} from '@genoffice/ai-search'
-import { fetchImageBytes } from '@genoffice/electron-utils/fetch-image-bytes'
+  fetchGonguPicture,
+  searchGonguPictures,
+  type GonguPictureAnswer,
+  type GonguSearchAnswer,
+} from './gongu-pictures'
+
+import {
+  printHtmlDocument,
+  withPrintOptions,
+  type PrintDialogOutcome,
+} from '@genoffice/electron-utils/print-window'
+import {
+  buildImagePrintHtml,
+  isPrintSheet,
+  pngSize,
+  printPageOptions,
+  type PrintSheet,
+} from '@genoffice/ui/image-print'
+
+export type { GonguHit, GonguPictureAnswer, GonguSearchAnswer } from './gongu-pictures'
 
 export const DESIGN_CHANNELS = {
   getInit: 'hanpan-design:get-init',
@@ -32,10 +49,23 @@ export const DESIGN_CHANNELS = {
   copyImage: 'hanpan-design:copy-image',
   saveDesign: 'hanpan-design:save',
   openDesign: 'hanpan-design:open',
+  /** the board started a new design: the next save asks where again */
+  newDesign: 'hanpan-design:new',
   pickImage: 'hanpan-design:pick-image',
+  /** pages as the PNG export draws them, printed through the system dialog */
+  print: 'hanpan-design:print',
   gonguSearch: 'hanpan-design:gongu-search',
   gonguPicture: 'hanpan-design:gongu-picture',
   open: 'hanpan:open-design',
+  /** the board has (or no longer has) unsaved work: closing asks first */
+  setDirty: 'hanpan-design:set-dirty',
+  /** 저장 / 저장 안 함 / 취소 before the board replaces unsaved work */
+  askUnsaved: 'hanpan-design:ask-unsaved',
+  /** to the board: the person chose 저장 while closing; save, then closeAfterSave */
+  saveThenClose: 'hanpan-design:save-then-close',
+  closeAfterSave: 'hanpan-design:close-after-save',
+  /** Settings → Integrations (the Gongu key), from the board's picture search */
+  openGonguSettings: 'hanpan-design:open-gongu-settings',
 } as const
 
 export interface DesignWindowDeps {
@@ -45,24 +75,24 @@ export interface DesignWindowDeps {
   title(lang: string): string
   /** the Gongu key from Settings → Integrations (opened from its seal), '' when none */
   gonguKey(): string
+  /** where a first save starts; left out: Documents\Hanpan */
+  saveDir?: () => string
+  /** opens Settings at a section in the shell window; left out: the Home settings request */
+  openSettings?: (section: 'integrations') => void
+  /** prints a finished page through the system dialog; left out: a hidden window here */
+  printHtml?: (html: string, sheet: PrintSheet) => Promise<PrintDialogOutcome>
 }
-
-/** A search hit for the board: the work and its thumbnail as a data URL (the page loads no remote picture). */
-export interface GonguHit extends GonguWork {
-  thumb: string | null
-}
-
-export type GonguSearchAnswer =
-  { ok: true; works: GonguHit[]; total: number | null } | { ok: false; error: GonguErrorKind }
-
-export type GonguPictureAnswer =
-  | { ok: true; dataUrl: string; width: number; height: number; work: GonguWork }
-  | { ok: false; error: GonguErrorKind | 'picture' }
 
 let deps: DesignWindowDeps | null = null
 let win: BrowserWindow | null = null
 /** what a window opened from a map starts with: the map as indented text, taken once */
 let pendingOutline: string | null = null
+/** the file the open design came from or was last saved to; Ctrl+S writes over it */
+let designPath: string | null = null
+/** the board has changes not yet saved (it says so on every change) */
+let dirty = false
+/** the person already answered the close question: the next close goes through */
+let closing = false
 const MAX_BYTES = 64 * 1024 * 1024
 
 function fromWindow(event: IpcMainInvokeEvent): boolean {
@@ -84,34 +114,82 @@ function safeName(name: unknown, fallback: string): string {
   )
 }
 
-const GONGU_PER_PAGE = 20
-
-/** A picture the service pointed at, as a data URL with its size; null when it is not a picture. */
-async function pictureOf(
-  url: string | undefined,
-): Promise<{ dataUrl: string; width: number; height: number } | null> {
-  if (!url) return null
-  const fetched = await fetchImageBytes(url)
-  if (!fetched) return null
-  const image = nativeImage.createFromBuffer(Buffer.from(fetched.base64, 'base64'))
-  if (image.isEmpty()) return null
-  const { width, height } = image.getSize()
-  // the file as it came (a JPEG stays a JPEG); nativeImage only proved it is a picture
-  return { dataUrl: `data:${fetched.mime};base64,${fetched.base64}`, width, height }
+/** The board's own check (parseDesign) in short: a design file it will open. */
+function looksLikeDesign(text: string): boolean {
+  try {
+    const value = JSON.parse(text) as { version?: unknown; pages?: unknown } | null
+    return value?.version === 1 && Array.isArray(value.pages)
+  } catch {
+    return false
+  }
 }
 
-/** Runs `work` over `items` with at most `limit` at once, keeping their order. */
-async function mapLimited<T, R>(items: T[], limit: number, work: (item: T) => Promise<R>) {
-  const out: R[] = new Array(items.length)
-  let next = 0
-  const lanes = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) {
-      const i = next++
-      out[i] = await work(items[i]!)
-    }
-  })
-  await Promise.all(lanes)
-  return out
+/** The dialog words in the UI language (Korean, English, Vietnamese; English elsewhere). */
+const DIALOG_WORDS = {
+  ko: {
+    buttons: ['저장', '저장 안 함', '취소'],
+    message: '디자인을 저장할까요?',
+    detail: '저장하지 않으면 이 디자인에서 바꾼 내용이 사라집니다.',
+    saveTitle: '디자인 저장',
+    exportTitle: '디자인 내보내기',
+    openTitle: '디자인 열기',
+    filter: '한판 디자인',
+  },
+  en: {
+    buttons: ['Save', "Don't save", 'Cancel'],
+    message: 'Save the design?',
+    detail: 'Changes to this design are lost if you do not save them.',
+    saveTitle: 'Save design',
+    exportTitle: 'Export design',
+    openTitle: 'Open design',
+    filter: 'Hanpan design',
+  },
+  vi: {
+    buttons: ['Lưu', 'Không lưu', 'Hủy'],
+    message: 'Lưu thiết kế?',
+    detail: 'Nếu không lưu, những thay đổi trong thiết kế này sẽ mất.',
+    saveTitle: 'Lưu thiết kế',
+    exportTitle: 'Xuất thiết kế',
+    openTitle: 'Mở thiết kế',
+    filter: 'Thiết kế Hanpan',
+  },
+} as const
+function dialogWords(): (typeof DIALOG_WORDS)[keyof typeof DIALOG_WORDS] {
+  const lang = deps?.lang() ?? 'ko'
+  return lang === 'ko' || lang === 'vi' ? DIALOG_WORDS[lang] : DIALOG_WORDS.en
+}
+
+/** 저장 / 저장 안 함 / 취소, over the design window. */
+async function askUnsaved(): Promise<'save' | 'discard' | 'cancel'> {
+  const words = dialogWords()
+  const options = {
+    type: 'warning' as const,
+    buttons: [...words.buttons],
+    defaultId: 0,
+    cancelId: 2,
+    noLink: true,
+    title: deps?.title(deps.lang()) ?? '',
+    message: words.message,
+    detail: words.detail,
+  }
+  const parent = win && !win.isDestroyed() ? win : undefined
+  const { response } = parent
+    ? await dialog.showMessageBox(parent, options)
+    : await dialog.showMessageBox(options)
+  return response === 0 ? 'save' : response === 1 ? 'discard' : 'cancel'
+}
+
+/** The window title: the design's file name in front once it has one. */
+function showTitle(): void {
+  if (!win || win.isDestroyed() || !deps) return
+  const base = deps.title(deps.lang())
+  win.setTitle(designPath ? `${basename(designPath, extname(designPath))} - ${base}` : base)
+}
+
+/** Where a first save or an export starts: the app's save folder (Documents\Hanpan). */
+function saveDir(): string {
+  if (deps?.saveDir) return deps.saveDir()
+  return join(app.getPath('documents'), 'Hanpan')
 }
 
 async function saveAs(
@@ -121,8 +199,11 @@ async function saveAs(
   bytes: Uint8Array | string,
 ): Promise<string | null> {
   const parent = win && !win.isDestroyed() ? win : undefined
+  const words = dialogWords()
   const options = {
-    defaultPath: `${name}.${extension}`,
+    title: extension === 'hpdesign' ? words.saveTitle : words.exportTitle,
+    defaultPath:
+      designPath && extension === 'hpdesign' ? designPath : join(saveDir(), `${name}.${extension}`),
     filters: [{ name: label, extensions: [extension] }],
   }
   const result = parent
@@ -131,6 +212,26 @@ async function saveAs(
   if (result.canceled || !result.filePath) return null
   await writeFile(result.filePath, typeof bytes === 'string' ? bytes : Buffer.from(bytes))
   return result.filePath
+}
+
+/** The page in a hidden window of its own, handed to the system print dialog. */
+function printInWindow(html: string, sheet: PrintSheet): Promise<PrintDialogOutcome> {
+  const parent = win && !win.isDestroyed() ? win : undefined
+  const printer = new BrowserWindow({
+    show: false,
+    ...(parent ? { parent } : {}),
+    ...(process.platform === 'win32'
+      ? { width: 900, height: 700, autoHideMenuBar: true, closable: false, skipTaskbar: true }
+      : {}),
+    webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
+  })
+  printer.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+  return printHtmlDocument({
+    html,
+    fileName: 'design.html',
+    dirPrefix: 'hanpan-design-print-',
+    window: withPrintOptions(printer, printPageOptions(sheet)),
+  })
 }
 
 function registerIpc(): void {
@@ -172,26 +273,93 @@ function registerIpc(): void {
       return path
     },
   )
+  ipcMain.handle(
+    DESIGN_CHANNELS.print,
+    async (event, pages: unknown, sheet: unknown): Promise<PrintDialogOutcome> => {
+      if (!fromWindow(event)) return { ok: false, error: 'design: not the board' }
+      if (!Array.isArray(pages) || !pages.length || pages.length > 200 || !isPrintSheet(sheet))
+        return { ok: false, error: 'design: bad print request' }
+      const pictures = []
+      for (const page of pages) {
+        const png = bytesOf(page)
+        // the size comes from the PNG itself
+        const size = png ? pngSize(png) : null
+        if (!png || !size) return { ok: false, error: 'design: bad print request' }
+        pictures.push({
+          src: `data:image/png;base64,${Buffer.from(png).toString('base64')}`,
+          ...size,
+        })
+      }
+      const html = buildImagePrintHtml(pictures, sheet)
+      try {
+        return await (deps?.printHtml ?? printInWindow)(html, sheet)
+      } catch (err) {
+        return { ok: false, error: err instanceof Error ? err.message : String(err) }
+      }
+    },
+  )
   ipcMain.handle(DESIGN_CHANNELS.copyImage, (event, bytes: unknown) => {
     const png = bytesOf(bytes)
     if (!fromWindow(event) || !png) return false
     clipboard.writeImage(nativeImage.createFromBuffer(Buffer.from(png)))
     return true
   })
-  ipcMain.handle(DESIGN_CHANNELS.saveDesign, async (event, text: unknown, name: unknown) => {
-    if (!fromWindow(event) || typeof text !== 'string' || text.length > MAX_BYTES) return null
-    return saveAs(safeName(name, 'design'), 'hpdesign', '한판 디자인', text)
+  ipcMain.handle(
+    DESIGN_CHANNELS.saveDesign,
+    async (event, text: unknown, name: unknown, mode: unknown) => {
+      if (!fromWindow(event) || typeof text !== 'string' || text.length > MAX_BYTES) return null
+      // Ctrl+S: over the design's own file; only a design never saved (or "save as") asks
+      if (mode !== 'saveAs' && designPath) {
+        await writeFile(designPath, text)
+        return designPath
+      }
+      const path = await saveAs(safeName(name, 'design'), 'hpdesign', dialogWords().filter, text)
+      if (path) designPath = path
+      showTitle()
+      return path
+    },
+  )
+  ipcMain.handle(DESIGN_CHANNELS.newDesign, (event) => {
+    if (!fromWindow(event)) return
+    designPath = null
+    showTitle()
+  })
+  ipcMain.handle(DESIGN_CHANNELS.setDirty, (event, value: unknown) => {
+    if (fromWindow(event)) dirty = value === true
+  })
+  ipcMain.handle(DESIGN_CHANNELS.askUnsaved, (event) =>
+    fromWindow(event) ? askUnsaved() : 'cancel',
+  )
+  ipcMain.handle(DESIGN_CHANNELS.closeAfterSave, (event) => {
+    if (!fromWindow(event)) return
+    closing = true
+    win!.close()
+  })
+  ipcMain.handle(DESIGN_CHANNELS.openGonguSettings, (event) => {
+    if (!fromWindow(event) || !deps) return
+    if (deps.openSettings) return deps.openSettings('integrations')
+    const parent = deps.parentWindow()
+    if (!parent || parent.isDestroyed()) return
+    if (parent.isMinimized()) parent.restore()
+    parent.show()
+    parent.focus()
+    parent.webContents.send('home:open-settings', { section: 'integrations' })
   })
   ipcMain.handle(DESIGN_CHANNELS.openDesign, async (event) => {
     if (!fromWindow(event)) return null
     const result = await dialog.showOpenDialog(win!, {
+      title: dialogWords().openTitle,
       properties: ['openFile'],
-      filters: [{ name: '한판 디자인', extensions: ['hpdesign'] }],
+      filters: [{ name: dialogWords().filter, extensions: ['hpdesign'] }],
     })
     const path = result.filePaths[0]
     if (result.canceled || !path) return null
     const text = await readFile(path, 'utf8')
-    return text.length > MAX_BYTES ? null : { name: basename(path, extname(path)), text }
+    if (text.length > MAX_BYTES) return null
+    // the board drops a file it cannot read; such a file must never be written over
+    if (looksLikeDesign(text)) designPath = path
+    showTitle()
+    return { name: basename(path, extname(path)), text }
   })
   ipcMain.handle(DESIGN_CHANNELS.pickImage, async (event) => {
     if (!fromWindow(event)) return null
@@ -212,28 +380,15 @@ function registerIpc(): void {
   ipcMain.handle(
     DESIGN_CHANNELS.gonguSearch,
     async (event, query: unknown, page: unknown): Promise<GonguSearchAnswer | null> => {
-      if (!fromWindow(event) || !deps || typeof query !== 'string') return null
-      const result = await gonguImageSearch(query.slice(0, 100), deps.gonguKey(), {
-        page: Math.min(1000, Math.max(1, Math.floor(Number(page) || 1))),
-        perPage: GONGU_PER_PAGE,
-      })
-      if (!result.ok) return { ok: false, error: result.error }
-      const works = await mapLimited(result.value.works, 4, async (work) => ({
-        ...work,
-        thumb: (await pictureOf(work.thumbUrl))?.dataUrl ?? null,
-      }))
-      return { ok: true, works, total: result.value.total ?? null }
+      if (!fromWindow(event) || !deps) return null
+      return searchGonguPictures(query, page, deps.gonguKey())
     },
   )
   ipcMain.handle(
     DESIGN_CHANNELS.gonguPicture,
     async (event, workId: unknown): Promise<GonguPictureAnswer | null> => {
-      if (!fromWindow(event) || !deps || typeof workId !== 'string') return null
-      const detail = await gonguImageDetail(workId, deps.gonguKey())
-      if (!detail.ok) return { ok: false, error: detail.error }
-      const picture = await pictureOf(detail.value.imageUrl ?? detail.value.thumbUrl)
-      if (!picture) return { ok: false, error: 'picture' }
-      return { ok: true, ...picture, work: detail.value }
+      if (!fromWindow(event) || !deps) return null
+      return fetchGonguPicture(workId, deps.gonguKey())
     },
   )
   ipcMain.handle(DESIGN_CHANNELS.open, (event) => {
@@ -255,6 +410,29 @@ export function openDesignWithOutline(outline: string): void {
   openDesignWindow()
 }
 
+/** 보통 크기와 가장 작은 크기: 작업 영역이 더 작으면 그 안에 맞춘다 */
+const DESIGN_SIZE = { width: 1360, height: 880, minWidth: 960, minHeight: 600 }
+
+/**
+ * The board's window inside a screen's work area (0.17 리뷰 #8): its usual
+ * 1360×880 where that fits, otherwise the work area itself, centered.
+ */
+export function designWindowBounds(area: Rectangle): Rectangle & {
+  minWidth: number
+  minHeight: number
+} {
+  const width = Math.min(DESIGN_SIZE.width, area.width)
+  const height = Math.min(DESIGN_SIZE.height, area.height)
+  return {
+    x: area.x + Math.round((area.width - width) / 2),
+    y: area.y + Math.round((area.height - height) / 2),
+    width,
+    height,
+    minWidth: Math.min(DESIGN_SIZE.minWidth, width),
+    minHeight: Math.min(DESIGN_SIZE.minHeight, height),
+  }
+}
+
 export function openDesignWindow(): void {
   const d = deps
   if (!d) throw new Error('the design window is not configured')
@@ -264,11 +442,14 @@ export function openDesignWindow(): void {
     return
   }
   const lang = d.lang()
+  // the screen the shell window is on (the primary one when there is none)
+  const parent = d.parentWindow()
+  const display =
+    parent && !parent.isDestroyed()
+      ? screen.getDisplayMatching(parent.getBounds())
+      : screen.getPrimaryDisplay()
   const next = new BrowserWindow({
-    width: 1360,
-    height: 880,
-    minWidth: 960,
-    minHeight: 640,
+    ...designWindowBounds(display.workArea),
     show: false,
     autoHideMenuBar: true,
     title: d.title(lang),
@@ -283,8 +464,27 @@ export function openDesignWindow(): void {
   next.removeMenu()
   next.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   next.once('ready-to-show', () => next.show())
+  // the window keeps the title in the UI language, not the page's own <title>
+  next.on('page-title-updated', (event) => event.preventDefault())
+  // unsaved work: 저장 / 저장 안 함 / 취소 first, as the other editors ask (점검 v2 hwp-design #2)
+  dirty = false
+  closing = false
+  next.on('close', (event) => {
+    if (closing || !dirty) return
+    event.preventDefault()
+    void askUnsaved().then((answer) => {
+      if (next.isDestroyed()) return
+      if (answer === 'discard') {
+        closing = true
+        next.close()
+      } else if (answer === 'save') next.webContents.send(DESIGN_CHANNELS.saveThenClose)
+    })
+  })
   next.on('closed', () => {
     if (win === next) win = null
+    designPath = null
+    dirty = false
+    closing = false
   })
   if (process.env.ELECTRON_RENDERER_URL)
     void next.loadURL(`${process.env.ELECTRON_RENDERER_URL}/design.html`)

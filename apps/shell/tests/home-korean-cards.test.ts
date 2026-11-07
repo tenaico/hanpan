@@ -157,3 +157,124 @@ describe('Home cards and the Korean document features switch', () => {
     expect(koreanCards()).toEqual([false, false, false])
   })
 })
+
+// 0.17 #12 (draft for the 11/10 review): the duplicate card pairs become one
+// card each that still reaches both features, and the file tabs shrink to six.
+describe('Home cleanup', () => {
+  const openTools = vi.fn()
+  beforeEach(() => {
+    window.aiOfficePdfToolsHome = {
+      open: openTools,
+    } as unknown as typeof window.aiOfficePdfToolsHome
+    window.hanpanApi = {
+      ...window.hanpanApi!,
+      mdFolder: async () => '',
+      mdPickFile: async () => null,
+      mdPickFolder: async () => null,
+      mdConvert: async () => ({ ok: true }),
+      mdShowFolder: async () => undefined,
+    } as unknown as typeof window.hanpanApi
+  })
+
+  it.each([
+    ['pdf', 'pdf-tools'],
+    ['md', 'md-convert'],
+  ])('shows %s and %s as one card', async (main, extra) => {
+    await renderHome('ko')
+    const cards = Array.from(host.querySelectorAll('.hp-secondary > *'))
+    const pair = cards.find((el) => el.querySelector(`[data-new="${main}"]`))!
+    expect(pair, main).toBeTruthy()
+    expect(pair.querySelector(`[data-new="${extra}"]`), extra).not.toBeNull()
+    expect(cards.filter((el) => el.matches(`[data-new="${extra}"]`))).toHaveLength(0)
+  })
+
+  it('still opens the PDF tools and the Markdown converter from the merged cards', async () => {
+    await renderHome('ko')
+    await act(async () => host.querySelector<HTMLButtonElement>('[data-new="pdf-tools"]')!.click())
+    expect(openTools).toHaveBeenCalledTimes(1)
+    await act(async () => host.querySelector<HTMLButtonElement>('[data-new="md-convert"]')!.click())
+    expect(host.querySelector('[data-hanpan="md-converter"]')).not.toBeNull()
+  })
+
+  it('offers six file tabs', async () => {
+    await renderHome('ko')
+    const pills = host.querySelector('.filter-pills')!
+    expect(Array.from(pills.querySelectorAll('.filter-pill')).map((b) => b.textContent)).toEqual([
+      '전체',
+      '문서',
+      '스프레드시트',
+      '프레젠테이션',
+      'PDF',
+      '마인드맵·그림',
+    ])
+  })
+})
+
+describe('a tab menu asking to save a document as one of 내 양식', () => {
+  it('opens the forms dialog with that document picked', async () => {
+    let ask: ((tabId: string) => void) | undefined
+    window.hanpanApi = {
+      ...window.hanpanApi!,
+      myForms: async () => [],
+      myFormSources: async () => [
+        { tabId: 't1', title: '출장 보고.hwpx', type: 'hwpx' },
+        { tabId: 't2', title: '회의록.docx', type: 'docx' },
+      ],
+      saveMyForm: async () => ({ ok: false, error: 'unsaved-changes' }),
+      importMyForm: async () => ({ ok: false, error: 'canceled' }),
+      openMyForm: async () => ({ ok: true }),
+      deleteMyForm: async () => true,
+      onSaveMyFormRequest: (listener) => {
+        ask = listener
+        return () => (ask = undefined)
+      },
+    }
+    await renderHome('ko')
+    expect(host.querySelector('[data-section="my-forms"]')).toBeNull()
+    await act(async () => {
+      ask!('t2')
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+    const select = host.querySelector<HTMLSelectElement>('[data-my-form-save] select')
+    expect(select?.value).toBe('t2')
+  })
+})
+
+// 0.17 리뷰 #18·#19 (홈 사이드바와 1366×768 검색)
+describe('Home for an office user', () => {
+  afterEach(() => {
+    delete (window as { aiOfficeAgent?: unknown }).aiOfficeAgent
+  })
+
+  it('names the folder agent by what it does, not "에이전트"', async () => {
+    ;(window as { aiOfficeAgent?: unknown }).aiOfficeAgent = { open: vi.fn() }
+    await renderHome('ko')
+    const item = host.querySelector<HTMLElement>('[data-nav="agent"]')!
+    expect(item.textContent).toContain('AI 폴더 작업')
+    expect(item.textContent).not.toContain('에이전트')
+    expect(item.title).toContain('고급')
+  })
+
+  it('brings the search results into view when a search starts', async () => {
+    const scrolled = vi.fn()
+    Element.prototype.scrollIntoView = scrolled
+    await renderHome('ko')
+    const input = host.querySelector<HTMLInputElement>('.file-search input')!
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      setter.call(input, '주간')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      await Promise.resolve()
+    })
+    expect(scrolled).toHaveBeenCalledTimes(1)
+    expect(scrolled.mock.calls[0]![0]).toMatchObject({ block: 'start' })
+    // typing on does not scroll again
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      setter.call(input, '주간 업무')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      await Promise.resolve()
+    })
+    expect(scrolled).toHaveBeenCalledTimes(1)
+  })
+})

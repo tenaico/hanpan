@@ -493,10 +493,17 @@ export type AgentDeleteTableResult =
   | { ok: false; reason: 'has_objects'; count: number }
 
 /** What a File menu item of the editor asks the app to do. */
-export type AgentFileCommand = 'save' | 'saveAs' | 'pdf' | 'print'
+export type AgentFileCommand =
+  'open' | 'save' | 'saveAs' | 'pdf' | 'docx' | 'png' | 'pngPage' | 'print'
+
+/** The document body as one HTML page (paragraphs, tables, pictures) for the Word export. */
+export declare function documentHtml(doc: never): string
 
 /** The event those items fire on the editor's window; `detail` is the AgentFileCommand. */
 export declare const FILE_COMMAND_EVENT: 'ieum:file-command'
+
+/** The event the About box's licence button fires on the editor's window. */
+export declare const OPEN_LICENSES_EVENT: 'ieum:open-licenses'
 
 /** The parts of the editor toolbar's style list (a select element) syncStyleList uses. */
 export interface StyleListElement {
@@ -889,6 +896,10 @@ export interface AgentPluginSurface {
   ): AgentStyleResult
   /** pages for printing from `from`, as many as are drawn in about two seconds */
   printPages(from: number): AgentPrintPages
+  /** the document body as one HTML page, for the Word export */
+  exportHtml(): { html: string }
+  /** the page the caret is on, 0-based */
+  currentPage(): number
   mergeCells(
     table: number,
     from: AgentCellPlace,

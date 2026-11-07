@@ -161,7 +161,7 @@ export function MemoSide(props: MemoPanelProps): ReactElement {
   return (
     <div
       className={`memo-side${open ? '' : ' collapsed'}${resizing ? ' memo-side-resizing' : ''}`}
-      style={{ width }}
+      style={{ width, ['--memo-width' as string]: `${width}px` }}
     >
       <MemoPanel {...props} />
       {open && <div className="memo-side-resizer" onPointerDown={startResize} />}

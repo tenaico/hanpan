@@ -19,6 +19,7 @@ export async function addSlide(ctx: ActionCtx): Promise<void> {
   const r = await window.slidesApi.addBlankSlide({
     sourceIndex: ctx.current,
     fitWidthPx: FIT_WIDTH,
+    withPlaceholders: true,
   })
   if (r) {
     ctx.setSlides(r.slides)

@@ -8,6 +8,7 @@ import {
 } from '../src/ai-panel-prefs-store'
 import {
   DEFAULT_AI_PANEL_PREFS,
+  normalizeAiPanelPrefs,
   aiPanelStartOf,
   aiPanelStartPatch,
   type AiPanelPrefs,
@@ -36,6 +37,22 @@ beforeAll(() => {
 afterEach(() => {
   applyAiPanelPrefs({})
   vi.unstubAllGlobals()
+})
+
+// 0.17 #8: the assistant sits on the right in every app unless the person moved it left
+describe('AI panel default side', () => {
+  it('is the right, for missing or unknown values; left only when chosen', () => {
+    expect(DEFAULT_AI_PANEL_PREFS.side).toBe('right')
+    expect(normalizeAiPanelPrefs({}).side).toBe('right')
+    expect(normalizeAiPanelPrefs({ side: 'bottom' }).side).toBe('right')
+    expect(normalizeAiPanelPrefs({ side: 'left' }).side).toBe('left')
+  })
+
+  it('marks the page on the first apply even when it equals the default', () => {
+    delete document.documentElement.dataset.aiPanelSide
+    applyAiPanelPrefs({})
+    expect(document.documentElement.dataset.aiPanelSide).toBe('right')
+  })
 })
 
 describe('AI panel side in the renderer', () => {

@@ -93,6 +93,68 @@ describe('FindPanel', () => {
     vi.useRealTimers()
   })
 
+  it('opens Replace with focus in the find field (Word puts the caret in "Find what")', () => {
+    const editor = createEditor('hello world')
+    const { container, unmount } = render(
+      createElement(FindPanel, { editor, onClose: () => {}, focusReplaceNonce: 1 }),
+    )
+    const [findInput] = container.querySelectorAll<HTMLInputElement>('.find-input')
+    expect(container.querySelectorAll('.find-input')).toHaveLength(2)
+    expect(document.activeElement).toBe(findInput)
+    unmount()
+    editor.destroy()
+  })
+
+  it('reports how many matches Replace All changed and keeps Esc working', () => {
+    vi.useFakeTimers()
+    const editor = createEditor('제출 제출 기타')
+    const onClose = vi.fn()
+    const { container, unmount } = render(
+      createElement(FindPanel, { editor, onClose, focusReplaceNonce: 1 }),
+    )
+    const setValue = (el: HTMLInputElement, v: string) => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      setter.call(el, v)
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+    const [findInput, replaceInput] = container.querySelectorAll<HTMLInputElement>('.find-input')
+    act(() => setValue(findInput, '제출'))
+    act(() => setValue(replaceInput, '접수'))
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    const replaceAll = container.querySelectorAll<HTMLButtonElement>('.find-action')[1]
+    act(() => {
+      replaceAll.focus()
+      replaceAll.click()
+    })
+    expect(editor.state.doc.textContent).toBe('접수 접수 기타')
+    expect(container.querySelector('.find-count')!.textContent).toContain('2')
+    // the clicked button is now disabled: focus must not fall to <body>
+    expect(container.contains(document.activeElement)).toBe(true)
+    act(() => {
+      ;(document.activeElement as HTMLElement).dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+      )
+    })
+    expect(onClose).toHaveBeenCalled()
+    unmount()
+    editor.destroy()
+  })
+
+  it('closes on Esc from any control in the panel', () => {
+    const editor = createEditor('hello world')
+    const onClose = vi.fn()
+    const { container, unmount } = render(createElement(FindPanel, { editor, onClose }))
+    const chip = container.querySelector<HTMLButtonElement>('.find-opt')!
+    act(() => {
+      chip.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    })
+    expect(onClose).toHaveBeenCalledTimes(1)
+    unmount()
+    editor.destroy()
+  })
+
   it('hides the Replace tab when the editor is read-only', () => {
     const editor = createEditor('hello world')
     editor.setEditable(false)

@@ -23,7 +23,7 @@ export function ToastHost() {
       raf = window.requestAnimationFrame(() => {
         raf = window.requestAnimationFrame(() => setVisible(true))
       })
-      const shownMs = next.kind === 'error' ? 4000 : 2000
+      const shownMs = next.action ? 8000 : next.kind === 'error' ? 4000 : 2000
       hideTimer = window.setTimeout(() => setVisible(false), shownMs)
       // keep the node mounted through the fade-out transition
       clearTimer = window.setTimeout(() => setToast(null), shownMs + 200)
@@ -37,7 +37,10 @@ export function ToastHost() {
   }, [])
   if (!toast) return null
   return (
-    <div className={`app-toast ${toast.kind}${visible ? ' show' : ''}`} role="status">
+    <div
+      className={`app-toast ${toast.kind}${visible ? ' show' : ''}${toast.action ? ' has-action' : ''}`}
+      role="status"
+    >
       <svg
         className="app-toast-icon"
         viewBox="0 0 24 24"
@@ -61,7 +64,18 @@ export function ToastHost() {
           </>
         )}
       </svg>
-      {toast.text}
+      <span className="app-toast-text">{toast.text}</span>
+      {toast.action && (
+        <button
+          className="app-toast-action"
+          onClick={() => {
+            toast.action?.run()
+            setVisible(false)
+          }}
+        >
+          {toast.action.label}
+        </button>
+      )}
     </div>
   )
 }

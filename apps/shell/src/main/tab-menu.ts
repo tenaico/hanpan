@@ -1,11 +1,14 @@
 import type { MenuItemConstructorOptions } from 'electron'
 import { extname } from 'node:path'
 import type { TabSummary } from '../shared/tabs-api'
+import { tabDocumentActionSupported } from './tab-document-actions'
 
 export type TabMenuStringKey =
   | 'menuTabSave'
   | 'menuTabSaveAs'
   | 'menuTabPrint'
+  | 'menuTabShare'
+  | 'menuTabSaveMyForm'
   | 'menuTabRename'
   | 'menuTabDuplicate'
   | 'menuTabSplitBeside'
@@ -38,6 +41,10 @@ export interface TabMenuActions {
   /** close these tabs one after another (a save prompt that is cancelled stops the rest) */
   closeTabs(ids: string[]): void
   reopenClosed(): void
+  /** the system share sheet with the tab's file (saving it first when it has unsaved changes) */
+  share(id: string): void
+  /** the 한판 forms dialog, ready to save this Word or HWP document as one of 내 양식 */
+  saveMyForm(id: string): void
 }
 
 export interface TabMenuInput {
@@ -49,6 +56,10 @@ export interface TabMenuInput {
   fileExists: boolean
   /** something was closed that can be opened again */
   canReopen: boolean
+  /** this system has a share sheet the app can open (Windows, macOS) */
+  canShare?: boolean
+  /** 다른 앱으로 보내기 submenu (send-to-app/menu.ts), placed right below Share; null for a tab that cannot send */
+  sendTo?: MenuItemConstructorOptions | null
   /** Translate through the shell's existing 21-locale main table. */
   tm(key: TabMenuStringKey): string
   actions: TabMenuActions
@@ -108,6 +119,8 @@ export function isProgramFile(path: string): boolean {
   return PROGRAM_EXTENSIONS.has(extname(path).toLowerCase())
 }
 
+const MY_FORM_KINDS: ReadonlySet<TabSummary['kind']> = new Set(['docs', 'hwp'])
+
 export const baseName = (path: string): string => path.split(/[\\/]/).pop() ?? path
 
 const PATH_LABEL_MAX = 80
@@ -152,9 +165,31 @@ export function tabMenuTemplate(input: TabMenuInput): MenuItemConstructorOptions
     {
       id: 'print',
       label: tm('menuTabPrint'),
-      enabled: document,
+      // books have no print: the entry is off rather than dead
+      enabled: document && tabDocumentActionSupported(tab.kind, 'print'),
       click: () => actions.print(tab.id),
     },
+    { type: 'separator' },
+    {
+      id: 'share',
+      label: tm('menuTabShare'),
+      enabled: document && !!input.canShare,
+      click: () => actions.share(tab.id),
+    },
+    ...(input.sendTo
+      ? [{ ...input.sendTo, enabled: document && input.sendTo.enabled !== false }]
+      : []),
+    // 내 양식 are Word or HWP documents (the forms dialog lists only those tabs)
+    ...(MY_FORM_KINDS.has(tab.kind)
+      ? [
+          {
+            id: 'saveMyForm',
+            label: tm('menuTabSaveMyForm'),
+            enabled: document,
+            click: () => actions.saveMyForm(tab.id),
+          },
+        ]
+      : []),
     { type: 'separator' },
     {
       id: 'rename',

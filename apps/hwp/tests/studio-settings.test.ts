@@ -35,9 +35,10 @@ describe('seededStudioSettings', () => {
 })
 
 describe('studio locale and url', () => {
-  it('uses Korean for Korean and English for every other UI language', () => {
+  it('uses Korean, Vietnamese and English as the studio has them, English otherwise', () => {
     expect(studioLocale('ko')).toBe('ko')
     expect(studioLocale('en')).toBe('en')
+    expect(studioLocale('vi')).toBe('vi')
     expect(studioLocale('ja')).toBe('en')
     expect(studioLocale('zh-TW')).toBe('en')
   })

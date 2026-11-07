@@ -1153,3 +1153,15 @@
   font-size: var(--text-caption, 12px);
   color: var(--text-muted);
 }
+
+/* a narrow window (under 1280, AiDock's AI_DOCK_NARROW_WIDTH): the open panel gives the canvas
+   room, down to 280px, instead of keeping its 360px */
+@media (max-width: 1279.98px) {
+  .ai-dock:not(.collapsed) {
+    width: clamp(280px, 28vw, var(--ai-panel-width, 360px));
+  }
+
+  .ai-dock .copilot {
+    width: 100%;
+  }
+}

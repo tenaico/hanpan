@@ -9,7 +9,9 @@
  *   written as a copy and leaves the document's name and changed mark alone.
  * - `request('app.exportImage', {format, maxSide?})` (h2) gives the composited
  *   picture without writing a file or touching the document; copies and the
- *   AI's canvas picture come from it.
+ *   AI's canvas picture come from it. `{format: 'psd'}` (h4) gives the layered
+ *   document the same way, for the recovery copy; h3 refuses it ("format must be
+ *   png or jpeg"), and the copy is the flattened PNG then.
  * - The history is `document.history` (one entry per step); `edit.undo` throws
  *   when there is nothing left to undo.
  */
@@ -163,6 +165,18 @@ export function createPhotoAdapter(api: GraphicsPageApi): GraphicsAdapter {
       return bytes
     },
     exportBytes,
+    async recoveryBytes() {
+      try {
+        return { bytes: await exportImage({ format: 'psd' }), ext: 'psd' }
+      } catch {
+        // a build without PSD export: the flattened picture is kept, so something is
+      }
+      try {
+        return { bytes: await exportImage({ format: 'png' }), ext: 'png' }
+      } catch {
+        return null
+      }
+    },
     async isLayered() {
       const layers = (await inspect()).document?.layers ?? []
       return (

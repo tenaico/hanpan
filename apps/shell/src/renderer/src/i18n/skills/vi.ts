@@ -76,7 +76,7 @@ export const vi = {
   fieldBody: 'Hướng dẫn',
   fieldName: 'Tên',
   nameHint:
-    'Tên hiển thị trong danh sách kỹ năng. Chữ thường tiếng Anh, chữ số và dấu gạch nối (-), tối đa 64 ký tự',
+    'Tên hiển thị trong danh sách kỹ năng. Viết bằng chữ bất kỳ thì hiển thị đúng như vậy và tên nội bộ được chọn tự động; chữ thường tiếng Anh, chữ số và dấu gạch nối (-) sẽ trở thành tên nội bộ (tối đa 64 ký tự)',
   files: 'Tệp trong kỹ năng',
   filesNone: 'Không có tệp nào khác',
   filesHint: 'Mở thư mục để sửa các tệp này',

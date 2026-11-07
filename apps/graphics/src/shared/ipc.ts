@@ -7,6 +7,7 @@
 import type { Lang } from '@genoffice/i18n'
 import type { AiPanelPrefs } from '@genoffice/ui'
 import type { AiSettings, AiStreamChunk, AiStreamRequest } from '@genoffice/ai-provider'
+import type { PrintSheet } from '@genoffice/ui/image-print'
 import type { SaveMode } from './save-target'
 import type { GraphicsSubscriptionApi } from './subscription-api'
 
@@ -27,6 +28,17 @@ export const GRAPHICS_CHANNELS = {
   exportFile: 'graphics:export-file',
   pickImage: 'graphics:pick-image',
   menuCommand: 'graphics:menu-command',
+  /** the picture the page took from the app, printed through the system dialog */
+  print: 'graphics:print',
+  /** crash recovery: the page hands main a copy of the document (main picks the place) */
+  recoveryWrite: 'graphics:recovery-write',
+  /** the document was opened from a recovery copy: the page marks it changed (asked once) */
+  recoveryRestored: 'graphics:recovery-restored',
+  /** the OS is ending the session: write a copy now, then answer done */
+  recoveryCopyNow: 'graphics:recovery-copy-now',
+  recoveryCopyNowDone: 'graphics:recovery-copy-now-done',
+  /** the copy was saved or dropped: the next copy is written even if nothing changed since */
+  recoveryReset: 'graphics:recovery-reset',
 } as const
 
 export const APP_CHANNELS = {
@@ -88,7 +100,26 @@ export interface PickedImage {
   bytes: Uint8Array
 }
 
-export type GraphicsMenuCommand = 'export' | 'undo' | 'redo'
+/** A copy of the document for crash recovery; `ext` without the dot ('psd', 'png', 'vectorcraft'). */
+export interface RecoveryCopyRequest {
+  bytes: Uint8Array
+  ext: string
+}
+/**
+ * - `written`: kept in the profile's recovery folder.
+ * - `superseded`: not kept now (the document was just dropped with "Don't Save").
+ * - `refused`: a format this tab does not keep.
+ */
+export type RecoveryWriteAnswer = 'written' | 'superseded' | 'refused'
+
+export type GraphicsMenuCommand = 'export' | 'undo' | 'redo' | 'print'
+
+/** The app's picture as a PNG, and the paper the preview put it on. */
+export interface PrintRequest {
+  bytes: Uint8Array
+  sheet: PrintSheet
+}
+export type PrintResult = { ok: true } | { ok: true; canceled: true } | { ok: false; error: string }
 
 /** What the preload exposes as `window.graphicsApi`. Every `on…` returns its unsubscribe. */
 export interface GraphicsApi {
@@ -112,6 +143,15 @@ export interface GraphicsApi {
   exportFile(request: ExportRequest): Promise<ExportResult>
   pickImage(): Promise<PickedImage | null>
   onMenuCommand(handler: (command: GraphicsMenuCommand) => void): () => void
+  /** prints the picture on the paper the preview showed; main builds the page itself */
+  print(request: PrintRequest): Promise<PrintResult>
+  // ---- crash recovery: main writes the copy into the profile's recovery folder ----
+  writeRecoveryCopy(request: RecoveryCopyRequest): Promise<RecoveryWriteAnswer>
+  /** true once when the document came from a recovery copy */
+  recoveryRestored(): Promise<boolean>
+  onRecoveryCopyNow(handler: () => void): () => void
+  recoveryCopyNowDone(): void
+  onRecoveryReset(handler: () => void): () => void
   // ---- the AI panel: no attachments, no web search, no files of its own ----
   getAiPanelPrefs(): Promise<AiPanelPrefs>
   setAiPanelPrefs(patch: Partial<AiPanelPrefs>): Promise<AiPanelPrefs>

@@ -74,6 +74,8 @@ export const hi = {
   usageWindowFiveHour: '5 घंटे की सीमा',
   usageWindowSevenDay: '7 दिन की सीमा',
   noticeTitle: 'अपनी सदस्यता से AI का उपयोग करने से पहले',
+  noticeSummary: 'दस्तावेज़ और बातचीत आपके अपने खाते से Anthropic या OpenAI को भेजी जाती हैं।',
+  noticeMore: 'विवरण',
   noticeSend:
     'दस्तावेज़ की सामग्री और आपकी बातचीत आपके अपने खाते से Anthropic या OpenAI को भेजी जाती है। हर अनुरोध के साथ "AI तय करे" पर रखे हर कौशल का नाम, शीर्षक और विवरण भी जाता है; उपयोग किए गए कौशल और AI द्वारा पढ़ी गई कौशल फ़ाइलें भी साथ में भेजी जाती हैं।',
   noticeTraining:

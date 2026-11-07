@@ -3,7 +3,7 @@
  * while it is collapsed) and its remembered open state. The panel stays mounted
  * either way, so a run and its chat survive a collapse.
  */
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 import {
   AiMark,
@@ -31,11 +31,31 @@ const OPEN_KEY: Record<GraphicsAiPanelProps['kind'], string> = {
 
 export type GraphicsAiDockProps = Omit<GraphicsAiPanelProps, 'onCollapse'>
 
+/** Below this window width the 360px panel leaves the canvas too little room (1366: about 610px). */
+export const AI_DOCK_NARROW_WIDTH = 1280
+
+/**
+ * Whether the panel starts open: as remembered, but collapsed in a narrow
+ * window. The narrow start is not remembered: a wider window opens it again.
+ */
+export function aiDockStartsOpen(remembered: boolean, windowWidth: number): boolean {
+  return remembered && windowWidth >= AI_DOCK_NARROW_WIDTH
+}
+
 export function GraphicsAiDock(props: GraphicsAiDockProps): ReactElement {
   const { t } = useI18n()
   const key = OPEN_KEY[props.kind]
-  const [open, setOpen] = useState(() => aiPanelInitiallyOpen(key))
-  useEffect(() => rememberAiPanelOpen(key, open), [key, open])
+  const [open, setOpenState] = useState(() =>
+    aiDockStartsOpen(aiPanelInitiallyOpen(key), window.innerWidth),
+  )
+  // only the person's own open and collapse are remembered, not the narrow window's start
+  const setOpen = useCallback(
+    (next: boolean) => {
+      setOpenState(next)
+      rememberAiPanelOpen(key, next)
+    },
+    [key],
+  )
 
   // the shell's AI panel preferences (text size): read once, then followed
   useEffect(() => {

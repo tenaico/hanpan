@@ -474,3 +474,14 @@
   color: var(--danger);
   font-weight: 600;
 }
+
+/* a builtin's coding-agent name under its shown name */
+.skl-row-name {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* other programs' skill folders, folded until opened */
+.skl-group-external > summary {
+  cursor: pointer;
+}

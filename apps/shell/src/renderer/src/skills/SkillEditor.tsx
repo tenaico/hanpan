@@ -7,7 +7,13 @@ import type {
 } from '@genoffice/electron-utils/user-skills-channels'
 import { skillsText, type SkillsStringKey } from '../i18n/strings-skills'
 import { SkillDialog } from './SkillDialog'
-import { failureKey, formatSkillSize, nameProblemKey, skillDisplayTitle } from './skills-model'
+import {
+  failureKey,
+  formatSkillSize,
+  isSkillIdName,
+  nameProblemKey,
+  skillDisplayTitle,
+} from './skills-model'
 
 export type SkillEditorMode = 'view' | 'edit' | 'new'
 
@@ -80,7 +86,9 @@ export function SkillEditor({
     }
   }, [api, mode, viewId])
 
-  const nameChanged = mode === 'edit' ? name !== originalName : name.trim() !== ''
+  /** a new skill named in Korean: that text is its title and main picks the ID */
+  const titleName = mode === 'new' && name.trim() !== '' && !isSkillIdName(name)
+  const nameChanged = mode === 'edit' ? name !== originalName : name.trim() !== '' && !titleName
 
   useEffect(() => {
     if (readOnly || !nameChanged) {
@@ -108,14 +116,14 @@ export function SkillEditor({
     !loading &&
     !saving &&
     !checkingName &&
-    !nameProblem &&
+    (!nameProblem || titleName) &&
     name.trim() !== '' &&
     description.trim() !== '' &&
     body.trim() !== ''
 
   const save = async () => {
     if (!canSave) return
-    const input: UserSkillSaveInput = { title: '', description, body }
+    const input: UserSkillSaveInput = { title: titleName ? name.trim() : '', description, body }
     if (mode === 'edit' && viewId) input.id = viewId
     if (nameChanged) input.name = name.trim()
     setSaving(true)

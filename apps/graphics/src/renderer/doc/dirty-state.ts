@@ -1,6 +1,8 @@
 /**
- * The tab's "unsaved changes" mark: the app's own mark, or a save whose write
- * failed after the app had already marked the document clean.
+ * The tab's "unsaved changes" mark. Once the app reports an edit, only a file
+ * Hanpan wrote clears it: the app's document turning clean by itself (its own
+ * Save, which writes nothing to disk; an undo back to the start) does not, so a
+ * close always asks while the edits are not on disk (0.17 review v2, G1/G2).
  */
 export interface DirtyState {
   fromApp(dirty: boolean): void
@@ -23,7 +25,8 @@ export function createDirtyState(setDirty: (dirty: boolean) => void): DirtyState
   }
   return {
     fromApp(dirty) {
-      app = dirty
+      // sticky: the app's clean is not a save; `saved` clears the mark
+      app = app || dirty
       publish()
     },
     saveFailed() {

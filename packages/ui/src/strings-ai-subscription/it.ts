@@ -79,6 +79,8 @@ export const it = {
   usageWindowFiveHour: 'Limite di 5 ore',
   usageWindowSevenDay: 'Limite di 7 giorni',
   noticeTitle: 'Prima di usare l’IA con il tuo abbonamento',
+  noticeSummary: 'Documenti e chat vengono inviati ad Anthropic o OpenAI con il tuo account.',
+  noticeMore: 'Dettagli',
   noticeSend:
     "Il contenuto del documento e la conversazione vengono inviati ad Anthropic o a OpenAI con il tuo account personale. Ogni richiesta porta anche nome, titolo e descrizione di ogni abilità impostata su “Decide l'IA”; vengono inviate anche le abilità in uso e i file delle abilità letti dall’IA.",
   noticeTraining:

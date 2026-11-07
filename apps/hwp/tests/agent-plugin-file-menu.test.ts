@@ -8,11 +8,16 @@ import {
   agentPlugin,
   type AgentPluginHost,
 } from '../studio-plugin/agent-plugin.mjs'
+import { APP_FILE_COMMANDS } from '../studio-plugin/hancom-keys.mjs'
 
 const LABELS = {
+  open: '열기…',
   save: '저장',
   saveAs: '다른 이름으로 저장…',
   pdf: 'PDF로 내보내기…',
+  docx: 'Word 문서로 내보내기…',
+  png: '이미지로 내보내기(모든 쪽)…',
+  pngPage: '이미지로 내보내기(지금 쪽)…',
   print: '인쇄…',
 }
 
@@ -62,19 +67,24 @@ afterEach(() => {
 })
 
 describe('the File menu of the embedded editor', () => {
-  it('gets Save, Save As, Export as PDF and Print on top, in that order', () => {
+  it('gets Open, Save, Save As, the exports (PDF, Word, images) and Print on top, in that order', () => {
     const { plugin, commands, menu } = editor()
     expect(plugin.installFileMenu(LABELS)).toEqual({ ok: true })
     expect(menu).toEqual([
+      'ext:ieum-open',
       'ext:ieum-save',
       'ext:ieum-save-as',
       'ext:ieum-export-pdf',
+      'ext:ieum-export-docx',
+      'ext:ieum-export-png',
+      'ext:ieum-export-png-page',
       'ext:ieum-print',
       'file:page-setup',
       'file:about',
     ])
     expect(commands.get('ext:ieum-save')).toMatchObject({ label: '저장', shortcutLabel: 'Ctrl+S' })
     expect(commands.get('ext:ieum-save-as')).toMatchObject({ shortcutLabel: 'Ctrl+Shift+S' })
+    expect(commands.get('ext:ieum-open')).toMatchObject({ label: '열기…', shortcutLabel: 'Ctrl+O' })
     expect(commands.get('ext:ieum-export-pdf')?.shortcutLabel).toBeUndefined()
   })
 
@@ -82,21 +92,31 @@ describe('the File menu of the embedded editor', () => {
     const { plugin, commands } = editor()
     plugin.installFileMenu(LABELS)
     for (const id of [
+      'ext:ieum-open',
       'ext:ieum-save',
       'ext:ieum-save-as',
       'ext:ieum-export-pdf',
+      'ext:ieum-export-docx',
+      'ext:ieum-export-png',
+      'ext:ieum-export-png-page',
       'ext:ieum-print',
     ]) {
       commands.get(id)?.execute(undefined as never)
     }
-    expect(fired).toEqual(['save', 'saveAs', 'pdf', 'print'])
+    expect(fired).toEqual(['open', 'save', 'saveAs', 'pdf', 'docx', 'png', 'pngPage', 'print'])
+  })
+
+  it("registers every command the editor's file keys are sent to", () => {
+    const { plugin, commands } = editor()
+    plugin.installFileMenu(LABELS)
+    for (const id of Object.values(APP_FILE_COMMANDS)) expect(commands.has(id), id).toBe(true)
   })
 
   it('puts the items back once when asked again, without registering twice', () => {
     const { plugin, menu } = editor()
     plugin.installFileMenu(LABELS)
     expect(plugin.installFileMenu(LABELS)).toEqual({ ok: true })
-    expect(menu.filter((id) => id.startsWith('ext:'))).toHaveLength(4)
+    expect(menu.filter((id) => id.startsWith('ext:'))).toHaveLength(8)
   })
 
   it('says so when the editor has no File menu, and refuses missing labels', () => {

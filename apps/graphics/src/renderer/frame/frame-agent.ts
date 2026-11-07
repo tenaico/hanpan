@@ -107,6 +107,35 @@ export function installFrameAgent(
     }
   }
 
+  // Save, Save As and Print are the host's (0.17 review v2, G1-G3): the web build asks with a
+  // window event in embedded mode, and the keys are taken before the app sees them, so the
+  // app's own save (which writes nothing to disk) never runs.
+  const HOST_REQUESTS = ['save', 'saveAs', 'print']
+  for (const request of HOST_REQUESTS) {
+    win.addEventListener(`hanpan-host-${request}`, () => post({ type: 'host', request }))
+  }
+  win.addEventListener(
+    'keydown',
+    (event: KeyboardEvent) => {
+      if (locked || !(event.ctrlKey || event.metaKey) || event.altKey) return
+      const key =
+        event.code === 'KeyS' ? 's' : event.code === 'KeyP' ? 'p' : event.key.toLowerCase()
+      const request =
+        key === 's'
+          ? event.shiftKey
+            ? 'saveAs'
+            : 'save'
+          : key === 'p' && !event.shiftKey
+            ? 'print'
+            : null
+      if (!request) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      if (!event.repeat) post({ type: 'host', request })
+    },
+    { capture: true },
+  )
+
   link.listen((raw: unknown) => {
     const data = raw as { tag?: unknown; type?: unknown } | null
     if (!data || data.tag !== TAG) return

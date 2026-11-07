@@ -426,6 +426,16 @@ describe('reading a damaged record', () => {
     expect(parsed?.split).toEqual({ a: 0, b: 1, orientation: 'stack', ratio: 0.4, focus: 'b' })
   })
 
+  it('keeps the untitled copy of an AI Illustration tab (.vectorcraft, 11 letters)', () => {
+    const tab = {
+      kind: 'illust',
+      title: 'Untitled Illustration',
+      untitled: { untitledId: 'u-2', ext: '.vectorcraft' },
+    }
+    const parsed = parseSessionRecord({ ...record(), tabs: [tab] })
+    expect(parsed?.tabs).toEqual([tab])
+  })
+
   it('ignores an active index or split that points at a dropped or missing tab', () => {
     const parsed = parseSessionRecord({
       ...record(),

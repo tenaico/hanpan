@@ -400,7 +400,7 @@ html[data-doc-theme='light'] .doc-page {
   color: var(--text-muted);
 }
 
-/* GFM footnotes. The reference shows the label as written and jumps to its
+/* GFM footnotes. The reference shows the note number and jumps to its
  * definition; the definition keeps its label in a fixed slot beside the body
  * column. A separator opens the first definition of a run, echoing GitHub's
  * footnotes section. */
@@ -3540,10 +3540,9 @@ div.tiptap-mathematics-render {
 }
 
 .md-theme-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 30;
+  /* portalled to <body> and placed by useAnchoredMenu: above the ribbon and the AI panel */
+  position: fixed;
+  z-index: 1000;
   min-width: 190px;
   padding: 5px;
   background: var(--surface);
@@ -3581,6 +3580,17 @@ div.tiptap-mathematics-render {
 
 .md-theme-check {
   font-size: 12px;
+}
+
+.md-advanced-menu .md-theme-item {
+  justify-content: flex-start;
+}
+
+.md-advanced-btn {
+  width: auto;
+  padding: 0 8px;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 /* ---- backlinks panel ---- */
@@ -3739,4 +3749,107 @@ div.tiptap-mathematics-render {
   justify-content: center;
   font-size: 13px;
   color: var(--text-muted);
+}
+
+/* ---- File menu (Hanpan 0.17 #6): the tab bar menu's file commands on screen,
+   styled like the docs/slides File tab ---- */
+
+.file-tab-wrap {
+  position: relative;
+  margin-right: 6px;
+  -webkit-app-region: no-drag;
+}
+
+.ribbon-tab-file {
+  border: none;
+  border-radius: 4px;
+  padding: 5px 14px;
+  background: var(--accent);
+  color: var(--md-on-accent);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ribbon-tab-file:hover,
+.ribbon-tab-file.open {
+  background: var(--accent-dark);
+}
+
+.file-menu {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  z-index: 60;
+  min-width: 230px;
+  padding: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  box-shadow: var(--shadow-menu);
+  -webkit-app-region: no-drag;
+}
+
+.file-menu button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.file-menu button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.file-menu button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.file-menu-key {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.file-menu-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
+}
+.image-host-dialog:focus,
+.graph-overlay:focus {
+  outline: none;
+}
+
+/* after an export: Open / Open folder beside the status message */
+.status-export-actions {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.status-link {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.status-link:hover {
+  background: var(--surface-subtle);
 }

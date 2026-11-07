@@ -208,7 +208,7 @@ describe('the Markdown outline', () => {
       suggestedName: string
     }
     expect(suggestedName).toBe('test')
-    expect(status()).toBe('Exported')
+    expect(status()).toBe('Exported: map.md')
 
     // what the save right after it writes, read back with the engine
     await click('[data-action="save"]')
@@ -223,6 +223,14 @@ describe('the Markdown outline', () => {
     )!
     expect(folded.branch).toBe('folded')
     expect(text).toContain(String(folded.children!.attached![0]!.title))
+  })
+
+  it('of a one-sheet map reads as a document: the central topic is the title, its topics the list', async () => {
+    const fake = await mountWith(await (await documentOf(plainSheet('Sheet 1'))).save())
+    await act(async () => fake.emitExport('markdown'))
+    await settle()
+    const { text } = fake.exports[0]!.request as { text: string }
+    expect(text).toBe(['# Center', '', '- One', '- Two', ''].join('\n'))
   })
 
   it('a new map whose central topic still has its first title is offered as untitled', async () => {

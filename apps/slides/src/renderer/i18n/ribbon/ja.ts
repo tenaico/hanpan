@@ -60,7 +60,8 @@ export const ja = {
   // Home: slides
   ribbonGroupSlides: 'スライド',
   ribbonNewSlide: '新しいスライド',
-  ribbonNewSlideTip: '新しい空白スライド（現在のスライドのレイアウト背景を引き継ぎ）',
+  ribbonNewSlideTip:
+    '新しいスライド（タイトル スライドの次は「タイトルとコンテンツ」、それ以外は現在のスライドと同じレイアウト）',
   ribbonChooseLayout: 'レイアウトの選択',
   ribbonChooseLayoutNew: 'レイアウトを選んで新規スライド',
   ribbonChooseLayoutChange: '現在のスライドのレイアウトを変更',
@@ -329,7 +330,7 @@ export const ja = {
   ribbonTransRandom: 'ランダム',
   ribbonTransNoneTip: '現在のスライドの画面切り替え効果を削除',
   ribbonTransApplyTip:
-    'このスライドに「{name}」の画面切り替えを適用（PowerPoint のスライドショーで有効）',
+    'このスライドに「{name}」画面切り替えを適用（スライド ショーと PowerPoint の両方で再生）',
   ribbonGroupTiming: 'タイミング',
   ribbonTransApplyAllTip: '現在のスライドの画面切り替え効果をすべてのスライドに適用',
   // Animations
@@ -801,4 +802,8 @@ export const ja = {
   ribbonZoomSectionItem: 'スライド {n} セクション {k}: {name}',
   ribbonZoomSelectedSlides: '{n} 枚のスライドを選択中',
   ribbonZoomSelectedSections: '{n} 個のセクションを選択中',
+  ribbonTabCollapseTip: 'ダブルクリックでリボンを折りたたみます ({key})',
+  ribbonAnimSelectFirst: '先にアニメーションを付けるオブジェクトを選択してください',
+  ribbonSpellCheckStarted:
+    'AI ウィンドウでスペル チェックを始めました。終わると「誤りはありません」または「N か所を修正」と表示します。',
 } satisfies Record<keyof typeof zh, string>

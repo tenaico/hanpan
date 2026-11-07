@@ -59,7 +59,8 @@ export const de = {
     'Format übertragen (klicken, um das Format zu kopieren und anzuwenden; ⌘⇧C Format kopieren / ⌘⇧V Format einfügen)',
   ribbonGroupSlides: 'Folien',
   ribbonNewSlide: 'Neue Folie',
-  ribbonNewSlideTip: 'Neue leere Folie (übernimmt den Layouthintergrund der aktuellen Folie)',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'Layout auswählen',
   ribbonChooseLayoutNew: 'Neue Folie mit Layout',
   ribbonChooseLayoutChange: 'Layout der aktuellen Folie ändern',
@@ -796,4 +797,8 @@ export const de = {
   ribbonZoomSectionItem: 'Folie {n} Abschnitt {k}: {name}',
   ribbonZoomSelectedSlides: '{n} Folien ausgewählt',
   ribbonZoomSelectedSections: '{n} Abschnitte ausgewählt',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

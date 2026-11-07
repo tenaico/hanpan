@@ -36,9 +36,17 @@ export function seededStudioSettings(stored: string | null, theme: UiTheme): str
   })
 }
 
-/** The studio ships Korean and English; every other UI language gets English. */
-export function studioLocale(lang: Lang): 'ko' | 'en' {
-  return lang === 'ko' ? 'ko' : 'en'
+/** Studio languages beyond rhwp's Korean and English (studio-plugin/studio-locales.mjs). */
+const EXTRA_STUDIO_LOCALES = ['vi'] as const
+type StudioLocale = 'ko' | 'en' | (typeof EXTRA_STUDIO_LOCALES)[number]
+
+/**
+ * The studio's language for a UI language: Korean and English as rhwp ships them, the
+ * languages this app adds to the studio, and English for every other one.
+ */
+export function studioLocale(lang: Lang): StudioLocale {
+  if (lang === 'ko') return 'ko'
+  return (EXTRA_STUDIO_LOCALES as readonly string[]).includes(lang) ? (lang as StudioLocale) : 'en'
 }
 
 /**

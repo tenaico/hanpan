@@ -1058,6 +1058,7 @@
           // Slides); an unchanged run goes out as a cancel and produces no history step
           e.preventDefault()
           finishEdit(true)
+          post({ type: 'gx:keyCommand', command: 'dismiss' })
         } else if (e.key === 'Enter' && mod) {
           e.preventDefault()
           finishEdit(true)
@@ -1121,6 +1122,11 @@
       const altKey =
         e.altKey && !mod ? { ArrowUp: 'moveUp', ArrowDown: 'moveDown' }[e.key] : undefined
       const command = modKey || altKey || map[e.key]
+      // Esc with nothing selected still belongs to the host: it closes an open ribbon menu
+      if (command === 'escape' && !selected && !inField) {
+        post({ type: 'gx:keyCommand', command })
+        return
+      }
       if (!command || !selected || inField) return
       e.preventDefault()
       e.stopPropagation()

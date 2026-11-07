@@ -1940,6 +1940,7 @@ export function AiPanel({
           <AiFirstConnectionNotice
             lang={lang}
             codexKeepsHistory
+            compact
             onAcknowledge={sendGate.acknowledgeNotice}
           />
         )}
@@ -2146,7 +2147,7 @@ export function AiPanel({
                 {...odtOffProps(odtDoc)}
               >
                 <span className="ai-track-dot" aria-hidden />
-                {t('aiTrackChanges')}
+                <span className="ai-track-label">{t('aiTrackChanges')}</span>
               </button>
             </>
           }

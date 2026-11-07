@@ -156,7 +156,8 @@ export const pt = {
   dlgPivotAddValue: '+ Adicionar campo de valor',
   dlgPivotAddCalc: '+ Adicionar campo calculado',
   dlgPivotTargetCell: 'Célula de destino',
-  dlgPivotTargetPlaceholder: 'ex.: F1',
+  dlgPivotTargetPlaceholder: 'ex.: {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'O intervalo de saída mantém sua célula superior esquerda ao editar',
   dlgPivotNote:
     'Cria uma Tabela Dinâmica OOXML real que o Excel/WPS pode reconhecer e atualizar após salvar.',

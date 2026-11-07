@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import {
   ADDED_SHORTCUTS,
+  APP_FILE_COMMANDS,
   CHORDS,
   LABELS,
   REMOVED_SHORTCUTS,
@@ -284,6 +285,27 @@ describe("the studio's shortcut table, made Hangul's", () => {
     expect(ids.some((s) => s.endsWith('edit:redo'))).toBe(false)
     expect(ids.some((s) => s.endsWith('view:zoom-100'))).toBe(false)
     expect(ids.some((s) => s.includes('"alt":true') && s.includes('format:align'))).toBe(false)
+  })
+
+  it("sends the file keys to the app's File menu commands, which the embedded editor has", () => {
+    // embed mode leaves file:save and the like unregistered: a Ctrl+S that reached the editor
+    // was dropped ("미등록 커맨드: file:save") instead of saving through the app
+    const table = adaptToHancom([
+      [{ key: 'o', ctrl: true }, 'file:open'],
+      [{ key: 's', ctrl: true }, 'file:save'],
+      [{ key: 's', code: 'KeyS', ctrl: true, shift: true }, 'file:save-as'],
+      [{ key: 'ㄴ', ctrl: true, shift: true }, 'file:save-as'],
+      [{ key: 'p', ctrl: true }, 'file:print'],
+    ])
+    const ids = table.slice(ADDED_SHORTCUTS.length).map(([, id]) => id)
+    expect(ids).toEqual([
+      'ext:ieum-open',
+      'ext:ieum-save',
+      'ext:ieum-save-as',
+      'ext:ieum-save-as',
+      'ext:ieum-print',
+    ])
+    expect(APP_FILE_COMMANDS['file:save']).toBe('ext:ieum-save')
   })
 
   it("puts Hangul's keys first", () => {
@@ -1415,5 +1437,16 @@ describe('against the studio source the build fetched', () => {
     expect(match({ key: 'M', code: 'KeyM', ctrlKey: true, shiftKey: true })).toBe(
       'format:align-justify',
     )
+    // the file keys go to the app's commands, also while the IME composes
+    expect(match({ key: 's', code: 'KeyS', ctrlKey: true })).toBe('ext:ieum-save')
+    expect(match({ key: 'S', code: 'KeyS', ctrlKey: true, shiftKey: true })).toBe(
+      'ext:ieum-save-as',
+    )
+    expect(match({ key: 'ㄴ', code: 'KeyS', ctrlKey: true, shiftKey: true })).toBe(
+      'ext:ieum-save-as',
+    )
+    expect(match({ key: 'p', code: 'KeyP', ctrlKey: true })).toBe('ext:ieum-print')
+    expect(match({ key: 'o', code: 'KeyO', ctrlKey: true })).toBe('ext:ieum-open')
+    expect(table.some(([, id]: [unknown, string]) => id.startsWith('file:save'))).toBe(false)
   })
 })

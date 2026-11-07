@@ -26,7 +26,8 @@ export const vi = {
   gonguErrNetwork: 'Không kết nối được với Cổng dữ liệu công. Hãy kiểm tra kết nối internet.',
   gonguErrService: 'Cổng dữ liệu công hiện không phản hồi đúng. Hãy thử lại sau giây lát.',
   gpFind: 'Tìm trong Gongu',
-  gpPlaceholder: 'Tên tác phẩm hoặc tác giả (vd: 호랑이, 김홍도)',
+  gpPlaceholder:
+    'Tên tác phẩm hoặc tác giả bằng tiếng Hàn (vd: 호랑이 = con hổ, 김홍도 = Kim Hong-do)',
   gpSearch: 'Tìm',
   gpSearching: 'Đang tìm…',
   gpNoResults: 'Không tìm thấy hình ảnh. Hãy thử một từ trong tên tác phẩm hoặc tên tác giả.',

@@ -1,5 +1,7 @@
-// Word for Mac model: the selected tab collapses, any tab expands (and stays
-// expanded), the collapsed tab row has no selected tab.
+// Office model: a single press on the selected tab does nothing (a first-time
+// user must not lose the band by accident); double-click, Ctrl+F1 or the band's
+// corner button collapse. Any tab expands (and stays expanded); the collapsed
+// tab row has no selected tab.
 import { beforeEach, describe, expect, it } from 'vitest'
 import { act, createElement, useState } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -52,17 +54,25 @@ describe('ribbon collapse', () => {
     act(() => createRoot(host).render(createElement(Ribbon)))
   })
 
-  it('pressing the selected tab collapses; pressing another tab only switches', () => {
+  it('a single press on the selected tab does not collapse; another tab only switches', () => {
     click('insert')
     expect(collapsed()).toBe(false)
     expect($('insert').className).toContain('active')
     click('insert')
-    expect(collapsed()).toBe(true)
-    expect(localStorage.getItem('t.ribbon')).toBe('1')
+    expect(collapsed()).toBe(false)
+    click('home')
+    click('home')
+    expect(collapsed()).toBe(false)
   })
 
+  const collapseByShortcut = () =>
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'F1', ctrlKey: true }))
+    })
+
   it('while collapsed no tab is selected and every tab offers Expand', () => {
-    click('home')
+    collapseByShortcut()
+    expect(localStorage.getItem('t.ribbon')).toBe('1')
     expect($('home').className).not.toContain('active')
     expect($('insert').className).not.toContain('active')
     expect($('home').dataset.tip).toBe($('insert').dataset.tip)
@@ -70,7 +80,7 @@ describe('ribbon collapse', () => {
   })
 
   it('pressing any tab while collapsed expands for good (no peek)', () => {
-    click('home')
+    collapseByShortcut()
     click('insert')
     expect(collapsed()).toBe(false)
     expect($('insert').className).toContain('active')

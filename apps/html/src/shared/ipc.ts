@@ -38,6 +38,8 @@ export const HTML_CHANNELS = {
   exportDocx: 'html:export-docx',
   exportOdt: 'html:export-odt',
   exportPdf: 'html:export-pdf',
+  openExported: 'html:open-exported',
+  revealExported: 'html:reveal-exported',
   exportHtml: 'html:export-html',
   consumeHeadlessExport: 'html:consume-headless-export',
   headlessExportDone: 'html:headless-export-done',
@@ -251,6 +253,8 @@ export interface HtmlApi {
   takeSeed?(): Promise<string | null>
   /** open any shell-routed document path (an AI answer's filenav citation) */
   openSourcePath(path: string): Promise<void>
+  /** File menu Open: the shell's open dialog (the same as the tab bar menu and Ctrl+O) */
+  openFileDialog(): Promise<void>
   /** Headless export mode: the path and format this hidden renderer must export, null in normal use */
   consumeHeadlessExport(): Promise<HeadlessExportTarget | null>
   /** Headless export mode: report the export outcome so the main process can quit */
@@ -343,6 +347,10 @@ export interface HtmlApi {
   /** save dialog (.odt) → the Word export → ODT → confirmation when something changes → write */
   exportOdt(request: ExportOdtRequest): Promise<ExportResult>
   exportPdf(request: ExportPdfRequest): Promise<ExportResult>
+  /** status bar after an export: open the file this tab exported */
+  openExported(path: string): Promise<boolean>
+  /** status bar after an export: show the file in its folder */
+  revealExported(path: string): Promise<boolean>
   exportHtml(request: ExportHtmlRequest): Promise<ExportResult>
   /** Shell menu Print → main renders the document and opens the system print dialog */
   printHtml(request: PrintHtmlRequest): Promise<PrintResult>

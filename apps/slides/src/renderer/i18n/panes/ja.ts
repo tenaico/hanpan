@@ -292,6 +292,11 @@ export const ja = {
   paneShowMenuScreen: 'スクリーン',
   paneShowMenuBlack: '黒い画面',
   paneShowMenuWhite: '白い画面',
+  paneShowMenuPointer: 'ポインター オプション',
+  paneShowMenuLaser: 'レーザー ポインター',
+  paneShowMenuPen: 'ペン',
+  paneShowMenuArrow: '矢印（クリックで次へ）',
+  paneShowMenuEraseInk: 'スライド上のインクをすべて消去',
   paneShowMenuEnd: 'スライドショーの終了',
   panePresenterWhiteOn: '白い画面（W キーで戻る）',
 } satisfies Record<keyof typeof zh, string>

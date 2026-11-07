@@ -291,6 +291,11 @@ export const ar = {
   paneShowMenuScreen: 'الشاشة',
   paneShowMenuBlack: 'شاشة سوداء',
   paneShowMenuWhite: 'شاشة بيضاء',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'إنهاء العرض',
   panePresenterWhiteOn: 'شاشة بيضاء (اضغط W للعودة)',
 } satisfies Record<keyof typeof zh, string>

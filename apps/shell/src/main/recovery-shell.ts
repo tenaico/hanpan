@@ -34,6 +34,11 @@ import {
   hwpRecoveryIdentity,
   setHwpRecoveryTitle,
 } from '../../../hwp/src/main/hwp-main'
+import {
+  discardGraphicsRecovery,
+  graphicsRecoveryIdentity,
+  setGraphicsRecoveryTitleSource,
+} from '../../../graphics/src/main/graphics-main'
 import type { DocumentTabKind, TabKind } from '../shared/tabs-api'
 import {
   planLaunch,
@@ -90,6 +95,9 @@ export function editorRecoveryIdentity(
         return hwpRecoveryIdentity(contents)
       case 'slides':
         return slidesRecoveryIdentity(contents.id)
+      case 'photo':
+      case 'illust':
+        return graphicsRecoveryIdentity(contents.id)
       default:
         return null
     }
@@ -256,6 +264,7 @@ export function discardEditorRecovery(kind: TabKind, contents: WebContents): voi
   else if (kind === 'sheets') discardSheetsRecovery(contents)
   else if (kind === 'mindmap') discardMindmapRecovery(contents)
   else if (kind === 'hwp') hwpDiscardRecoveryCopy(contents)
+  else if (kind === 'photo' || kind === 'illust') discardGraphicsRecovery(contents)
 }
 
 /** the untitled documents' copies are listed under their real tab titles */
@@ -265,6 +274,8 @@ export function installRecoveryTitleSources(
   setMarkdownRecoveryTitleSource(titleOf)
   setHtmlRecoveryTitleSource(titleOf)
   setMindmapRecoveryTitleHook(titleOf)
+  // AI Photo and AI Illustration also name the document in their close question with it
+  setGraphicsRecoveryTitleSource(titleOf)
 }
 
 /** hwp is told its untitled tabs' titles (it does not ask) */

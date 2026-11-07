@@ -434,6 +434,43 @@ const desktopApi: DesktopApi = {
         isRecord(entry) && typeof entry.name === 'string' && typeof entry.displayName === 'string',
     )
   },
+  async exportCsvAll(request) {
+    if (
+      !isRecord(request) ||
+      typeof request.baseName !== 'string' ||
+      !Array.isArray(request.sheets) ||
+      request.sheets.length === 0 ||
+      request.sheets.some(
+        (sheet) =>
+          !isRecord(sheet) ||
+          typeof sheet.name !== 'string' ||
+          typeof sheet.content !== 'string' ||
+          sheet.content.length > MAX_CSV_EXPORT_CHARS,
+      ) ||
+      typeof request.hasFormulas !== 'boolean'
+    ) {
+      throw new Error('Invalid CSV export request.')
+    }
+    const result: unknown = await ipcRenderer.invoke(IPC_CHANNELS.exportCsvAll, request)
+    if (!isRecord(result) || typeof result.canceled !== 'boolean') {
+      throw new Error('Invalid CSV export result.')
+    }
+    return result as unknown as Awaited<ReturnType<DesktopApi['exportCsvAll']>>
+  },
+  async exportImage(request) {
+    if (
+      !isRecord(request) ||
+      typeof request.fileName !== 'string' ||
+      !(request.png instanceof Uint8Array)
+    ) {
+      throw new Error('Invalid image export request.')
+    }
+    const result: unknown = await ipcRenderer.invoke(IPC_CHANNELS.exportImage, request)
+    if (!isRecord(result) || typeof result.canceled !== 'boolean') {
+      throw new Error('Invalid image export result.')
+    }
+    return result as unknown as Awaited<ReturnType<DesktopApi['exportImage']>>
+  },
   async exportCsv(request) {
     if (
       !isRecord(request) ||
@@ -524,7 +561,9 @@ const desktopApi: DesktopApi = {
         action === 'save-as' ||
         action === 'print' ||
         action === 'export-pdf' ||
+        action === 'export-png' ||
         action === 'export-csv' ||
+        action === 'export-csv-all' ||
         action === 'undo' ||
         action === 'redo'
       )

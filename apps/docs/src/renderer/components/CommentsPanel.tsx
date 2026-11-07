@@ -60,6 +60,7 @@ export const CommentsPanel = memo(function CommentsPanel({
   onCancelNew,
   onDelete,
   onClose,
+  onSelect,
   focus,
   odtLocked = false,
 }: {
@@ -78,6 +79,8 @@ export const CommentsPanel = memo(function CommentsPanel({
   onCancelNew: () => void
   onDelete: (id: string) => void
   onClose: () => void
+  /** a thread card was pressed: select its anchored text in the body */
+  onSelect?: (id: string) => void
   /** thread to highlight and scroll to (Review > Previous / Next); nonce re-fires for the same id */
   focus?: { id: string; nonce: number } | null
   /** an ODT document: existing comments stay readable, but no reply, edit or resolve */
@@ -252,6 +255,7 @@ export const CommentsPanel = memo(function CommentsPanel({
             onClick={() => {
               setActiveId(c.id)
               jumpTo(c.id)
+              onSelect?.(c.id)
             }}
           >
             {head}

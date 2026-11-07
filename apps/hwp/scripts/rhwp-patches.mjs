@@ -96,9 +96,46 @@
  *   one synchronous draw reuses it, and what the answer depends on (the fonts
  *   found on the PC, the open document's substitutions) changes only when an
  *   asynchronous step ends, so every later draw asks again.
+ *
+ * studio-locale-supported, studio-locale-register, studio-locale-toolbar-overflow
+ *   The studio has Korean and English only. The languages this app adds
+ *   (studio-plugin/studio-locales.mjs, Vietnamese first) become supported locales,
+ *   each catalog is registered over the English one so a key it leaves out shows in
+ *   English, and the style toolbar folds at the wider widths English has for every
+ *   language other than Korean.
+ *
+ * studio-style-display-names
+ *   The toolbar's style list shows a style's name in the studio's language where the
+ *   document carries one (styleDisplayName): a Korean document's 바탕글 is Normal in
+ *   English. Only the list's text changes; values, the document and dialogs keep the
+ *   stored names. The app's plugin refills the list the same way (syncStyleList).
+ *
+ * studio-about-hanpan
+ *   The About box named the engine as a developer would ("HWP/HWPX Compatible Module
+ *   for Rust", "Version 0.8.7-ieum.12", "Rust + WebAssembly + TypeScript"). Its head
+ *   lines name Hanpan and the rhwp release it is built on; rhwp's licence list,
+ *   copyright line and the HWP specification notice stay as they are.
+ *
+ * studio-page-setup-labels, studio-input-aria-label
+ *   The page setup dialog writes its orientation, binding and margin names in Korean
+ *   straight into the markup, and the editing input's accessible name likewise, so they
+ *   stayed Korean in an English or Vietnamese tab. They ask the catalogs for the app's own
+ *   keys instead (APP_STRINGS in studio-plugin/studio-locales.mjs, registered with every
+ *   language by studio-locale-register).
+ *
+ * studio-format-caret and the other UX patches
+ *   Studio behaviour from the 0.17 UI/UX review v2, in a file of their own (studio-ux-patches.mjs).
+ *
+ * studio-text-<file>
+ *   The other dialogs that write Korean straight into their markup (문서 비교·이력, 수식, 차트
+ *   데이터, 쪽 테두리 …) ask for app keys the same way; one patch per file, in
+ *   studio-dialog-text.mjs. An edit may name a count: it is then found exactly that many times
+ *   and every occurrence is replaced.
  */
 
 import { HANCOM_KEYS_MODULE, studioCommandIds } from '../studio-plugin/hancom-keys.mjs'
+import { DIALOG_TEXT_PATCHES, STUDIO_LOCALES_MODULE } from './studio-dialog-text.mjs'
+import { UX_PATCHES } from './studio-ux-patches.mjs'
 
 /** Must equal RENDERER_SCHEME in packages/electron-utils/src/renderer-scheme.ts. */
 export const APP_SCHEME = 'genoffice-app'
@@ -115,7 +152,12 @@ export { HANCOM_KEYS_MODULE }
 /** Module specifier the studio-format-copy patches import; build-studio.mjs aliases it. */
 export const FORMAT_COPY_MODULE = '@ieum/format-copy'
 
+/** Module specifier the studio-locale and studio-about patches import; build-studio.mjs aliases it. */
+export { STUDIO_LOCALES_MODULE }
+
 const PATCHES = {
+  ...DIALOG_TEXT_PATCHES,
+  ...UX_PATCHES,
   'sdk-scheme': {
     file: /[\\/]@rhwp[\\/]editor[\\/]transport\.js$/,
     find: "if (targetUrl.protocol !== 'http:' && targetUrl.protocol !== 'https:') {",
@@ -778,6 +820,190 @@ const PATCHES = {
     replace:
       'descriptor.set!.call(this, scopedHostCanvasFont(String(value)) ?? memoSubstituteCssFontFamily(String(value)));',
   },
+  // the status line after a document opens showed the load time ("(173.6ms)"): a number for
+  // developers, not for the person reading; the line keeps the name and pages and the time
+  // goes to the console
+  'studio-hide-load-timing': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]main\.ts$/,
+    find: "    await initializeDocument(docInfo, t('ui.sbMessage.filePagesTimed', { p1: fileName, p2: docInfo.pageCount, p3: elapsed.toFixed(1) }), {",
+    replace: [
+      '    console.debug(`[rhwp] ${fileName} opened in ${elapsed.toFixed(1)}ms`);',
+      "    await initializeDocument(docInfo, t('ui.sbMessage.filePages', { p1: fileName, p2: docInfo.pageCount }), {",
+    ].join('\n'),
+  },
+  'studio-locale-supported': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]i18n[\\/]core\.ts$/,
+    edits: [
+      {
+        find: "export type Locale = 'ko' | 'en';",
+        replace: [
+          `import { EXTRA_LOCALES } from '${STUDIO_LOCALES_MODULE}';`,
+          '',
+          "export type Locale = 'ko' | 'en' | keyof typeof EXTRA_LOCALES;",
+        ].join('\n'),
+      },
+      {
+        find: "const SUPPORTED: readonly Locale[] = ['ko', 'en'];",
+        replace:
+          "const SUPPORTED: readonly Locale[] = ['ko', 'en', ...(Object.keys(EXTRA_LOCALES) as Locale[])];",
+      },
+    ],
+  },
+  'studio-locale-register': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]i18n[\\/]index\.ts$/,
+    edits: [
+      {
+        find: "import enCatalog from './locales/en.ts';",
+        replace: [
+          "import enCatalog from './locales/en.ts';",
+          `import { APP_STRINGS, EXTRA_LOCALES } from '${STUDIO_LOCALES_MODULE}';`,
+        ].join('\n'),
+      },
+      {
+        find: "registerCatalog('ko', koCatalog as Record<string, string>);",
+        replace:
+          "registerCatalog('ko', { ...koCatalog, ...APP_STRINGS.ko } as Record<string, string>);",
+      },
+      {
+        find: "registerCatalog('en', enCatalog as Record<string, string>);",
+        replace: [
+          "registerCatalog('en', { ...enCatalog, ...APP_STRINGS.en } as Record<string, string>);",
+          '// the app adds languages over English: a key a catalog leaves out shows in English',
+          'for (const [locale, catalog] of Object.entries(EXTRA_LOCALES)) {',
+          '  registerCatalog(locale as Locale, { ...enCatalog, ...APP_STRINGS.en, ...catalog, ...APP_STRINGS[locale as keyof typeof APP_STRINGS] } as Record<string, string>);',
+          '}',
+        ].join('\n'),
+      },
+    ],
+  },
+  'studio-locale-toolbar-overflow': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]ui[\\/]style-toolbar-overflow\.ts$/,
+    find: "this.mediaQuery = matchMedia(getLocale() === 'en'",
+    replace: "this.mediaQuery = matchMedia(getLocale() !== 'ko'",
+  },
+  'studio-style-display-names': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]ui[\\/]toolbar\.ts$/,
+    edits: [
+      {
+        find: "import { t } from '../i18n/index.ts';",
+        replace: [
+          "import { t } from '../i18n/index.ts';",
+          "import { getLocale } from '../i18n/core.ts';",
+          `import { styleDisplayName } from '${STUDIO_LOCALES_MODULE}';`,
+        ].join('\n'),
+      },
+      {
+        find: '        opt.textContent = style.name;',
+        replace: '        opt.textContent = styleDisplayName(style, getLocale());',
+      },
+    ],
+  },
+  'studio-page-setup-labels': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]ui[\\/]page-setup-dialog\.ts$/,
+    edits: [
+      {
+        find: "this.iconRadio('orient', '세로',",
+        replace: "this.iconRadio('orient', i18nText('hanpan.pageSetup.portrait'),",
+      },
+      {
+        find: "this.iconRadio('orient', '가로',",
+        replace: "this.iconRadio('orient', i18nText('hanpan.pageSetup.landscape'),",
+      },
+      {
+        find: "this.iconRadio('binding', '한쪽',",
+        replace: "this.iconRadio('binding', i18nText('hanpan.pageSetup.bindingSingle'),",
+      },
+      {
+        find: "this.iconRadio('binding', '맞쪽',",
+        replace: "this.iconRadio('binding', i18nText('hanpan.pageSetup.bindingFacing'),",
+      },
+      {
+        find: "this.iconRadio('binding', '위로',",
+        replace: "this.iconRadio('binding', i18nText('hanpan.pageSetup.bindingTop'),",
+      },
+      {
+        find: "      ['marginTop', '위쪽'],",
+        replace: "      ['marginTop', i18nText('hanpan.pageSetup.marginTop')],",
+      },
+      {
+        find: "      ['marginBottom', '아래쪽'],",
+        replace: "      ['marginBottom', i18nText('hanpan.pageSetup.marginBottom')],",
+      },
+      {
+        find: "      ['marginLeft', '왼쪽'],",
+        replace: "      ['marginLeft', i18nText('hanpan.pageSetup.marginLeft')],",
+      },
+      {
+        find: "      ['marginRight', '오른쪽'],",
+        replace: "      ['marginRight', i18nText('hanpan.pageSetup.marginRight')],",
+      },
+      {
+        find: "      ['marginHeader', '머리말'],",
+        replace: "      ['marginHeader', i18nText('hanpan.pageSetup.marginHeader')],",
+      },
+      {
+        find: "      ['marginFooter', '꼬리말'],",
+        replace: "      ['marginFooter', i18nText('hanpan.pageSetup.marginFooter')],",
+      },
+      {
+        find: "      ['marginGutter', '제본'],",
+        replace: "      ['marginGutter', i18nText('hanpan.pageSetup.marginGutter')],",
+      },
+    ],
+  },
+  'studio-input-aria-label': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]engine[\\/]input-handler\.ts$/,
+    edits: [
+      {
+        find: "import { isBodyControl } from './picture-hit-policy';",
+        replace: [
+          "import { isBodyControl } from './picture-hit-policy';",
+          "import { t as i18nText } from '../i18n/index.ts';",
+        ].join('\n'),
+      },
+      {
+        find: "      div.setAttribute('aria-label', '문서 편집 입력');",
+        replace: "      div.setAttribute('aria-label', i18nText('hanpan.editor.inputLabel'));",
+      },
+      {
+        find: "      this.textarea.setAttribute('aria-label', '문서 편집 입력');",
+        replace:
+          "      this.textarea.setAttribute('aria-label', i18nText('hanpan.editor.inputLabel'));",
+      },
+    ],
+  },
+  'studio-about-hanpan': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]ui[\\/]about-dialog\.ts$/,
+    edits: [
+      {
+        find: "import { t } from '../i18n/index.ts';",
+        replace: [
+          "import { t } from '../i18n/index.ts';",
+          "import { getLocale } from '../i18n/core.ts';",
+          `import { aboutText } from '${STUDIO_LOCALES_MODULE}';`,
+        ].join('\n'),
+      },
+      {
+        find: ["    titleEn.textContent = 'HWP/HWPX Compatible Module for Rust';"].join('\n'),
+        replace: [
+          '    const about = aboutText(getLocale(), __APP_VERSION__);',
+          '    titleEn.textContent = about.product;',
+        ].join('\n'),
+      },
+      {
+        find: "    titleKo.textContent = t('dialog.about.titleKo.text');",
+        replace: '    titleKo.textContent = about.subtitle;',
+      },
+      {
+        find: '    version.textContent = `Version ${__APP_VERSION__}`;',
+        replace: '    version.textContent = about.engine;',
+      },
+      {
+        find: "    tech.textContent = 'Rust + WebAssembly + TypeScript';",
+        replace: '    tech.textContent = about.credit;',
+      },
+    ],
+  },
 }
 
 /** The patches the studio build applies, in order; the SDK's own is applied by the renderer builds. */
@@ -808,6 +1034,18 @@ export const STUDIO_PATCHES = /** @type {const} */ ([
   'studio-memo-delete-undo',
   'studio-font-memo-state',
   'studio-font-memo-use',
+  'studio-hide-load-timing',
+  'studio-locale-supported',
+  'studio-locale-register',
+  'studio-locale-toolbar-overflow',
+  'studio-style-display-names',
+  'studio-about-hanpan',
+  'studio-page-setup-labels',
+  'studio-input-aria-label',
+  // after studio-style-display-names, which also patches toolbar.ts
+  ...Object.keys(DIALOG_TEXT_PATCHES),
+  // the 0.17 UI/UX review v2 fixes (studio-ux-patches.mjs)
+  ...Object.keys(UX_PATCHES),
 ])
 
 /** Whether a patch is written against this file. */
@@ -1096,18 +1334,25 @@ export function applyPatch(name, code) {
   // a checkout on Windows may carry CRLF; the patches are written with LF
   const eol = code.includes('\r\n') ? '\r\n' : '\n'
   // a patch is one replacement, or (edits) several in the same file, each found exactly once
+  // (or, for an edit that names a count, exactly that many times, every one replaced)
   let next = code
   for (const edit of patch.edits ?? [patch]) {
+    if (edit.prepend !== undefined) {
+      // an import put at the top of the file
+      next = edit.prepend.replaceAll('\n', eol) + eol + next
+      continue
+    }
     const find = edit.find.replaceAll('\n', eol)
-    const first = next.indexOf(find)
-    if (first === -1 || next.indexOf(find, first + 1) !== -1) {
+    const count = edit.count ?? 1
+    const parts = next.split(find)
+    if (parts.length - 1 !== count) {
       throw new Error(
-        `rhwp patch ${name}: expected exactly one occurrence of the text to replace; ` +
+        `rhwp patch ${name}: expected ${count === 1 ? 'exactly one occurrence' : `exactly ${count} occurrences`} of the text to replace; ` +
           'the upstream source changed, review apps/hwp/scripts/rhwp-patches.mjs',
       )
     }
     const replace = edit.replace.replaceAll('\n', eol)
-    next = next.replace(find, () => replace)
+    next = parts.join(replace)
   }
   return next
 }

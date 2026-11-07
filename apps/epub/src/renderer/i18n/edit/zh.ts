@@ -5,6 +5,7 @@ export const zh = {
   editBold: '加粗',
   editItalic: '倾斜',
   editReplace: '替换',
+  editFindReplaceTitle: '查找和替换',
   editReplaceWith: '替换为',
   editReplaceOne: '替换',
   editReplaceAll: '全部替换',

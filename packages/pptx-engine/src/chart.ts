@@ -15,8 +15,8 @@
  * valAxis2.
  */
 import { XMLParser } from 'fast-xml-parser'
-import { resolveFontRef, type Theme } from './theme'
-import { applyColorMods, resolveColorNode, scaleLuminance } from './color'
+import { resolveFontRef, resolveSchemeColor, type Theme } from './theme'
+import { applyColorMods, relativeLuminance, resolveColorNode, scaleLuminance } from './color'
 import type { Fill } from './types'
 
 const chartParser = new XMLParser({
@@ -957,6 +957,19 @@ export function parseChartXml(
       model.plotFill = { type: 'solid', color: applyColorMods(dk1, mods) }
     }
     if (!model.defaultTextColor) model.defaultTextColor = theme?.colors?.lt1 ?? '#FFFFFF'
+  }
+  // A chart that names no text colour writes in the theme's text colour (tx1). The renderer's
+  // black/grey fallbacks match that on light pages; on a dark page (a dark master colour map,
+  // or the Design tab's dark presets that keep the light text colour in dk1) they vanish, so
+  // take tx1 there unless the chart paints its own background.
+  if (
+    !model.defaultTextColor &&
+    !model.bgFill &&
+    !doc['c:chartSpace']?.['c:spPr']?.['a:solidFill']
+  ) {
+    const tx1 = resolveSchemeColor('tx1', theme)
+    const bg1 = resolveSchemeColor('bg1', theme)
+    if (tx1 && bg1 && relativeLuminance(tx1) > relativeLuminance(bg1)) model.defaultTextColor = tx1
   }
 
   // Title text: rich text, or the cached cell-linked string (c:tx/c:strRef)

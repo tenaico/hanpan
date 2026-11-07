@@ -31,6 +31,8 @@ export interface GraphicsPageApi {
   captureDownloads(on: boolean): void
   files(): Promise<{ path: string; size: number }[]>
   readFile(path: string): Promise<Uint8Array>
+  /** Save, Save As or Print asked for inside the frame (its menus or keys): the host does it. */
+  onHostRequest?(handler: (request: 'save' | 'saveAs' | 'print') => void): void
 }
 
 const TAG = 'hanpan-graphics'
@@ -83,6 +85,7 @@ export function connectPageApi(
   const pending = new Map<number, { resolve(v: unknown): void; reject(e: Error): void }>()
   let nextId = 1
   let ready: (() => void) | null = null
+  const hostHandlers: ((request: 'save' | 'saveAs' | 'print') => void)[] = []
 
   const send = (message: Record<string, unknown>): void => link.post({ tag: TAG, ...message })
   link.listen((raw: unknown) => {
@@ -97,6 +100,13 @@ export function connectPageApi(
     if (!data || data.tag !== TAG) return
     if (data.type === 'ready') {
       ready?.()
+      return
+    }
+    if (data.type === 'host') {
+      const request = (data as { request?: unknown }).request
+      if (request === 'save' || request === 'saveAs' || request === 'print') {
+        for (const handler of hostHandlers) handler(request)
+      }
       return
     }
     if (data.type !== 'reply' || typeof data.id !== 'number') return
@@ -127,6 +137,7 @@ export function connectPageApi(
     },
     files: () => call('files', []) as Promise<{ path: string; size: number }[]>,
     readFile: (path) => call('readFile', [path]) as Promise<Uint8Array>,
+    onHostRequest: (handler) => void hostHandlers.push(handler),
   }
 
   return new Promise((resolve, reject) => {

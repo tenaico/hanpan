@@ -4,14 +4,26 @@ Jeder Editor hat eigene Tastenbelegungen, und nur wenige davon funktionieren üb
 
 ## Bitte zuerst lesen
 
-**Fast nichts hier ist global.** Die drei Zugriffstasten unten sind es; alles danach gehört zu der Anwendung, die gerade vorne liegt, und ändert sich, wenn Sie den Tab wechseln.
+### Überall in Hanpan (Tabs und Fenster)
 
-| Aktion                                                    | macOS | Windows / Linux |
-| --------------------------------------------------------- | ----- | --------------- |
-| Benutzerhandbuch öffnen — funktioniert überall in der App | F1    | F1              |
-| Menüband einklappen / ausklappen — jeder Editor           | ⌥⌘R   | Ctrl+F1         |
-| Menüband kompakt — nur Docs                               | ⌥⌘K   | Ctrl+Alt+K      |
-| Tastenkürzel-Tabelle öffnen — nur Word                    | ⌘/    | Ctrl+/          |
+| Aktion                                                                                        | Windows / Linux                  | macOS                            |
+| --------------------------------------------------------------------------------------------- | -------------------------------- | -------------------------------- |
+| Nächster Tab / vorheriger Tab                                                                 | Ctrl+Tab / Ctrl+Shift+Tab        | ⌃Tab / ⌃⇧Tab                     |
+| Aktuellen Tab schließen (auf Start: das Fenster, mit Rückfrage, wenn Dokumente geöffnet sind) | Ctrl+W                           | ⌘W                               |
+| Einstellungen öffnen — auf Start                                                              | Ctrl+,                           | ⌘,                               |
+| Benutzerhandbuch öffnen                                                                       | F1                               | F1                               |
+| Tab in der Tab-Leiste wählen — wenn ein Tab den Fokus hat                                     | ← / →, Enter, Delete (schließen) | ← / →, Enter, Delete (schließen) |
+
+### Jeder Editor
+
+**Ab hier gehören die Tasten zu dem Editor, der gerade vorne liegt, und ändern sich, wenn Sie den Tab wechseln.**
+
+| Aktion                                                    | Windows / Linux | macOS |
+| --------------------------------------------------------- | --------------- | ----- |
+| Benutzerhandbuch öffnen — funktioniert überall in der App | F1              | F1    |
+| Menüband einklappen / ausklappen — jeder Editor           | Ctrl+F1         | ⌥⌘R   |
+| Menüband kompakt — nur Docs                               | Ctrl+Alt+K      | ⌥⌘K   |
+| Tastenkürzel-Tabelle öffnen — nur Word                    | Ctrl+/          | ⌘/    |
 
 - **F1 öffnet dieses Handbuch**, nicht die Kürzel-Tabelle. Die Taste gehört zum Anwendungsmenü und funktioniert daher aus Word, Sheets, Slides, PDF oder dem Tab Home gleichermaßen.
 - **Der Umschalter für das Menüband ist `Ctrl+F1`, auf macOS `⌥⌘R`.** Ein bloßer Druck auf `F1` bewirkt nichts — F1 ist das Handbuch, und die Menüband-Taste teilt sich diese Belegung bewusst nicht. `Ctrl+F1` wird auch auf macOS akzeptiert, aber `⌥⌘R` ist die Taste, die Office für Mac verwendet.
@@ -41,123 +53,123 @@ Word hat eine vollständige Menüleiste, daher funktionieren die Datei- und Form
 
 ### Datei
 
-| Aktion           | macOS | Windows / Linux |
-| ---------------- | ----- | --------------- |
-| Neu              | ⌘N    | Ctrl+N          |
-| Neues Fenster    | ⇧⌘N   | Ctrl+Shift+N    |
-| Öffnen…          | ⌘O    | Ctrl+O          |
-| Speichern        | ⌘S    | Ctrl+S          |
-| Speichern unter… | ⇧⌘S   | Ctrl+Shift+S    |
-| Drucken          | ⌘P    | Ctrl+P          |
-| Schließen (Tab)  | ⌘W    | Ctrl+W          |
+| Aktion           | Windows / Linux | macOS |
+| ---------------- | --------------- | ----- |
+| Neu              | Ctrl+N          | ⌘N    |
+| Neues Fenster    | Ctrl+Shift+N    | ⇧⌘N   |
+| Öffnen…          | Ctrl+O          | ⌘O    |
+| Speichern        | Ctrl+S          | ⌘S    |
+| Speichern unter… | Ctrl+Shift+S    | ⇧⌘S   |
+| Drucken          | Ctrl+P          | ⌘P    |
+| Schließen (Tab)  | Ctrl+W          | ⌘W    |
 
 `⌘P` ist nicht das Drucken des Browsers. Word erzeugt zuerst eine Druckvorschau, sodass ein bedrucktes Blatt genau einer Bildschirmseite entspricht, und öffnet dann seinen eigenen Druckdialog.
 
 ### Bearbeiten
 
-| Aktion                   | macOS | Windows / Linux |
-| ------------------------ | ----- | --------------- |
-| Rückgängig               | ⌘Z    | Ctrl+Z          |
-| Wiederholen              | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Ausschneiden             | ⌘X    | Ctrl+X          |
-| Kopieren                 | ⌘C    | Ctrl+C          |
-| Einfügen                 | ⌘V    | Ctrl+V          |
-| Als reinen Text einfügen | ⌥⇧⌘V  | Ctrl+Shift+V    |
-| Alles auswählen          | ⌘A    | Ctrl+A          |
-| Suchen                   | ⌘F    | Ctrl+F          |
-| Ersetzen                 | ⌃H    | Ctrl+H          |
-| Gehe zu                  | ⌥⌘G   | Ctrl+G          |
-| Tastaturkürzel           | ⌘/    | Ctrl+/          |
+| Aktion                   | Windows / Linux | macOS |
+| ------------------------ | --------------- | ----- |
+| Rückgängig               | Ctrl+Z          | ⌘Z    |
+| Wiederholen              | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Ausschneiden             | Ctrl+X          | ⌘X    |
+| Kopieren                 | Ctrl+C          | ⌘C    |
+| Einfügen                 | Ctrl+V          | ⌘V    |
+| Als reinen Text einfügen | Ctrl+Shift+V    | ⌥⇧⌘V  |
+| Alles auswählen          | Ctrl+A          | ⌘A    |
+| Suchen                   | Ctrl+F          | ⌘F    |
+| Ersetzen                 | Ctrl+H          | ⌃H    |
+| Gehe zu                  | Ctrl+G          | ⌥⌘G   |
+| Tastaturkürzel           | Ctrl+/          | ⌘/    |
 
 Ersetzen ist auf beiden Plattformen Ctrl+H, weil `⌘H` auf macOS das Fenster ausblendet und Word nie erreicht. Gehe zu folgt der eigenen Aufteilung von Word: `⌥⌘G` am Mac, damit `⇧⌘G` für die Wörterzählung frei bleibt.
 
 ### Textformatierung
 
-| Aktion                                                       | macOS    | Windows / Linux       |
-| ------------------------------------------------------------ | -------- | --------------------- |
-| Fett                                                         | ⌘B       | Ctrl+B                |
-| Kursiv                                                       | ⌘I       | Ctrl+I                |
-| Unterstrichen                                                | ⌘U       | Ctrl+U                |
-| Schriftart… (Dialog)                                         | ⌘D       | Ctrl+D                |
-| Schriftgröße erhöhen                                         | ⇧⌘.      | Ctrl+Shift+.          |
-| Schriftgröße verringern                                      | ⇧⌘,      | Ctrl+Shift+,          |
-| Schriftgröße um 1 pt erhöhen                                 | ⌘]       | Ctrl+]                |
-| Schriftgröße um 1 pt verringern                              | ⌘[       | Ctrl+[                |
-| Hochgestellt                                                 | ⇧⌘= / ⌘. | Ctrl+Shift+= / Ctrl+. |
-| Tiefgestellt                                                 | ⌘,       | Ctrl+,                |
-| Groß-/Kleinschreibung ändern                                 | ⇧F3      | Shift+F3              |
-| Formatierung kopieren (mit ausgewähltem Text)                | ⇧⌘C      | Ctrl+Shift+C          |
-| Formatierung einfügen (nach einem Kopieren der Formatierung) | ⇧⌘V      | Ctrl+Alt+Shift+V      |
-| gesamte Formatierung entfernen                               | ⌃␣       | Ctrl+Space            |
+| Aktion                                                       | Windows / Linux       | macOS    |
+| ------------------------------------------------------------ | --------------------- | -------- |
+| Fett                                                         | Ctrl+B                | ⌘B       |
+| Kursiv                                                       | Ctrl+I                | ⌘I       |
+| Unterstrichen                                                | Ctrl+U                | ⌘U       |
+| Schriftart… (Dialog)                                         | Ctrl+D                | ⌘D       |
+| Schriftgröße erhöhen                                         | Ctrl+Shift+.          | ⇧⌘.      |
+| Schriftgröße verringern                                      | Ctrl+Shift+,          | ⇧⌘,      |
+| Schriftgröße um 1 pt erhöhen                                 | Ctrl+]                | ⌘]       |
+| Schriftgröße um 1 pt verringern                              | Ctrl+[                | ⌘[       |
+| Hochgestellt                                                 | Ctrl+Shift+= / Ctrl+. | ⇧⌘= / ⌘. |
+| Tiefgestellt                                                 | Ctrl+,                | ⌘,       |
+| Groß-/Kleinschreibung ändern                                 | Shift+F3              | ⇧F3      |
+| Formatierung kopieren (mit ausgewähltem Text)                | Ctrl+Shift+C          | ⇧⌘C      |
+| Formatierung einfügen (nach einem Kopieren der Formatierung) | Ctrl+Alt+Shift+V      | ⇧⌘V      |
+| gesamte Formatierung entfernen                               | Ctrl+Space            | ⌃␣       |
 
 Die beiden Tasten des Formatierungspinsels sind die einzige Stelle, an der die Windows-Taste keine bloße Umbenennung ist: Formatierung einfügen trägt Alt, weil Ctrl+Shift+V dort bereits einfügt und den Formatvorlagenstil angleicht.
 
 ### Absatzformatierung
 
-| Aktion                                                | macOS | Windows / Linux |
-| ----------------------------------------------------- | ----- | --------------- |
-| Linksbündig                                           | ⌘L    | Ctrl+L          |
-| Zentriert                                             | ⌘E    | Ctrl+E          |
-| Rechtsbündig                                          | ⌘R    | Ctrl+R          |
-| Blocksatz                                             | ⌘J    | Ctrl+J          |
-| Zeilenabstand 1,0                                     | ⌘1    | Ctrl+1          |
-| Zeilenabstand 1,5                                     | ⌘5    | Ctrl+5          |
-| Zeilenabstand 2,0                                     | ⌘2    | Ctrl+2          |
-| Einzug vergrößern                                     | ⌃M    | Ctrl+M          |
-| Einzug verkleinern                                    | ⌃⇧M   | Ctrl+Shift+M    |
-| Hängender Einzug                                      | ⌘T    | Ctrl+T          |
-| Hängenden Einzug entfernen                            | ⇧⌘T   | Ctrl+Shift+T    |
-| Absatzformatierung entfernen                          | ⌃Q    | Ctrl+Q          |
-| Standard (Formatvorlage)                              | ⌥⌘0   | Ctrl+Alt+0      |
-| Überschrift 1 (Formatvorlage)                         | ⌥⌘1   | Ctrl+Alt+1      |
-| Überschrift 2 (Formatvorlage)                         | ⌥⌘2   | Ctrl+Alt+2      |
-| Überschrift 3 (Formatvorlage)                         | ⌥⌘3   | Ctrl+Alt+3      |
-| Absatz… (Dialog)                                      | ⌥⌘M   | Ctrl+Alt+M      |
-| Absatz nach oben verschieben                          | ⌥⇧↑   | Alt+Shift+↑     |
-| Absatz nach unten verschieben                         | ⌥⇧↓   | Alt+Shift+↓     |
-| Listeneintrag zurückstufen (am Anfang eines Eintrags) | Tab   | Tab             |
-| Listeneintrag hochstufen (am Anfang eines Eintrags)   | ⇧Tab  | Shift+Tab       |
+| Aktion                                                | Windows / Linux | macOS |
+| ----------------------------------------------------- | --------------- | ----- |
+| Linksbündig                                           | Ctrl+L          | ⌘L    |
+| Zentriert                                             | Ctrl+E          | ⌘E    |
+| Rechtsbündig                                          | Ctrl+R          | ⌘R    |
+| Blocksatz                                             | Ctrl+J          | ⌘J    |
+| Zeilenabstand 1,0                                     | Ctrl+1          | ⌘1    |
+| Zeilenabstand 1,5                                     | Ctrl+5          | ⌘5    |
+| Zeilenabstand 2,0                                     | Ctrl+2          | ⌘2    |
+| Einzug vergrößern                                     | Ctrl+M          | ⌃M    |
+| Einzug verkleinern                                    | Ctrl+Shift+M    | ⌃⇧M   |
+| Hängender Einzug                                      | Ctrl+T          | ⌘T    |
+| Hängenden Einzug entfernen                            | Ctrl+Shift+T    | ⇧⌘T   |
+| Absatzformatierung entfernen                          | Ctrl+Q          | ⌃Q    |
+| Standard (Formatvorlage)                              | Ctrl+Alt+0      | ⌥⌘0   |
+| Überschrift 1 (Formatvorlage)                         | Ctrl+Alt+1      | ⌥⌘1   |
+| Überschrift 2 (Formatvorlage)                         | Ctrl+Alt+2      | ⌥⌘2   |
+| Überschrift 3 (Formatvorlage)                         | Ctrl+Alt+3      | ⌥⌘3   |
+| Absatz… (Dialog)                                      | Ctrl+Alt+M      | ⌥⌘M   |
+| Absatz nach oben verschieben                          | Alt+Shift+↑     | ⌥⇧↑   |
+| Absatz nach unten verschieben                         | Alt+Shift+↓     | ⌥⇧↓   |
+| Listeneintrag zurückstufen (am Anfang eines Eintrags) | Tab             | Tab   |
+| Listeneintrag hochstufen (am Anfang eines Eintrags)   | Shift+Tab       | ⇧Tab  |
 
 Einzug, hängender Einzug und das Entfernen der Absatzformatierung funktionieren auf beiden Plattformen nur mit Strg: `⌘M` minimiert das Fenster und `⌘Q` beendet die Anwendung, eine Command-Kombination wäre also eine stillschweigende Änderung kurz vor dem Beenden. Tab ändert die Listenebene nur, wenn der Cursor am Anfang eines Eintrags steht oder mehrere Einträge umspannt; im Text fügt es ein Tabulatorzeichen ein, und `⇧Tab` stuft immer hoch.
 
 ### Einfügen
 
-| Aktion                  | macOS | Windows / Linux  |
-| ----------------------- | ----- | ---------------- |
-| Seitenumbruch           | ⌘⏎    | Ctrl+Enter       |
-| Spaltenumbruch          | ⇧⌘⏎   | Ctrl+Shift+Enter |
-| Zeilenumbruch           | ⇧⏎    | Shift+Enter      |
-| Link…                   | ⌘K    | Ctrl+K           |
-| Neuer Kommentar         | ⌥⌘A   | Ctrl+Alt+A       |
-| Fußnote einfügen        | ⌥⌘F   | Ctrl+Alt+F       |
-| Endnote einfügen        | ⌥⌘E   | Ctrl+Alt+D       |
-| Datum (Feld)            | ⌥⇧D   | Alt+Shift+D      |
-| Uhrzeit (Feld)          | ⌥⇧T   | Alt+Shift+T      |
-| Geschütztes Leerzeichen | ⇧⌘␣   | Ctrl+Shift+Space |
-| Geschützter Bindestrich | ⇧⌘-   | Ctrl+Shift+-     |
+| Aktion                  | Windows / Linux  | macOS |
+| ----------------------- | ---------------- | ----- |
+| Seitenumbruch           | Ctrl+Enter       | ⌘⏎    |
+| Spaltenumbruch          | Ctrl+Shift+Enter | ⇧⌘⏎   |
+| Zeilenumbruch           | Shift+Enter      | ⇧⏎    |
+| Link…                   | Ctrl+K           | ⌘K    |
+| Neuer Kommentar         | Ctrl+Alt+A       | ⌥⌘A   |
+| Fußnote einfügen        | Ctrl+Alt+F       | ⌥⌘F   |
+| Endnote einfügen        | Ctrl+Alt+D       | ⌥⌘E   |
+| Datum (Feld)            | Alt+Shift+D      | ⌥⇧D   |
+| Uhrzeit (Feld)          | Alt+Shift+T      | ⌥⇧T   |
+| Geschütztes Leerzeichen | Ctrl+Shift+Space | ⇧⌘␣   |
+| Geschützter Bindestrich | Ctrl+Shift+-     | ⇧⌘-   |
 
 Endnote einfügen ist eine echte Plattformtrennung, keine Umbenennung: Word verwendet am Mac `⌥⌘E`, weil `⌥⌘D` dort zum Dock gehört.
 
 ### Überprüfen und Werkzeuge
 
-| Aktion                         | macOS | Windows / Linux |
-| ------------------------------ | ----- | --------------- |
-| Änderungen verfolgen           | ⇧⌘E   | Ctrl+Shift+E    |
-| Wörterzählung                  | ⇧⌘G   | Ctrl+Shift+G    |
-| Korrekturlesen                 | F7    | F7              |
-| Feld aktualisieren             | F9    | F9              |
-| Feldfunktionen ein-/ausblenden | ⌥F9   | Alt+F9          |
+| Aktion                         | Windows / Linux | macOS |
+| ------------------------------ | --------------- | ----- |
+| Änderungen verfolgen           | Ctrl+Shift+E    | ⇧⌘E   |
+| Wörterzählung                  | Ctrl+Shift+G    | ⇧⌘G   |
+| Korrekturlesen                 | F7              | F7    |
+| Feld aktualisieren             | F9              | F9    |
+| Feldfunktionen ein-/ausblenden | Alt+F9          | ⌥F9   |
 
 F7 startet das KI-Korrekturlesen und F9 aktualisiert die Felder; beide brauchen ein geladenes Dokument. Sobald eine Bearbeitungseinschränkung die Änderungsverfolgung einschaltet, lässt sie sich nicht wieder abschalten.
 
 ### Ansicht
 
-| Aktion                               | macOS | Windows / Linux |
-| ------------------------------------ | ----- | --------------- |
-| Vergrößern                           | ⌘=    | Ctrl+=          |
-| Verkleinern                          | ⌘-    | Ctrl+-          |
-| Auf 100 % zoomen                     | ⌘0    | Ctrl+0          |
-| Formatierungszeichen ein-/ausblenden | ⌘8    | Ctrl+Shift+8    |
+| Aktion                               | Windows / Linux | macOS |
+| ------------------------------------ | --------------- | ----- |
+| Vergrößern                           | Ctrl+=          | ⌘=    |
+| Verkleinern                          | Ctrl+-          | ⌘-    |
+| Auf 100 % zoomen                     | Ctrl+0          | ⌘0    |
+| Formatierungszeichen ein-/ausblenden | Ctrl+Shift+8    | ⌘8    |
 
 Die Tastenkombination für Formatierungszeichen folgt der eigenen Aufteilung von Word, `⌘8` gegen Ctrl+Shift+8. Word bietet Zoom nur über die drei Menütasten oben an — `⌘+` bewirkt hier nichts.
 
@@ -173,123 +185,123 @@ Zwei Konventionen sind speziell für Sheets. `⌘` und `⌃` belegen dieselbe Mo
 
 ### Navigation
 
-| Aktion                                                             | macOS      | Windows / Linux |
-| ------------------------------------------------------------------ | ---------- | --------------- |
-| Nächstes Blatt                                                     | ⌘PgDn      | Ctrl+PgDn       |
-| Vorheriges Blatt                                                   | ⌘PgUp      | Ctrl+PgUp       |
-| Nächstes Blatt (Parität zu Excel für Mac)                          | ⌥→         |                 |
-| Vorheriges Blatt (Parität zu Excel für Mac)                        | ⌥←         |                 |
-| Zur ersten nicht fixierten Zelle springen                          | ⌘Home      | Ctrl+Home       |
-| Zur letzten verwendeten Zelle springen (Inhalt oder Format)        | ⌘End       | Ctrl+End        |
-| Dialog „Gehe zu“                                                   | ⌘G, F5     | Ctrl+G, F5      |
-| Neues Blatt einfügen                                               | ⇧F11       | Shift+F11       |
-| Aktive Zelle einen Bildschirm nach unten verschieben (und rollen)  | Page Down  | Page Down       |
-| Aktive Zelle einen Bildschirm nach oben verschieben (und rollen)   | Page Up    | Page Up         |
-| Aktive Zelle einen Bildschirm nach rechts verschieben (und rollen) | ⌥Page Down | Alt+Page Down   |
-| Aktive Zelle einen Bildschirm nach links verschieben (und rollen)  | ⌥Page Up   | Alt+Page Up     |
+| Aktion                                                             | Windows / Linux | macOS      |
+| ------------------------------------------------------------------ | --------------- | ---------- |
+| Nächstes Blatt                                                     | Ctrl+PgDn       | ⌘PgDn      |
+| Vorheriges Blatt                                                   | Ctrl+PgUp       | ⌘PgUp      |
+| Nächstes Blatt (Parität zu Excel für Mac)                          |                 | ⌥→         |
+| Vorheriges Blatt (Parität zu Excel für Mac)                        |                 | ⌥←         |
+| Zur ersten nicht fixierten Zelle springen                          | Ctrl+Home       | ⌘Home      |
+| Zur letzten verwendeten Zelle springen (Inhalt oder Format)        | Ctrl+End        | ⌘End       |
+| Dialog „Gehe zu“                                                   | Ctrl+G, F5      | ⌘G, F5     |
+| Neues Blatt einfügen                                               | Shift+F11       | ⇧F11       |
+| Aktive Zelle einen Bildschirm nach unten verschieben (und rollen)  | Page Down       | Page Down  |
+| Aktive Zelle einen Bildschirm nach oben verschieben (und rollen)   | Page Up         | Page Up    |
+| Aktive Zelle einen Bildschirm nach rechts verschieben (und rollen) | Alt+Page Down   | ⌥Page Down |
+| Aktive Zelle einen Bildschirm nach links verschieben (und rollen)  | Alt+Page Up     | ⌥Page Up   |
 
 ### Auswahl
 
-| Aktion                                                                                       | macOS           | Windows / Linux                                     |
-| -------------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------- |
-| Ganze Spalte der aktiven Zelle auswählen                                                     | ⌃Space          | Ctrl+Space                                          |
-| Ganze Zeile der aktiven Zelle auswählen                                                      | ⇧Space          | Shift+Space                                         |
-| Zum Rand des Datenblocks springen — eine der vier Pfeiltasten                                | ⌘↑ ⌘↓ ⌘← ⌘→     | Ctrl+↑ Ctrl+↓ Ctrl+← Ctrl+→                         |
-| Auswahl bis zum Rand des Datenblocks erweitern; erneut drücken, um sie wieder zu verkleinern | ⌘⇧↑ ⌘⇧↓ ⌘⇧← ⌘⇧→ | Ctrl+Shift+↑ Ctrl+Shift+↓ Ctrl+Shift+← Ctrl+Shift+→ |
-| Zur ersten Spalte der aktuellen Zeile springen                                               | Home            | Home                                                |
+| Aktion                                                                                       | Windows / Linux                                     | macOS           |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------- | --------------- |
+| Ganze Spalte der aktiven Zelle auswählen                                                     | Ctrl+Space                                          | ⌃Space          |
+| Ganze Zeile der aktiven Zelle auswählen                                                      | Shift+Space                                         | ⇧Space          |
+| Zum Rand des Datenblocks springen — eine der vier Pfeiltasten                                | Ctrl+↑ Ctrl+↓ Ctrl+← Ctrl+→                         | ⌘↑ ⌘↓ ⌘← ⌘→     |
+| Auswahl bis zum Rand des Datenblocks erweitern; erneut drücken, um sie wieder zu verkleinern | Ctrl+Shift+↑ Ctrl+Shift+↓ Ctrl+Shift+← Ctrl+Shift+→ | ⌘⇧↑ ⌘⇧↓ ⌘⇧← ⌘⇧→ |
+| Zur ersten Spalte der aktuellen Zeile springen                                               | Home                                                | Home            |
 
 ### Bearbeiten
 
-| Aktion                                                                                                      | macOS                     | Windows / Linux       |
-| ----------------------------------------------------------------------------------------------------------- | ------------------------- | --------------------- |
-| Die gesamte Auswahl mit dem aktuellen Eintrag füllen                                                        | ⌃⏎ oder ⌘⏎                | Ctrl+Enter            |
-| In der Zelle eine neue Zeile beginnen                                                                       | ⌥⏎, oder ⌃⌥⏎ / ⌘⌥⏎ am Mac | Alt+Enter             |
-| Aktive Zelle an Ort und Stelle bearbeiten                                                                   | F2                        | F2                    |
-| Fett                                                                                                        | ⌘B                        | Ctrl+B                |
-| Kursiv                                                                                                      | ⌘I                        | Ctrl+I                |
-| Unterstrichen                                                                                               | ⌘U                        | Ctrl+U                |
-| Suchen                                                                                                      | ⌘F                        | Ctrl+F                |
-| Von der linkesten ausgewählten Spalte nach rechts füllen                                                    | ⌘R                        | Ctrl+R                |
-| Formelbezug zwischen relativ und absolut umschalten                                                         | F4                        | F4                    |
-| Formelbezug zwischen relativ und absolut umschalten (Parität zu Excel für Mac, beim Bearbeiten einer Zelle) | ⌘T                        |                       |
-| Kopieren                                                                                                    | ⌘C                        | Ctrl+C                |
-| Ausschneiden                                                                                                | ⌘X                        | Ctrl+X                |
-| Einfügen                                                                                                    | ⌘V                        | Ctrl+V                |
-| Nur Werte einfügen                                                                                          | ⌘⇧V                       | Ctrl+Shift+V          |
-| Blitzausfüllen aus dem Muster darüber                                                                       | ⌘E                        | Ctrl+E                |
-| Rückgängig                                                                                                  | ⌘Z                        | Ctrl+Z                |
-| Wiederholen                                                                                                 | ⇧⌘Z                       | Ctrl+Shift+Z          |
-| Ganzes Blatt auswählen                                                                                      | ⌘A                        | Ctrl+A                |
-| heutiges Datum einfügen                                                                                     | ⌘;                        | Ctrl+;                |
-| aktuelle Uhrzeit einfügen                                                                                   | ⌘⇧;                       | Ctrl+Shift+;          |
-| Inhalt aller ausgewählten Zellen löschen                                                                    | ⌫ oder ⌦                  | Backspace oder Delete |
+| Aktion                                                                                                      | Windows / Linux       | macOS                     |
+| ----------------------------------------------------------------------------------------------------------- | --------------------- | ------------------------- |
+| Die gesamte Auswahl mit dem aktuellen Eintrag füllen                                                        | Ctrl+Enter            | ⌃⏎ oder ⌘⏎                |
+| In der Zelle eine neue Zeile beginnen                                                                       | Alt+Enter             | ⌥⏎, oder ⌃⌥⏎ / ⌘⌥⏎ am Mac |
+| Aktive Zelle an Ort und Stelle bearbeiten                                                                   | F2                    | F2                        |
+| Fett                                                                                                        | Ctrl+B                | ⌘B                        |
+| Kursiv                                                                                                      | Ctrl+I                | ⌘I                        |
+| Unterstrichen                                                                                               | Ctrl+U                | ⌘U                        |
+| Suchen                                                                                                      | Ctrl+F                | ⌘F                        |
+| Von der linkesten ausgewählten Spalte nach rechts füllen                                                    | Ctrl+R                | ⌘R                        |
+| Formelbezug zwischen relativ und absolut umschalten                                                         | F4                    | F4                        |
+| Formelbezug zwischen relativ und absolut umschalten (Parität zu Excel für Mac, beim Bearbeiten einer Zelle) |                       | ⌘T                        |
+| Kopieren                                                                                                    | Ctrl+C                | ⌘C                        |
+| Ausschneiden                                                                                                | Ctrl+X                | ⌘X                        |
+| Einfügen                                                                                                    | Ctrl+V                | ⌘V                        |
+| Nur Werte einfügen                                                                                          | Ctrl+Shift+V          | ⌘⇧V                       |
+| Blitzausfüllen aus dem Muster darüber                                                                       | Ctrl+E                | ⌘E                        |
+| Rückgängig                                                                                                  | Ctrl+Z                | ⌘Z                        |
+| Wiederholen                                                                                                 | Ctrl+Shift+Z          | ⇧⌘Z                       |
+| Ganzes Blatt auswählen                                                                                      | Ctrl+A                | ⌘A                        |
+| heutiges Datum einfügen                                                                                     | Ctrl+;                | ⌘;                        |
+| aktuelle Uhrzeit einfügen                                                                                   | Ctrl+Shift+;          | ⌘⇧;                       |
+| Inhalt aller ausgewählten Zellen löschen                                                                    | Backspace oder Delete | ⌫ oder ⌦                  |
 
 Automatische Summenbildung gibt es nur auf macOS. Drücken Sie `⌘⇧T`.
 
 ### Formatierung
 
-| Aktion                                                                                | macOS | Windows / Linux |
-| ------------------------------------------------------------------------------------- | ----- | --------------- |
-| Dialog „Zellen formatieren“                                                           | ⌘1    | Ctrl+1          |
-| Durchgestrichen (mit ausgewählten Zellen)                                             | ⌘5    | Ctrl+5          |
-| Schriftgröße erhöhen (mit ausgewählten Zellen)                                        | ⌘⇧.   | Ctrl+Shift+.    |
-| Schriftgröße verringern (mit ausgewählten Zellen)                                     | ⌘⇧,   | Ctrl+Shift+,    |
-| Zahlenformat: Standard                                                                | ⌘⇧`   | Ctrl+Shift+`    |
-| Zahlenformat: Zahl mit zwei Nachkommastellen                                          | ⌘⇧1   | Ctrl+Shift+1    |
-| Zahlenformat: Uhrzeit `h:mm AM/PM`                                                    | ⌘⇧2   | Ctrl+Shift+2    |
-| Zahlenformat: Datum `d-mmm-yy`                                                        | ⌘⇧3   | Ctrl+Shift+3    |
-| Zahlenformat: Währung                                                                 | ⌘⇧4   | Ctrl+Shift+4    |
-| Zahlenformat: Prozent                                                                 | ⌘⇧5   | Ctrl+Shift+5    |
-| Zahlenformat: wissenschaftlich                                                        | ⌘⇧6   | Ctrl+Shift+6    |
-| Alle Rahmenlinien (mit ausgewählten Zellen)                                           | ⌘⇧7   | Ctrl+Shift+7    |
-| Keine Rahmenlinien (mit ausgewählten Zellen)                                          | ⌘⇧-   | Ctrl+Shift+-    |
-| Formatierungspinsel abbrechen (nur solange der Formatierungspinsel eingeschaltet ist) | Esc   | Esc             |
+| Aktion                                                                                | Windows / Linux | macOS |
+| ------------------------------------------------------------------------------------- | --------------- | ----- |
+| Dialog „Zellen formatieren“                                                           | Ctrl+1          | ⌘1    |
+| Durchgestrichen (mit ausgewählten Zellen)                                             | Ctrl+5          | ⌘5    |
+| Schriftgröße erhöhen (mit ausgewählten Zellen)                                        | Ctrl+Shift+.    | ⌘⇧.   |
+| Schriftgröße verringern (mit ausgewählten Zellen)                                     | Ctrl+Shift+,    | ⌘⇧,   |
+| Zahlenformat: Standard                                                                | Ctrl+Shift+`    | ⌘⇧`   |
+| Zahlenformat: Zahl mit zwei Nachkommastellen                                          | Ctrl+Shift+1    | ⌘⇧1   |
+| Zahlenformat: Uhrzeit `h:mm AM/PM`                                                    | Ctrl+Shift+2    | ⌘⇧2   |
+| Zahlenformat: Datum `d-mmm-yy`                                                        | Ctrl+Shift+3    | ⌘⇧3   |
+| Zahlenformat: Währung                                                                 | Ctrl+Shift+4    | ⌘⇧4   |
+| Zahlenformat: Prozent                                                                 | Ctrl+Shift+5    | ⌘⇧5   |
+| Zahlenformat: wissenschaftlich                                                        | Ctrl+Shift+6    | ⌘⇧6   |
+| Alle Rahmenlinien (mit ausgewählten Zellen)                                           | Ctrl+Shift+7    | ⌘⇧7   |
+| Keine Rahmenlinien (mit ausgewählten Zellen)                                          | Ctrl+Shift+-    | ⌘⇧-   |
+| Formatierungspinsel abbrechen (nur solange der Formatierungspinsel eingeschaltet ist) | Esc             | Esc   |
 
 ### Einfügen und Löschen
 
-| Aktion                                                                                                         | macOS                  | Windows / Linux           |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------------- |
-| Zellen einfügen — ganze Zeilen oder Spalten werden direkt eingefügt, alles andere öffnet den Dialog „Einfügen“ | ⌘⇧=                    | Ctrl+Shift+=              |
-| Zellen einfügen — `+` auf dem Ziffernblock, derselbe Dialog                                                    | ⌘ mit Ziffernblock `+` | Ctrl mit Ziffernblock `+` |
-| Zellen löschen — ganze Zeilen oder Spalten werden direkt gelöscht, alles andere öffnet den Dialog „Löschen“    | ⌘-                     | Ctrl+-                    |
-| Zellen löschen — `-` auf dem Ziffernblock, derselbe Dialog                                                     | ⌘ mit Ziffernblock `-` | Ctrl mit Ziffernblock `-` |
-| Ausgewählte Zeilen ausblenden                                                                                  | ⌘9                     | Ctrl+9                    |
-| Ausgeblendete Zeilen in der Auswahl einblenden                                                                 | ⌘⇧9                    | Ctrl+Shift+9              |
-| Ausgewählte Spalten ausblenden                                                                                 | ⌘0                     | Ctrl+0                    |
-| Ausgeblendete Spalten in der Auswahl einblenden                                                                | ⌘⇧0                    | Ctrl+Shift+0              |
+| Aktion                                                                                                         | Windows / Linux           | macOS                  |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------- | ---------------------- |
+| Zellen einfügen — ganze Zeilen oder Spalten werden direkt eingefügt, alles andere öffnet den Dialog „Einfügen“ | Ctrl+Shift+=              | ⌘⇧=                    |
+| Zellen einfügen — `+` auf dem Ziffernblock, derselbe Dialog                                                    | Ctrl mit Ziffernblock `+` | ⌘ mit Ziffernblock `+` |
+| Zellen löschen — ganze Zeilen oder Spalten werden direkt gelöscht, alles andere öffnet den Dialog „Löschen“    | Ctrl+-                    | ⌘-                     |
+| Zellen löschen — `-` auf dem Ziffernblock, derselbe Dialog                                                     | Ctrl mit Ziffernblock `-` | ⌘ mit Ziffernblock `-` |
+| Ausgewählte Zeilen ausblenden                                                                                  | Ctrl+9                    | ⌘9                     |
+| Ausgeblendete Zeilen in der Auswahl einblenden                                                                 | Ctrl+Shift+9              | ⌘⇧9                    |
+| Ausgewählte Spalten ausblenden                                                                                 | Ctrl+0                    | ⌘0                     |
+| Ausgeblendete Spalten in der Auswahl einblenden                                                                | Ctrl+Shift+0              | ⌘⇧0                    |
 
 Excels Kürzel für den Filter, Ctrl+Shift+L, bewirkt unter Windows und Linux nichts. Drücken Sie auf macOS `⌘⇧F` oder nutzen Sie den Filterbefehl im Menüband auf jeder Plattform.
 
 ### Daten und Überprüfung
 
-| Aktion                                                     | macOS | Windows / Linux |
-| ---------------------------------------------------------- | ----- | --------------- |
-| Dialog „Funktion einfügen“                                 | ⇧F3   | Shift+F3        |
-| Namens-Manager                                             | ⌃F3   | Ctrl+F3         |
-| Notiz an der aktiven Zelle hinzufügen oder bearbeiten      | ⇧F2   | Shift+F2        |
-| Hyperlink einfügen                                         | ⌘K    | Ctrl+K          |
-| Vorgänger verfolgen (die Zelle muss eine Formel enthalten) | ⌘[    | Ctrl+[          |
-| Abhängige verfolgen                                        | ⌘]    | Ctrl+]          |
-| Ausgewählte Zeilen gruppieren                              | ⌥⇧→   | Alt+Shift+→     |
-| Gruppierung der ausgewählten Zeilen aufheben               | ⌥⇧←   | Alt+Shift+←     |
-| Gesamte Arbeitsmappe neu berechnen                         | F9    | F9              |
-| Nur das aktive Blatt neu berechnen                         | ⇧F9   | Shift+F9        |
-| Filter für den ausgewählten Bereich ein- oder ausschalten  | ⌘⇧F   |                 |
+| Aktion                                                     | Windows / Linux | macOS |
+| ---------------------------------------------------------- | --------------- | ----- |
+| Dialog „Funktion einfügen“                                 | Shift+F3        | ⇧F3   |
+| Namens-Manager                                             | Ctrl+F3         | ⌃F3   |
+| Notiz an der aktiven Zelle hinzufügen oder bearbeiten      | Shift+F2        | ⇧F2   |
+| Hyperlink einfügen                                         | Ctrl+K          | ⌘K    |
+| Vorgänger verfolgen (die Zelle muss eine Formel enthalten) | Ctrl+[          | ⌘[    |
+| Abhängige verfolgen                                        | Ctrl+]          | ⌘]    |
+| Ausgewählte Zeilen gruppieren                              | Alt+Shift+→     | ⌥⇧→   |
+| Gruppierung der ausgewählten Zeilen aufheben               | Alt+Shift+←     | ⌥⇧←   |
+| Gesamte Arbeitsmappe neu berechnen                         | F9              | F9    |
+| Nur das aktive Blatt neu berechnen                         | Shift+F9        | ⇧F9   |
+| Filter für den ausgewählten Bereich ein- oder ausschalten  |                 | ⌘⇧F   |
 
 ### Fenster
 
-| Aktion                                                           | macOS      | Windows / Linux |
-| ---------------------------------------------------------------- | ---------- | --------------- |
-| Arbeitsmappe speichern                                           | ⌘S         | Ctrl+S          |
-| Speichern unter                                                  | ⇧⌘S        | Ctrl+Shift+S    |
-| Arbeitsmappe öffnen                                              | ⌘O         | Ctrl+O          |
-| Drucken                                                          | ⌘P         | Ctrl+P          |
-| Arbeitsmappe schließen (macOS) / App beenden (Windows und Linux) | ⌘W         | Ctrl+Q          |
-| Benutzerhandbuch öffnen                                          | F1         | F1              |
-| Vergrößern                                                       | ⌘=         | Ctrl+=          |
-| Mit dem Mausrad zoomen                                           | ⌘ + rollen | Ctrl + rollen   |
-| Formeln in den Zellen ein- oder ausblenden                       | ⌘`         | Ctrl+`          |
-| Formelleiste ausklappen oder einklappen                          | ⌘⇧U        | Ctrl+Shift+U    |
+| Aktion                                                           | Windows / Linux | macOS      |
+| ---------------------------------------------------------------- | --------------- | ---------- |
+| Arbeitsmappe speichern                                           | Ctrl+S          | ⌘S         |
+| Speichern unter                                                  | Ctrl+Shift+S    | ⇧⌘S        |
+| Arbeitsmappe öffnen                                              | Ctrl+O          | ⌘O         |
+| Drucken                                                          | Ctrl+P          | ⌘P         |
+| Arbeitsmappe schließen (macOS) / App beenden (Windows und Linux) | Ctrl+Q          | ⌘W         |
+| Benutzerhandbuch öffnen                                          | F1              | F1         |
+| Vergrößern                                                       | Ctrl+=          | ⌘=         |
+| Mit dem Mausrad zoomen                                           | Ctrl + rollen   | ⌘ + rollen |
+| Formeln in den Zellen ein- oder ausblenden                       | Ctrl+`          | ⌘`         |
+| Formelleiste ausklappen oder einklappen                          | Ctrl+Shift+U    | ⌘⇧U        |
 
 ## Slides
 
@@ -297,31 +309,31 @@ GenOffice Slides ist ein Präsentationseditor im Stil von PowerPoint. Die meiste
 
 ### Datei und App
 
-| Aktion                                      | macOS | Windows / Linux |
-| ------------------------------------------- | ----- | --------------- |
-| Speichern                                   | ⌘S    | Ctrl+S          |
-| Speichern unter                             | ⇧⌘S   | Ctrl+Shift+S    |
-| Öffnen                                      | ⌘O    | Ctrl+O          |
-| Aktuellen Tab schließen                     | ⌘W    | Ctrl+Q          |
-| Drucken                                     | ⌘P    | Ctrl+P          |
-| Rückgängig                                  | ⌘Z    | Ctrl+Z          |
-| Wiederholen                                 | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Wiederholen (alternative Tastenkombination) | ⌘Y    | Ctrl+Y          |
+| Aktion                                      | Windows / Linux | macOS |
+| ------------------------------------------- | --------------- | ----- |
+| Speichern                                   | Ctrl+S          | ⌘S    |
+| Speichern unter                             | Ctrl+Shift+S    | ⇧⌘S   |
+| Öffnen                                      | Ctrl+O          | ⌘O    |
+| Aktuellen Tab schließen                     | Ctrl+Q          | ⌘W    |
+| Drucken                                     | Ctrl+P          | ⌘P    |
+| Rückgängig                                  | Ctrl+Z          | ⌘Z    |
+| Wiederholen                                 | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Wiederholen (alternative Tastenkombination) | Ctrl+Y          | ⌘Y    |
 
 Einen Tab zu schließen ist die eine Stelle, an der sich die beiden Plattformen vollständig trennen: `⌘W` auf macOS und unter Windows und Linux Ctrl+Q, das die ganze App beendet statt nur des Tabs.
 
 ### Bearbeiten
 
-| Aktion                                                | macOS  | Windows / Linux |
-| ----------------------------------------------------- | ------ | --------------- |
-| Neue Folie                                            | ⇧⌘N    | Ctrl+M          |
-| Suchen (nicht beim Bearbeiten von Text in einer Form) | ⌘F     | Ctrl+F          |
-| Auswahl mit KI kommentieren (mit ausgewählten Formen) | ⌘K     | Ctrl+K          |
-| Vergrößern                                            | ⌘=     | Ctrl+=          |
-| Verkleinern                                           | ⌘-     | Ctrl+-          |
-| Originalgröße (100 %)                                 | ⌘0     | Ctrl+0          |
-| Alles auswählen                                       | ⌘A     | Ctrl+A          |
-| Formenauswahl vorwärts / rückwärts durchlaufen        | ⇥ / ⇧⇥ | Tab / Shift+Tab |
+| Aktion                                                | Windows / Linux | macOS  |
+| ----------------------------------------------------- | --------------- | ------ |
+| Neue Folie                                            | Ctrl+M          | ⇧⌘N    |
+| Suchen (nicht beim Bearbeiten von Text in einer Form) | Ctrl+F          | ⌘F     |
+| Auswahl mit KI kommentieren (mit ausgewählten Formen) | Ctrl+K          | ⌘K     |
+| Vergrößern                                            | Ctrl+=          | ⌘=     |
+| Verkleinern                                           | Ctrl+-          | ⌘-     |
+| Originalgröße (100 %)                                 | Ctrl+0          | ⌘0     |
+| Alles auswählen                                       | Ctrl+A          | ⌘A     |
+| Formenauswahl vorwärts / rückwärts durchlaufen        | Tab / Shift+Tab | ⇥ / ⇧⇥ |
 
 Neue Folie ist die andere Plattformtrennung. Jede Plattform hat ihre eigene Taste, und die andere tut nichts: `⇧⌘N` auf macOS, Ctrl+M unter Windows und Linux. `⌘M` kann auf macOS nicht die Aufgabe erfüllen, weil das die systemweite Taste zum Minimieren ist.
 
@@ -331,39 +343,39 @@ Alles auswählen richtet sich nach dem Fokus: Ist das Miniaturenbereichsfenster,
 
 Diese Befehle wirken auf den Text einer ausgewählten Form oder auf den Absatz am Cursor, wenn Sie sich im Textfeld befinden.
 
-| Aktion                                                      | macOS | Windows / Linux |
-| ----------------------------------------------------------- | ----- | --------------- |
-| Fett                                                        | ⌘B    | Ctrl+B          |
-| Kursiv                                                      | ⌘I    | Ctrl+I          |
-| Unterstrichen                                               | ⌘U    | Ctrl+U          |
-| Linksbündig                                                 | ⌘L    | Ctrl+L          |
-| Zentriert                                                   | ⌘E    | Ctrl+E          |
-| Rechtsbündig                                                | ⌘R    | Ctrl+R          |
-| Blocksatz                                                   | ⌘J    | Ctrl+J          |
-| Schriftgröße um 1 pt erhöhen                                | ⌘]    | Ctrl+]          |
-| Schriftgröße um 1 pt verringern                             | ⌘[    | Ctrl+[          |
-| Schrift auf die nächste Stufe der Größenliste vergrößern    | ⇧⌘>   | Ctrl+Shift+>    |
-| Schrift auf die vorherige Stufe der Größenliste verkleinern | ⇧⌘<   | Ctrl+Shift+<    |
+| Aktion                                                      | Windows / Linux | macOS |
+| ----------------------------------------------------------- | --------------- | ----- |
+| Fett                                                        | Ctrl+B          | ⌘B    |
+| Kursiv                                                      | Ctrl+I          | ⌘I    |
+| Unterstrichen                                               | Ctrl+U          | ⌘U    |
+| Linksbündig                                                 | Ctrl+L          | ⌘L    |
+| Zentriert                                                   | Ctrl+E          | ⌘E    |
+| Rechtsbündig                                                | Ctrl+R          | ⌘R    |
+| Blocksatz                                                   | Ctrl+J          | ⌘J    |
+| Schriftgröße um 1 pt erhöhen                                | Ctrl+]          | ⌘]    |
+| Schriftgröße um 1 pt verringern                             | Ctrl+[          | ⌘[    |
+| Schrift auf die nächste Stufe der Größenliste vergrößern    | Ctrl+Shift+>    | ⇧⌘>   |
+| Schrift auf die vorherige Stufe der Größenliste verkleinern | Ctrl+Shift+<    | ⇧⌘<   |
 
 Die Tasten der Größenliste verstehen auch die Tasten . und , mit gedrückter Umschalt-Taste, für die Tastaturbelegungen, die diese statt der Satzzeichentasten melden.
 
 ### Zwischenablage und Objekte
 
-| Aktion                                                     | macOS       | Windows / Linux    |
-| ---------------------------------------------------------- | ----------- | ------------------ |
-| Kopieren                                                   | ⌘C          | Ctrl+C             |
-| Ausschneiden                                               | ⌘X          | Ctrl+X             |
-| Einfügen                                                   | ⌘V          | Ctrl+V             |
-| Nur Formatierung einfügen                                  | ⇧⌘V         | Ctrl+Shift+V       |
-| Nur Formatierung kopieren (mit ausgewählten Formen)        | ⇧⌘C         | Ctrl+Shift+C       |
-| An Ort und Stelle duplizieren (mit ausgewählten Formen)    | ⌘D          | Ctrl+D             |
-| Auswahl gruppieren (mit ausgewählten Formen)               | ⌘G          | Ctrl+G             |
-| Gruppierung der Auswahl aufheben (mit ausgewählten Formen) | ⇧⌘G         | Ctrl+Shift+G       |
-| Auswahl löschen (mit ausgewählten Formen)                  | ⌫ / Delete  | Backspace / Delete |
-| Ausgewählten Eckpunkt löschen (in „Punkte bearbeiten“)     | ⌫ / Delete  | Backspace / Delete |
-| Auswahl fein verschieben (mit ausgewählten Formen)         | ↑ ↓ ← →     | Arrow keys         |
-| Um ein Bildschirmpixel verschieben                         | ⌘↑ ⌘↓ ⌘← ⌘→ | Ctrl+Arrow keys    |
-| Um den Mittelpunkt skalieren                               | ⇧↑ ⇧↓ ⇧← ⇧→ | Shift+Arrow keys   |
+| Aktion                                                     | Windows / Linux    | macOS       |
+| ---------------------------------------------------------- | ------------------ | ----------- |
+| Kopieren                                                   | Ctrl+C             | ⌘C          |
+| Ausschneiden                                               | Ctrl+X             | ⌘X          |
+| Einfügen                                                   | Ctrl+V             | ⌘V          |
+| Nur Formatierung einfügen                                  | Ctrl+Shift+V       | ⇧⌘V         |
+| Nur Formatierung kopieren (mit ausgewählten Formen)        | Ctrl+Shift+C       | ⇧⌘C         |
+| An Ort und Stelle duplizieren (mit ausgewählten Formen)    | Ctrl+D             | ⌘D          |
+| Auswahl gruppieren (mit ausgewählten Formen)               | Ctrl+G             | ⌘G          |
+| Gruppierung der Auswahl aufheben (mit ausgewählten Formen) | Ctrl+Shift+G       | ⇧⌘G         |
+| Auswahl löschen (mit ausgewählten Formen)                  | Backspace / Delete | ⌫ / Delete  |
+| Ausgewählten Eckpunkt löschen (in „Punkte bearbeiten“)     | Backspace / Delete | ⌫ / Delete  |
+| Auswahl fein verschieben (mit ausgewählten Formen)         | Arrow keys         | ↑ ↓ ← →     |
+| Um ein Bildschirmpixel verschieben                         | Ctrl+Arrow keys    | ⌘↑ ⌘↓ ⌘← ⌘→ |
+| Um den Mittelpunkt skalieren                               | Shift+Arrow keys   | ⇧↑ ⇧↓ ⇧← ⇧→ |
 
 In einem Textfeld wirken Kopieren, Ausschneiden und Einfügen auf den Text statt auf die Form. Umschalt mit den Pfeiltasten skaliert jede Form um ihren eigenen Mittelpunkt, lässt Verbindungslinien unberührt und macht eine Mehrfachauswahl zu einem einzigen Undo-Schritt.
 
@@ -371,57 +383,57 @@ In einem Textfeld wirken Kopieren, Ausschneiden und Einfügen auf den Text statt
 
 Befehle auf Folienebene der Art PowerPoint lösen nur aus, solange eines dieser drei Bereiche den Tastaturfokus hat.
 
-| Aktion                                           | macOS                          | Windows / Linux                                |
-| ------------------------------------------------ | ------------------------------ | ---------------------------------------------- |
-| Vorherige / nächste Folie                        | ↑ ↓ (auch Page Up / Page Down) | ArrowUp / ArrowDown (auch Page Up / Page Down) |
-| Erste / letzte Folie                             | Home / End                     | Home / End                                     |
-| Auswahl bis zur ersten / letzten Folie erweitern | ⇧Home / ⇧End                   | Shift+Home / Shift+End                         |
-| Alle Folien auswählen                            | ⌘A                             | Ctrl+A                                         |
-| Ausgewählte Folien löschen                       | ⌫ / Delete                     | Backspace / Delete                             |
-| Folien kopieren                                  | ⌘C                             | Ctrl+C                                         |
-| Folien ausschneiden                              | ⌘X                             | Ctrl+X                                         |
+| Aktion                                           | Windows / Linux                                | macOS                          |
+| ------------------------------------------------ | ---------------------------------------------- | ------------------------------ |
+| Vorherige / nächste Folie                        | ArrowUp / ArrowDown (auch Page Up / Page Down) | ↑ ↓ (auch Page Up / Page Down) |
+| Erste / letzte Folie                             | Home / End                                     | Home / End                     |
+| Auswahl bis zur ersten / letzten Folie erweitern | Shift+Home / Shift+End                         | ⇧Home / ⇧End                   |
+| Alle Folien auswählen                            | Ctrl+A                                         | ⌘A                             |
+| Ausgewählte Folien löschen                       | Backspace / Delete                             | ⌫ / Delete                     |
+| Folien kopieren                                  | Ctrl+C                                         | ⌘C                             |
+| Folien ausschneiden                              | Ctrl+X                                         | ⌘X                             |
 
 Der Wechsel zwischen Folien mit den Pfeiltasten ist die Ausnahme — er funktioniert auch von der Folienfläche aus, ohne dass etwas ausgewählt ist. Das Löschen von Folien greift nicht, während ein Stiftwerkzeug aktiv ist, und auch nicht in der **Leseansicht**.
 
 ### In einem Textfeld
 
-| Aktion                                                                    | macOS                                         | Windows / Linux                                   |
-| ------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------- |
-| Textbearbeitung in einer ausgewählten Textform starten                    | ein beliebiges druckbares Zeichen, ⏎, oder F2 | ein beliebiges druckbares Zeichen, Enter, oder F2 |
-| Text übernehmen und Form erneut auswählen                                 | Esc oder F2                                   | Esc oder F2                                       |
-| Text übernehmen und Form erneut auswählen (alternative Tastenkombination) | ⌘⏎                                            | Ctrl+⏎                                            |
-| Zum nächsten Platzhalter springen                                         | ⌃⏎                                            | Ctrl+⏎                                            |
-| Listenebene zurückstufen / hochstufen                                     | ⇥ / ⇧⇥                                        | Tab / Shift+Tab                                   |
-| Nächste / vorherige Tabellenzelle                                         | ⇥ / ⇧⇥                                        | Tab / Shift+Tab                                   |
-| Weicher Zeilenumbruch                                                     | ⇧⏎                                            | Shift+⏎                                           |
+| Aktion                                                                    | Windows / Linux                                   | macOS                                         |
+| ------------------------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------- |
+| Textbearbeitung in einer ausgewählten Textform starten                    | ein beliebiges druckbares Zeichen, Enter, oder F2 | ein beliebiges druckbares Zeichen, ⏎, oder F2 |
+| Text übernehmen und Form erneut auswählen                                 | Esc oder F2                                       | Esc oder F2                                   |
+| Text übernehmen und Form erneut auswählen (alternative Tastenkombination) | Ctrl+⏎                                            | ⌘⏎                                            |
+| Zum nächsten Platzhalter springen                                         | Ctrl+⏎                                            | ⌃⏎                                            |
+| Listenebene zurückstufen / hochstufen                                     | Tab / Shift+Tab                                   | ⇥ / ⇧⇥                                        |
+| Nächste / vorherige Tabellenzelle                                         | Tab / Shift+Tab                                   | ⇥ / ⇧⇥                                        |
+| Weicher Zeilenumbruch                                                     | Shift+⏎                                           | ⇧⏎                                            |
 
 Tab bedeutet zwei Dinge: die nächste Zelle in einer Tabelle und das Zurückstufen der Listenebene in einer Textform.
 
 ### Diashow
 
-| Aktion                                   | macOS                | Windows / Linux                      |
-| ---------------------------------------- | -------------------- | ------------------------------------ |
-| Von vorne beginnen                       | F5                   | F5                                   |
-| Von der aktuellen Folie beginnen         | ⇧F5 oder ⌘⏎          | ⇧F5                                  |
-| Nächste Folie                            | → ↓ ␣ ⏎ Page Down    | Right, Down, Space, Enter, Page Down |
-| Vorherige Folie                          | ← ↑ Page Up          | Left, Up, Page Up                    |
-| Erste Folie                              | Home                 | Home                                 |
-| Letzte Folie                             | End                  | End                                  |
-| Zu Folie N springen                      | N eingeben, dann ⏎   | N eingeben, dann Enter               |
-| Schwarzer Bildschirm                     | B oder .             | B oder .                             |
-| Weißer Bildschirm                        | W oder ,             | W oder ,                             |
-| Nach einer Verdunkelung wiederherstellen | eine beliebige Taste | eine beliebige Taste                 |
-| Show beenden                             | Esc                  | Esc                                  |
+| Aktion                                   | Windows / Linux                      | macOS                |
+| ---------------------------------------- | ------------------------------------ | -------------------- |
+| Von vorne beginnen                       | F5                                   | F5                   |
+| Von der aktuellen Folie beginnen         | ⇧F5                                  | ⇧F5 oder ⌘⏎          |
+| Nächste Folie                            | Right, Down, Space, Enter, Page Down | → ↓ ␣ ⏎ Page Down    |
+| Vorherige Folie                          | Left, Up, Page Up                    | ← ↑ Page Up          |
+| Erste Folie                              | Home                                 | Home                 |
+| Letzte Folie                             | End                                  | End                  |
+| Zu Folie N springen                      | N eingeben, dann Enter               | N eingeben, dann ⏎   |
+| Schwarzer Bildschirm                     | B oder .                             | B oder .             |
+| Weißer Bildschirm                        | W oder ,                             | W oder ,             |
+| Nach einer Verdunkelung wiederherstellen | eine beliebige Taste                 | eine beliebige Taste |
+| Show beenden                             | Esc                                  | Esc                  |
 
 Von der aktuellen Folie zu beginnen versteht auf macOS sowohl `⌘⏎` als auch `⇧F5`. Unter Windows bleibt dieselbe Taste für das Wechseln zwischen Platzhaltern reserviert.
 
 ### Leseansicht
 
-| Aktion                | macOS             | Windows / Linux                      |
-| --------------------- | ----------------- | ------------------------------------ |
-| Nächste Folie         | → ↓ ␣ ⏎ Page Down | Right, Down, Space, Enter, Page Down |
-| Vorherige Folie       | ← ↑ Page Up       | Left, Up, Page Up                    |
-| Leseansicht verlassen | Esc               | Esc                                  |
+| Aktion                | Windows / Linux                      | macOS             |
+| --------------------- | ------------------------------------ | ----------------- |
+| Nächste Folie         | Right, Down, Space, Enter, Page Down | → ↓ ␣ ⏎ Page Down |
+| Vorherige Folie       | Left, Up, Page Up                    | ← ↑ Page Up       |
+| Leseansicht verlassen | Esc                                  | Esc               |
 
 Drücken Sie **Esc**, um aus dem herauszukommen, worin Sie gerade sind — einem Beschnitt, einer Form, die Sie zeichnen, **Punkte bearbeiten**, einer Gruppe, dem Stift-, Textmarker- oder Radiererwerkzeug, dem Medienplayer oder der **Leseansicht** — und um die Auswahl aufzuheben.
 
@@ -433,30 +445,30 @@ PDF hat kein eigenes Menü, daher folgen alle Tastenkombinationen unten dem akti
 
 ### Datei und Bearbeiten
 
-| Aktion                | macOS | Windows / Linux |
-| --------------------- | ----- | --------------- |
-| Speichern             | ⌘S    | Ctrl+S          |
-| Rückgängig            | ⌘Z    | Ctrl+Z          |
-| Wiederholen           | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Suchen (Suche öffnen) | ⌘F    | Ctrl+F          |
-| Drucken               | ⌘P    | Ctrl+P          |
+| Aktion                | Windows / Linux | macOS |
+| --------------------- | --------------- | ----- |
+| Speichern             | Ctrl+S          | ⌘S    |
+| Rückgängig            | Ctrl+Z          | ⌘Z    |
+| Wiederholen           | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Suchen (Suche öffnen) | Ctrl+F          | ⌘F    |
+| Drucken               | Ctrl+P          | ⌘P    |
 
 Rückgängig und Wiederholen gehen durch die Dokumenthistorie; steht der Cursor in einem Textfeld, lassen sie `⌘Z` diesem Feld. `⌘P` öffnet denselben Druckdialog in der App wie die Schaltfläche Drucken in der Symbolleiste.
 
 ### Ansicht
 
-| Aktion             | macOS       | Windows / Linux |
-| ------------------ | ----------- | --------------- |
-| Vergrößern         | ⌘=          | Ctrl+=          |
-| Verkleinern        | ⌘-          | Ctrl+-          |
-| An Breite anpassen | ⌘0          | Ctrl+0          |
-| Zoom (stufenlos)   | ⌘ + Mausrad | Ctrl + Mausrad  |
+| Aktion             | Windows / Linux | macOS       |
+| ------------------ | --------------- | ----------- |
+| Vergrößern         | Ctrl+=          | ⌘=          |
+| Verkleinern        | Ctrl+-          | ⌘-          |
+| An Breite anpassen | Ctrl+0          | ⌘0          |
+| Zoom (stufenlos)   | Ctrl + Mausrad  | ⌘ + Mausrad |
 
 Vergrößern reagiert auch auf `⌘+` und Ctrl++.
 
 ### Seitenavigation
 
-| Aktion                             | macOS               | Windows / Linux     |
+| Aktion                             | Windows / Linux     | macOS               |
 | ---------------------------------- | ------------------- | ------------------- |
 | Nächste Seite                      | →                   | →                   |
 | Vorherige Seite                    | ←                   | ←                   |
@@ -471,7 +483,7 @@ Diese Tasten brauchen keine Modifikatortaste, daher lesen sich beide Plattformen
 
 ### Auswahl und Bearbeiten
 
-| Aktion                        | macOS                 | Windows / Linux       |
+| Aktion                        | Windows / Linux       | macOS                 |
 | ----------------------------- | --------------------- | --------------------- |
 | Ausgewählte Anmerkung löschen | Delete oder Backspace | Delete oder Backspace |
 
@@ -479,21 +491,21 @@ Nur aktiv, wenn eine Anmerkung, ein Stempel, eine Schwärzung oder ein Bild ausg
 
 ### Miniaturleiste
 
-| Aktion                          | macOS                 | Windows / Linux       |
+| Aktion                          | Windows / Linux       | macOS                 |
 | ------------------------------- | --------------------- | --------------------- |
-| Seiten einzeln auswählen        | ⌘ + Klick             | Ctrl + Klick          |
-| Eine Folge von Seiten auswählen | ⇧ + Klick             | Shift + Klick         |
-| Alle Seiten auswählen           | ⌘A                    | Ctrl+A                |
+| Seiten einzeln auswählen        | Ctrl + Klick          | ⌘ + Klick             |
+| Eine Folge von Seiten auswählen | Shift + Klick         | ⇧ + Klick             |
+| Alle Seiten auswählen           | Ctrl+A                | ⌘A                    |
 | Ausgewählte Seiten löschen      | Delete oder Backspace | Delete oder Backspace |
 
 Ausgewählte Seiten sind eingefärbt. Ein Rechtsklick auf eine davon oder die Registerkarte Seite dreht, löscht oder extrahiert sie gemeinsam; wer eine davon zieht, verschiebt alle. Escape oder ein einfacher Klick auf eine Seite hebt die Auswahl auf. ⌘A und Entf wirken, solange die Leiste den Fokus hat.
 
 ### Escape und Dialoge
 
-| Aktion                     | macOS  | Windows / Linux |
-| -------------------------- | ------ | --------------- |
-| Obersten Zustand abbrechen | Escape | Escape          |
-| Offenen Dialog bestätigen  | Enter  | Enter           |
+| Aktion                     | Windows / Linux | macOS  |
+| -------------------------- | --------------- | ------ |
+| Obersten Zustand abbrechen | Escape          | Escape |
+| Offenen Dialog bestätigen  | Enter           | Enter  |
 
 Escape windet eine Ebene nach der anderen ab — zuerst ein offener Dialog, dann das KI-Einblendmenü, ein Textentwurf, das Suchfeld und schließlich die Auswahl selbst. Steht der Cursor im Suchfeld, springen Enter und `⇧Enter` zum nächsten beziehungsweise vorherigen Treffer, und Escape schließt das Feld; steht der Cursor in einer neuen Textnotiz, übernimmt `⌘⏎` sie.
 
@@ -503,38 +515,38 @@ GenOffice Markdown bearbeitet Markdown mit einer Live-Vorschau daneben.
 
 ### Datei und Ansicht
 
-| Aktion                              | macOS      | Windows / Linux    |
-| ----------------------------------- | ---------- | ------------------ |
-| Speichern                           | ⌘S         | Ctrl+S             |
-| Speichern unter                     | ⇧⌘S        | Ctrl+Shift+S       |
-| Drucken                             | ⌘P         | Ctrl+P             |
-| Suchen                              | ⌘F         | Ctrl+F             |
-| Zwischen Quelle / Vorschau wechseln | ⌘E         | Ctrl+E             |
-| Vergrößern                          | ⌘= oder ⌘+ | Ctrl+= oder Ctrl++ |
-| Verkleinern                         | ⌘-         | Ctrl+-             |
-| Originalgröße (100 %)               | ⌘0         | Ctrl+0             |
+| Aktion                              | Windows / Linux    | macOS      |
+| ----------------------------------- | ------------------ | ---------- |
+| Speichern                           | Ctrl+S             | ⌘S         |
+| Speichern unter                     | Ctrl+Shift+S       | ⇧⌘S        |
+| Drucken                             | Ctrl+P             | ⌘P         |
+| Suchen                              | Ctrl+F             | ⌘F         |
+| Zwischen Quelle / Vorschau wechseln | Ctrl+E             | ⌘E         |
+| Vergrößern                          | Ctrl+= oder Ctrl++ | ⌘= oder ⌘+ |
+| Verkleinern                         | Ctrl+-             | ⌘-         |
+| Originalgröße (100 %)               | Ctrl+0             | ⌘0         |
 
 Verkleinern versteht auch `⌘_` und Ctrl+_. Auch durch Auf- und Zuziehen auf dem Trackpad oder durch gehaltenes `⌘` beziehungsweise Ctrl und Rollen über dem Dokument wird gezoomt.
 
 ### Blöcke
 
-| Aktion                                                   | macOS | Windows / Linux      |
-| -------------------------------------------------------- | ----- | -------------------- |
-| Ausgewählte Blöcke duplizieren                           | ⌘D    | Ctrl+D               |
-| Ausgewählte Blöcke löschen                               | ⇧⌘⌫   | Ctrl+Shift+Backspace |
-| Ausgewählten Block nach oben verschieben                 | ⇧⌘↑   | Ctrl+Shift+ArrowUp   |
-| Ausgewählten Block nach unten verschieben                | ⇧⌘↓   | Ctrl+Shift+ArrowDown |
-| Link auf die Auswahl einfügen                            | ⌘K    | Ctrl+K               |
-| Link entfernen (erneut drücken, wenn der Link aktiv ist) | ⌘K    | Ctrl+K               |
+| Aktion                                                   | Windows / Linux      | macOS |
+| -------------------------------------------------------- | -------------------- | ----- |
+| Ausgewählte Blöcke duplizieren                           | Ctrl+D               | ⌘D    |
+| Ausgewählte Blöcke löschen                               | Ctrl+Shift+Backspace | ⇧⌘⌫   |
+| Ausgewählten Block nach oben verschieben                 | Ctrl+Shift+ArrowUp   | ⇧⌘↑   |
+| Ausgewählten Block nach unten verschieben                | Ctrl+Shift+ArrowDown | ⇧⌘↓   |
+| Link auf die Auswahl einfügen                            | Ctrl+K               | ⌘K    |
+| Link entfernen (erneut drücken, wenn der Link aktiv ist) | Ctrl+K               | ⌘K    |
 
 ### In einem Matheblock
 
 Diese Befehle gelten nur, solange der schwebende LaTeX-Editor geöffnet ist.
 
-| Aktion                         | macOS | Windows / Linux |
-| ------------------------------ | ----- | --------------- |
-| Formel anwenden                | ⌘⏎    | Ctrl+⏎          |
-| Editor ohne Anwenden schließen | Esc   | Esc             |
+| Aktion                         | Windows / Linux | macOS |
+| ------------------------------ | --------------- | ----- |
+| Formel anwenden                | Ctrl+⏎          | ⌘⏎    |
+| Editor ohne Anwenden schließen | Esc             | Esc   |
 
 Eine leere Formel zu löschen ist eine leere Formel anzuwenden, und das löscht den Block. Der Editor schließt sich außerdem bei jeder Änderung am Dokument, und ein Klick außerhalb schließt ihn.
 
@@ -544,54 +556,54 @@ GenOffice HTML zeigt einen Code-Editor neben einer Live-Vorschau. Die Tasten, di
 
 ### Datei und Quellansicht
 
-| Aktion                                                  | macOS      | Windows / Linux    |
-| ------------------------------------------------------- | ---------- | ------------------ |
-| Speichern                                               | ⌘S         | Ctrl+S             |
-| Speichern unter                                         | ⇧⌘S        | Ctrl+Shift+S       |
-| Ansicht durchwechseln (Bearbeiten / geteilt / Vorschau) | ⌘\         | Ctrl+\             |
-| Suchen                                                  | ⌘F         | Ctrl+F             |
-| Vergrößern                                              | ⌘= oder ⌘+ | Ctrl+= oder Ctrl++ |
-| Verkleinern                                             | ⌘-         | Ctrl+-             |
-| Originalgröße (100 %)                                   | ⌘0         | Ctrl+0             |
+| Aktion                                                  | Windows / Linux    | macOS      |
+| ------------------------------------------------------- | ------------------ | ---------- |
+| Speichern                                               | Ctrl+S             | ⌘S         |
+| Speichern unter                                         | Ctrl+Shift+S       | ⇧⌘S        |
+| Ansicht durchwechseln (Bearbeiten / geteilt / Vorschau) | Ctrl+\             | ⌘\         |
+| Suchen                                                  | Ctrl+F             | ⌘F         |
+| Vergrößern                                              | Ctrl+= oder Ctrl++ | ⌘= oder ⌘+ |
+| Verkleinern                                             | Ctrl+-             | ⌘-         |
+| Originalgröße (100 %)                                   | Ctrl+0             | ⌘0         |
 
 Verkleinern versteht auch `⌘_` und Ctrl+_.
 
 ### Formatierung und Historie
 
-| Aktion                                      | macOS | Windows / Linux |
-| ------------------------------------------- | ----- | --------------- |
-| Fett                                        | ⌘B    | Ctrl+B          |
-| Kursiv                                      | ⌘I    | Ctrl+I          |
-| Rückgängig                                  | ⌘Z    | Ctrl+Z          |
-| Wiederholen                                 | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Wiederholen (alternative Tastenkombination) | ⌘Y    | Ctrl+Y          |
+| Aktion                                      | Windows / Linux | macOS |
+| ------------------------------------------- | --------------- | ----- |
+| Fett                                        | Ctrl+B          | ⌘B    |
+| Kursiv                                      | Ctrl+I          | ⌘I    |
+| Rückgängig                                  | Ctrl+Z          | ⌘Z    |
+| Wiederholen                                 | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Wiederholen (alternative Tastenkombination) | Ctrl+Y          | ⌘Y    |
 
 Im Code-Editor oder in einem Formularfeld übernehmen stattdessen die eigenen Bearbeitungstasten des Feldes die Führung.
 
 ### Im Vorschau-Frame, mit einem ausgewählten Element
 
-| Aktion                                     | macOS      | Windows / Linux    |
-| ------------------------------------------ | ---------- | ------------------ |
-| Die KI nach dem Element fragen             | ⌘K         | Ctrl+K             |
-| Element löschen                            | ⌫ / Delete | Backspace / Delete |
-| Vorheriges Geschwisterelement              | ↑          | ArrowUp            |
-| Nächstes Geschwisterelement                | ↓          | ArrowDown          |
-| Elternelement auswählen                    | ←          | ArrowLeft          |
-| Erstes Kindelement auswählen               | →          | ArrowRight         |
-| Element im Dokument nach oben verschieben  | ⌥↑         | Alt+ArrowUp        |
-| Element im Dokument nach unten verschieben | ⌥↓         | Alt+ArrowDown      |
-| Auswahl aufheben                           | Esc        | Esc                |
+| Aktion                                     | Windows / Linux    | macOS      |
+| ------------------------------------------ | ------------------ | ---------- |
+| Die KI nach dem Element fragen             | Ctrl+K             | ⌘K         |
+| Element löschen                            | Backspace / Delete | ⌫ / Delete |
+| Vorheriges Geschwisterelement              | ArrowUp            | ↑          |
+| Nächstes Geschwisterelement                | ArrowDown          | ↓          |
+| Elternelement auswählen                    | ArrowLeft          | ←          |
+| Erstes Kindelement auswählen               | ArrowRight         | →          |
+| Element im Dokument nach oben verschieben  | Alt+ArrowUp        | ⌥↑         |
+| Element im Dokument nach unten verschieben | Alt+ArrowDown      | ⌥↓         |
+| Auswahl aufheben                           | Esc                | Esc        |
 
 Jede dieser Tasten braucht ein bereits ausgewähltes Element; ohne Auswahl bewirkt die Taste nichts.
 
 ### Im Vorschau-Frame, Text direkt bearbeiten
 
-| Aktion                                                 | macOS | Windows / Linux |
-| ------------------------------------------------------ | ----- | --------------- |
-| Bearbeitung übernehmen                                 | Esc   | Esc             |
-| Bearbeitung übernehmen (alternative Tastenkombination) | ⌘⏎    | Ctrl+⏎          |
-| Ausgewählten Bereich fett setzen                       | ⌘B    | Ctrl+B          |
-| Ausgewählten Bereich kursiv setzen                     | ⌘I    | Ctrl+I          |
+| Aktion                                                 | Windows / Linux | macOS |
+| ------------------------------------------------------ | --------------- | ----- |
+| Bearbeitung übernehmen                                 | Esc             | Esc   |
+| Bearbeitung übernehmen (alternative Tastenkombination) | Ctrl+⏎          | ⌘⏎    |
+| Ausgewählten Bereich fett setzen                       | Ctrl+B          | ⌘B    |
+| Ausgewählten Bereich kursiv setzen                     | Ctrl+I          | ⌘I    |
 
 Das Übernehmen behält, was Sie getippt haben, und setzt das Element auf den ausgewählten Zustand zurück.
 
@@ -601,147 +613,147 @@ Diese Tasten gelten, solange der Tab HWP/HWPX im Vordergrund ist und das Dokumen
 
 ### Datei
 
-| Aktion           | macOS | Windows / Linux      |
-| ---------------- | ----- | -------------------- |
-| Neues Dokument   |       | Alt+N                |
-| Öffnen…          | ⌘O    | Ctrl+O / Alt+O       |
-| Speichern        | ⌘S    | Ctrl+S / Alt+S       |
-| Speichern unter… | ⇧⌘S   | Ctrl+Shift+S / Alt+V |
-| Drucken          | ⌘P    | Ctrl+P / Alt+P       |
+| Aktion           | Windows / Linux      | macOS |
+| ---------------- | -------------------- | ----- |
+| Neues Dokument   | Alt+N                |       |
+| Öffnen…          | Ctrl+O / Alt+O       | ⌘O    |
+| Speichern        | Ctrl+S / Alt+S       | ⌘S    |
+| Speichern unter… | Ctrl+Shift+S / Alt+V | ⇧⌘S   |
+| Drucken          | Ctrl+P / Alt+P       | ⌘P    |
 
 ### Bearbeiten
 
-| Aktion                | macOS       | Windows / Linux              |
-| --------------------- | ----------- | ---------------------------- |
-| Rückgängig            | ⌃Z          | Ctrl+Z                       |
-| Wiederholen           | ⌃⇧Z         | Ctrl+Shift+Z                 |
-| Zeile löschen         | ⌃Y          | Ctrl+Y                       |
-| Ausschneiden          | ⌃X          | Ctrl+X                       |
-| Kopieren              | ⌃C          | Ctrl+C                       |
-| Einfügen              | ⌃V          | Ctrl+V                       |
-| Löschen               | ⌃E          | Ctrl+E                       |
-| Alles auswählen       | ⌃A          | Ctrl+A                       |
-| Formatierung kopieren | ⌥C          | Alt+C                        |
-| Suchen                | ⌃F / ⌃Q, F  | Ctrl+F / Ctrl+Q, F           |
-| Suchen und ersetzen   | ⌃F2 / ⌃Q, A | Ctrl+H / Ctrl+F2 / Ctrl+Q, A |
-| Weitersuchen          | ⌃L          | Ctrl+L                       |
-| Rückwärts suchen      | ⌃Q, L       | Ctrl+Q, L                    |
-| Gehe zu               | ⌥G          | Alt+G                        |
-| Dokumente vergleichen | ⌥⇧V         | Alt+Shift+V                  |
+| Aktion                | Windows / Linux              | macOS       |
+| --------------------- | ---------------------------- | ----------- |
+| Rückgängig            | Ctrl+Z                       | ⌃Z          |
+| Wiederholen           | Ctrl+Shift+Z                 | ⌃⇧Z         |
+| Zeile löschen         | Ctrl+Y                       | ⌃Y          |
+| Ausschneiden          | Ctrl+X                       | ⌃X          |
+| Kopieren              | Ctrl+C                       | ⌃C          |
+| Einfügen              | Ctrl+V                       | ⌃V          |
+| Löschen               | Ctrl+E                       | ⌃E          |
+| Alles auswählen       | Ctrl+A                       | ⌃A          |
+| Formatierung kopieren | Alt+C                        | ⌥C          |
+| Suchen                | Ctrl+F / Ctrl+Q, F           | ⌃F / ⌃Q, F  |
+| Suchen und ersetzen   | Ctrl+H / Ctrl+F2 / Ctrl+Q, A | ⌃F2 / ⌃Q, A |
+| Weitersuchen          | Ctrl+L                       | ⌃L          |
+| Rückwärts suchen      | Ctrl+Q, L                    | ⌃Q, L       |
+| Gehe zu               | Alt+G                        | ⌥G          |
+| Dokumente vergleichen | Alt+Shift+V                  | ⌥⇧V         |
 
 ### Zeichen
 
-| Aktion                    | macOS    | Windows / Linux      |
-| ------------------------- | -------- | -------------------- |
-| Fett                      | ⌃B / ⌥⇧B | Ctrl+B / Alt+Shift+B |
-| Kursiv                    | ⌃I / ⌥⇧I | Ctrl+I / Alt+Shift+I |
-| Unterstrichen             | ⌃U / ⌥⇧U | Ctrl+U / Alt+Shift+U |
-| Normale Formatierung      | ⌥⇧C      | Alt+Shift+C          |
-| Hochgestellt              | ⌥⇧P      | Alt+Shift+P          |
-| Tiefgestellt              | ⌥⇧S      | Alt+Shift+S          |
-| Zeichenformat…            | ⌥L       | Alt+L                |
-| Schriftgröße erhöhen      | ⌥⇧E / ⌃] | Alt+Shift+E / Ctrl+] |
-| Schriftgröße verringern   | ⌥⇧R / ⌃[ | Alt+Shift+R / Ctrl+[ |
-| Zeichenbreite erhöhen     | ⌥⇧K      | Alt+Shift+K          |
-| Zeichenbreite verringern  | ⌥⇧J      | Alt+Shift+J          |
-| Zeichenabstand erhöhen    | ⌥⇧W      | Alt+Shift+W          |
-| Zeichenabstand verringern | ⌥⇧N      | Alt+Shift+N          |
-| Schwarzer Text            | ⌃M, K    | Ctrl+M, K            |
-| Roter Text                | ⌃M, R    | Ctrl+M, R            |
-| Blauer Text               | ⌃M, B    | Ctrl+M, B            |
-| Pflaumenfarbener Text     | ⌃M, D    | Ctrl+M, D            |
-| Grüner Text               | ⌃M, G    | Ctrl+M, G            |
-| Gelber Text               | ⌃M, Y    | Ctrl+M, Y            |
-| Türkiser Text             | ⌃M, C    | Ctrl+M, C            |
-| Weißer Text               | ⌃M, W    | Ctrl+M, W            |
+| Aktion                    | Windows / Linux      | macOS    |
+| ------------------------- | -------------------- | -------- |
+| Fett                      | Ctrl+B / Alt+Shift+B | ⌃B / ⌥⇧B |
+| Kursiv                    | Ctrl+I / Alt+Shift+I | ⌃I / ⌥⇧I |
+| Unterstrichen             | Ctrl+U / Alt+Shift+U | ⌃U / ⌥⇧U |
+| Normale Formatierung      | Alt+Shift+C          | ⌥⇧C      |
+| Hochgestellt              | Alt+Shift+P          | ⌥⇧P      |
+| Tiefgestellt              | Alt+Shift+S          | ⌥⇧S      |
+| Zeichenformat…            | Alt+L                | ⌥L       |
+| Schriftgröße erhöhen      | Alt+Shift+E / Ctrl+] | ⌥⇧E / ⌃] |
+| Schriftgröße verringern   | Alt+Shift+R / Ctrl+[ | ⌥⇧R / ⌃[ |
+| Zeichenbreite erhöhen     | Alt+Shift+K          | ⌥⇧K      |
+| Zeichenbreite verringern  | Alt+Shift+J          | ⌥⇧J      |
+| Zeichenabstand erhöhen    | Alt+Shift+W          | ⌥⇧W      |
+| Zeichenabstand verringern | Alt+Shift+N          | ⌥⇧N      |
+| Schwarzer Text            | Ctrl+M, K            | ⌃M, K    |
+| Roter Text                | Ctrl+M, R            | ⌃M, R    |
+| Blauer Text               | Ctrl+M, B            | ⌃M, B    |
+| Pflaumenfarbener Text     | Ctrl+M, D            | ⌃M, D    |
+| Grüner Text               | Ctrl+M, G            | ⌃M, G    |
+| Gelber Text               | Ctrl+M, Y            | ⌃M, Y    |
+| Türkiser Text             | Ctrl+M, C            | ⌃M, C    |
+| Weißer Text               | Ctrl+M, W            | ⌃M, W    |
 
 ### Absatz
 
-| Aktion                                  | macOS   | Windows / Linux |
-| --------------------------------------- | ------- | --------------- |
-| Linksbündig                             | ⌃⇧L     | Ctrl+Shift+L    |
-| Zentriert                               | ⌃⇧C     | Ctrl+Shift+C    |
-| Rechtsbündig                            | ⌃⇧R     | Ctrl+Shift+R    |
-| Blocksatz                               | ⌃⇧M     | Ctrl+Shift+M    |
-| Verteilt                                | ⌃⇧T     | Ctrl+Shift+T    |
-| Zeilenabstand erhöhen                   | ⌥⇧Z     | Alt+Shift+Z     |
-| Zeilenabstand verringern                | ⌥⇧A     | Alt+Shift+A     |
-| Absatzformat…                           | ⌥T      | Alt+T           |
-| Formatvorlage…                          | F6      | F6              |
-| Erste bis zehnte Formatvorlage anwenden | ⌃1 … ⌃0 | Ctrl+1 … Ctrl+0 |
-| Absatznummernformat                     | ⌃K, N   | Ctrl+K, N       |
+| Aktion                                  | Windows / Linux | macOS   |
+| --------------------------------------- | --------------- | ------- |
+| Linksbündig                             | Ctrl+Shift+L    | ⌃⇧L     |
+| Zentriert                               | Ctrl+Shift+C    | ⌃⇧C     |
+| Rechtsbündig                            | Ctrl+Shift+R    | ⌃⇧R     |
+| Blocksatz                               | Ctrl+Shift+M    | ⌃⇧M     |
+| Verteilt                                | Ctrl+Shift+T    | ⌃⇧T     |
+| Zeilenabstand erhöhen                   | Alt+Shift+Z     | ⌥⇧Z     |
+| Zeilenabstand verringern                | Alt+Shift+A     | ⌥⇧A     |
+| Absatzformat…                           | Alt+T           | ⌥T      |
+| Formatvorlage…                          | F6              | F6      |
+| Erste bis zehnte Formatvorlage anwenden | Ctrl+1 … Ctrl+0 | ⌃1 … ⌃0 |
+| Absatznummernformat                     | Ctrl+K, N       | ⌃K, N   |
 
 ### Einfügen
 
-| Aktion                                     | macOS       | Windows / Linux    |
-| ------------------------------------------ | ----------- | ------------------ |
-| Tabelle einfügen                           | ⌃N, T       | Ctrl+N, T          |
-| Fußnote                                    | ⌃N, N       | Ctrl+N, N          |
-| Endnote                                    | ⌃N, E       | Ctrl+N, E          |
-| Kopfzeile                                  | ⌃N, H       | Ctrl+N, H          |
-| Seitenzahl                                 | ⌃N, P       | Ctrl+N, P          |
-| Bild einfügen                              | ⌃N, I       | Ctrl+N, I          |
-| Textfeld                                   | ⌃N, B       | Ctrl+N, B          |
-| Formel                                     | ⌃N, M       | Ctrl+N, M          |
-| Beschriftung einfügen                      | ⌃N, C       | Ctrl+N, C          |
-| Hyperlink                                  | ⌃K, H       | Ctrl+K, H          |
-| Lesezeichen                                | ⌃K, B       | Ctrl+K, B          |
-| Feld einfügen                              | ⌃K, E       | Ctrl+K, E          |
-| Datum/Uhrzeit als Text                     | ⌃K, D       | Ctrl+K, D          |
-| Objekt, Feld oder Tabelle/Zelle bearbeiten | ⌃N, K       | Ctrl+N, K          |
-| Sonderzeichen                              | ⌃F10 / ⌥F10 | Ctrl+F10 / Alt+F10 |
+| Aktion                                     | Windows / Linux    | macOS       |
+| ------------------------------------------ | ------------------ | ----------- |
+| Tabelle einfügen                           | Ctrl+N, T          | ⌃N, T       |
+| Fußnote                                    | Ctrl+N, N          | ⌃N, N       |
+| Endnote                                    | Ctrl+N, E          | ⌃N, E       |
+| Kopfzeile                                  | Ctrl+N, H          | ⌃N, H       |
+| Seitenzahl                                 | Ctrl+N, P          | ⌃N, P       |
+| Bild einfügen                              | Ctrl+N, I          | ⌃N, I       |
+| Textfeld                                   | Ctrl+N, B          | ⌃N, B       |
+| Formel                                     | Ctrl+N, M          | ⌃N, M       |
+| Beschriftung einfügen                      | Ctrl+N, C          | ⌃N, C       |
+| Hyperlink                                  | Ctrl+K, H          | ⌃K, H       |
+| Lesezeichen                                | Ctrl+K, B          | ⌃K, B       |
+| Feld einfügen                              | Ctrl+K, E          | ⌃K, E       |
+| Datum/Uhrzeit als Text                     | Ctrl+K, D          | ⌃K, D       |
+| Objekt, Feld oder Tabelle/Zelle bearbeiten | Ctrl+N, K          | ⌃N, K       |
+| Sonderzeichen                              | Ctrl+F10 / Alt+F10 | ⌃F10 / ⌥F10 |
 
 ### Tabelle
 
-| Aktion                  | macOS        | Windows / Linux        |
-| ----------------------- | ------------ | ---------------------- |
-| Zeile/Spalte hinzufügen | ⌥⏎ / ⌥Insert | Alt+Enter / Alt+Insert |
-| Zeile/Spalte löschen    | ⌥⌫           | Alt+Delete             |
-| Zelle teilen            | F5 → S       | F5 → S                 |
-| Zellen verbinden        | F5 → M       | F5 → M                 |
-| Blocksumme              | F5 → ⇧⌘S     | F5 → Ctrl+Shift+S      |
-| Blockmittelwert         | F5 → ⌃⇧A     | F5 → Ctrl+Shift+A      |
-| Blockprodukt            | F5 → ⌃⇧P     | F5 → Ctrl+Shift+P      |
-| Tabelle teilen          | ⌃N, A        | Ctrl+N, A              |
-| Tabelle verbinden       | ⌃N, Z        | Ctrl+N, Z              |
-| Berechnungsformel       | ⌃N, F        | Ctrl+N, F              |
+| Aktion                  | Windows / Linux        | macOS        |
+| ----------------------- | ---------------------- | ------------ |
+| Zeile/Spalte hinzufügen | Alt+Enter / Alt+Insert | ⌥⏎ / ⌥Insert |
+| Zeile/Spalte löschen    | Alt+Delete             | ⌥⌫           |
+| Zelle teilen            | F5 → S                 | F5 → S       |
+| Zellen verbinden        | F5 → M                 | F5 → M       |
+| Blocksumme              | F5 → Ctrl+Shift+S      | F5 → ⇧⌘S     |
+| Blockmittelwert         | F5 → Ctrl+Shift+A      | F5 → ⌃⇧A     |
+| Blockprodukt            | F5 → Ctrl+Shift+P      | F5 → ⌃⇧P     |
+| Tabelle teilen          | Ctrl+N, A              | ⌃N, A        |
+| Tabelle verbinden       | Ctrl+N, Z              | ⌃N, Z        |
+| Berechnungsformel       | Ctrl+N, F              | ⌃N, F        |
 
 ### Tabellenberechnung
 
 Sie gelten nur, wenn der Cursor in einer leeren Tabellenzelle steht. Getrennte Tasten rechnen mit den Zellen links bzw. den Zellen darüber.
 
-| Aktion           | macOS | Windows / Linux |
-| ---------------- | ----- | --------------- |
-| Summe links      | ⇧⌘H   | Ctrl+Shift+H    |
-| Summe oben       | ⌃⇧V   | Ctrl+Shift+V    |
-| Mittelwert links | ⌃⇧J   | Ctrl+Shift+J    |
-| Mittelwert oben  | ⌃⇧B   | Ctrl+Shift+B    |
-| Produkt links    | ⌃⇧K   | Ctrl+Shift+K    |
-| Produkt oben     | ⌃⇧N   | Ctrl+Shift+N    |
+| Aktion           | Windows / Linux | macOS |
+| ---------------- | --------------- | ----- |
+| Summe links      | Ctrl+Shift+H    | ⇧⌘H   |
+| Summe oben       | Ctrl+Shift+V    | ⌃⇧V   |
+| Mittelwert links | Ctrl+Shift+J    | ⌃⇧J   |
+| Mittelwert oben  | Ctrl+Shift+B    | ⌃⇧B   |
+| Produkt links    | Ctrl+Shift+K    | ⌃⇧K   |
+| Produkt oben     | Ctrl+Shift+N    | ⌃⇧N   |
 
 ### Seite
 
-| Aktion                     | macOS | Windows / Linux  |
-| -------------------------- | ----- | ---------------- |
-| Seite einrichten           | F7    | F7               |
-| Seitenumbruch              | ⌃⏎    | Ctrl+Enter       |
-| Spaltenumbruch             | ⌃⇧⏎   | Ctrl+Shift+Enter |
-| Spalteneinstellungsumbruch | ⌃⌥⏎   | Ctrl+Alt+Enter   |
-| Bereichseinstellungen      | ⌃N, G | Ctrl+N, G        |
-| Seite ausblenden           | ⌃N, S | Ctrl+N, S        |
+| Aktion                     | Windows / Linux  | macOS |
+| -------------------------- | ---------------- | ----- |
+| Seite einrichten           | F7               | F7    |
+| Seitenumbruch              | Ctrl+Enter       | ⌃⏎    |
+| Spaltenumbruch             | Ctrl+Shift+Enter | ⌃⇧⏎   |
+| Spalteneinstellungsumbruch | Ctrl+Alt+Enter   | ⌃⌥⏎   |
+| Bereichseinstellungen      | Ctrl+N, G        | ⌃N, G |
+| Seite ausblenden           | Ctrl+N, S        | ⌃N, S |
 
 ### Ansicht
 
-| Aktion                                    | macOS | Windows / Linux |
-| ----------------------------------------- | ----- | --------------- |
-| Vergrößern                                | ⌃=    | Ctrl+=          |
-| Verkleinern                               | ⌃-    | Ctrl+-          |
-| An Seite anpassen                         | ⌃G, P | Ctrl+G, P       |
-| An Breite anpassen                        | ⌃G, W | Ctrl+G, W       |
-| Auf 100 % zoomen                          | ⌃G, Q | Ctrl+G, Q       |
-| Werkzeugkasten ein- oder ausklappen       | ⌃F1   | Ctrl+F1         |
-| Absatzmarken ein- oder ausblenden         | ⌃G, T | Ctrl+G, T       |
-| Steuerzeichen ein- oder ausblenden        | ⌃G, C | Ctrl+G, C       |
-| Zum Tab „Start“ (außerhalb einer Tabelle) | ⇧⌘H   | Ctrl+Shift+H    |
+| Aktion                                    | Windows / Linux | macOS |
+| ----------------------------------------- | --------------- | ----- |
+| Vergrößern                                | Ctrl+=          | ⌃=    |
+| Verkleinern                               | Ctrl+-          | ⌃-    |
+| An Seite anpassen                         | Ctrl+G, P       | ⌃G, P |
+| An Breite anpassen                        | Ctrl+G, W       | ⌃G, W |
+| Auf 100 % zoomen                          | Ctrl+G, Q       | ⌃G, Q |
+| Werkzeugkasten ein- oder ausklappen       | Ctrl+F1         | ⌃F1   |
+| Absatzmarken ein- oder ausblenden         | Ctrl+G, T       | ⌃G, T |
+| Steuerzeichen ein- oder ausblenden        | Ctrl+G, C       | ⌃G, C |
+| Zum Tab „Start“ (außerhalb einer Tabelle) | Ctrl+Shift+H    | ⇧⌘H   |
 
 Eine Taste wie `Ctrl+N,T` bedeutet: Ctrl+N drücken, loslassen und dann T drücken. `F5 → S` heißt: mit F5 einen Zellblock auswählen und dann S drücken. `Ctrl+1 … Ctrl+0` stehen für die erste bis zehnte Formatvorlage des Dokuments; `Ctrl+Alt+1 … Ctrl+Alt+0` wenden dieselben Formatvorlagen an. Ist ein Zellblock ausgewählt, ist `Ctrl+Shift+S` (unter macOS `⇧⌘S`) die Blocksumme; sonst speichert diese Taste unter einem neuen Namen.

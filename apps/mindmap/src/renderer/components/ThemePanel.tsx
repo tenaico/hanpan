@@ -29,6 +29,7 @@ import {
 } from '@genoffice/xmind-engine'
 import { type StringKey, useI18n } from '../i18n/locale'
 import { IconClose } from './icons'
+import { useEscapeToClose } from './dialogs'
 
 export interface ThemePanelProps {
   /** the theme the open sheet is drawn with */
@@ -66,6 +67,7 @@ export const VARIANT_NAME: Readonly<Record<ThemeVariantId, StringKey>> = {
 
 export function ThemePanel(p: ThemePanelProps) {
   const { t } = useI18n()
+  useEscapeToClose(p.onClose)
   const parts = parseThemeId(p.themeId)!
   const pick = (change: Partial<ThemeParts>): void => p.onPick(themeId({ ...parts, ...change }))
   return (

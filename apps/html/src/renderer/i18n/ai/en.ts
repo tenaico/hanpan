@@ -147,10 +147,10 @@ export const en = {
   aiChipRecolor: 'Restyle colors',
   aiChipUnify: 'Unify styling',
   aiAskCancel: 'Cancel',
-  aiRestyleBtn: 'Restyle',
+  aiRestyleBtn: 'AI Restyle',
   aiRestylePrompt:
     'Refine the whole page: read every <style> first, then unify spacing, alignment, the type scale, colors and responsive breakpoints in one apply_ops batch. Do not change any text or add/remove elements; if the page structure has to change, propose it with plan_page first.',
-  aiThemeBtn: 'Theme',
+  aiThemeBtn: 'AI Theme',
   aiThemePrompt:
     'Give the whole page a "{direction}" look: propose the new style with plan_page first (keep the existing sections); after confirmation update only the --brief-* variables and related CSS rules, leaving content and section order untouched.',
   aiThemeMinimal: 'Minimal',

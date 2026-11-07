@@ -90,7 +90,9 @@ body.overlay-title-bar .tab-bar-drag-spacer {
   padding: 0 8px 6px 12px;
   /* Chrome tabs shrink under pressure but never grow past 240px */
   flex: 0 1 240px;
-  min-width: 104px;
+  /* 0.17 리뷰 v2 #11: wide enough to tell tabs apart (about six characters);
+   * past that the strip scrolls and the "all tabs" list takes over */
+  min-width: 136px;
   border-radius: 10px 10px 0 0;
   cursor: pointer;
   color: var(--tabstrip-text);
@@ -257,9 +259,30 @@ body.overlay-title-bar .tab-bar-drag-spacer {
 
 .tab-title {
   flex: 1 1 auto;
+  display: flex;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* the name ellipsizes; its number (and the extension after it) always shows */
+.tab-title-base {
+  min-width: 1.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* after the number: the first to give way in a narrow tab */
+.tab-title-ext {
+  flex-shrink: 100;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tab-title-tail {
+  flex: none;
+  white-space: pre;
 }
 
 .tab-close {
@@ -282,6 +305,29 @@ body.overlay-title-bar .tab-bar-drag-spacer {
 
 .tab-close:hover {
   background: rgba(0, 0, 0, 0.1);
+}
+
+/* 저장 안 된 탭: 닫기 자리에 점. 탭에 마우스를 올리거나 키보드로 닫기에 가면 ×로 돌아온다 */
+.tab-dirty-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+.tab-item.dirty .tab-close-x {
+  display: none;
+}
+
+.tab-item.dirty:hover .tab-close-x,
+.tab-item.dirty .tab-close:focus-visible .tab-close-x {
+  display: inline;
+}
+
+.tab-item.dirty:hover .tab-dirty-dot,
+.tab-item.dirty .tab-close:focus-visible .tab-dirty-dot {
+  display: none;
 }
 
 /* "+" new tab button: lives inside the strip so it hugs the last tab, Chrome-style */
@@ -507,4 +553,25 @@ body.overlay-title-bar .tab-bar-drag-spacer {
 .tab-split-hint.for-stack {
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+/* the strip is as wide as its tabs; "+" follows it outside the scroll area and
+ * the rest of the bar stays a drag region (0.17 리뷰 v2 shell #11) */
+.tab-strip {
+  flex: 0 1 auto;
+}
+
+.tab-strip-rest {
+  flex: 1 1 0;
+  min-width: 8px;
+}
+
+/* keyboard focus on a tab (role=tab, #31): a ring on the plate, not the browser default */
+.tab-item:focus {
+  outline: none;
+}
+
+.tab-item:focus-visible .tab-plate {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }

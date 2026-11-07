@@ -61,6 +61,9 @@ export function addCommentToRange(editor: Editor, from: number, to: number, id: 
     ids.add(id)
     tr.addMark(start, end, markType.create({ ids: [...ids].sort().join(' ') }))
   })
+  // a range with no text in it (a picture, an empty cell) would leave a thread
+  // with no anchor anywhere in the body
+  if (tr.steps.length === 0) return false
   editor.view.dispatch(tr)
   return true
 }

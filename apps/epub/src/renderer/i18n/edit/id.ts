@@ -6,6 +6,7 @@ export const id = {
   editBold: 'Tebal',
   editItalic: 'Miring',
   editReplace: 'Ganti',
+  editFindReplaceTitle: 'Cari dan ganti',
   editReplaceWith: 'Ganti dengan',
   editReplaceOne: 'Ganti',
   editReplaceAll: 'Ganti semua',

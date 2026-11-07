@@ -1,6 +1,7 @@
 import { BaselineOffset, BooleanNumber, type IStyleData, WrapStrategy } from '@univerjs/core'
 
 import { isAccountingPattern } from './numfmt-dialog'
+import { newWorkbookDefaults } from '@genoffice/xlsx-gateway/gateway/new-workbook-lang'
 
 /// One OOXML indent step rendered as left cell padding, in px — roughly the
 /// width of three spaces at the default 11pt font.
@@ -76,6 +77,20 @@ function rotationOf(style: IStyleData): number | null {
   if (typeof tr.a !== 'number' || !Number.isFinite(tr.a) || tr.a === 0) return null
   const angle = Math.max(-90, Math.min(90, Math.round(tr.a)))
   return angle >= 0 ? angle : 90 - angle
+}
+
+/// The font a new Korean workbook writes (0.17; new-workbook-lang.ts has every language).
+export const DEFAULT_FONT_FAMILY = '맑은 고딕'
+
+/// What the font box shows: the cell's own font, else the workbook's Normal font (a cell
+/// with no font of its own is drawn in it), else the font a new workbook gets in the UI
+/// language (new-workbook-lang.ts; 맑은 고딕 for Korean, which is also the default).
+export function echoFontFamily(
+  format: SelectionFormat | null,
+  normalFontFamily: string | undefined,
+  lang = 'ko',
+): string {
+  return format?.fontFamily ?? normalFontFamily ?? newWorkbookDefaults(lang).font.name
 }
 
 export function toSelectionFormat(

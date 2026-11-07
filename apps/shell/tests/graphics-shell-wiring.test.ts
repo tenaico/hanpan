@@ -7,6 +7,7 @@ import { OPEN_EXTS } from '../../graphics/src/shared/kinds'
 import { LAUNCHABLE_EXTS } from '../src/main/launch-paths'
 import { TREE_FILE_EXTENSIONS } from '../src/main/folder-tree'
 import { OPENABLE_DOC_RE } from '@genoffice/electron-utils/drop-open'
+import { HOME_FILTER_GROUPS } from '../src/shared/home-filter-groups'
 
 /**
  * The AI Photo and AI Illustration tabs (decision 0093) are hosted like the
@@ -117,6 +118,16 @@ describe('menus', () => {
     expect(menu).toContain("kind === 'photo' ? newPhotoTab() : newIllustTab()")
   })
 
+  it('the graphics menu (and so ☰) prints through the page, with Ctrl+P shown', () => {
+    const menu = fnSource('buildGraphicsMenu')
+    expect(menu).toMatch(
+      /label: tm\('menuPrint'\),\s*accelerator: 'CmdOrCtrl\+P',[\s\S]*?sendGraphicsMenuCommand\(tab\.webContents, 'print'\)/,
+    )
+    expect(main).toContain(
+      "printGraphics: (contents) => sendGraphicsMenuCommand(contents, 'print')",
+    )
+  })
+
   it('the new-tab menu and File > New list both, with no Korean-documents switch', () => {
     expect(main.split("label: tm('menuNewPhoto')").length - 1).toBe(2)
     expect(main.split("label: tm('menuNewIllust')").length - 1).toBe(2)
@@ -160,8 +171,9 @@ describe('Home', () => {
   it('lists the formats, icons and filters', () => {
     expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('.psd')
     expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('.svg')
-    expect(home).toContain("{ key: 'photo', label: 'filterPhoto' },")
-    expect(home).toContain("{ key: 'illust', label: 'filterIllust' },")
+    // Hanpan's Home lists pictures under the "mind maps & images" tab (0.17 #12)
+    expect(home).toContain("{ key: 'others', label: 'hpFilterOthers' },")
+    expect(HOME_FILTER_GROUPS.others).toEqual(expect.arrayContaining(['png', 'psd', 'svg']))
     for (const lang of LANGS) {
       for (const key of [
         'newPhoto',

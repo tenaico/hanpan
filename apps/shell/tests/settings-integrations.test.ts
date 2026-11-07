@@ -192,6 +192,24 @@ describe('Settings → Integrations', () => {
     )
   })
 
+  it('keeps the coding-assistant setup in a closed developer section with tidy paths (0.17 review v2 #9)', async () => {
+    const winDir = 'C:\\Users\\Jane\\AppData\\Local\\Programs\\Hanpan\\resources\\cli'
+    await openIntegrations({
+      status: async () => {
+        const s = baseStatus()
+        return { ...s, cli: { ...s.cli, status: 'missing', launcherDir: winDir } }
+      },
+      copyText: async () => {},
+    })
+    const dev = host.querySelector<HTMLDetailsElement>('details[data-intg-dev]')
+    expect(dev).not.toBeNull()
+    expect(dev!.open).toBe(false)
+    expect(dev!.querySelector('.set-intg-mcp')).not.toBeNull()
+    const code = [...host.querySelectorAll('.set-intg-mcp code')].map((c) => c.textContent ?? '')
+    expect(code.join('\n')).not.toContain('\\..\\')
+    expect(code[0]).toContain('C:\\Users\\Jane\\AppData\\Local\\Programs\\Hanpan\\Hanpan.exe')
+  })
+
   it('writes only after the path was shown and confirmed, then refreshes the row', async () => {
     const status = baseStatus()
     const install = vi.fn(async (target: { agentId?: string; dir?: string }) => {
@@ -262,5 +280,25 @@ describe('Settings → Integrations', () => {
     )
     expect(buttonWithText('Integrations')!.querySelector('.set-nav-dot')).toBeNull()
     expect(onDue).toHaveBeenLastCalledWith(false)
+  })
+})
+
+describe('Settings → General: the first-run guide again (0.17 review v2 #7)', () => {
+  it('closes Settings and asks the frame to show the guide', async () => {
+    const onClose = vi.fn()
+    const shown = vi.fn()
+    window.addEventListener('hanpan:show-onboarding', shown)
+    window.aiOfficeIntegrations = { status: async () => null } as unknown as IntegrationsApi
+    await act(async () => {
+      root.render(
+        createElement(LocaleProvider, { initial: 'en' }, createElement(SettingsModal, { onClose })),
+      )
+      await Promise.resolve()
+    })
+    await click(buttonWithText('General'))
+    await click(host.querySelector('[data-onboarding-again]'))
+    expect(onClose).toHaveBeenCalled()
+    expect(shown).toHaveBeenCalled()
+    window.removeEventListener('hanpan:show-onboarding', shown)
   })
 })

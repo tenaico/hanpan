@@ -10,15 +10,15 @@ A window for everyday PDF tasks, starting from the task. The result is always sa
 
 ## The tools
 
-| Group             | Tools                                                                                     |
-| ----------------- | ----------------------------------------------------------------------------------------- |
-| Organize pages    | Merge PDF, Split PDF, Extract Pages as PDF, Reverse order, Rotate all, Remove blank pages |
-| Prepare for print | Pad for two-sided printing, Merge pages, Page size, Split pages                           |
-| Decorate          | Add a background                                                                          |
-| Clean up          | Remove annotations                                                                        |
-| Convert           | Images to PDF, Save as text                                                               |
-| Size and security | Make smaller, Add password, Remove password, Repair file                                  |
-| In the PDF editor | Watermark & header/footer, Crop pages, Export images, PDF Converter, Edit, sign, redact   |
+| Group             | Tools                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| Organize pages    | Merge PDF, Split into files, Extract Pages as PDF, Reverse order, Rotate all, Remove blank pages |
+| Prepare for print | Pad for two-sided printing, Merge pages, Page size, Split pages                                  |
+| Decorate          | Add a background                                                                                 |
+| Clean up          | Remove annotations                                                                               |
+| Convert           | Images to PDF, Save as text                                                                      |
+| Size and security | Make smaller, Add password, Remove password, Repair file                                         |
+| In the PDF editor | Watermark & header/footer, Crop pages, Export images, PDF Converter, Edit, sign, redact          |
 
 The cards in **In the PDF editor** open the chosen PDF in an editor tab. Pick the command there in the ribbon.
 

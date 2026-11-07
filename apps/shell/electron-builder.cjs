@@ -114,6 +114,8 @@ function compileVisionOcr({ universalOnly } = { universalOnly: false }) {
 
 const WIN_OCR_HELPER = '../../packages/pdf2docx/ocr-helper/win-ocr.exe'
 const WIN_QUICKLOOK_HELPER = 'src/main/quick-look/win-quicklook.exe'
+// 공유하기: opens the Windows share sheet (decision 0094)
+const WIN_SHARE_HELPER = 'src/main/share/win-share.exe'
 
 function ensurePlatformHelpers() {
   if (process.platform === 'darwin' && !existsSync(join(__dirname, VISION_OCR_HELPER))) {
@@ -137,6 +139,16 @@ function ensurePlatformHelpers() {
       })
     } catch (err) {
       throw new Error(`win-quicklook helper compile failed: ${err}`, { cause: err })
+    }
+  }
+  if (process.platform === 'win32') {
+    // build-win.mjs is a no-op when the exe is newer than win-share.cs
+    try {
+      execFileSync(process.execPath, [join(__dirname, 'src/main/share/build-win.mjs')], {
+        stdio: 'inherit',
+      })
+    } catch (err) {
+      throw new Error(`win-share helper compile failed: ${err}`, { cause: err })
     }
   }
 }
@@ -633,6 +645,11 @@ const config = {
     {
       from: 'src/main/quick-look/win-quicklook.exe',
       to: 'quicklook/win-quicklook.exe',
+    },
+    // the Windows share sheet helper (only built on Windows; elsewhere the source is absent)
+    {
+      from: WIN_SHARE_HELPER,
+      to: 'share/win-share.exe',
     },
     // genoffice command line: runs on the app binary with ELECTRON_RUN_AS_NODE,
     // so the RunAsNode fuse must stay enabled.

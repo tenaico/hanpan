@@ -5,9 +5,10 @@
 export const PERCENT_STYLE = '0%'
 export const COMMA_STYLE = '_(* #,##0.00_);_(* \\(#,##0.00\\);_(* "-"??_);_(@_)'
 
-export function accountingStyle(symbol: string): string {
+export function accountingStyle(symbol: string, decimals = 2): string {
   const s = `"${symbol}"`
-  return `_(${s}* #,##0.00_);_(${s}* \\(#,##0.00\\);_(${s}* "-"??_);_(@_)`
+  const n = `#,##0${decimals > 0 ? `.${'0'.repeat(decimals)}` : ''}`
+  return `_(${s}* ${n}_);_(${s}* \\(${n}\\);_(${s}* "-"${'?'.repeat(decimals)}_);_(@_)`
 }
 
 export function currencyStyle(symbol: string): string {
@@ -16,6 +17,43 @@ export function currencyStyle(symbol: string): string {
 }
 
 export const RIBBON_CURRENCY_SYMBOL = '$'
+
+export interface RibbonCurrency {
+  readonly symbol: string
+  /** decimals the currency is normally shown with (none for won, dong, yen, rupiah) */
+  readonly decimals: number
+}
+
+/**
+ * The currency of the Home tab's accounting button in each UI language (Hanpan 0.17 #9).
+ * Excel's button follows the system's currency; the UI language stands in for it here.
+ * Languages spoken across many currencies (English, Arabic) keep the dollar.
+ */
+const RIBBON_CURRENCY_BY_LANG: Readonly<Record<string, RibbonCurrency>> = {
+  ko: { symbol: '₩', decimals: 0 },
+  vi: { symbol: '₫', decimals: 0 },
+  ja: { symbol: '¥', decimals: 0 },
+  id: { symbol: 'Rp', decimals: 0 },
+  zh: { symbol: '¥', decimals: 2 },
+  'zh-TW': { symbol: 'NT$', decimals: 2 },
+  fr: { symbol: '€', decimals: 2 },
+  de: { symbol: '€', decimals: 2 },
+  es: { symbol: '€', decimals: 2 },
+  it: { symbol: '€', decimals: 2 },
+  nl: { symbol: '€', decimals: 2 },
+  pt: { symbol: 'R$', decimals: 2 },
+  ru: { symbol: '₽', decimals: 2 },
+  pl: { symbol: 'zł', decimals: 2 },
+  cs: { symbol: 'Kč', decimals: 2 },
+  th: { symbol: '฿', decimals: 2 },
+  ms: { symbol: 'RM', decimals: 2 },
+  he: { symbol: '₪', decimals: 2 },
+  hi: { symbol: '₹', decimals: 2 },
+}
+
+export function ribbonCurrency(lang: string): RibbonCurrency {
+  return RIBBON_CURRENCY_BY_LANG[lang] ?? { symbol: RIBBON_CURRENCY_SYMBOL, decimals: 2 }
+}
 
 export const NUMBER_FORMAT_SHORTCUTS: Readonly<Record<string, string>> = {
   Backquote: 'General',

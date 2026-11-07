@@ -72,6 +72,7 @@ import {
 import { rendererUrl, safeExternalUrl } from '@genoffice/electron-utils'
 import type { DocumentTabKind, OpenDocumentTab, TabKind, TabSummary } from '../shared/tabs-api'
 import { isSettledRect, tabStripHeight } from '../shared/tab-drag-geometry'
+import { rendererReportedDirty } from './tab-dirty-mirror'
 import type {
   SplitDropIntent,
   SplitOrientation,
@@ -218,7 +219,8 @@ export class TabManager {
   private readonly bleedWcIds = new Set<number>()
   /** tabs mid unsaved-changes prompt, so a second close click doesn't stack dialogs */
   private readonly closingIds = new Set<string>()
-  private closedListener: ((tab: { kind: TabKind; filePath: string }) => void) | null = null
+  private closedListener:
+    ((tab: { kind: TabKind; filePath: string; index?: number }) => void) | null = null
   /** views whose HTML-fullscreen listeners are installed: a view that leaves
    *  for a detached window and docks back must not get a second pair */
   private readonly fullScreenTracked = new WeakSet<WebContentsView>()
@@ -468,7 +470,64 @@ export class TabManager {
       closable: t.id !== HOME_ID,
       active: t.id === this.activeId,
       ...(t.filePath ? { filePath: t.filePath } : {}),
+      ...(this.tabShowsDirty(t) ? { dirty: true } : {}),
     }))
+  }
+
+  /** dirty tab ids at the last refreshDirty, so only a real change re-sends the list */
+  private lastDirtyKey = ''
+
+  /**
+   * Recompute the tab strip's unsaved dots. True when the set of dirty tabs
+   * changed since the last call (the caller then re-sends the tab list).
+   */
+  refreshDirty(): boolean {
+    const key = this.tabs
+      .filter((t) => this.tabShowsDirty(t))
+      .map((t) => t.id)
+      .join(',')
+    if (key === this.lastDirtyKey) return false
+    this.lastDirtyKey = key
+    return true
+  }
+
+  /**
+   * Unsaved-changes state for the tab strip, answered synchronously: docs reads
+   * the value its renderer last pushed (the close guard still asks it directly).
+   */
+  private tabShowsDirty(tab: TabRecord): boolean {
+    const wc = tab.view?.webContents
+    if (!wc || wc.isDestroyed()) return false
+    try {
+      switch (tab.kind) {
+        case 'sheets':
+          return sheetsPendingEditCount(wc.id) > 0
+        case 'pdf':
+          return pdfIsDirty(wc.id) === true
+        case 'markdown':
+          return markdownIsDirty(wc.id) === true
+        case 'html':
+          return htmlIsDirty(wc.id) === true
+        case 'hwp':
+          return hwpIsDirty(wc.id) === true
+        case 'slides':
+          return slidesIsDirty(wc.id) === true
+        case 'docs':
+          return rendererReportedDirty(wc.id)
+        case 'mindmap':
+          return mindmapIsDirty(wc.id) === true
+        case 'epub':
+          return epubIsDirty(wc.id) === true
+        case 'photo':
+        case 'illust':
+          return graphicsIsDirty(wc.id) === true
+        default:
+          return false
+      }
+    } catch {
+      // a family that has not finished wiring its view yet counts as clean
+      return false
+    }
   }
 
   /**
@@ -1523,6 +1582,23 @@ export class TabManager {
     this.onChanged()
   }
 
+  /**
+   * The UI language changed: a tab that still has no file and still carries the untitled name
+   * of the language it left (`previous`) takes the name of the new one. Saved files and
+   * untitled documents that named themselves keep their names.
+   */
+  retitleUntitled(previous: (kind: TabKind) => string): void {
+    let changed = false
+    for (const tab of this.tabs) {
+      if (tab.kind === 'home' || tab.filePath || tab.title !== previous(tab.kind)) continue
+      const next = this.untitled(tab.kind, tab.title)
+      if (next === tab.title) continue
+      tab.title = next
+      changed = true
+    }
+    if (changed) this.onChanged()
+  }
+
   /** an untitled document named itself before its first save (html: from the first AI request) */
   setTabTitleFor(webContentsId: number, title: string): void {
     const tab = this.tabs.find((t) => t.view?.webContents.id === webContentsId)
@@ -1747,7 +1823,7 @@ export class TabManager {
     if (this.htmlFullScreenId === id) this.htmlFullScreenId = null
     const [removed] = this.tabs.splice(idx, 1)
     if (removed.filePath && !removed.present)
-      this.closedListener?.({ kind: removed.kind, filePath: removed.filePath })
+      this.closedListener?.({ kind: removed.kind, filePath: removed.filePath, index: idx })
     const split = this.split
     const survivor = split ? splitSurvivor(split, id) : null
     if (survivor !== null) {
@@ -1790,7 +1866,9 @@ export class TabManager {
   }
 
   /** told when a tab with a file is closed (not detached), so it can be reopened */
-  setClosedListener(listener: ((tab: { kind: TabKind; filePath: string }) => void) | null): void {
+  setClosedListener(
+    listener: ((tab: { kind: TabKind; filePath: string; index?: number }) => void) | null,
+  ): void {
     this.closedListener = listener
   }
 

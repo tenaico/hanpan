@@ -30,6 +30,7 @@ import {
   removeVisualAdd,
   updateVisualAdd,
 } from './edit-journal'
+import { chartAnchorColumn, newChartTitle } from './chart-placement'
 import { t } from './i18n/locale'
 import { filePivotAtSelection, type PivotActionContext } from './pivot-actions'
 import {
@@ -224,17 +225,28 @@ export async function handleInsertChart(
   // by-row orientation: series names come from the first column, categories
   // from the first row
   const dataStartColumn = startColumn + (parsed.hasHeaderRow && parsed.byRow ? 1 : 0)
+  // 차트가 덮을 행 오른쪽에 데이터가 있으면 그 너머 빈 열에 둔다
+  const sheetModel = worksheet.getSheet()
+  const fromColumn = chartAnchorColumn({
+    startRow,
+    endColumn,
+    rows: 16,
+    isEmpty: (row, column) => {
+      const cell = sheetModel.getCellRaw(row, column)
+      return cell === null || cell === undefined || ((cell.v ?? '') === '' && !cell.p && !cell.f)
+    },
+  })
   const visual: WorkbookVisualObject = {
     id: `added-chart-${Date.now().toString(36)}-${state.editJournal.visualAdds.length + 1}`,
     sheetId,
     kind: 'chart',
     anchor: {
       fromRow: startRow,
-      fromColumn: endColumn + 2,
+      fromColumn,
       fromRowOffset: 0,
       fromColumnOffset: 0,
       toRow: startRow + 15,
-      toColumn: endColumn + 9,
+      toColumn: fromColumn + 7,
       toRowOffset: 0,
       toColumnOffset: 0,
     },
@@ -258,7 +270,7 @@ export async function handleInsertChart(
       ...(chartKind === 'column' || chartKind === 'bar' || chartKind === 'combo'
         ? { barDirection: chartKind === 'bar' ? 'bar' : 'col' }
         : {}),
-      title: parsed.series.length === 1 && parsed.series[0] ? parsed.series[0].name : 'Chart Title',
+      title: newChartTitle(values, parsed, t('appChartTitleEl')),
       series: parsed.series.map((series) => ({
         name: series.name,
         categories: parsed.categories,

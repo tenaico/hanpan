@@ -7,14 +7,16 @@ import type { QuickLookPayload } from './quick-look-api'
 // See tests/quick-look-wiring.test.ts.
 
 export interface QuickLookSettings {
-  /** enable Spacebar Quick Look in Windows File Explorer / Desktop (default: true) */
+  /** enable Spacebar Quick Look in Windows File Explorer / Desktop (default: false) */
   explorerSpacePreview: boolean
   /** keep the app in the system tray when all windows close so Explorer Quick Look stays ready (default: false) */
   keepInTray: boolean
 }
 
+// off until the person turns it on: it hooks the Spacebar in Explorer and on the
+// desktop, an OS behaviour a new install should not take over (0.17 리뷰 v2 shell #22)
 export const DEFAULT_QUICK_LOOK_SETTINGS: QuickLookSettings = {
-  explorerSpacePreview: true,
+  explorerSpacePreview: false,
   keepInTray: false,
 }
 

@@ -263,7 +263,20 @@ export function CertSignDialog({
               </button>
             </div>
             {!listing && systemCerts.length === 0 && issues.length === 0 && (
-              <div className="pdf-modal-hint">{t('certSystemEmpty')}</div>
+              <div className="pdf-modal-hint pdf-cert-empty" role="status">
+                <span>{t('certSystemEmpty')}</span>
+                <button
+                  className="pdf-modal-btn primary"
+                  disabled={busy}
+                  onClick={() => {
+                    setSource('file')
+                    void choose()
+                  }}
+                >
+                  {t('certChooseFileInstead')}
+                </button>
+                <span className="pdf-cert-npki">{t('certNpkiNote')}</span>
+              </div>
             )}
             {issues.includes('platform-unsupported') && (
               <div className="pdf-modal-hint">{t('certStoreUnsupported')}</div>

@@ -6,6 +6,7 @@ export const ar = {
   editBold: 'غامق',
   editItalic: 'مائل',
   editReplace: 'استبدال',
+  editFindReplaceTitle: 'بحث واستبدال',
   editReplaceWith: 'الاستبدال بـ',
   editReplaceOne: 'استبدال',
   editReplaceAll: 'استبدال الكل',

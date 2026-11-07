@@ -157,7 +157,8 @@ export const de = {
   dlgPivotAddValue: '+ Wertefeld hinzufügen',
   dlgPivotAddCalc: '+ Berechnetes Feld hinzufügen',
   dlgPivotTargetCell: 'Zielzelle',
-  dlgPivotTargetPlaceholder: 'z. B. F1',
+  dlgPivotTargetPlaceholder: 'z. B. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked:
     'Die obere linke Zelle des Ausgabebereichs bleibt beim Bearbeiten unverändert',
   dlgPivotNote:

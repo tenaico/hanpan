@@ -257,6 +257,31 @@ describe('suggested questions', () => {
   })
 })
 
+describe('the empty conversation on first open (UI/UX review P11)', () => {
+  it('starts scrolled to the top so the quick actions are visible', async () => {
+    const scrollTo = vi.fn()
+    Element.prototype.scrollTo = scrollTo as unknown as typeof Element.prototype.scrollTo
+    // jsdom lays nothing out: give the conversation a height so "scroll to the end" is not 0
+    const height = vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(900)
+    try {
+      await renderPanel(statusesOf('ready', 'signed-out'))
+      const chatCalls = scrollTo.mock.calls.map((call) => call[0] as { top: number })
+      expect(chatCalls.length).toBeGreaterThan(0)
+      expect(chatCalls.every((arg) => arg.top === 0)).toBe(true)
+    } finally {
+      height.mockRestore()
+      Element.prototype.scrollTo = () => {}
+    }
+  })
+
+  it('hides the summary actions and suggested questions for a blank document', async () => {
+    const panel = await renderPanel(statusesOf('ready', 'signed-out'), { documentBlank: true })
+    expect(suggested(panel)).toHaveLength(0)
+    expect(q(panel, '.ai-quick-actions')).toBeNull()
+    expect(q(panel, '.ai-chat-empty-title')).not.toBeNull()
+  })
+})
+
 // ── the overview section ──
 
 function treeOf(pages: string[]): DocumentTree {

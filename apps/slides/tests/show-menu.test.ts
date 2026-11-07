@@ -14,6 +14,8 @@ const actions = {
   seeAll: vi.fn(),
   setScreen: vi.fn(),
   end: vi.fn(),
+  setTool: vi.fn(),
+  clearInk: vi.fn(),
 }
 
 const base: ShowMenuState = {
@@ -23,6 +25,8 @@ const base: ShowMenuState = {
   pending: false,
   hasLastViewed: true,
   screen: 'none',
+  tool: 'none',
+  hasInk: false,
 }
 
 const find = (s: Partial<ShowMenuState>, key: Parameters<typeof t>[0]) =>
@@ -38,9 +42,26 @@ describe('slide show context menu items', () => {
       t('paneShowMenuSeeAll'),
       '-',
       t('paneShowMenuScreen'),
+      t('paneShowMenuPointer'),
       '-',
       t('paneShowMenuEnd'),
     ])
+  })
+
+  it('pointer options: laser, pen, arrow and erase, like the presenter view (UX v2 #36)', () => {
+    const pointer = find({ tool: 'pen' }, 'paneShowMenuPointer')
+    const labels = pointer?.sub?.map((i) => (i ? i.label : '-'))
+    expect(labels).toEqual([
+      t('paneShowMenuLaser'),
+      t('paneShowMenuPen'),
+      t('paneShowMenuArrow'),
+      '-',
+      t('paneShowMenuEraseInk'),
+    ])
+    expect(pointer?.sub?.[1]?.checked).toBe(true)
+    expect(pointer?.sub?.[4]?.disabled).toBe(true)
+    pointer?.sub?.[0]?.onClick?.()
+    expect(actions.setTool).toHaveBeenCalledWith('laser')
   })
 
   it('disables Previous on the first slide and Next on the last', () => {

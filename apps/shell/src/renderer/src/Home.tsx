@@ -8,6 +8,17 @@ import logoLockup from './assets/genoffice-logo.svg'
 import { KbAskPanel } from './KbAskPanel'
 import { TemplatePicker } from './hanpan/TemplatePicker'
 import { StartBoard } from './hanpan/StartBoard'
+import {
+  HomeCustomizePanel,
+  HomeWidgets,
+  WidgetGallery,
+  addWidgetTo,
+  arrangeCards,
+  configuresOnAdd,
+  useHomeLayout,
+  type HomeAppCard,
+} from './HomeWidgets'
+import { homeCustomText } from './i18n/strings-home-custom'
 import { MarkdownConverter, type MarkdownConverterApi } from './hanpan/MarkdownConverter'
 import './hanpan/hanpan.css'
 import iconDocx from './assets/file-docx.svg'
@@ -36,6 +47,7 @@ import type {
 } from '../../shared/home-api'
 import type { IntegrationsApi } from '../../shared/integrations-api'
 import { markText } from '../../shared/text-marks'
+import { HOME_FILTER_GROUPS } from '../../shared/home-filter-groups'
 import {
   AiMark,
   aiSubscriptionCardView,
@@ -70,6 +82,7 @@ import { QuickLookView } from './quick-look/QuickLookView'
 import { quickLookText } from './i18n/strings-quick-look'
 import type { QuickLookPayload } from '../../shared/quick-look-api'
 import { agentText } from './i18n/strings-agent'
+import { homeNavText } from './hanpan/home-nav-words'
 import { DriveNavIcon, DrivePanel, useDriveState } from './DrivePanel'
 import { driveUiText } from './i18n/strings-drive'
 
@@ -318,19 +331,19 @@ function crumbsOf(root: FolderRoot, dir: string): Array<{ path: string; name: st
   return crumbs
 }
 
+/**
+ * Hanpan (0.17 #12, draft): six tabs. Word, HWP, Markdown, web documents and
+ * books are under "documents" (epub, md, html, hwp); mind maps and pictures
+ * under "others" (xmind, photo, illust). The groups live in
+ * shared/home-filter-groups.ts so the main side filters the same way.
+ */
 const FILTERS: { key: string; label: StringKey }[] = [
   { key: 'all', label: 'filterAll' },
-  { key: 'docx', label: 'filterDocs' },
+  { key: 'documents', label: 'hpFilterDocuments' },
   { key: 'xlsx', label: 'filterSheets' },
   { key: 'pptx', label: 'filterSlides' },
   { key: 'pdf', label: 'filterPdf' },
-  { key: 'md', label: 'filterMd' },
-  { key: 'html', label: 'filterHtml' },
-  { key: 'xmind', label: 'filterMindmap' },
-  { key: 'hwp', label: 'filterHwp' },
-  { key: 'epub', label: 'filterEpub' },
-  { key: 'photo', label: 'filterPhoto' },
-  { key: 'illust', label: 'filterIllust' },
+  { key: 'others', label: 'hpFilterOthers' },
 ]
 
 /** sidebar filter keys that stand for a family of extensions (mirrors recent-files.ts) */
@@ -343,6 +356,7 @@ const FILTER_FAMILY: Record<string, readonly string[]> = {
   hwp: ['hwp', 'hwpx'],
   photo: ['psd', 'psb', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'tif', 'tiff', 'heic', 'heif'],
   illust: ['svg', 'svgz', 'ai', 'vectorcraft'],
+  ...HOME_FILTER_GROUPS,
 }
 
 function matchesFilter(entry: RecentEntry, filter: string): boolean {
@@ -886,10 +900,15 @@ function AccountEntry({
   onOpenChange,
   onFileSearchSettingsChange,
   openRequest,
+  noticeDue = false,
+  onNoticeAcknowledge,
 }: {
   connection: SubscriptionConnection
   /** the settings modal opened or closed */
   onOpenChange?: (open: boolean) => void
+  /** the first-connection notice is owed: Settings shows it inside its AI section */
+  noticeDue?: boolean
+  onNoticeAcknowledge?: () => void
   onFileSearchSettingsChange?: () => void
   /** a fresh object per request: the home list asks to open the modal on a given block */
   openRequest?: SettingsTarget | null
@@ -959,6 +978,8 @@ function AccountEntry({
           skillUpdateDue={skillUpdate}
           onSkillUpdateDue={setSkillUpdate}
           target={target}
+          noticeDue={noticeDue}
+          onNoticeAcknowledge={onNoticeAcknowledge}
         />
       )}
       <button
@@ -1082,6 +1103,32 @@ function DropToOpenOverlay(): ReactElement | null {
 
 // ── Main component ──────────────────────────────────────
 
+/** 한판 양식 card: a ruled form page with a red seal */
+function TemplatesBadge() {
+  return (
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true" data-badge="templates">
+      <rect
+        x="6"
+        y="3"
+        width="22"
+        height="28"
+        rx="3"
+        fill="#fff"
+        stroke="#3b5ba5"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M10 10h14M10 14.5h14M10 19h9"
+        stroke="#3b5ba5"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <circle cx="23" cy="25" r="4.6" fill="none" stroke="#d1383d" strokeWidth="1.8" />
+      <path d="M21 25h4" stroke="#d1383d" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export function Home({
   connection,
   aiSettings,
@@ -1106,6 +1153,8 @@ export function Home({
   const [listTotal, setListTotal] = useState(0)
   /** sidebar Recent / Starred counts under the active type filter */
   const [navCounts, setNavCounts] = useState({ recent: 0, starred: 0 })
+  /** recent files under no filter: an empty filter must not read as "no recent files" (#25) */
+  const [recentAll, setRecentAll] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(readSidebarWidth)
   const sidebarRef = useRef<HTMLElement>(null)
@@ -1131,12 +1180,6 @@ export function Home({
   // bumped when the Jev settings change so the current results are judged again (or the order dropped)
   const [rerankSettingsTick, setRerankSettingsTick] = useState(0)
   const [settingsRequest, setSettingsRequest] = useState<SettingsTarget | null>(null)
-  // latched once Settings was opened: a connection made there may only be seen
-  // here after the dialog closed, and its notice is still owed then
-  const [settingsVisited, setSettingsVisited] = useState(false)
-  const handleSettingsOpenChange = useCallback((open: boolean) => {
-    if (open) setSettingsVisited(true)
-  }, [])
   useEffect(
     () =>
       window.aiOffice.onOpenSettings?.((target) =>
@@ -1149,6 +1192,12 @@ export function Home({
   const composingRef = useRef(false)
   const searchSeq = useRef(0)
   const searchActive = searchQuery.trim().length > 0
+  // 0.17 리뷰 #19: on a 768-high screen the results sat below the fold; a search
+  // that starts brings its box and results up (once, not on every key)
+  useEffect(() => {
+    if (!searchActive) return
+    searchInputRef.current?.closest('.file-search-group')?.scrollIntoView?.({ block: 'start' })
+  }, [searchActive])
   // modified-column sort (WPS-style header popover), shared by the global and folder tables
   const [fileSort, setFileSort] = useState<'recent' | 'oldest'>('recent')
   const [fileSortMenuOpen, setFileSortMenuOpen] = useState(false)
@@ -1159,6 +1208,8 @@ export function Home({
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
   const [renaming, setRenaming] = useState<{ path: string; value: string } | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string[] | null>(null)
+  /** of the files about to be deleted, those open in a tab */
+  const [deleteOpenInTabs, setDeleteOpenInTabs] = useState<string[]>([])
   // unavailable recent entry (missing flag) the user clicked — offer list removal
   const [confirmMissing, setConfirmMissing] = useState<RecentEntry | null>(null)
   const [greetAskKey] = useState(
@@ -1282,6 +1333,8 @@ export function Home({
   entriesLen.current = entries.length
 
   /** reload the list; keepCount keeps the loaded row count (refresh), otherwise back to page one */
+  /** bumps whenever everything re-pulls, so the file widgets re-read too (not on filter changes) */
+  const [widgetTick, setWidgetTick] = useState(0)
   const reload = (keepCount: boolean) => {
     const seq = ++requestSeq.current
     const ext = filter === 'all' ? undefined : filter
@@ -1295,6 +1348,7 @@ export function Home({
       if (seq !== requestSeq.current) return
       setEntries(page.entries)
       setListTotal(page.total)
+      if (view === 'recent') setRecentAll(page.totalAll ?? page.total)
       setNavCounts((prev) =>
         view === 'recent'
           ? { ...prev, recent: visiblePageCount(page) }
@@ -1304,6 +1358,7 @@ export function Home({
     // The other view fetches only its count under the same active filter.
     void secondary({ offset: 0, limit: 0, ext }).then((page) => {
       if (seq !== requestSeq.current) return
+      if (view !== 'recent') setRecentAll(page.totalAll ?? page.total)
       setNavCounts((prev) =>
         view === 'recent'
           ? { ...prev, starred: visiblePageCount(page) }
@@ -1325,6 +1380,7 @@ export function Home({
   /** everything on screen re-pulls: the paged list, the root and every loaded folder */
   const refresh = () => {
     reloadRef.current(true)
+    setWidgetTick((tick) => tick + 1)
     loadRoot()
     invalidateFolders([...listings.keys()])
   }
@@ -1667,10 +1723,21 @@ export function Home({
     void window.aiOffice.toggleStar(path).then(refresh)
   }
 
+  /** a short line that says a quiet action happened (0.17 리뷰 v2 shell #28) */
+  const [toast, setToast] = useState<string | null>(null)
+  useEffect(() => {
+    if (!toast) return
+    const handle = window.setTimeout(() => setToast(null), 2500)
+    return () => window.clearTimeout(handle)
+  }, [toast])
+
   const removeRecent = (paths: string[]) => {
     setRowMenu(null)
     setSelected(new Set())
-    void window.aiOffice.removeRecent(paths).then(refresh)
+    void window.aiOffice.removeRecent(paths).then(() => {
+      refresh()
+      setToast(t('toastRemovedFromList', { n: paths.length }))
+    })
   }
 
   /** the Starred view's bulk action: drop the stars, keep the recents entries */
@@ -1691,11 +1758,17 @@ export function Home({
   const deleteFiles = (paths: string[]) => {
     setRowMenu(null)
     setConfirmDelete(paths)
+    setDeleteOpenInTabs([])
+    // the question names files open in a tab: deleting closes those tabs first
+    void Promise.resolve(window.aiOffice.openTabPaths?.(paths))
+      .then((open) => setDeleteOpenInTabs(Array.isArray(open) ? open : []))
+      .catch(() => undefined)
   }
 
   const confirmDeleteNow = () => {
     const paths = confirmDelete ?? []
     setConfirmDelete(null)
+    setDeleteOpenInTabs([])
     setSelected(new Set())
     void window.aiOffice.deleteFiles(paths).then(refresh)
   }
@@ -1947,6 +2020,30 @@ export function Home({
 
   // Hanpan: the template picker
   const [templatesOpen, setTemplatesOpen] = useState(false)
+  // the document a tab's "내 양식으로 저장…" asked to save (the dialog opens with it picked)
+  const [formSaveTabId, setFormSaveTabId] = useState<string | undefined>()
+  useEffect(
+    () =>
+      window.hanpanApi?.onSaveMyFormRequest?.((tabId) => {
+        setFormSaveTabId(tabId)
+        setTemplatesOpen(true)
+      }),
+    [],
+  )
+  useEffect(
+    () =>
+      window.hanpanApi?.onOpenTemplatesRequest?.(() => {
+        setFormSaveTabId(undefined)
+        setTemplatesOpen(true)
+      }),
+    [],
+  )
+  // 0.17: the widgets and the app card arrangement ("홈 꾸미기")
+  const [homeLayout, updateHomeLayout] = useHomeLayout()
+  const [customizeOpen, setCustomizeOpen] = useState(false)
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  /** the widget whose settings are open */
+  const [editingWidget, setEditingWidget] = useState<string | null>(null)
   const [converterOpen, setConverterOpen] = useState(false)
   const hp = window.hanpanApi
   const converterApi: MarkdownConverterApi | null =
@@ -1960,7 +2057,7 @@ export function Home({
    * documents and tools follow in a compact row. Every card keeps `quick-card`
    * and names what it makes in `data-new`.
    */
-  function renderQuickCards() {
+  function quickCardDefs() {
     const made = (ext: string) => NEW_ITEMS.find((item) => item.ext === ext)!
     const primary = [
       {
@@ -1996,7 +2093,8 @@ export function Home({
         ? [
             {
               key: 'templates',
-              badge: <FileBadge ext="hwp" size={34} />,
+              // a form with a seal, not AI 한글's "가" (0.17 리뷰 v2 shell #29)
+              badge: <TemplatesBadge />,
               title: t('hpTemplatesCard'),
               sub: t('hpTemplatesCardSub'),
               ai: false,
@@ -2005,7 +2103,18 @@ export function Home({
           ]
         : []),
     ]
-    const secondary = [
+    /** a second feature reached from the same card (0.17 #12: one card per pair) */
+    type CardExtra = { key: string; title: string; tip: string; action: () => unknown }
+    const secondary: Array<{
+      key: string
+      icon: ReactElement
+      title: string
+      ai: boolean
+      tip?: string
+      sub?: string
+      extra?: CardExtra
+      action: () => unknown
+    }> = [
       ...['docx', 'xlsx'].map((ext) => ({
         key: ext,
         icon: <FileBadge ext={ext} size={24} />,
@@ -2030,46 +2139,46 @@ export function Home({
             },
           ]
         : []),
+      // AI 마크다운 and the Markdown converter share one card
       {
         key: 'md',
         icon: <FileBadge ext="md" size={24} />,
         title: made('md').title,
         ai: true,
         tip: undefined as string | undefined,
+        extra: converterApi
+          ? {
+              key: 'md-convert',
+              title: t('hpConvChip'),
+              tip: `${t('hpConvCard')} · ${t('hpConvCardSub')}`,
+              action: () => setConverterOpen(true),
+            }
+          : undefined,
         action: made('md').action,
       },
-      ...(converterApi
-        ? [
-            {
-              key: 'md-convert',
-              icon: (
-                <span className="quick-folder hp-conv-badge" aria-hidden="true">
-                  ⇄
-                </span>
-              ),
-              title: t('hpConvCard'),
-              ai: false,
-              tip: t('hpConvCardSub'),
-              action: () => setConverterOpen(true),
-            },
-          ]
-        : []),
-      ...['html', 'pdf'].map((ext) => ({
-        key: ext,
-        icon: <FileBadge ext={ext} size={24} />,
-        title: made(ext).title,
+      {
+        key: 'html',
+        icon: <FileBadge ext="html" size={24} />,
+        title: made('html').title,
         ai: true,
         tip: undefined as string | undefined,
-        action: made(ext).action,
-      })),
-      // decision 0030: PDF tasks without AI, in their own window
+        action: made('html').action,
+      },
+      // AI PDF and the PDF tools share one card; decision 0030: PDF tasks
+      // without AI, in their own window
       {
-        key: 'pdf-tools',
+        key: 'pdf',
         icon: <FileBadge ext="pdf" size={24} />,
-        title: t('pdfToolsCard'),
-        ai: false,
-        tip: t('pdfToolsCardSub'),
-        action: () => window.aiOfficePdfToolsHome.open(),
+        title: made('pdf').title,
+        ai: true,
+        tip: undefined as string | undefined,
+        extra: {
+          key: 'pdf-tools',
+          title: t('pdfToolsCard'),
+          tip: t('pdfToolsCardSub'),
+          action: () => window.aiOfficePdfToolsHome.open(),
+        },
+        action: made('pdf').action,
       },
       // decision 0093: the PhotoCraft and VectorCraft web apps in tabs, with an AI assistant
       {
@@ -2112,64 +2221,184 @@ export function Home({
         action: () => window.aiOffice.browse(),
       },
     ]
+    return { primary, secondary }
+  }
+
+  /** every app card as the 홈 꾸미기 panel and the favorites widget list them */
+  function homeAppCards(): { primary: HomeAppCard[]; secondary: HomeAppCard[] } {
+    const defs = quickCardDefs()
+    return {
+      primary: defs.primary.map((card) => ({
+        key: card.key,
+        title: card.title,
+        icon: card.badge,
+        action: card.action,
+      })),
+      secondary: defs.secondary.map((card) => ({
+        key: card.key,
+        title: card.title,
+        icon: card.icon,
+        action: card.action,
+      })),
+    }
+  }
+
+  /** the cards in the person's order, hidden ones left out (0.17 홈 꾸미기) */
+  function renderQuickCards() {
+    const defs = quickCardDefs()
+    const primary = arrangeCards(defs.primary, homeLayout)
+    const secondary = arrangeCards(defs.secondary, homeLayout)
     return (
       <div className="hp-cards">
-        <div className="quick-cards hp-primary">
-          {primary.map((card) => (
-            <button
-              key={card.key}
-              className={
-                card.start ? 'quick-card hp-primary-card is-start' : 'quick-card hp-primary-card'
-              }
-              data-new={card.key}
-              data-hanpan={card.key === 'templates' ? 'templates' : undefined}
-              onClick={() => void card.action()}
-            >
-              {card.start && <span className="hp-start-badge">{t('hpStartBadge')}</span>}
-              {card.badge}
-              <span className="quick-text">
-                <span className="quick-title-row">
-                  <span className="quick-title">{card.title}</span>
-                  {card.ai && <span className="ai-chip">AI</span>}
+        {primary.length > 0 && (
+          <div className="quick-cards hp-primary">
+            {primary.map((card) => (
+              <button
+                key={card.key}
+                className={
+                  card.start ? 'quick-card hp-primary-card is-start' : 'quick-card hp-primary-card'
+                }
+                data-new={card.key}
+                data-hanpan={card.key === 'templates' ? 'templates' : undefined}
+                onClick={() => void card.action()}
+              >
+                {card.start && <span className="hp-start-badge">{t('hpStartBadge')}</span>}
+                {card.badge}
+                <span className="quick-text">
+                  <span className="quick-title-row">
+                    <span className="quick-title">{card.title}</span>
+                    {card.ai && <span className="ai-chip">AI</span>}
+                  </span>
+                  <span className="quick-sub">{card.sub}</span>
                 </span>
-                <span className="quick-sub">{card.sub}</span>
-              </span>
-            </button>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+        )}
         <div className="section-head hp-more-head">
           <span className="section-label">{t('hpMoreTools')}</span>
+          <button
+            type="button"
+            className="home-custom-open"
+            data-home-custom="open"
+            onClick={() => setCustomizeOpen(true)}
+          >
+            {homeCustomText(lang, 'customize')}
+          </button>
         </div>
         <div className="quick-cards hp-secondary">
-          {secondary.map((card) => (
-            <button
-              key={card.key}
-              className="quick-card hp-compact"
-              data-new={card.key}
-              data-hanpan={
-                card.key === 'design' || card.key === 'md-convert' ? card.key : undefined
-              }
-              data-tip={card.tip}
-              onClick={() => void card.action()}
-            >
-              {card.icon}
-              {(card as { sub?: string }).sub ? (
-                <span className="hp-compact-text">
+          {secondary.map((card) => {
+            const main = (
+              <button
+                key={card.key}
+                className="quick-card hp-compact"
+                data-new={card.key}
+                data-hanpan={card.key === 'design' ? card.key : undefined}
+                data-tip={card.tip}
+                onClick={() => void card.action()}
+              >
+                {card.icon}
+                {card.sub ? (
+                  <span className="hp-compact-text">
+                    <span className="quick-title">{card.title}</span>
+                    <span className="hp-compact-sub">{card.sub}</span>
+                  </span>
+                ) : (
                   <span className="quick-title">{card.title}</span>
-                  <span className="hp-compact-sub">{(card as { sub?: string }).sub}</span>
-                </span>
-              ) : (
-                <span className="quick-title">{card.title}</span>
-              )}
-              {card.ai && <span className="ai-chip">AI</span>}
-            </button>
-          ))}
+                )}
+                {card.ai && <span className="ai-chip">AI</span>}
+              </button>
+            )
+            const extra = card.extra
+            if (!extra) return main
+            return (
+              <div key={card.key} className="hp-pair" data-pair={card.key}>
+                {main}
+                <button
+                  className="hp-pair-alt"
+                  data-new={extra.key}
+                  data-hanpan={extra.key === 'md-convert' ? extra.key : undefined}
+                  data-tip={extra.tip}
+                  onClick={() => void extra.action()}
+                >
+                  {extra.title}
+                </button>
+              </div>
+            )
+          })}
         </div>
-        {templatesOpen && <TemplatePicker onClose={() => setTemplatesOpen(false)} />}
+        {customizeOpen && renderCustomizePanel()}
+        {galleryOpen && (
+          <WidgetGallery
+            layout={homeLayout}
+            lang={lang}
+            onPick={(type) => {
+              setGalleryOpen(false)
+              const id = addWidgetTo(updateHomeLayout, type)
+              if (id && configuresOnAdd(type)) setEditingWidget(id)
+            }}
+            onClose={() => setGalleryOpen(false)}
+          />
+        )}
+        {templatesOpen && (
+          <TemplatePicker
+            // a new request while the dialog is open starts it over with the new document
+            key={formSaveTabId ?? ''}
+            saveTabId={formSaveTabId}
+            onClose={() => {
+              setTemplatesOpen(false)
+              setFormSaveTabId(undefined)
+            }}
+          />
+        )}
         {converterOpen && converterApi && (
           <MarkdownConverter api={converterApi} onClose={() => setConverterOpen(false)} />
         )}
       </div>
+    )
+  }
+
+  function renderCustomizePanel() {
+    const apps = homeAppCards()
+    return (
+      <HomeCustomizePanel
+        layout={homeLayout}
+        update={updateHomeLayout}
+        groups={[
+          { label: homeCustomText(lang, 'mainCards'), cards: apps.primary },
+          { label: t('hpMoreTools'), cards: apps.secondary },
+        ]}
+        cards={[...apps.primary, ...apps.secondary]}
+        lang={lang}
+        onOpenGallery={() => {
+          setCustomizeOpen(false)
+          setGalleryOpen(true)
+        }}
+        themeLabels={{
+          title: t('theme'),
+          light: t('themeLight'),
+          dark: t('themeDark'),
+          system: t('themeSystem'),
+        }}
+        onClose={() => setCustomizeOpen(false)}
+      />
+    )
+  }
+
+  function renderWidgets() {
+    const apps = homeAppCards()
+    return (
+      <HomeWidgets
+        layout={homeLayout}
+        update={updateHomeLayout}
+        cards={[...apps.primary, ...apps.secondary]}
+        lang={lang}
+        dateLocale={i18n.dateLocale}
+        reloadKey={widgetTick}
+        editingId={editingWidget}
+        onEdit={setEditingWidget}
+        onOpenGallery={() => setGalleryOpen(true)}
+      />
     )
   }
 
@@ -2223,6 +2452,7 @@ export function Home({
       <button
         className="folder-more-btn"
         aria-label={t('folderMoreActions', { name: entry.name })}
+        data-tip={t('folderMoreActions', { name: entry.name })}
         aria-expanded={menuOpenAt('tree', entry.path)}
         onClick={(e) => {
           e.stopPropagation()
@@ -2456,7 +2686,7 @@ export function Home({
             {canCreate && (
               <button
                 className="folder-add-btn folder-new-btn"
-                data-tip={t('newFolder')}
+                data-tip={t('newFolderTip')}
                 aria-label={t('newFolder')}
                 onClick={() => startCreateFolder(createIn)}
               >
@@ -2637,7 +2867,9 @@ export function Home({
                   role="menuitem"
                   onClick={() => {
                     setRowMenu(null)
-                    void navigator.clipboard.writeText(entry.path)
+                    void navigator.clipboard
+                      .writeText(entry.path)
+                      .then(() => setToast(t('toastPathCopied')))
                   }}
                 >
                   {t('copyPath')}
@@ -2902,10 +3134,12 @@ export function Home({
   const renderSearchSettingsButton = () => (
     <button
       className="file-search-settings"
+      data-search-settings=""
       title={t('searchJevSettings')}
       aria-label={t('searchJevSettings')}
       onClick={() => setSettingsRequest({ section: 'aiMedia', block: 'rerank' })}
     >
+      {/* sliders: a settings button, not a sort arrow */}
       <svg
         width="16"
         height="16"
@@ -2917,8 +3151,10 @@ export function Home({
         strokeLinejoin="round"
         aria-hidden="true"
       >
-        <path d="M12 20V4M12 4l-4 4M12 4l4 4" />
-        <path d="M3 12h6M3 16h5M3 20h4" />
+        <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" />
+        <circle cx="16" cy="6" r="2" />
+        <circle cx="10" cy="12" r="2" />
+        <circle cx="18" cy="18" r="2" />
       </svg>
     </button>
   )
@@ -3019,7 +3255,9 @@ export function Home({
         {busy && (
           <div className="search-status">
             <span className="load-more-spinner" />
-            {t('searchIndexing', { n: page.index.pending })}
+            {/* "0 files" read as broken while the scan still counts: say what is shown instead */}
+            {page.index.pending > 0 && t('searchIndexing', { n: page.index.pending })}{' '}
+            {t('searchIndexingMore')}
           </div>
         )}
         {page && page.hits.length === 0 && !busy
@@ -3249,9 +3487,25 @@ export function Home({
               renderSearchHeading()
             ) : (
               <div className="recents-heading folder-heading">
+                {/* which folder this is (0.17 리뷰 v2 shell #26) */}
+                {selectedFolder && (
+                  <span className="folder-heading-title" data-folder-heading="">
+                    <b>{fileName(selectedFolder)}</b>
+                    <span className="folder-heading-path" title={selectedFolder}>
+                      {selectedFolder}
+                    </span>
+                  </span>
+                )}
                 <span className="file-count">
                   {t(total === 1 ? 'itemCountOne' : 'itemCount', { n: total })}
                 </span>
+                <button
+                  type="button"
+                  className="folder-back-btn"
+                  onClick={() => changeView('recent')}
+                >
+                  {t('folderBackToRecent')}
+                </button>
               </div>
             )}
           </div>
@@ -3326,6 +3580,8 @@ export function Home({
           )}
           {renderQuickCards()}
         </section>
+
+        {renderWidgets()}
 
         <section
           className="recents"
@@ -3442,7 +3698,7 @@ export function Home({
             renderEmpty(
               view === 'starred'
                 ? t('emptyStarred')
-                : navCounts.recent === 0
+                : recentAll === 0
                   ? t('emptyRecent')
                   : t('emptyFiltered'),
             )
@@ -3594,7 +3850,8 @@ export function Home({
           {window.aiOfficeAgent ? (
             <button
               className="nav-item"
-              title={agentText(lang, 'homeCardSub')}
+              data-nav="agent"
+              title={homeNavText(lang, 'agentTip') ?? agentText(lang, 'homeCardSub')}
               onClick={() => void window.aiOfficeAgent?.open()}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -3609,7 +3866,9 @@ export function Home({
                   fill="currentColor"
                 />
               </svg>
-              <span className="nav-label">{agentText(lang, 'windowTitle')}</span>
+              <span className="nav-label">
+                {homeNavText(lang, 'agent') ?? agentText(lang, 'windowTitle')}
+              </span>
               <span className="nav-count nav-external">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                   <path
@@ -3644,7 +3903,8 @@ export function Home({
         {renderFolderPanel()}
         <AccountEntry
           connection={connection}
-          onOpenChange={handleSettingsOpenChange}
+          noticeDue={noticeDue}
+          onNoticeAcknowledge={onNoticeAcknowledge}
           onFileSearchSettingsChange={() => setRerankSettingsTick((n) => n + 1)}
           openRequest={settingsRequest}
         />
@@ -3695,6 +3955,11 @@ export function Home({
                 )}
               </ul>
             )}
+            {deleteOpenInTabs.length > 0 && (
+              <p className="modal-warn" data-delete-open-tabs="">
+                {t('deleteOpenTabs', { names: deleteOpenInTabs.map(fileName).join(', ') })}
+              </p>
+            )}
             <div className="modal-buttons">
               <button
                 className="btn btn-secondary"
@@ -3704,7 +3969,7 @@ export function Home({
                 {t('cancel')}
               </button>
               <button className="btn btn-danger" onClick={confirmDeleteNow}>
-                {t('delete')}
+                {deleteOpenInTabs.length > 0 ? t('deleteCloseTabs') : t('delete')}
               </button>
             </div>
           </div>
@@ -3849,16 +4114,19 @@ export function Home({
         </div>
       )}
 
-      {/* the first-connection notice comes up where a connection is made or first
-          used from this screen: in Settings and on the ask panel (an editor's AI
-          panel shows it for itself) */}
-      {noticeDue && (settingsVisited || askMode) && (
-        <FirstConnectionDialog onAcknowledge={onNoticeAcknowledge} />
-      )}
+      {/* the first-connection notice comes up where AI is first used from this
+          screen: the ask panel (an editor's AI panel shows it for itself). In
+          Settings it sits inside the AI section, never over the shell. */}
+      {noticeDue && askMode && <FirstConnectionDialog onAcknowledge={onNoticeAcknowledge} />}
       {/* documents with unsaved content left in recovery copies, asked about
           once at launch; the main process keeps Home in front meanwhile */}
       <LaunchRecoveryList />
       <DropToOpenOverlay />
+      {toast && (
+        <div className="home-toast" role="status" data-home-toast="">
+          {toast}
+        </div>
+      )}
     </div>
   )
 }

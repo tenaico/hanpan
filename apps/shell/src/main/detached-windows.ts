@@ -1,6 +1,7 @@
 import { basename } from 'node:path'
 import { BrowserWindow, screen } from 'electron'
 import type { Rectangle, WebContents, WebContentsView } from 'electron'
+import { fitWindowSize } from './window-bounds'
 import { resumeDiscardedCopies } from '@genoffice/electron-utils'
 
 import {
@@ -347,6 +348,25 @@ export function detachedSetTitleFor(webContentsId: number, title: string): void 
   rec.window.setTitle(title)
 }
 
+/**
+ * The UI language changed: a detached window with no file whose title is still the untitled
+ * name of the language it left (`previous`) takes the new one (`next`), as TabManager does for
+ * the strip. Saved files and untitled documents that named themselves keep their titles.
+ */
+export function retitleUntitledDetached(
+  previous: (kind: TabKind) => string,
+  next: (kind: TabKind) => string,
+): void {
+  let changed = false
+  for (const rec of detached.values()) {
+    if (rec.filePath || rec.window.isDestroyed()) continue
+    if (rec.window.getTitle() !== previous(rec.kind)) continue
+    rec.window.setTitle(next(rec.kind))
+    changed = true
+  }
+  if (changed) onChanged()
+}
+
 /** a rename on disk (Home list) — follow it, same contract as renameTabFile */
 export function detachedRenameFile(
   oldPath: string,
@@ -490,7 +510,11 @@ export function createDetachedEditorWindow(options: {
   tearOffAt?: { x: number; y: number }
 }): BrowserWindow {
   const { view, kind, title, filePath, applyMenuFor, tearOffAt } = options
-  const size = DEFAULT_SIZE[kind] ?? { width: 1360, height: 900 }
+  // each kind's usual size, inside the screen it opens on (0.17 리뷰 v2 shell #12)
+  const size = fitWindowSize(
+    DEFAULT_SIZE[kind] ?? { width: 1360, height: 900 },
+    screen.getDisplayNearestPoint(tearOffAt ?? screen.getCursorScreenPoint()).workArea,
+  )
   const origin = tearOffAt ? tearOffOrigin(tearOffAt, size) : {}
   const win = new BrowserWindow({
     ...size,

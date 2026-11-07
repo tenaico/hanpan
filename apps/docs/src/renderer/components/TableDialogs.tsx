@@ -11,6 +11,7 @@ import {
   type DeleteCellsMode,
 } from '../editor/table-ops'
 import { useModalKeys } from './modal-keys'
+import { dialogTitle } from './dialog-title'
 import { LengthInput } from './LengthInput'
 import { TWIPS_PER_CM } from '../list-presets'
 import { applyTableValue, tableValueOf, type TableValue } from './TablePropertiesDialog'
@@ -99,7 +100,7 @@ export function SplitCellsDialog({ editor, onClose }: DialogProps) {
   return (
     <Frame
       className="split-cells-dialog"
-      title={t('ribbonSplitCellsDialog')}
+      title={dialogTitle(t('ribbonSplitCellsDialog'))}
       onClose={onClose}
       okDisabled={rows === 1 && cols === 1}
       onOk={() => runAndClose(editor, splitCellsInto(rows, cols, mergeFirst), onClose)}
@@ -139,7 +140,7 @@ export function InsertCellsDialog({
   return (
     <Frame
       className="insert-cells-dialog"
-      title={t('ribbonInsertCells')}
+      title={dialogTitle(t('ribbonInsertCells'))}
       onClose={onClose}
       onOk={() =>
         runAndClose(editor, insertRowsOrColumns(count, where, sectionContentWidthPx), onClose)
@@ -187,7 +188,7 @@ export function DeleteCellsDialog({ editor, onClose }: DialogProps) {
   return (
     <Frame
       className="delete-cells-dialog"
-      title={t('ribbonDeleteCells')}
+      title={dialogTitle(t('ribbonDeleteCells'))}
       onClose={onClose}
       onOk={() => runAndClose(editor, deleteCells(mode), onClose)}
     >
@@ -231,7 +232,7 @@ export function CellMarginsDialog({
   return (
     <Frame
       className="cell-margins-dialog"
-      title={t('ribbonTableOptions')}
+      title={dialogTitle(t('ribbonTableOptions'))}
       onClose={onClose}
       onOk={() => {
         if (editableOrToast(editor)) {

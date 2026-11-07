@@ -78,6 +78,8 @@ export const nl = {
   usageWindowFiveHour: 'Limiet per 5 uur',
   usageWindowSevenDay: 'Limiet per 7 dagen',
   noticeTitle: 'Voordat je AI met je abonnement gebruikt',
+  noticeSummary: 'Documenten en chats gaan met uw eigen account naar Anthropic of OpenAI.',
+  noticeMore: 'Details',
   noticeSend:
     'De inhoud van het document en je gesprek worden onder je eigen account naar Anthropic of OpenAI verzonden. Elk verzoek bevat ook de naam, titel en beschrijving van elke vaardigheid die op ‘AI beslist’ staat; gebruikte vaardigheden en vaardigheidsbestanden die de AI leest, worden ook verzonden.',
   noticeTraining:

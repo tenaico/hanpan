@@ -53,11 +53,12 @@ export const ja = {
     '大きな文書（{blocks} 段落）のため入力時のスペルチェックをオフにしました。「校閲 › スペル」でオンにできます',
   appFontsMissing: '文書のフォントが未インストールです: {names}（代替フォントで表示）',
   appVerticalTextNotice: '縦書きテキストを含む文書です（現在は横書きで表示。保存には影響しません）',
-  appNewDocCreated: '空白の文書を作成しました。左側の AI パネルで生成したい内容を記述できます',
+  appNewDocCreated: '空白の文書を作成しました。AI パネルで生成したい内容を記述できます',
   appNewFailed: '新規作成に失敗しました: {error}',
   appSaveFailed: '保存に失敗しました: {error}',
   appAutoSavedAt: '自動保存しました ({time})',
   appSaved: '保存しました',
+  appUnsaved: '未保存',
   // Section breaks
   appSectionBreakInserted: 'セクション区切りを挿入しました({type})',
   appSectionBreakPending:
@@ -128,6 +129,8 @@ export const ja = {
   appExportingImages: '画像をエクスポート中…',
   appExportImagesProgress: '{count} 枚の画像をエクスポート中…',
   appExportImagesDone: '{count} 枚の画像を {dir} にエクスポートしました',
+  appOpenExported: '開く',
+  appRevealExported: 'フォルダーを開く',
   appExportImagesFailed: '画像のエクスポートに失敗しました：{error}',
   appMixedExportOpening:
     '用紙サイズが混在する文書:ページ プレビューを開き、ページごとに結合してエクスポートしています…',
@@ -511,6 +514,7 @@ export const ja = {
   appMatchCase: '大文字と小文字を区別する',
   appWholeWord: '完全に一致する単語だけを検索する',
   appNoResults: '一致なし',
+  appReplacedCount: '{count} 件を置換しました',
   appPrevMatch: '前へ (Shift+Enter)',
   appNextMatch: '次へ (Enter)',
   appCloseEsc: '閉じる (Esc)',

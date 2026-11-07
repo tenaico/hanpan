@@ -76,7 +76,7 @@ export const en = {
   fieldBody: 'Instructions',
   fieldName: 'Name',
   nameHint:
-    'Shown in the skill list. Lowercase letters, digits and hyphens (-), up to 64 characters',
+    'Shown in the skill list. Any words show as typed and the internal name is picked for you; lowercase letters, digits and hyphens (-) become the internal name itself (up to 64 characters)',
   files: 'Files in the skill',
   filesNone: 'No other files',
   filesHint: 'Open the folder to change these files',

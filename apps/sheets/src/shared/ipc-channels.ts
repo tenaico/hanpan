@@ -92,6 +92,10 @@ export const IPC_CHANNELS = {
   printWorkbook: 'workbook:print',
   listPrinters: 'workbook:list-printers',
   exportCsv: 'workbook:export-csv',
+  /** every sheet as its own CSV in a folder the user picks (0.17) */
+  exportCsvAll: 'workbook:export-csv-all',
+  /** the sheet or the selected range as a PNG (0.17) */
+  exportImage: 'workbook:export-image',
   csvSaveConfirm: 'workbook:csv-save-confirm',
   /** AI create_document: new standalone file in the default folder (no dialog) */
   createDocument: 'workbook:create-document',

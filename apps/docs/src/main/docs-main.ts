@@ -230,6 +230,9 @@ import {
   type DocFormat,
 } from './doc-format'
 import { copyImageDisplaySize, validCopyImageDataUrl } from './copy-image-guard'
+import { closePromptDocName } from './close-prompt-name'
+import { ExportedFiles } from './exported-files'
+import { readCompareTarget } from './compare-target'
 import { printJobOptions, printScaleOption, validPrintGeometry } from './print-args'
 import { addPdfInternalLinks } from './pdf-links'
 import {
@@ -263,6 +266,7 @@ const tMain = createI18n({
     filterOdt: 'OpenDocument 文本',
     dlgSaveAs: '另存为',
     closeUnsavedMsg: '此文档有未保存的更改。',
+    closeUnsavedNamedMsg: '“{name}”有未保存的更改。',
     closeUnsavedDetail: '关闭前是否保存？',
     closeNoReplyMsg: '文档没有响应,可能有未保存的更改。',
     closeNoReplyDetail: '仍要关闭吗?未保存的更改将丢失。',
@@ -393,6 +397,7 @@ const tMain = createI18n({
     filterOdt: 'OpenDocument Text',
     dlgSaveAs: 'Save As',
     closeUnsavedMsg: 'This document has unsaved changes.',
+    closeUnsavedNamedMsg: '“{name}” has unsaved changes.',
     closeUnsavedDetail: 'Do you want to save them before closing?',
     closeNoReplyMsg: 'The document is not responding and may have unsaved changes.',
     closeNoReplyDetail: 'Close anyway? Unsaved changes will be lost.',
@@ -523,6 +528,7 @@ const tMain = createI18n({
     filterOdt: 'Văn bản OpenDocument',
     dlgSaveAs: 'Lưu dưới dạng',
     closeUnsavedMsg: 'Tài liệu này có những thay đổi chưa được lưu.',
+    closeUnsavedNamedMsg: '“{name}” có những thay đổi chưa được lưu.',
     closeUnsavedDetail: 'Bạn có muốn lưu các thay đổi trước khi đóng không?',
     closeNoReplyMsg: 'Tài liệu không phản hồi và có thể có những thay đổi chưa được lưu.',
     closeNoReplyDetail: 'Vẫn đóng? Các thay đổi chưa lưu sẽ bị mất.',
@@ -654,6 +660,7 @@ const tMain = createI18n({
     filterOdt: 'OpenDocument テキスト',
     dlgSaveAs: '名前を付けて保存',
     closeUnsavedMsg: 'このドキュメントに未保存の変更があります。',
+    closeUnsavedNamedMsg: '「{name}」に未保存の変更があります。',
     closeUnsavedDetail: '閉じる前に保存しますか？',
     closeNoReplyMsg: 'ドキュメントが応答していません。未保存の変更がある可能性があります。',
     closeNoReplyDetail: 'それでも閉じますか?未保存の変更は失われます。',
@@ -785,6 +792,7 @@ const tMain = createI18n({
     filterOdt: 'OpenDocument 텍스트',
     dlgSaveAs: '다른 이름으로 저장',
     closeUnsavedMsg: '이 문서에 저장하지 않은 변경 사항이 있습니다.',
+    closeUnsavedNamedMsg: '‘{name}’에 저장하지 않은 변경 사항이 있습니다.',
     closeUnsavedDetail: '닫기 전에 저장하시겠습니까?',
     closeNoReplyMsg: '문서가 응답하지 않으며 저장하지 않은 변경 사항이 있을 수 있습니다.',
     closeNoReplyDetail: '그래도 닫을까요? 저장하지 않은 변경 사항은 사라집니다.',
@@ -803,7 +811,7 @@ const tMain = createI18n({
     filterAll: '모든 파일',
     dlgExportPdf: 'PDF로 내보내기',
     dlgExportHtml: 'HTML로 내보내기',
-    dlgExportMarkdown: 'Markdown로 내보내기',
+    dlgExportMarkdown: 'Markdown으로 내보내기',
     dlgPickExportDir: '내보낼 폴더 선택',
     errUnsupportedExt: '.{ext} 형식은 지원되지 않습니다',
     errNotFile: '파일이 아닙니다',
@@ -830,7 +838,7 @@ const tMain = createI18n({
     menuPageSetup: '페이지 설정…',
     menuExportPdf: 'PDF로 내보내기…',
     menuExportHtml: 'HTML로 내보내기…',
-    menuExportMarkdown: 'Markdown로 내보내기…',
+    menuExportMarkdown: 'Markdown으로 내보내기…',
     menuExportImages: '이미지로 내보내기…',
     menuPrint: '인쇄…',
     menuEdit: '편집',
@@ -851,7 +859,7 @@ const tMain = createI18n({
     menuPageWidth: '페이지 너비',
     menuWholePage: '전체 페이지',
     menuMultiPage: '여러 페이지',
-    menuAiSidebar: 'AI 사이드바',
+    menuAiSidebar: 'AI 패널',
     menuDarkMode: '다크 모드',
     menuFullscreen: '전체 화면 시작',
     menuInsert: '삽입',
@@ -916,6 +924,7 @@ const tMain = createI18n({
     filterOdt: 'Texte OpenDocument',
     dlgSaveAs: 'Enregistrer sous',
     closeUnsavedMsg: 'Ce document contient des modifications non enregistrées.',
+    closeUnsavedNamedMsg: '« {name} » contient des modifications non enregistrées.',
     closeUnsavedDetail: 'Voulez-vous les enregistrer avant de fermer ?',
     closeNoReplyMsg:
       'Le document ne répond pas et peut contenir des modifications non enregistrées.',
@@ -1048,6 +1057,7 @@ const tMain = createI18n({
     filterOdt: 'OpenDocument-Text',
     dlgSaveAs: 'Speichern unter',
     closeUnsavedMsg: 'Dieses Dokument enthält ungespeicherte Änderungen.',
+    closeUnsavedNamedMsg: '„{name}“ enthält ungespeicherte Änderungen.',
     closeUnsavedDetail: 'Vor dem Schließen speichern?',
     closeNoReplyMsg:
       'Das Dokument reagiert nicht und enthält möglicherweise ungespeicherte Änderungen.',
@@ -1180,6 +1190,7 @@ const tMain = createI18n({
     filterOdt: 'Texto OpenDocument',
     dlgSaveAs: 'Guardar como',
     closeUnsavedMsg: 'Este documento tiene cambios sin guardar.',
+    closeUnsavedNamedMsg: '«{name}» tiene cambios sin guardar.',
     closeUnsavedDetail: '¿Desea guardarlos antes de cerrar?',
     closeNoReplyMsg: 'El documento no responde y puede tener cambios sin guardar.',
     closeNoReplyDetail: '¿Cerrar de todos modos? Los cambios sin guardar se perderán.',
@@ -1312,6 +1323,7 @@ const tMain = createI18n({
     filterOdt: 'ข้อความ OpenDocument',
     dlgSaveAs: 'บันทึกเป็น',
     closeUnsavedMsg: 'เอกสารนี้มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
+    closeUnsavedNamedMsg: '“{name}” มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
     closeUnsavedDetail: 'ต้องการบันทึกก่อนปิดหรือไม่?',
     closeNoReplyMsg: 'เอกสารไม่ตอบสนองและอาจมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
     closeNoReplyDetail: 'ปิดต่อไปหรือไม่ การเปลี่ยนแปลงที่ยังไม่ได้บันทึกจะหายไป',
@@ -1443,6 +1455,7 @@ const tMain = createI18n({
     filterOdt: 'Teks OpenDocument',
     dlgSaveAs: 'Simpan Sebagai',
     closeUnsavedMsg: 'Dokumen ini memiliki perubahan yang belum disimpan.',
+    closeUnsavedNamedMsg: '“{name}” memiliki perubahan yang belum disimpan.',
     closeUnsavedDetail: 'Simpan sebelum menutup?',
     closeNoReplyMsg: 'Dokumen tidak merespons dan mungkin memiliki perubahan yang belum disimpan.',
     closeNoReplyDetail: 'Tetap tutup? Perubahan yang belum disimpan akan hilang.',
@@ -1574,6 +1587,7 @@ const tMain = createI18n({
     filterOdt: 'Текст OpenDocument',
     dlgSaveAs: 'Сохранить как',
     closeUnsavedMsg: 'В этом документе есть несохранённые изменения.',
+    closeUnsavedNamedMsg: 'В «{name}» есть несохранённые изменения.',
     closeUnsavedDetail: 'Сохранить их перед закрытием?',
     closeNoReplyMsg: 'Документ не отвечает; возможно, есть несохранённые изменения.',
     closeNoReplyDetail: 'Всё равно закрыть? Несохранённые изменения будут потеряны.',
@@ -1705,6 +1719,7 @@ const tMain = createI18n({
     filterOdt: 'نص OpenDocument',
     dlgSaveAs: 'حفظ باسم',
     closeUnsavedMsg: 'يحتوي هذا المستند على تغييرات غير محفوظة.',
+    closeUnsavedNamedMsg: 'يحتوي ”{name}“ على تغييرات غير محفوظة.',
     closeUnsavedDetail: 'هل تريد حفظها قبل الإغلاق؟',
     closeNoReplyMsg: 'المستند لا يستجيب وقد يحتوي على تغييرات غير محفوظة.',
     closeNoReplyDetail: 'هل تريد الإغلاق رغم ذلك؟ ستفقد التغييرات غير المحفوظة.',
@@ -1836,6 +1851,7 @@ const tMain = createI18n({
     filterOdt: 'Texto OpenDocument',
     dlgSaveAs: 'Salvar Como',
     closeUnsavedMsg: 'Este documento tem alterações não salvas.',
+    closeUnsavedNamedMsg: '“{name}” tem alterações não salvas.',
     closeUnsavedDetail: 'Deseja salvá-las antes de fechar?',
     closeNoReplyMsg: 'O documento não está respondendo e pode ter alterações não salvas.',
     closeNoReplyDetail: 'Fechar mesmo assim? As alterações não salvas serão perdidas.',
@@ -1967,6 +1983,7 @@ const tMain = createI18n({
     filterOdt: 'Testo OpenDocument',
     dlgSaveAs: 'Salva con nome',
     closeUnsavedMsg: 'Questo documento contiene modifiche non salvate.',
+    closeUnsavedNamedMsg: '“{name}” contiene modifiche non salvate.',
     closeUnsavedDetail: 'Salvarle prima di chiudere?',
     closeNoReplyMsg: 'Il documento non risponde e potrebbe avere modifiche non salvate.',
     closeNoReplyDetail: 'Chiudere comunque? Le modifiche non salvate andranno perse.',
@@ -2098,6 +2115,7 @@ const tMain = createI18n({
     filterOdt: 'Tekst OpenDocument',
     dlgSaveAs: 'Zapisz jako',
     closeUnsavedMsg: 'Ten dokument zawiera niezapisane zmiany.',
+    closeUnsavedNamedMsg: '„{name}” zawiera niezapisane zmiany.',
     closeUnsavedDetail: 'Czy zapisać je przed zamknięciem?',
     closeNoReplyMsg: 'Dokument nie odpowiada i może zawierać niezapisane zmiany.',
     closeNoReplyDetail: 'Zamknąć mimo to? Niezapisane zmiany zostaną utracone.',
@@ -2229,6 +2247,7 @@ const tMain = createI18n({
     filterOdt: 'Text OpenDocument',
     dlgSaveAs: 'Uložit jako',
     closeUnsavedMsg: 'Tento dokument obsahuje neuložené změny.',
+    closeUnsavedNamedMsg: '„{name}“ obsahuje neuložené změny.',
     closeUnsavedDetail: 'Chcete je před zavřením uložit?',
     closeNoReplyMsg: 'Dokument neodpovídá a může obsahovat neuložené změny.',
     closeNoReplyDetail: 'Přesto zavřít? Neuložené změny budou ztraceny.',
@@ -2360,6 +2379,7 @@ const tMain = createI18n({
     filterOdt: 'OpenDocument-tekst',
     dlgSaveAs: 'Opslaan als',
     closeUnsavedMsg: 'Dit document bevat niet-opgeslagen wijzigingen.',
+    closeUnsavedNamedMsg: '“{name}” bevat niet-opgeslagen wijzigingen.',
     closeUnsavedDetail: 'Wilt u ze opslaan voordat u sluit?',
     closeNoReplyMsg: 'Het document reageert niet en heeft mogelijk niet-opgeslagen wijzigingen.',
     closeNoReplyDetail: 'Toch sluiten? Niet-opgeslagen wijzigingen gaan verloren.',
@@ -2491,6 +2511,7 @@ const tMain = createI18n({
     filterOdt: 'Teks OpenDocument',
     dlgSaveAs: 'Simpan Sebagai',
     closeUnsavedMsg: 'Dokumen ini mempunyai perubahan yang belum disimpan.',
+    closeUnsavedNamedMsg: '“{name}” mempunyai perubahan yang belum disimpan.',
     closeUnsavedDetail: 'Adakah anda mahu menyimpannya sebelum menutup?',
     closeNoReplyMsg: 'Dokumen tidak bertindak balas dan mungkin ada perubahan yang belum disimpan.',
     closeNoReplyDetail: 'Tutup juga? Perubahan yang belum disimpan akan hilang.',
@@ -2622,6 +2643,7 @@ const tMain = createI18n({
     filterOdt: 'טקסט OpenDocument',
     dlgSaveAs: 'שמירה בשם',
     closeUnsavedMsg: 'במסמך זה יש שינויים שלא נשמרו.',
+    closeUnsavedNamedMsg: 'ב„{name}” יש שינויים שלא נשמרו.',
     closeUnsavedDetail: 'האם לשמור אותם לפני הסגירה?',
     closeNoReplyMsg: 'המסמך אינו מגיב וייתכן שיש בו שינויים שלא נשמרו.',
     closeNoReplyDetail: 'לסגור בכל זאת? שינויים שלא נשמרו יאבדו.',
@@ -2753,6 +2775,7 @@ const tMain = createI18n({
     filterOdt: 'OpenDocument टेक्स्ट',
     dlgSaveAs: 'इस रूप में सहेजें',
     closeUnsavedMsg: 'इस दस्तावेज़ में सहेजे नहीं गए परिवर्तन हैं।',
+    closeUnsavedNamedMsg: '“{name}” में सहेजे नहीं गए परिवर्तन हैं।',
     closeUnsavedDetail: 'क्या आप बंद करने से पहले उन्हें सहेजना चाहते हैं?',
     closeNoReplyMsg: 'दस्तावेज़ प्रतिक्रिया नहीं दे रहा है और उसमें सहेजे न गए बदलाव हो सकते हैं।',
     closeNoReplyDetail: 'फिर भी बंद करें? सहेजे न गए बदलाव खो जाएँगे।',
@@ -2884,6 +2907,7 @@ const tMain = createI18n({
     filterOdt: 'OpenDocument 文字',
     dlgSaveAs: '另存新檔',
     closeUnsavedMsg: '此文件有未儲存的變更。',
+    closeUnsavedNamedMsg: '「{name}」有未儲存的變更。',
     closeUnsavedDetail: '關閉前是否要儲存？',
     closeNoReplyMsg: '文件沒有回應,可能有未儲存的變更。',
     closeNoReplyDetail: '仍要關閉嗎?未儲存的變更將遺失。',
@@ -3433,6 +3457,7 @@ function releaseSpellIgnores(wcId: number): void {
 
 function dropDocWriter(wcId: number): void {
   releaseSpellIgnores(wcId)
+  exportedFiles.forget(wcId)
   docWritablePaths.delete(wcId)
   pdfWritablePaths.delete(wcId)
   openDocByWc.delete(wcId)
@@ -3455,6 +3480,9 @@ function dropDocWriter(wcId: number): void {
 // ── External-modification detection: remember the disk state at every read/write
 // so docs:save can refuse to clobber edits made by Word/another window ──
 const docDiskStates = new Map<number, Map<string, DiskFileState>>()
+
+/** what each tab exported, for the status bar's Open / Open folder */
+const exportedFiles = new ExportedFiles()
 
 const sha256Hex = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex')
 
@@ -4654,6 +4682,33 @@ export function registerDocsIpc(): void {
 
   ipcMain.handle('docs:open-path', (event, filePath: string) => loadDocx(filePath, event.sender.id))
 
+  // Review → Compare: the other document is only read, never opened in this tab
+  ipcMain.handle('docs:open-compare', async (event) => {
+    const result = await openDialog(event, {
+      title: tm('dlgOpenDoc'),
+      filters: [{ name: tm('filterWord'), extensions: ['docx'] }],
+      properties: ['openFile'],
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    try {
+      const target = await readCompareTarget(result.filePaths[0], {
+        readFile: (p) => readFile(p),
+        isEncrypted: isEncryptedDocx,
+        maxBytes: MAX_OPEN_BYTES,
+      })
+      if (!target) return null
+      if (target.kind === 'needsPassword') return { needsPassword: true, name: target.name }
+      if (target.kind === 'tooLarge') {
+        return {
+          error: `${target.name}: ${tm('errTooLarge', { mb: MAX_OPEN_BYTES / 1024 / 1024 })}`,
+        }
+      }
+      return { name: target.name, dataUrl: handOffBytes(target.bytes) }
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : String(err) }
+    }
+  })
+
   // w:altChunk HTML: the same html2docx chain as the HTML app's export, in a
   // hidden window; the renderer parses the result and shows its blocks
   ipcMain.handle('docs:altchunk-html-to-docx', async (_event, html: unknown) => {
@@ -5571,6 +5626,25 @@ export function registerDocsIpc(): void {
     })
   })
 
+  // status-bar buttons after an export: only for files this tab exported
+  ipcMain.handle('docs:open-exported', (event, path: unknown) => {
+    if (!exportedFiles.allows(event.sender.id, path)) return false
+    try {
+      if (shellHooks?.openGeneratedPath?.(path)) return true
+    } catch (err) {
+      console.warn('[docs] Failed to open exported file:', err)
+    }
+    void shell.openPath(path)
+    return true
+  })
+  ipcMain.handle('docs:reveal-exported', (event, path: unknown) => {
+    if (!exportedFiles.allows(event.sender.id, path)) return false
+    // an image export names its folder: open the folder itself
+    if (exportedFiles.isFolder(path)) void shell.openPath(path)
+    else shell.showItemInFolder(path)
+    return true
+  })
+
   ipcMain.handle(
     'docs:export-pdf',
     async (
@@ -5617,7 +5691,9 @@ export function registerDocsIpc(): void {
         })
         const data = await withInternalLinks(printed, links)
         await atomicWriteFile(filePath, data)
-        if (!isImageExportTemp(event.sender.id, filePath)) openGeneratedFile(filePath)
+        // offered as status-bar Open / Open folder buttons, not opened in a new tab
+        if (!isImageExportTemp(event.sender.id, filePath))
+          exportedFiles.remember(event.sender.id, filePath)
         return { ok: true, path: filePath }
       } catch (err) {
         // path is already authorized, so the renderer can retry chunked to the same target
@@ -5684,6 +5760,7 @@ export function registerDocsIpc(): void {
       try {
         const filePath = join(dir, fileName)
         await atomicWriteFile(filePath, Buffer.from(String(pngBase64), 'base64'))
+        exportedFiles.remember(event.sender.id, dir, true)
         return { ok: true, path: filePath }
       } catch (err) {
         return { ok: false, error: String(err) }
@@ -5714,7 +5791,7 @@ export function registerDocsIpc(): void {
           filePath,
           Buffer.from(await inlineLazyMediaInHtml(html, readLazyMedia), 'utf8'),
         )
-        openGeneratedFile(filePath)
+        exportedFiles.remember(event.sender.id, filePath)
         return { ok: true, path: filePath }
       } catch (err) {
         return { ok: false, error: String(err), path: filePath }
@@ -5757,7 +5834,7 @@ export function registerDocsIpc(): void {
           filePath,
           Buffer.from(markdown.split(`${MARKDOWN_MEDIA_DIR_TOKEN}/`).join(`${mediaDir}/`), 'utf8'),
         )
-        openGeneratedFile(filePath)
+        exportedFiles.remember(event.sender.id, filePath)
         return { ok: true, path: filePath, imagesDropped: images.length - written }
       } catch (err) {
         return { ok: false, error: String(err), path: filePath }
@@ -5825,7 +5902,9 @@ export function registerDocsIpc(): void {
         }
         if (Array.isArray(links) && links.length > 0) addPdfInternalLinks(merged, links)
         await atomicWriteFile(filePath, Buffer.from(await merged.save()))
-        if (!isImageExportTemp(event.sender.id, filePath)) openGeneratedFile(filePath)
+        // offered as status-bar Open / Open folder buttons, not opened in a new tab
+        if (!isImageExportTemp(event.sender.id, filePath))
+          exportedFiles.remember(event.sender.id, filePath)
         return { ok: true, path: filePath }
       } catch (err) {
         return { ok: false, error: String(err) }
@@ -6690,9 +6769,10 @@ async function performDocsClose(
     docsRecovery.noteClosedSaved(contents.id)
     return true
   }
+  const docName = closePromptDocName(state.filePath, contents.getTitle())
   const options = {
     type: 'warning' as const,
-    message: tm('closeUnsavedMsg'),
+    message: docName ? tm('closeUnsavedNamedMsg', { name: docName }) : tm('closeUnsavedMsg'),
     detail: tm('closeUnsavedDetail'),
     buttons: [tm('menuSave'), tm('btnDontSave'), tm('btnCancel')],
     defaultId: 0,

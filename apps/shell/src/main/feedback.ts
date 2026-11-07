@@ -1,4 +1,10 @@
-import { createI18n, defineStrings, PRODUCT_CONTACT_EMAIL, productName, type Lang } from '@genoffice/i18n'
+import {
+  createI18n,
+  defineStrings,
+  PRODUCT_CONTACT_EMAIL,
+  productName,
+  type Lang,
+} from '@genoffice/i18n'
 
 /**
  * Hanpan: feedback goes to the people who make it (TenAI) by email. The Help
@@ -234,4 +240,17 @@ export function feedbackDetails(lang: Lang, env: FeedbackEnvironment): string {
     os: env.os,
     language: env.language,
   })
+}
+
+/**
+ * The OS as people know it (0.17 리뷰 v2 shell #20): Windows 11 still reports
+ * kernel 10.0, so the build number (22000 and up) tells 11 from 10.
+ */
+export function osLabel(platform: string, release: string): string {
+  if (platform === 'win32') {
+    const build = Number(release.split('.')[2])
+    const name = Number.isFinite(build) && build >= 22000 ? 'Windows 11' : 'Windows 10'
+    return `${name} (${release})`
+  }
+  return `${platformLabel(platform)} ${release}`
 }

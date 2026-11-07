@@ -42,6 +42,7 @@ import type {
 import {
   AiMark,
   Dropdown,
+  RibbonCollapseButton,
   aiSubscriptionText,
   isSymbolFontFamily,
   useDismissablePopover,
@@ -66,7 +67,7 @@ import { getActiveSubEditor } from '../editor/active-editor'
 import { wordUnitAt } from '../editor/word-range'
 import {
   BULLET_LIBRARY,
-  MULTILEVEL_LIBRARY,
+  multilevelLibraryFor,
   NUMBER_LIBRARY,
   bulletPresetLevels,
   numberPresetLevels,
@@ -118,6 +119,7 @@ import {
   toggleRepeatHeaderRows,
 } from '../editor/table-properties'
 import { useI18n, type StringKey } from '../i18n/locale'
+import { uiThemeIsDark } from '../ui-theme'
 import type { MergeDataSource } from '../../shared/ipc'
 import type { MailMergeRequest, MailMergeResponse } from '../mail-merge/output'
 import { pxToTwips, twipsToPx } from '../units'
@@ -141,6 +143,7 @@ import {
   isEastAsianFontName,
   splitHangulFamilies,
   systemFamiliesBesidesCandidates,
+  fontBoxDisplayName,
 } from '../font-list'
 import {
   fontSizeLabel,
@@ -287,6 +290,10 @@ interface RibbonProps {
   onOpen: () => void
   onSave: () => void
   onSaveAs: () => void
+  /** File menu exports: the same flows as the tab bar menu (export-pdf/html/markdown/images) */
+  onExport?: (format: RibbonExportFormat) => void
+  /** File menu Print: the same flow as the tab bar menu and Ctrl+P */
+  onPrint?: () => void
   showAi: boolean
   onToggleAi: () => void
   section: SectionSettings | null
@@ -513,6 +520,15 @@ export function applyPainterFormat(
 
 // Word for Mac has no File ribbon tab: file actions live in the native menu
 // bar (which we provide). Windows Word does have one, so keep it there.
+/** File menu export formats, in the tab bar menu's order */
+export type RibbonExportFormat = 'pdf' | 'html' | 'markdown' | 'images'
+const RIBBON_EXPORTS = [
+  ['pdf', 'ribbonExportPdf'],
+  ['html', 'ribbonExportHtml'],
+  ['markdown', 'ribbonExportMarkdown'],
+  ['images', 'ribbonExportImages'],
+] as const satisfies ReadonlyArray<readonly [RibbonExportFormat, string]>
+
 const IS_MAC = navigator.platform.toLowerCase().includes('mac')
 // Word offers Half-width / Full-width under Change Case only on CJK UIs
 const WIDTH_CASE_LANGS = new Set<Lang>(['zh', 'zh-TW', 'ja'])
@@ -756,6 +772,8 @@ function RibbonInner({
   onOpen,
   onSave,
   onSaveAs,
+  onExport,
+  onPrint,
   showAi,
   onToggleAi,
   section,
@@ -923,6 +941,28 @@ function RibbonInner({
         panel.parentElement,
       ]),
   })
+
+  // 열린 리본 드롭다운(파일 메뉴·여백·글꼴 등)은 Esc로 닫는다. 드롭다운을 열어도 포커스가
+  // 본문에 남으므로 문서 수준에서 받는다. 파일 메뉴는 포커스를 파일 버튼으로 돌려준다(엑셀·한글과 같게)
+  const fileTabRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (dropdown == null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.isComposing) return
+      // a modal opened from the dropdown owns Esc
+      if (document.querySelector('.modal-backdrop, [role="dialog"][aria-modal="true"]')) return
+      // a ribbon text field (font / size combo) reverts its own typing on Esc first
+      const target = e.target as Element | null
+      if (target?.closest?.('.ribbon input, .ribbon textarea, .ribbon select')) return
+      e.preventDefault()
+      e.stopPropagation()
+      const wasFile = dropdown === 'file'
+      setDropdown(null)
+      if (wasFile) fileTabRef.current?.focus()
+    }
+    document.addEventListener('keydown', onKey, true)
+    return () => document.removeEventListener('keydown', onKey, true)
+  }, [dropdown])
 
   // leaving the Draw tab always drops back to text editing, so the drawing
   // overlay never swallows clicks while its controls are off-screen
@@ -1391,6 +1431,8 @@ function RibbonInner({
   }
 
   const currentFont = fs.fontFamily
+  // 한국어 화면: 글꼴 칸은 한국어 이름(맑은 고딕)으로 보인다. 문서 안 이름은 그대로
+  const currentFontShown = fontBoxDisplayName(currentFont, lang, fontInfo)
   // Word's font box: an East Asian face fills every rFonts slot, a Latin face only
   // w:ascii/w:hAnsi so the CJK font survives
   const setFont = (name: string) => {
@@ -1452,8 +1494,8 @@ function RibbonInner({
       // the name the box already shows stays as it is, even when it is another
       // spelling of a listed family (a document may hold the Korean name)
       const name =
-        typedName === currentFont
-          ? typedName
+        typedName === currentFont || typedName === currentFontShown
+          ? currentFont
           : (picked ?? familyForTypedName(typedName, fontMenuNames, fontInfo))
       resetFontBox()
       // an unchanged name is a no-op: re-applying the East Asian face the box
@@ -1547,7 +1589,10 @@ function RibbonInner({
               data-style-id={info.styleId}
               onClick={() => apply(info)}
             >
-              <span className="style-card-preview" style={stylePreviewCss(info, docDefaults)}>
+              <span
+                className="style-card-preview"
+                style={stylePreviewCss(info, docDefaults, uiThemeIsDark())}
+              >
                 {isChar ? 'Aa' : t('ribbonStylePreview')}
               </span>
               <span className="style-card-label">{label}</span>
@@ -2079,6 +2124,9 @@ function RibbonInner({
         {!IS_MAC && (
           <div className="file-tab-wrap">
             <button
+              ref={fileTabRef}
+              aria-haspopup="menu"
+              aria-expanded={dropdown === 'file'}
               className={`ribbon-tab ribbon-tab-file ${dropdown === 'file' ? 'open' : ''}`}
               onClick={() => setDropdown((v) => (v === 'file' ? null : 'file'))}
             >
@@ -2111,6 +2159,27 @@ function RibbonInner({
                   }}
                 >
                   {t('ribbonSaveAs')} <span className="file-menu-key">Ctrl+Shift+S</span>
+                </button>
+                {RIBBON_EXPORTS.map(([format, label]) => (
+                  <button
+                    key={format}
+                    disabled={!hasDoc}
+                    onClick={() => {
+                      setDropdown(null)
+                      onExport?.(format)
+                    }}
+                  >
+                    {t(label)}
+                  </button>
+                ))}
+                <button
+                  disabled={!hasDoc}
+                  onClick={() => {
+                    setDropdown(null)
+                    onPrint?.()
+                  }}
+                >
+                  {t('ribbonPrint')} <span className="file-menu-key">Ctrl+P</span>
                 </button>
               </div>
             )}
@@ -2591,7 +2660,7 @@ function RibbonInner({
                           ? 'table-style-card active'
                           : 'table-style-card'
                       }
-                      data-tip={t('ribbonApplyTableStyleTip', { name: info.name })}
+                      data-tip={t('ribbonApplyTableStyleTip', { name: styleLabel(info, t) })}
                       onClick={() =>
                         chain().updateAttributes('docTable', { tblStyleId: info.styleId }).run()
                       }
@@ -2607,7 +2676,7 @@ function RibbonInner({
                             : undefined,
                         }}
                       />
-                      <span>{info.name}</span>
+                      <span>{styleLabel(info, t)}</span>
                     </button>
                   ))}
               </div>
@@ -2907,7 +2976,7 @@ function RibbonInner({
               <div className="ribbon-group-label">{t('ribbonGroupRowsCols')}</div>
             </div>
             <div className="ribbon-sep" />
-            <div className="table-tool-group">
+            <div className="table-tool-group table-tool-merge">
               <div className="table-tool-row">
                 <button disabled={!fs.canMergeCells} onClick={() => runTableCommand(mergeCells)}>
                   <IconMergeCells />
@@ -3103,7 +3172,7 @@ function RibbonInner({
         ) : tab === 'home' ? (
           <>
             {/* ---- AI (first slot: entry + one-click AI actions) ---- */}
-            <div className="ribbon-group">
+            <div className="ribbon-group ribbon-group-ai">
               <div className="ribbon-group-items">
                 <button
                   className={`rb-big ai-entry ${showAi ? 'active' : ''}`}
@@ -3116,7 +3185,7 @@ function RibbonInner({
                   <span>{aiSubscriptionText(lang, 'aiAssistant')}</span>
                 </button>
                 <button
-                  className="rb-big ai-entry"
+                  className="rb-big ai-entry ai-preset"
                   disabled={docEmpty}
                   data-tip={t('aiSummarizeBtn')}
                   onClick={() => onAiPreset(t('aiSummarizePrompt'))}
@@ -3148,7 +3217,7 @@ function RibbonInner({
                   <span>{t('aiSummarizeBtn')}</span>
                 </button>
                 <button
-                  className="rb-big ai-entry"
+                  className="rb-big ai-entry ai-preset"
                   disabled={docEmpty}
                   data-tip={t('aiPolishBtn')}
                   onClick={() =>
@@ -3184,7 +3253,7 @@ function RibbonInner({
                   <span>{t('aiPolishBtn')}</span>
                 </button>
                 <button
-                  className="rb-big ai-entry"
+                  className="rb-big ai-entry ai-preset"
                   disabled={docEmpty}
                   data-tip={t('aiTidyBtn')}
                   onClick={() => onAiPreset(t('aiTidyPrompt'))}
@@ -3213,7 +3282,7 @@ function RibbonInner({
                   <span>{t('aiTidyBtn')}</span>
                 </button>
                 <button
-                  className="rb-big ai-entry"
+                  className="rb-big ai-entry ai-preset"
                   disabled={docEmpty}
                   data-tip={t('aiMindMapBtn')}
                   onClick={() => onAiPreset(t('aiMindMapPrompt'))}
@@ -3362,7 +3431,7 @@ function RibbonInner({
                       ref={fontInputRef}
                       className="rb-select rb-font-family"
                       disabled={!canEdit}
-                      value={fontDraft ?? currentFont}
+                      value={fontDraft ?? currentFontShown}
                       aria-label={t('ribbonFontFamilyTip')}
                       data-tip={t('ribbonFontFamilyTip')}
                       aria-autocomplete="both"
@@ -3873,7 +3942,7 @@ function RibbonInner({
                           multiPreview,
                         )}
                         <div className="list-gallery-title">{t('ribbonListLibraryTitle')}</div>
-                        {MULTILEVEL_LIBRARY.map((levels, i) => (
+                        {multilevelLibraryFor(lang).map((levels, i) => (
                           <button
                             key={i}
                             className="list-gallery-card list-gallery-card-multi"
@@ -4336,6 +4405,7 @@ function RibbonInner({
           />
         )}
       </div>
+      <RibbonCollapseButton state={collapse} label={t('ribbonCollapse')} />
 
       {pictureDialog === 'cutout' && imageDataUrl && (
         <CutoutDialog

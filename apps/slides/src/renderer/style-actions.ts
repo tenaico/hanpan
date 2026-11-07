@@ -23,6 +23,7 @@ import {
 } from './TextEditOverlay'
 import type { FormatCmd } from './components/Ribbon'
 import type { SlideThemePreset } from './themes'
+import { themeDisplayName } from './theme-names'
 import { t } from './i18n/locale'
 
 export function onFormat(cmd: FormatCmd): void {
@@ -308,7 +309,7 @@ export async function applyThemePreset(ctx: ActionCtx, preset: SlideThemePreset)
     ctx.setSelectedIds([])
     ctx.setEditing(null)
     ctx.setDirty(true)
-    ctx.setStatus(t('appStatusThemeApplied', { name: preset.name }))
+    ctx.setStatus(t('appStatusThemeApplied', { name: themeDisplayName(preset) }))
   }
 }
 

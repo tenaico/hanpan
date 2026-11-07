@@ -153,8 +153,9 @@ export const FootnoteReference = Node.create({
     const label = String(node.attrs.label ?? '')
     return [
       'sup',
-      mergeAttributes({ class: 'md-footnote-ref', 'data-footnote': label }),
-      `[^${label}]`,
+      // shown as a note number, like a printed document; the source keeps [^label]
+      mergeAttributes({ class: 'md-footnote-ref', 'data-footnote': label, title: `[^${label}]` }),
+      label,
     ]
   },
 
@@ -208,7 +209,7 @@ export const FootnoteDefinition = Node.create({
     return [
       'div',
       mergeAttributes({ class: 'md-footnote-def', 'data-footnote': label }),
-      ['div', { class: 'md-footnote-def-label', contenteditable: 'false' }, `[^${label}]:`],
+      ['div', { class: 'md-footnote-def-label', contenteditable: 'false' }, `${label}.`],
       ['div', { class: 'md-footnote-def-body' }, 0],
     ]
   },

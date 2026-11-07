@@ -1003,6 +1003,23 @@ describe('notices', () => {
   const lines = () =>
     [...host.querySelectorAll('.ai-sub-first-list li')].map((el) => el.textContent)
 
+  it('first connection, compact: one summary line, details folded under "more"', () => {
+    const onAcknowledge = vi.fn()
+    act(() =>
+      root.render(
+        createElement(AiFirstConnectionNotice, { lang: 'en', compact: true, onAcknowledge }),
+      ),
+    )
+    expect(host.querySelector('.ai-sub-first-summary')!.textContent).toBe(en.noticeSummary)
+    const details = host.querySelector('details')!
+    expect(details.open).toBe(false)
+    expect(details.querySelector('summary')!.textContent).toBe(en.noticeMore)
+    // the full sentences are still there for whoever opens them
+    expect(lines()).toEqual([en.noticeSend, en.noticeTraining])
+    click('button')
+    expect(onAcknowledge).toHaveBeenCalledOnce()
+  })
+
   it('first connection: where content goes and who decides about training', () => {
     act(() => root.render(createElement(AiFirstConnectionNotice, { lang: 'en' })))
     expect(host.querySelector('.ai-sub-first-title')!.textContent).toBe(en.noticeTitle)

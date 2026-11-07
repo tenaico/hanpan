@@ -69,6 +69,7 @@ import { IconNotes, IconPlayBoxed } from './components/icons'
 import { PresenterView } from './components/PresenterView'
 import { CustomShowDialog } from './components/CustomShowDialog'
 import { PrintDialog } from './components/PrintDialog'
+import { ExportImagesDialog } from './components/ExportImagesDialog'
 import { FindReplaceDialog } from './components/FindReplaceDialog'
 import { formatClock, type CustomShow } from './slideshow-utils'
 import { ContextMenu } from './components/ContextMenu'
@@ -107,6 +108,7 @@ import {
   useSplitPaneFocusPing,
   type AiScopeQuoteData,
   type WordArtPreset,
+  type GonguPicked,
   aiPanelInitiallyOpen,
   rememberAiPanelOpen,
   AiMark,
@@ -171,6 +173,7 @@ import {
   type NotesDraft,
 } from '../shared/notes-draft'
 import { useEscOverlay, useEscOverlayOpen } from './esc-overlay'
+import { bgPaneClosesOnEscape } from './escape-targets'
 import { buildCtxItems } from './context-menu-items'
 import { isMac, nextSelection } from './platform-modifiers'
 import * as placeholderNav from './placeholder-nav'
@@ -1030,7 +1033,8 @@ export function App() {
   }, [autoSave, path, editing, editingCell, save])
 
   const saveAs = useCallback(() => fileActions.saveAs(() => ctxRef.current), [])
-  const exportImages = useCallback(() => fileActions.exportImages(ctxRef.current), [])
+  // 형식·범위·크기를 고르는 대화상자부터 연다(UX v2 #21)
+  const exportImages = useCallback(() => setExportImgDlgOpen(true), [])
   const exportPdf = useCallback(() => void fileActions.exportPdf(ctxRef.current), [])
 
   // Headless export mode (--headless-export): this renderer lives in a hidden
@@ -1064,6 +1068,7 @@ export function App() {
   }, [])
 
   const [printDlgOpen, setPrintDlgOpen] = useState(false)
+  const [exportImgDlgOpen, setExportImgDlgOpen] = useState(false)
 
   /** Whether focus is in a text input (input/textarea/contentEditable) — these cases use native undo/delete */
   const inTextField = () => {
@@ -1728,6 +1733,10 @@ export function App() {
   )
   const insertSoundEffect = useCallback(
     (id: string) => insertActions.insertSoundEffect(ctxRef.current, id),
+    [],
+  )
+  const insertGonguPicture = useCallback(
+    (picked: GonguPicked) => insertActions.insertGonguPicture(ctxRef.current, picked),
     [],
   )
   const insertModel3dFile = useCallback(() => insertActions.insertModel3dFile(ctxRef.current), [])
@@ -2524,6 +2533,26 @@ export function App() {
   }, [mediaPlay])
   useEscOverlay(!!mediaPlay || !!drawKind || viewMode === 'reading')
   const overlayOpen = useEscOverlayOpen()
+  // Format Background pane: Esc closes it (from inside the pane, or from the canvas once
+  // there is no selection or edit for that Esc to undo); an open menu/dialog takes Esc first
+  useEffect(() => {
+    if (!showBgFormat || overlayOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.isComposing) return
+      const inPane = (e.target as Element | null)?.closest?.('.format-pane') != null
+      if (
+        bgPaneClosesOnEscape({
+          inPane,
+          editing: editing != null,
+          selected: selectedIds.length,
+          defaultPrevented: e.defaultPrevented,
+        })
+      )
+        setShowBgFormat(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showBgFormat, overlayOpen, editing, selectedIds])
 
   const startEditCell = useCallback((sourceId: string, row: number, col: number) => {
     setEditing(null)
@@ -3489,6 +3518,7 @@ export function App() {
         onOpenEquation={() => setEqDialogOpen(true)}
         onInsertMedia={(kind) => void insertMediaFile(kind)}
         onInsertSoundEffect={(id) => void insertSoundEffect(id)}
+        onInsertGonguPicture={insertGonguPicture}
         onInsertModel3d={() => void insertModel3dFile()}
         recording={recording}
         onToggleScreenRecord={() => void toggleScreenRecord()}
@@ -4645,6 +4675,19 @@ export function App() {
           onChange={updateCustomShows}
           onPlay={playCustomShow}
           onClose={() => setCustomShowDlgOpen(false)}
+        />
+      )}
+
+      {exportImgDlgOpen && (
+        <ExportImagesDialog
+          visibleCount={slides.filter((s) => !s.hidden).length}
+          slideWidthPx={slides[current]?.widthPx ?? 960}
+          slideHeightPx={slides[current]?.heightPx ?? 540}
+          onClose={() => setExportImgDlgOpen(false)}
+          onExport={(opts) => {
+            setExportImgDlgOpen(false)
+            void fileActions.exportImages(ctxRef.current, opts)
+          }}
         />
       )}
 

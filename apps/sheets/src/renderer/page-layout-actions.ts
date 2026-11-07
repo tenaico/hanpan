@@ -25,9 +25,13 @@ import { t } from './i18n/locale'
 import { effectivePageBreaks } from './page-break-preview'
 import { COLOR_SCHEMES, FONT_SCHEMES, rethemeStyles, THEME_PRESETS } from './themes'
 import { startFullLoad } from './full-load'
+import { showToast } from './toast-bus'
+import { imageScaleFor, rasterizeHtml } from './sheet-image'
+import { exportBaseName } from './csv-export'
 import { fitsFullLoad, workbookCellCounts } from './load-budget'
 import { loadVisibleRange } from './univer-sync'
 import {
+  layoutSheetImage,
   layoutSheetPrint,
   PrintError,
   printRequest,
@@ -374,6 +378,26 @@ export function handleApplyHeaderFooter(
 /// One sheet laid out as print pages with its Page Layout settings, the
 /// dialog's unsaved overrides on top; `selection` prints that range instead
 /// of the print area.
+/// The sheet's page setup as printing sees it: the file's, then this session's edits.
+function sheetPageSetup(
+  state: LazyWorkbookState | null,
+  sheetId: string,
+  overrides: PageSetupJournalState,
+): EffectivePageSetup {
+  const journal = { ...(state?.editJournal.pageSetup.get(sheetId) ?? {}), ...overrides }
+  const fileSetup = state?.sheetFilePageSetups.get(sheetId) ?? null
+  const fileSheet = state?.file.sheets.find((sheet) => sheet.id === sheetId)
+  return resolveEffectivePageSetup(
+    journal,
+    fileSetup,
+    {
+      ...(fileSheet?.printArea === undefined ? {} : { printArea: fileSheet.printArea }),
+      ...(fileSheet?.printTitles === undefined ? {} : { printTitles: fileSheet.printTitles }),
+    },
+    state?.editJournal.structuralOps.get(sheetId) ?? [],
+  )
+}
+
 async function sheetPrintDocument(
   ctx: PageLayoutContext,
   state: LazyWorkbookState | null,
@@ -385,19 +409,8 @@ async function sheetPrintDocument(
   withVisuals: boolean,
 ): Promise<SheetPrintDocument> {
   const sheetId = worksheet.getSheetId()
-  const journal = { ...(state?.editJournal.pageSetup.get(sheetId) ?? {}), ...overrides }
-  const fileSetup = state?.sheetFilePageSetups.get(sheetId) ?? null
-  const fileSheet = state?.file.sheets.find((sheet) => sheet.id === sheetId)
-  const setup = resolveEffectivePageSetup(
-    journal,
-    fileSetup,
-    {
-      ...(fileSheet?.printArea === undefined ? {} : { printArea: fileSheet.printArea }),
-      ...(fileSheet?.printTitles === undefined ? {} : { printTitles: fileSheet.printTitles }),
-    },
-    state?.editJournal.structuralOps.get(sheetId) ?? [],
-  )
-  const baseName = (state?.file.name ?? 'Book1').replace(/\.[^.]+$/, '')
+  const setup = sheetPageSetup(state, sheetId, overrides)
+  const baseName = exportBaseName(state)
   const pictures = state
     ? await loadHeaderFooterPictures(state.file.sessionId, setup.headerFooterPictures)
     : new Map<string, HeaderFooterPictureImage>()
@@ -493,7 +506,7 @@ export function createPrintPreviewHost(ctx: PageLayoutContext): PrintPreviewHost
           !sheet.isSheetHidden() &&
           !(state && isSheetRemoved(state.editJournal, sheet.getSheetId())),
       )
-  const baseName = (state?.file.name ?? 'Book1').replace(/\.[^.]+$/, '')
+  const baseName = exportBaseName(state)
   const include = (pages: PrintOutputSettings['pages']) =>
     pages === null ? undefined : (page: number) => page >= pages.from && page <= pages.to
   return {
@@ -659,6 +672,72 @@ export async function handleExportPdf(ctx: PageLayoutContext, outPath?: string):
     return !result.canceled
   } catch (error: unknown) {
     ctx.setMessage(error instanceof Error ? error.message : t('appPdfExportFailed'))
+    return false
+  }
+}
+
+/// File > Export as Image (0.17): the active sheet as one PNG — the selected range when
+/// more than one cell is selected, else the used range — laid out like print on one page
+/// sized to the cells. Resolves true when a picture was written.
+export async function handleExportImage(ctx: PageLayoutContext): Promise<boolean> {
+  try {
+    const activeWorkbook = () => ctx.univerRef.current?.univerAPI.getActiveWorkbook()
+    if (!activeWorkbook()?.getActiveSheet()) {
+      ctx.setMessage(t('appActiveSheetUnavailable'))
+      return false
+    }
+    const state = ctx.lazyWorkbookRef.current
+    if (
+      state &&
+      !(await loadWorkbookForPrint(ctx, state, {
+        notLoaded: t('appPngNeedsFullLoad'),
+        failed: t('appPngExportFailed'),
+      }))
+    )
+      return false
+    const workbook = activeWorkbook()
+    const worksheet = workbook?.getActiveSheet()
+    if (!workbook || !worksheet || ctx.lazyWorkbookRef.current !== state) return false
+    ctx.setMessage(t('appPngRendering'))
+    const range = workbook.getActiveRange()
+    const selection =
+      range && (range.getWidth() > 1 || range.getHeight() > 1)
+        ? `${columnLabel(range.getColumn())}${range.getRow() + 1}:` +
+          `${columnLabel(range.getColumn() + range.getWidth() - 1)}${range.getRow() + range.getHeight()}`
+        : null
+    const sheetId = worksheet.getSheetId()
+    const frames = await settledVisualFrames(ctx, state, sheetId)
+    const baseName = exportBaseName(state)
+    const layout = layoutSheetImage(
+      worksheet as unknown as PrintWorksheet,
+      sheetPageSetup(state, sheetId, {}),
+      baseName,
+      worksheet.getSheetName(),
+      snapshotPrintVisuals(document, frames),
+      selection,
+    )
+    const scale = imageScaleFor(layout.widthPx, layout.heightPx)
+    if (scale === null) {
+      ctx.setMessage(t('appPngTooLarge'))
+      showToast(t('appPngTooLarge'), 'error')
+      return false
+    }
+    const png = await rasterizeHtml(layout.html, layout.widthPx, layout.heightPx, scale)
+    const result = await window.desktopApi.exportImage({
+      fileName: `${baseName}-${worksheet.getSheetName()}.png`.replace(/[\\/:*?"<>|]/g, '_'),
+      png,
+    })
+    if (result.canceled) {
+      ctx.setMessage(t('appPngCanceled'))
+      return false
+    }
+    const exported = t('appPngExported', { path: result.path })
+    ctx.setMessage(exported)
+    showToast(exported)
+    return true
+  } catch (error: unknown) {
+    const failed = error instanceof Error ? error.message : t('appPngExportFailed')
+    ctx.setMessage(failed)
     return false
   }
 }

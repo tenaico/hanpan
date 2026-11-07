@@ -46,7 +46,7 @@ test.describe('sheets: ribbon batch-1 features', () => {
     try {
       const sheets = await waitForPageWithUrl(launched.app, '://sheets/')
       await waitForWorkbook(sheets)
-      const status = sheets.locator('.workbook-status')
+      const status = sheets.locator('.status-bar .status-msg')
 
       // ── Formulas > Create from Selection: drag A1:B3, create names from top row ──
       const origin = await gridOrigin(sheets)
@@ -136,7 +136,7 @@ test.describe('sheets: ribbon batch-2 features', () => {
     try {
       const sheets = await waitForPageWithUrl(launched.app, '://sheets/')
       await waitForWorkbook(sheets)
-      const status = sheets.locator('.workbook-status')
+      const status = sheets.locator('.status-bar .status-msg')
       const origin = await gridOrigin(sheets)
       const cell = (column: number, row: number): { x: number; y: number } => ({
         x: origin.x + 74 * column + 37,
@@ -216,7 +216,7 @@ test.describe('sheets: ribbon batch-3 features', () => {
     try {
       const sheets = await waitForPageWithUrl(launched.app, '://sheets/')
       await waitForWorkbook(sheets)
-      const status = sheets.locator('.workbook-status')
+      const status = sheets.locator('.status-bar .status-msg')
       const origin = await gridOrigin(sheets)
 
       // ── Page Layout > Breaks: insert a break at B3 ──

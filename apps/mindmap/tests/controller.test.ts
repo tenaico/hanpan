@@ -153,6 +153,75 @@ describe('opening', () => {
   })
 })
 
+describe('both sides', () => {
+  /** The main topics in file order, each with the side it is drawn on. */
+  function sides(el: HTMLElement, attachedIds: string[]): string[] {
+    return attachedIds.map((id) => (topicEl(el, id).closest('.lhs') ? 'left' : 'right'))
+  }
+  const balanced = (n: number): string[] =>
+    Array.from({ length: n }, (_x, at) => (at < Math.ceil(n / 2) ? 'right' : 'left'))
+
+  it('new main topics land on the side reopening the file would put them', async () => {
+    const { controller, mind, el, attached, root } = await mount()
+    expect(controller.layout).toBe('both')
+    for (let round = 0; round < 3; round++) {
+      mind.selectNode(mind.findEle(root().id))
+      press(mind.container, 'Tab')
+      await settle()
+      // the new topic is being named: the box stays while the sides are put right
+      expect(el.querySelector('#input-box')).not.toBeNull()
+      finishEditing(el, `added ${round}`)
+      await settle()
+      const ids = attached().map((t) => t.id)
+      expect(sides(el, ids), `after adding ${round + 1}`).toEqual(balanced(ids.length))
+    }
+    mind.selectNode(mind.findEle(attached()[0]!.id))
+    press(mind.container, 'Enter')
+    await settle()
+    finishEditing(el, 'sibling')
+    await settle()
+    const ids = attached().map((t) => t.id)
+    expect(sides(el, ids)).toEqual(balanced(ids.length))
+  })
+})
+
+describe('the topic being added or named', () => {
+  it('is brought fully into view when it lands partly outside the map', async () => {
+    const { mind, root } = await mount()
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({
+        left,
+        top,
+        right: left + width,
+        bottom: top + height,
+        width,
+        height,
+        x: left,
+        y: top,
+      }) as DOMRect
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.classList.contains('map-container')) return rect(0, 0, 800, 600)
+      // every topic stands half outside the right edge, as under the AI panel
+      if (this.tagName === 'ME-TPC') return rect(700, 300, 120, 30)
+      return rect(0, 0, 0, 0)
+    })
+    const move = vi.spyOn(mind, 'move').mockImplementation(() => true)
+    mind.selectNode(mind.findEle(root().id))
+    move.mockClear()
+    press(mind.container, 'Tab')
+    await settle()
+    expect(move).toHaveBeenCalled()
+    const [dx, dy] = move.mock.calls.at(-1)!
+    // just far enough left that the whole topic shows, with a margin; no vertical jump
+    expect(dx).toBeLessThanOrEqual(-36)
+    expect(dx).toBeGreaterThan(-100)
+    expect(dy).toBe(0)
+    vi.restoreAllMocks()
+  })
+})
+
 describe('shortcuts', () => {
   it('Tab adds a child topic with an id the file can keep', async () => {
     const { controller, mind, root, attached } = await mount()

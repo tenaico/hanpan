@@ -5454,6 +5454,7 @@ function protectedDomSpec(node: PmNode): DomSpec {
       ],
     ]
   }
+  if (!label && !oleCaption) noteUnnamedProtected(blockType, node.attrs.docxIndex)
   const children: unknown[] = [
     [
       'span',
@@ -5463,6 +5464,20 @@ function protectedDomSpec(node: PmNode): DomSpec {
   ]
   if (previewText) children.push(['span', { class: 'doc-protected-preview' }, String(previewText)])
   return ['div', attrs, ...children]
+}
+
+/**
+ * A protected block with no label shows the generic "Protected content" chip:
+ * something the parser kept verbatim without knowing what it is. Logged once
+ * per kind so the element behind an unexpected chip can be traced (0.17 review:
+ * two such chips appeared after Save As with TOC, bookmarks and fields).
+ */
+const loggedUnnamedProtected = new Set<string>()
+function noteUnnamedProtected(blockType: unknown, docxIndex: unknown): void {
+  const key = String(blockType)
+  if (loggedUnnamedProtected.has(key)) return
+  loggedUnnamedProtected.add(key)
+  console.warn('[docs] unnamed protected block', { blockType: key, docxIndex })
 }
 
 /** o:OLEObject ProgID → localized friendly kind */

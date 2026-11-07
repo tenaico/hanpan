@@ -154,7 +154,8 @@ export const hi = {
   dlgPivotAddValue: '+ मान फ़ील्ड जोड़ें',
   dlgPivotAddCalc: '+ परिकलित फ़ील्ड जोड़ें',
   dlgPivotTargetCell: 'लक्ष्य सेल',
-  dlgPivotTargetPlaceholder: 'जैसे F1',
+  dlgPivotTargetPlaceholder: 'जैसे {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'संपादन करते समय आउटपुट श्रेणी का ऊपरी-बायां सेल अपरिवर्तित रहता है',
   dlgPivotNote:
     'एक वास्तविक OOXML पिवट तालिका बनाता है जिसे सहेजने के बाद Excel/WPS पहचान और रीफ़्रेश कर सकते हैं।',

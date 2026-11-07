@@ -16,8 +16,9 @@ import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { basename, dirname, join, resolve } from 'node:path'
-import { BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron'
+import { BrowserWindow, dialog, ipcMain, nativeImage, screen, shell } from 'electron'
 import type { IpcMainInvokeEvent, WebContents } from 'electron'
+import { fitWindowSize } from '../window-bounds'
 import { productName, type Lang } from '@genoffice/i18n'
 import {
   safeExternalUrl,
@@ -525,14 +526,21 @@ export function openPdfToolsWindow(): void {
   }
   const lang = d.lang()
   const parent = d.parentWindow()
+  // inside the screen the shell is on, so "Close" never hides under the taskbar (#14)
+  const area = (
+    parent && !parent.isDestroyed()
+      ? screen.getDisplayMatching(parent.getBounds())
+      : screen.getPrimaryDisplay()
+  ).workArea
+  const size = fitWindowSize({ width: 760, height: 720 }, area)
   const next = new BrowserWindow({
-    width: 760,
-    height: 720,
+    ...size,
+    x: area.x + Math.round((area.width - size.width) / 2),
+    y: area.y + Math.round((area.height - size.height) / 2),
     minWidth: 520,
-    minHeight: 520,
+    minHeight: Math.min(520, size.height),
     ...(parent && !parent.isDestroyed() ? { parent } : {}),
     show: false,
-    center: true,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
@@ -547,6 +555,8 @@ export function openPdfToolsWindow(): void {
   })
   win = next
   next.removeMenu()
+  // the page's own <title> ("Hanpan") must not replace the window's name
+  next.on('page-title-updated', (event) => event.preventDefault())
   next.webContents.setWindowOpenHandler(({ url }) => {
     const target = safeExternalUrl(url)
     if (target) void shell.openExternal(target)

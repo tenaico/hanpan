@@ -242,6 +242,18 @@ export function PdfToolsWindow({ lang }: { lang: Lang }) {
   /** a long tool's progress while it runs (compress) */
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
 
+  // Esc: back to the tool list from a tool, close from the list; never mid-run (#14)
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || busy) return
+      event.preventDefault()
+      if (view.kind !== 'home') openTool({ kind: 'home' })
+      else void api.close()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   const openTool = (next: View) => {
     setView(next)
     setInputs([])

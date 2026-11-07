@@ -156,7 +156,8 @@ export const it = {
   dlgPivotAddValue: '+ Aggiungi campo valore',
   dlgPivotAddCalc: '+ Aggiungi campo calcolato',
   dlgPivotTargetCell: 'Cella di destinazione',
-  dlgPivotTargetPlaceholder: 'es. F1',
+  dlgPivotTargetPlaceholder: 'es. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked:
     "Durante la modifica l'intervallo di output mantiene la cella superiore sinistra",
   dlgPivotNote:

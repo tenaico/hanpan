@@ -61,7 +61,7 @@ async function fleshOut(
     onSubscriptionUsage: () => {},
     onInputTruncated: () => {},
   })
-  const jobs = fleshOutJobs(outline)
+  const jobs = fleshOutJobs(outline, lang())
   const bodies = new Map<string, string>()
   for (let i = 0; i < jobs.length; i++) {
     progress(i, jobs.length)

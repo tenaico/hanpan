@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   AI_SUBSCRIPTION_PROVIDERS,
+  accountDefaultProvider,
   isKeyProviderConfigured,
   isSubscriptionProvider,
   selectAiProvider,
@@ -373,5 +374,53 @@ describe('subscription helpers', () => {
     expect(isKeyProviderConfigured(settings, 'codex')).toBe(false)
     expect(isKeyProviderConfigured(settings, 'claude-code')).toBe(false)
     expect(isKeyProviderConfigured(settings, 'no-such-provider' as never)).toBe(false)
+  })
+})
+
+/**
+ * Hanpan 0.17: one default for every editor. An account the user is signed in
+ * to (a subscription login, or an API key they filled in) comes before the PC
+ * model; the start-up code writes the answer into the one settings file.
+ */
+describe('accountDefaultProvider', () => {
+  it('names the subscription auto would run on', () => {
+    const settings = settingsWith('auto')
+    expect(accountDefaultProvider(settings, statuses('ready', 'signed-out'))).toBe('claude-code')
+    expect(accountDefaultProvider(settings, statuses('not-installed', 'ready'))).toBe('codex')
+    expect(
+      accountDefaultProvider(settings, statuses('signed-out', 'signed-out', { chatgpt: 'ready' })),
+    ).toBe('chatgpt')
+  })
+
+  it('names a key provider the user filled in when no subscription is ready', () => {
+    const settings = settingsWith('auto')
+    settings.providers.anthropic = { apiKey: 'sk-ant-x', model: 'claude-x' }
+    expect(accountDefaultProvider(settings, statuses('signed-out', 'not-installed'))).toBe(
+      'anthropic',
+    )
+    // a ready subscription still comes first: it costs nothing more
+    expect(accountDefaultProvider(settings, statuses('ready', 'not-installed'))).toBe('claude-code')
+  })
+
+  it('never counts a server entry as an account: the PC model lives there', () => {
+    const settings = settingsWith('auto')
+    settings.providers.custom = {
+      apiKey: '',
+      model: 'exaone',
+      baseUrl: 'http://127.0.0.1:11434/v1',
+    }
+    expect(accountDefaultProvider(settings, statuses('signed-out', 'signed-out'))).toBeNull()
+  })
+
+  it('answers null when nothing is signed in, and checking while a check is out', () => {
+    const settings = settingsWith('auto')
+    expect(accountDefaultProvider(settings, statuses('signed-out', 'not-installed'))).toBeNull()
+    expect(accountDefaultProvider(settings, statuses('checking', 'signed-out'))).toBe('checking')
+    expect(accountDefaultProvider(settings, {})).toBe('checking')
+  })
+
+  it('reads the statuses the same whatever provider is stored', () => {
+    const settings = settingsWith('custom')
+    expect(accountDefaultProvider(settings, statuses('ready', 'signed-out'))).toBe('claude-code')
   })
 })

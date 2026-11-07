@@ -6,7 +6,8 @@
  *   document clean and gives it that name; SVG needs `svg: {}` and .ai needs
  *   `options: {}` or the app opens its options dialog instead.
  * - `document.export {format}` answers with the bytes (`dataBase64`) and leaves
- *   the document alone.
+ *   the document alone. The recovery copy asks it for `vectorcraft` (the app's
+ *   own format); when the build refuses that, there is no copy.
  * - `document.inspect {ids: []}` is a small answer that carries the undo
  *   history; `screenshot()` carries no picture, so snapshots are exports.
  */
@@ -106,6 +107,20 @@ export function createIllustAdapter(api: GraphicsPageApi): GraphicsAdapter {
       return bytes
     },
     exportBytes,
+    async recoveryBytes() {
+      try {
+        const result = asRecord(await api.execute('document.export', { format: 'vectorcraft' }))
+        const bytes =
+          typeof result.dataBase64 === 'string'
+            ? base64ToBytes(result.dataBase64)
+            : typeof result.text === 'string'
+              ? new TextEncoder().encode(result.text)
+              : null
+        return bytes && bytes.byteLength > 0 ? { bytes, ext: 'vectorcraft' } : null
+      } catch {
+        return null
+      }
+    },
     async isLayered() {
       return false
     },

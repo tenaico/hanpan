@@ -13,7 +13,8 @@
  * Everything returned crosses to the app renderer by structured clone.
  */
 
-import { installDialogTheme } from './dialog-theme.mjs'
+import { installDialogTheme, installToolbarClipGuard } from './dialog-theme.mjs'
+import { installLocaleLayout, styleDisplayName, studioLocaleNow } from './studio-locales.mjs'
 
 export const AGENT_PLUGIN_ID = 'ieum-agent'
 /** The size of a picture's credit line put in under it, in points. */
@@ -69,17 +70,28 @@ const REVEAL_COMMAND = 'ext:ieum-reveal'
  */
 export const FILE_COMMAND_EVENT = 'ieum:file-command'
 /**
+ * The event the About box's licence button fires on the editor's window (0.17 UI/UX review v2,
+ * hwp-design #6): the app opens its own open-source licence list, rhwp's crates included.
+ */
+export const OPEN_LICENSES_EVENT = 'ieum:open-licenses'
+/**
  * The event this plugin fires on the editor's window when the document's unsaved state
  * changes, with the new state (true: unsaved changes) as its detail.
  */
 export const DIRTY_EVENT = 'ieum:dirty-changed'
 /** The File menu items, top to bottom: the command the app runs, and the shortcut shown. */
 const FILE_MENU = [
+  { command: 'open', id: 'ext:ieum-open', shortcut: 'Ctrl+O' },
   { command: 'save', id: 'ext:ieum-save', shortcut: 'Ctrl+S' },
   { command: 'saveAs', id: 'ext:ieum-save-as', shortcut: 'Ctrl+Shift+S' },
   { command: 'pdf', id: 'ext:ieum-export-pdf' },
+  { command: 'docx', id: 'ext:ieum-export-docx' },
+  { command: 'png', id: 'ext:ieum-export-png' },
+  { command: 'pngPage', id: 'ext:ieum-export-png-page' },
   { command: 'print', id: 'ext:ieum-print', shortcut: 'Ctrl+P' },
 ]
+/** The command that reads the page the caret is on (the editor's own services know it). */
+const PAGE_COMMAND = 'ext:ieum-current-page'
 /** The command that reads what the user has selected in the editor. */
 const SELECTION_COMMAND = 'ext:ieum-selection'
 /** The command that selects the word under the caret (a double click in the page). */
@@ -1172,19 +1184,21 @@ const CARET_STATE_COMMAND = 'ext:ieum-caret-state'
  * Fill the editor toolbar's style list (`select`) with the document's styles (as
  * getStyleList gives them) when they differ from what it shows. The number shown stays
  * shown when there still is a style by it: the editor sets the list by the number of the
- * caret's style, which may already be the new one. Returns whether the list was refilled.
+ * caret's style, which may already be the new one. Each style shows under its name in the
+ * studio's language (styleDisplayName). Returns whether the list was refilled.
  */
-export function syncStyleList(select, styles) {
+export function syncStyleList(select, styles, locale = studioLocaleNow()) {
   const shown = Array.from(select.options, (option) => [Number(option.value), option.textContent])
-  if (JSON.stringify(shown) === JSON.stringify(styles.map((style) => [style.id, style.name]))) {
+  const names = styles.map((style) => [style.id, styleDisplayName(style, locale)])
+  if (JSON.stringify(shown) === JSON.stringify(names)) {
     return false
   }
   const current = select.value
   select.replaceChildren(
-    ...styles.map((style) => {
+    ...names.map(([id, name]) => {
       const option = select.ownerDocument.createElement('option')
-      option.value = String(style.id)
-      option.textContent = style.name
+      option.value = String(id)
+      option.textContent = name
       return option
     }),
   )
@@ -2917,6 +2931,68 @@ function withPortableWidths(doc, fn) {
   }
 }
 
+/** What `fn` gives, or `fallback` when it throws. */
+function attempt(fn, fallback) {
+  try {
+    return fn()
+  } catch {
+    return fallback
+  }
+}
+
+/** What the engine's clipboard HTML holds between its fragment marks. */
+function fragmentOf(html) {
+  const match = /<!--StartFragment-->([\s\S]*?)<!--EndFragment-->/.exec(html)
+  return (match ? match[1] : html).replace(/<!-- rhwp:[\s\S]*?-->/g, '').trim()
+}
+
+/**
+ * The whole body of the document as one HTML page, for the Word export (0.17): each
+ * paragraph as the engine writes it for the clipboard (character and paragraph formatting),
+ * each table and picture of the paragraph as the engine writes that control (cells, spans,
+ * borders, fills; pictures as data URLs). A control at the start of its paragraph comes
+ * before the paragraph's text, any other after it. Empty paragraphs stay as empty lines.
+ * Headers, footers, footnotes and endnotes, memos, fields' behavior, text boxes and shapes
+ * are not part of it; the engine notes what it leaves out, and those notes are dropped.
+ */
+export function documentHtml(doc) {
+  const blocks = []
+  const sections = doc.getSectionCount()
+  for (let sec = 0; sec < sections; sec++) {
+    const paragraphs = doc.getParagraphCount(sec)
+    for (let para = 0; para < paragraphs; para++) {
+      const length = doc.getParagraphLength(sec, para)
+      const positions = attempt(() => parse(doc.getControlTextPositions(sec, para)), [])
+      const before = []
+      const after = []
+      positions.forEach((at, index) => {
+        // a control the engine cannot write (a shape, a text box) is left out
+        const html = attempt(() => fragmentOf(doc.exportControlHtml(sec, para, '[]', index)), '')
+        if (html) (at > 0 && length > 0 ? after : before).push(html)
+      })
+      const text = length > 0 ? fragmentOf(doc.exportSelectionHtml(sec, para, 0, para, length)) : ''
+      blocks.push(...before)
+      if (text) blocks.push(text)
+      else if (before.length === 0 && after.length === 0)
+        blocks.push('<p style="margin:0">&nbsp;</p>')
+      blocks.push(...after)
+    }
+  }
+  return [
+    '<!DOCTYPE html>',
+    '<html lang="ko">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<style>',
+    "body { margin: 20mm; font-family: '맑은 고딕', 'Malgun Gothic', sans-serif; font-size: 10pt; }",
+    'table { margin: 4pt 0; }',
+    '</style>',
+    '</head>',
+    `<body>${blocks.join('\n')}</body>`,
+    '</html>',
+  ].join('\n')
+}
+
 export const agentPlugin = {
   id: AGENT_PLUGIN_ID,
   apiVersion: 1,
@@ -2945,6 +3021,10 @@ export const agentPlugin = {
     // when the plugin comes up, not when the AI panel opens: a settings dialog
     // can be opened on a document the panel never touched.
     installDialogTheme()
+    // no button cut in half at the edges of the scrolling toolbar (0.17 UX v2 #12)
+    installToolbarClipGuard()
+    // the style bar's widths in the added languages (studio-locales.mjs)
+    installLocaleLayout()
 
     // the unsaved state as the editor sets it, in the same task as the edit: the app's close
     // prompt reads its copy of this, and a key typed just before closing must be in it
@@ -3524,6 +3604,27 @@ export const agentPlugin = {
       syncMemos({ notify: false })
       refreshMemoAnchors()
       refreshMarks()
+    }
+
+    // the answer of the page command, read by currentPage
+    let currentPageSeen = null
+    try {
+      host.automation.registerCommand({
+        id: PAGE_COMMAND,
+        label: 'Read the current page',
+        execute: (services) => {
+          try {
+            const input = services && services.getInputHandler ? services.getInputHandler() : null
+            const page =
+              input && input.cursor && input.cursor.rect ? input.cursor.rect.pageIndex : null
+            currentPageSeen = Number.isInteger(page) ? page : null
+          } catch {
+            currentPageSeen = null
+          }
+        },
+      })
+    } catch {
+      // registered by an earlier activation of this plugin, or a host without commands
     }
 
     // the answer of the reveal command: a command of the editor returns nothing itself
@@ -4440,6 +4541,25 @@ export const agentPlugin = {
           }),
         ),
       ),
+
+      /** The document body as one HTML page for the Word export (see documentHtml). */
+      exportHtml: guarded(() => ({ html: host.read((doc) => documentHtml(doc)) })),
+
+      /**
+       * The page the caret is on (0-based), for "this page as a picture"; the first page
+       * when the editor has no caret yet, the last when the caret's page is gone.
+       */
+      currentPage: guarded(() => {
+        currentPageSeen = null
+        try {
+          host.automation.execute(PAGE_COMMAND)
+        } catch {
+          currentPageSeen = null
+        }
+        const count = host.read((doc) => doc.pageCount())
+        const page = Number.isInteger(currentPageSeen) ? currentPageSeen : 0
+        return Math.max(0, Math.min(page, count - 1))
+      }),
 
       /**
        * The styles of the document by name: paragraph styles (what a format's style takes)
@@ -5367,10 +5487,11 @@ export const agentPlugin = {
       }),
 
       /**
-       * Put Save, Save As, Export as PDF and Print at the top of the editor's File menu. The
+       * Put Open, Save, Save As, the exports (PDF, Word, all pages or this page as pictures)
+       * and Print at the top of the editor's File menu. The
        * embedded editor leaves out its own (the app owns the file), which left the menu with
        * no way to save. Each item fires FILE_COMMAND_EVENT on the editor's window and the app
-       * does the rest. `labels` holds the four names in the app's language, by command. A
+       * does the rest. `labels` holds the names in the app's language, by command. A
        * second call puts the items back where they were; the names stay the first ones.
        */
       installFileMenu: guarded((labels) => {

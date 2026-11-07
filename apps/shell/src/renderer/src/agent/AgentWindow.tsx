@@ -187,6 +187,18 @@ export function AgentWindow() {
   const [noticeDue, setNoticeDue] = useState<boolean | null>(null)
   const [noticeClosed, setNoticeClosed] = useState(false)
 
+  // Esc closes the window while nothing runs in it (0.17 리뷰 v2 shell #15)
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return
+      if (sessionId || starting) return
+      event.preventDefault()
+      window.close()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [sessionId, starting])
+
   useEffect(() => {
     void api.getInit().then((value) => {
       setInit(value)

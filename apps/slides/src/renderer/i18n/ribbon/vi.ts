@@ -3,7 +3,7 @@ import type { zh } from './zh'
 export const vi = {
   ribbonAiCreditNote: 'Sử dụng AI và tính vào hạn mức sử dụng AI của bạn',
   ribbonAiRewriteConfirm:
-    'Thao tác này sẽ gọi trợ lý AI: tính vào hạn mức sử dụng AI của bạn và có thể viết lại toàn bộ nội dung. Bạn có muốn tiếp tục? (Sau khi xác nhận sẽ không hỏi lại nữa.)',
+    'AI sẽ sửa trực tiếp chữ trên trang chiếu. Việc này dùng một phần lượt AI trong gói của bạn và có thể thay đổi nhiều nội dung. Tiếp tục? (Lần sau sẽ không hỏi lại.)',
   ribbonTabFile: 'Tệp',
   ribbonTabHome: 'Trang chủ',
   ribbonTabInsert: 'Chèn',
@@ -57,7 +57,8 @@ export const vi = {
     'Chổi sao chép định dạng (nhấp để sao chép và áp dụng định dạng; ⌘⇧C sao chép định dạng / ⌘⇧V dán định dạng)',
   ribbonGroupSlides: 'Trang chiếu',
   ribbonNewSlide: 'Trang chiếu mới',
-  ribbonNewSlideTip: 'Tạo trang chiếu trống mới (giữ lại nền bố cục của trang hiện tại)',
+  ribbonNewSlideTip:
+    'Trang chiếu mới (sau trang tiêu đề là "Tiêu đề và Nội dung", còn lại dùng bố cục của trang hiện tại)',
   ribbonChooseLayout: 'Chọn bố cục',
   ribbonChooseLayoutNew: 'Trang chiếu mới có bố cục',
   ribbonChooseLayoutChange: 'Đổi bố cục trang chiếu hiện tại',
@@ -323,7 +324,7 @@ export const vi = {
   ribbonTransRandom: 'Ngẫu nhiên',
   ribbonTransNoneTip: 'Xóa hiệu ứng chuyển tiếp khỏi trang chiếu hiện tại',
   ribbonTransApplyTip:
-    'Sử dụng hiệu ứng chuyển tiếp "{name}" cho trang chiếu này (có hiệu lực khi trình chiếu trong PowerPoint)',
+    'Sử dụng hiệu ứng chuyển tiếp "{name}" cho trang chiếu này (phát cả khi trình chiếu và trong PowerPoint)',
   ribbonGroupTiming: 'Thời gian',
   ribbonTransApplyAllTip: 'Áp dụng hiệu ứng chuyển tiếp của trang chiếu này cho tất cả trang chiếu',
   ribbonPreview: 'Xem trước',
@@ -408,7 +409,7 @@ export const vi = {
   ribbonSpellCheckTip:
     'AI kiểm tra từng trang chiếu để tìm lỗi chính tả, ngữ pháp và dấu câu rồi sửa trực tiếp',
   ribbonSpellCheckPrompt:
-    'Kiểm tra bài thuyết trình này theo từng trang chiếu để tìm lỗi chính tả, ngữ pháp và dấu câu: sửa trực tiếp các lỗi bằng các công cụ trong khi vẫn giữ nguyên bố cục và ý nghĩa; sau đó báo cáo ngắn gọn các thay đổi theo từng trang, bỏ qua các trang không có lỗi.',
+    'Kiểm tra bài thuyết trình này theo từng trang chiếu để tìm lỗi chính tả, ngữ pháp và dấu câu: sửa trực tiếp các lỗi bằng các công cụ trong khi vẫn giữ nguyên bố cục và ý nghĩa. Dòng đầu tiên của báo cáo ghi "Không có lỗi" nếu không phải sửa gì, nếu không thì ghi "Đã sửa N chỗ" (N là số chỗ đã sửa); sau đó liệt kê ngắn gọn các thay đổi theo từng trang, bỏ qua các trang không có lỗi.',
   ribbonTranslate: 'Dịch',
   ribbonTranslateTip:
     'AI dịch văn bản trên trang chiếu hiện tại sang ngôn ngữ đã chọn (thay thế bản gốc)',
@@ -786,4 +787,8 @@ export const vi = {
   ribbonZoomSectionItem: 'Trang chiếu {n} Phần {k}: {name}',
   ribbonZoomSelectedSlides: 'Đã chọn {n} trang chiếu',
   ribbonZoomSelectedSections: 'Đã chọn {n} phần',
+  ribbonTabCollapseTip: 'Nhấp đúp để thu gọn dải băng ({key})',
+  ribbonAnimSelectFirst: 'Trước tiên hãy chọn đối tượng cần tạo hiệu ứng',
+  ribbonSpellCheckStarted:
+    'Đã bắt đầu kiểm tra chính tả trong khung AI. Khi xong sẽ báo "Không có lỗi" hoặc "Đã sửa N chỗ".',
 } satisfies Record<keyof typeof zh, string>

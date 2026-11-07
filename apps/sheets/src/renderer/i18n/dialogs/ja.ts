@@ -155,7 +155,8 @@ export const ja = {
   dlgPivotAddValue: '+ 値フィールドを追加',
   dlgPivotAddCalc: '+ 集計フィールドを追加',
   dlgPivotTargetCell: '出力先の開始セル',
-  dlgPivotTargetPlaceholder: '例: F1',
+  dlgPivotTargetPlaceholder: '例: {cell}',
+  dlgPivotTargetEmptyHint: '空欄の場合は元の範囲の右、{cell} に作成します。',
   dlgPivotTargetLocked: '編集時は出力範囲の左上セルは変わりません',
   dlgPivotNote:
     'ピボットテーブルは実際の OOXML PivotTable として生成され、保存後は Excel/WPS でそのまま認識・更新できます。',

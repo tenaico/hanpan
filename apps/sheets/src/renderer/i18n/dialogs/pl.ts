@@ -157,7 +157,8 @@ export const pl = {
   dlgPivotAddValue: '+ Dodaj pole wartości',
   dlgPivotAddCalc: '+ Dodaj pole obliczeniowe',
   dlgPivotTargetCell: 'Komórka docelowa',
-  dlgPivotTargetPlaceholder: 'np. F1',
+  dlgPivotTargetPlaceholder: 'np. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'Podczas edycji zakres wyników zachowuje swoją lewą górną komórkę',
   dlgPivotNote:
     'Tworzy prawdziwą tabelę przestawną OOXML, którą Excel/WPS rozpozna i odświeży po zapisaniu.',

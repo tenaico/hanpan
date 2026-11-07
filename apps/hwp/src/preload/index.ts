@@ -20,7 +20,7 @@ import {
   installDropOpenBridge,
 } from '@genoffice/electron-utils/drop-open'
 import { AI_CHANNELS, HWP_CHANNELS } from '../shared/ipc'
-import type { HwpApi, PrintMode, SaveMode, UiTheme } from '../shared/ipc'
+import type { ExportCommand, HwpApi, SaveMode, UiTheme } from '../shared/ipc'
 import type { SubscriptionApi } from '../shared/subscription-api'
 import {
   SUBSCRIPTION_CONNECT_HELP_CHANNEL,
@@ -124,11 +124,15 @@ const api: HwpApi = {
     return () => ipcRenderer.removeListener(HWP_CHANNELS.saveRequest, listener)
   },
   onPrintRequest: (handler) => {
-    const listener = (_e: Electron.IpcRendererEvent, mode: PrintMode) => handler(mode)
+    const listener = (_e: Electron.IpcRendererEvent, mode: ExportCommand) => handler(mode)
     ipcRenderer.on(HWP_CHANNELS.printRequest, listener)
     return () => ipcRenderer.removeListener(HWP_CHANNELS.printRequest, listener)
   },
   printPages: (job) => ipcRenderer.invoke(HWP_CHANNELS.printPages, job),
+  exportDocx: (html) => ipcRenderer.invoke(HWP_CHANNELS.exportDocx, html),
+  savePngs: (request) => ipcRenderer.invoke(HWP_CHANNELS.savePngs, request),
+  revealOutput: (path, how) => ipcRenderer.invoke(HWP_CHANNELS.revealOutput, path, how),
+  openLicenses: () => ipcRenderer.send(HWP_CHANNELS.openLicenses),
   onCloseSaveRequest: (handler) => {
     const listener = () => handler()
     ipcRenderer.on(HWP_CHANNELS.closeSaveRequest, listener)

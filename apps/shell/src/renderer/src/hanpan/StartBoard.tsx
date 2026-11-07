@@ -36,6 +36,8 @@ export function StartBoard({
   const [topic, setTopic] = useState('')
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
+  /** "start" pressed on an empty box: say what is missing (0.17 리뷰 v2 shell #38) */
+  const [empty, setEmpty] = useState(false)
   const examples = [t('hpExample1'), t('hpExample2'), t('hpExample3')]
   const branches = korean
     ? [t('hpFlowHwp'), t('hpFlowPpt'), t('hpFlowDocx'), t('hpFlowCard')]
@@ -61,8 +63,10 @@ export function StartBoard({
   const submit = (event: FormEvent) => {
     event.preventDefault()
     // an empty box: the button points at it rather than doing nothing
-    if (!topic.trim()) (event.currentTarget as HTMLFormElement).querySelector('input')?.focus()
-    else void start(topic)
+    if (!topic.trim()) {
+      setEmpty(true)
+      ;(event.currentTarget as HTMLFormElement).querySelector('input')?.focus()
+    } else void start(topic)
   }
 
   return (
@@ -92,7 +96,11 @@ export function StartBoard({
             maxLength={120}
             placeholder={t('hpStartPlaceholder')}
             aria-label={t('hpStartHint')}
-            onChange={(e) => setTopic(e.target.value)}
+            aria-invalid={empty || undefined}
+            onChange={(e) => {
+              setTopic(e.target.value)
+              setEmpty(false)
+            }}
           />
           <button type="submit" className="hp-start-go" data-hanpan="start-go" disabled={busy}>
             {t('hpStartButton')}
@@ -112,10 +120,11 @@ export function StartBoard({
           ))}
         </div>
         <p
-          className={failed ? 'hp-start-note hp-start-failed' : 'hp-start-note'}
-          role={failed ? 'alert' : undefined}
+          className={failed || empty ? 'hp-start-note hp-start-failed' : 'hp-start-note'}
+          role={failed || empty ? 'alert' : undefined}
+          data-hanpan="start-note"
         >
-          {failed ? t('hpStartFailed') : t('hpStartHint')}
+          {failed ? t('hpStartFailed') : empty ? t('hpStartNeedTopic') : t('hpStartHint')}
         </p>
       </div>
       <figure className="hp-flow" aria-label={t('hpFlowLabel')}>

@@ -38,8 +38,14 @@ export class FakePage implements GraphicsPageApi {
     if (doc) doc.dirty = true
   }
 
-  async request(method: string): Promise<unknown> {
+  requested: Array<[string, unknown]> = []
+  requestHandlers: Record<string, (params: unknown) => unknown> = {}
+
+  async request(method: string, params?: object): Promise<unknown> {
     if (method === 'ui.inspect') return this.inspect()
+    this.requested.push([method, params])
+    const handler = this.requestHandlers[method]
+    if (handler) return handler(params)
     throw new Error(`unknown method \`${method}\``)
   }
 

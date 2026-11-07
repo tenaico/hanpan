@@ -67,6 +67,7 @@ function host(overrides: Partial<TabShortcutHost> = {}): TabShortcutHost {
     activeKind: () => 'docs',
     cycle: vi.fn(),
     closeActive: vi.fn(),
+    openSettings: vi.fn(),
     ...overrides,
   }
 }
@@ -96,10 +97,49 @@ describe('handling a tab shortcut', () => {
     expect(home.closeActive).not.toHaveBeenCalled()
   })
 
+  // 0.17 리뷰 #5: Ctrl+, (macOS ⌘,)로 설정을 연다. 워드는 Ctrl+,를 아래 첨자로 쓰므로
+  // 문서 탭 안에서 누른 키는 그 편집기에 남긴다.
+  it('opens Settings with Ctrl+, from Home or the tab strip, never from inside an editor', () => {
+    expect(tabShortcutOf(key({ key: ',', control: true }), 'win32')).toBe('settings')
+    expect(tabShortcutOf(key({ key: ',', meta: true }), 'darwin')).toBe('settings')
+    expect(tabShortcutOf(key({ key: ',', control: true, shift: true }), 'win32')).toBeNull()
+
+    const shell = host({ activeKind: () => 'home' })
+    expect(handleTabShortcut(key({ key: ',', control: true }), 1, shell)).toBe(true)
+    expect(shell.openSettings).toHaveBeenCalledTimes(1)
+
+    const editor = host({ isShellContents: () => false, hasTab: () => true })
+    expect(handleTabShortcut(key({ key: ',', control: true }), 7, editor)).toBe(false)
+    expect(editor.openSettings).not.toHaveBeenCalled()
+  })
+
   it('reports nothing for a key it does not own', () => {
     const shell = host()
     expect(handleTabShortcut(key({ key: 'a', control: true }), 1, shell)).toBe(false)
     expect(shell.cycle).not.toHaveBeenCalled()
     expect(shell.closeActive).not.toHaveBeenCalled()
+  })
+})
+
+describe('closing from Home (0.17 review v2 shell #3)', () => {
+  it('closes at once when Home is the only tab', async () => {
+    const { closeFromHome } = await import('../src/main/tab-shortcuts')
+    const ask = vi.fn(async () => true)
+    const close = vi.fn()
+    await closeFromHome({ openDocuments: 0, ask, close })
+    expect(ask).not.toHaveBeenCalled()
+    expect(close).toHaveBeenCalled()
+  })
+
+  it('asks before closing the window with documents still open, and stays on no', async () => {
+    const { closeFromHome } = await import('../src/main/tab-shortcuts')
+    const close = vi.fn()
+    const ask = vi.fn(async () => false)
+    await closeFromHome({ openDocuments: 9, ask, close })
+    expect(ask).toHaveBeenCalledWith(9)
+    expect(close).not.toHaveBeenCalled()
+    ask.mockResolvedValueOnce(true)
+    await closeFromHome({ openDocuments: 9, ask, close })
+    expect(close).toHaveBeenCalled()
   })
 })

@@ -145,3 +145,29 @@ describe('createAdapter', () => {
     expect(createAdapter('illust', new FakePage()).kind).toBe('illust')
   })
 })
+
+describe('the illustration recovery copy', () => {
+  it('is the .vectorcraft document from document.export, without saving', async () => {
+    const page = new FakePage().withDocument('Untitled-1', true)
+    page.handlers['document.export'] = (params) =>
+      params.format === 'vectorcraft'
+        ? { dataBase64: btoa('{"vc":1}'), format: 'vectorcraft' }
+        : null
+    const copy = await createAdapter('illust', page).recoveryBytes()
+    expect(copy && { text: new TextDecoder().decode(copy.bytes), ext: copy.ext }).toEqual({
+      text: '{"vc":1}',
+      ext: 'vectorcraft',
+    })
+    expect(page.executed).toEqual([['document.export', { format: 'vectorcraft' }]])
+    expect(page.documents[0]!.dirty).toBe(true)
+  })
+
+  it('is null when the app gives no copy (no document, or the format refused)', async () => {
+    const page = new FakePage().withDocument('Untitled-1', true)
+    page.handlers['document.export'] = () => {
+      throw new Error('unsupported format')
+    }
+    expect(await createAdapter('illust', page).recoveryBytes()).toBeNull()
+    expect(await createAdapter('illust', new FakePage()).recoveryBytes()).toBeNull()
+  })
+})

@@ -10,15 +10,15 @@ Cửa sổ cho các việc thường làm với PDF, bắt đầu từ việc c�
 
 ## Danh sách công cụ
 
-| Nhóm                      | Công cụ                                                                                     |
-| ------------------------- | ------------------------------------------------------------------------------------------- |
-| Sắp xếp trang             | Gộp PDF, Tách PDF, Trích xuất các trang thành PDF, Đảo thứ tự, Xoay tất cả, Xóa trang trống |
-| Chuẩn bị in               | Chuẩn bị in hai mặt, Gộp trang, Kích thước trang, Chia trang                                |
-| Trang trí                 | Thêm nền                                                                                    |
-| Dọn dẹp                   | Xóa chú thích                                                                               |
-| Chuyển đổi                | Ảnh sang PDF, Lưu thành văn bản                                                             |
-| Kích thước và bảo mật     | Giảm dung lượng, Đặt mật khẩu, Gỡ mật khẩu, Sửa tệp                                         |
-| Trong trình chỉnh sửa PDF | Hình mờ & đầu/chân trang, Cắt xén trang, Xuất hình ảnh, Chuyển đổi PDF, Sửa, ký, che        |
+| Nhóm                      | Công cụ                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------- |
+| Sắp xếp trang             | Gộp PDF, Tách thành tệp, Trích xuất các trang thành PDF, Đảo thứ tự, Xoay tất cả, Xóa trang trống |
+| Chuẩn bị in               | Chuẩn bị in hai mặt, Gộp trang, Kích thước trang, Chia trang                                      |
+| Trang trí                 | Thêm nền                                                                                          |
+| Dọn dẹp                   | Xóa chú thích                                                                                     |
+| Chuyển đổi                | Ảnh sang PDF, Lưu thành văn bản                                                                   |
+| Kích thước và bảo mật     | Giảm dung lượng, Đặt mật khẩu, Gỡ mật khẩu, Sửa tệp                                               |
+| Trong trình chỉnh sửa PDF | Hình mờ & đầu/chân trang, Cắt xén trang, Xuất hình ảnh, Chuyển đổi PDF, Sửa, ký, che              |
 
 Các thẻ trong nhóm **Trong trình chỉnh sửa PDF** mở PDF đã chọn trong một thẻ trình chỉnh sửa. Hãy chọn lệnh đó trên dải băng ở đó.
 

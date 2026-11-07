@@ -38,7 +38,9 @@ for (const outcome of ['canceled', 'failed', 'completed']) {
       await expect(page.locator('body')).not.toHaveAttribute('data-png-header')
       await expect(page.locator('body')).not.toHaveAttribute('data-finished')
     } else if (outcome === 'completed') {
-      await expect(page.locator('.status-export')).toContainText('/export/report-images')
+      await expect(page.locator('.status-export')).toContainText(
+        'Exported 2 images to report-images',
+      )
       await expect(page.locator('body')).toHaveAttribute('data-png-header', 'iVBORw0KGgo')
       await expect(page.locator('body')).toHaveAttribute('data-finished', 'true')
     } else {

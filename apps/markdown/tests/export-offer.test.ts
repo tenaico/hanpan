@@ -1,0 +1,51 @@
+import { readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
+import { ExportedFiles } from '../src/main/exported-files'
+import { exportedFileLabel } from '../src/renderer/export-offer'
+
+const MAIN = '../src/main/markdown-main.ts'
+const APP = '../src/renderer/App.tsx'
+const source = (relative: string) =>
+  readFile(fileURLToPath(new URL(relative, import.meta.url)), 'utf8')
+
+describe('after an export the tab stays put', () => {
+  it('main remembers the exported file instead of opening it in a new tab', async () => {
+    const main = await source(MAIN)
+    for (const channel of ['MARKDOWN_CHANNELS.exportPdf,', 'MARKDOWN_CHANNELS.exportOdt,']) {
+      const handler = main.slice(main.indexOf(channel), main.indexOf(channel) + 2500)
+      expect(handler, channel).not.toMatch(/openExported(Pdf|Docx)\(/)
+      expect(handler, channel).toContain('exportedFiles.remember(')
+    }
+    expect(main).toMatch(/ipcMain\.handle\(MARKDOWN_CHANNELS\.openExported,/)
+    expect(main).toMatch(/ipcMain\.handle\(MARKDOWN_CHANNELS\.revealExported,/)
+  })
+
+  it('the status bar offers Open / Open folder for it', async () => {
+    const app = await source(APP)
+    expect(app).toContain('window.markdownApi.openExported(')
+    expect(app).toContain('window.markdownApi.revealExported(')
+  })
+
+  it('names the file, not its full path', () => {
+    expect(exportedFileLabel(String.raw`C:\Users\ten\long\안내문.pdf`)).toBe('안내문.pdf')
+    expect(exportedFileLabel(undefined)).toBe('')
+  })
+
+  it('only lets a tab open what it exported itself', () => {
+    const files = new ExportedFiles()
+    files.remember(1, '/x/a.pdf')
+    expect(files.allows(1, '/x/a.pdf')).toBe(true)
+    expect(files.allows(2, '/x/a.pdf')).toBe(false)
+    expect(files.allows(1, 42)).toBe(false)
+    files.forget(1)
+    expect(files.allows(1, '/x/a.pdf')).toBe(false)
+  })
+})
+
+describe('markdown export offer extras', () => {
+  it('an image export offers its folder too (no cut-off path in the status bar)', async () => {
+    const app = await source(APP)
+    expect(app).toMatch(/setExportOffer\(\{ path: result\.path/)
+  })
+})

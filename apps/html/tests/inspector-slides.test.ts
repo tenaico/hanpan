@@ -366,3 +366,21 @@ describe('readSlideReport', () => {
     expect(readSlideReport({ count: '2', current: 0, width: 800, height: 450 })).toBeNull()
   })
 })
+
+describe('Esc typed into the preview', () => {
+  it('reaches the host even with nothing selected, so ribbon menus close', async () => {
+    openPage(SINGLE_SLIDE)
+    const win = dom!.window
+    const messages: Array<Record<string, unknown>> = []
+    win.addEventListener('message', (e) => {
+      if (e.data && typeof e.data.type === 'string') messages.push(e.data)
+    })
+    win.document.body.dispatchEvent(
+      new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    )
+    await new Promise((r) => setTimeout(r, 20))
+    expect(messages).toContainEqual(
+      expect.objectContaining({ type: 'gx:keyCommand', command: 'escape' }),
+    )
+  })
+})

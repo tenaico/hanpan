@@ -102,35 +102,31 @@ export function FormatBackgroundPane({ slide, onApply, onCollapse }: Props) {
       ) : (
         <div className="fp-body">
           <div className="fp-section">{t('paneFormatFill')}</div>
-          <div className="fp-row">
-            <button
-              className={`fp-btn fp-btn-wrap ${mode === 'solid' ? 'active' : ''}`}
-              onClick={() => {
-                setPickedMode('solid')
-                if (currentMode !== 'solid') onApply({ kind: 'solid', color: solidColor })
-              }}
-            >
-              {t('paneBgSolid')}
-            </button>
-            <button
-              className={`fp-btn fp-btn-wrap ${mode === 'gradient' ? 'active' : ''}`}
-              onClick={() => {
-                setPickedMode('gradient')
-                if (currentMode !== 'gradient')
-                  onApply(gradientOp(gradFrom, gradTo, gradAngle, gradRadial))
-              }}
-            >
-              {t('paneBgGradient')}
-            </button>
-            <button
-              className={`fp-btn fp-btn-wrap ${mode === 'image' ? 'active' : ''}`}
-              onClick={() => {
-                setPickedMode('image')
-                if (currentMode !== 'image') onApply({ kind: 'image', mode: 'stretch', pick: true })
-              }}
-            >
-              {t('paneBgImage')}
-            </button>
+          <div className="fp-fill-modes" role="radiogroup" aria-label={t('paneFormatFill')}>
+            {(
+              [
+                ['solid', t('paneBgSolid')],
+                ['gradient', t('paneBgGradient')],
+                ['image', t('paneBgImage')],
+              ] as const
+            ).map(([m, label]) => (
+              <label key={m} className="fp-radio">
+                <input
+                  type="radio"
+                  name="fp-bg-fill"
+                  checked={mode === m}
+                  onChange={() => {
+                    setPickedMode(m)
+                    if (currentMode === m) return
+                    if (m === 'solid') onApply({ kind: 'solid', color: solidColor })
+                    else if (m === 'gradient')
+                      onApply(gradientOp(gradFrom, gradTo, gradAngle, gradRadial))
+                    else onApply({ kind: 'image', mode: 'stretch', pick: true })
+                  }}
+                />
+                {label}
+              </label>
+            ))}
           </div>
 
           {mode === 'solid' && (

@@ -78,6 +78,7 @@ const api: HtmlApi = {
   consumePending: () => ipcRenderer.invoke(HTML_CHANNELS.consumePending),
   takeSeed: () => ipcRenderer.invoke(HTML_CHANNELS.seedTake),
   openSourcePath: (path: string) => ipcRenderer.invoke('home:open-path', path),
+  openFileDialog: () => ipcRenderer.invoke('app:open-file-dialog'),
   consumeHeadlessExport: () => ipcRenderer.invoke(HTML_CHANNELS.consumeHeadlessExport),
   headlessExportDone: (result: { ok: boolean; error?: string }) =>
     ipcRenderer.send(HTML_CHANNELS.headlessExportDone, result),
@@ -142,6 +143,8 @@ const api: HtmlApi = {
   exportDocx: (request) => ipcRenderer.invoke(HTML_CHANNELS.exportDocx, request),
   exportOdt: (request) => ipcRenderer.invoke(HTML_CHANNELS.exportOdt, request),
   exportPdf: (request) => ipcRenderer.invoke(HTML_CHANNELS.exportPdf, request),
+  openExported: (path) => ipcRenderer.invoke(HTML_CHANNELS.openExported, path),
+  revealExported: (path) => ipcRenderer.invoke(HTML_CHANNELS.revealExported, path),
   exportHtml: (request) => ipcRenderer.invoke(HTML_CHANNELS.exportHtml, request),
   printHtml: (request) => ipcRenderer.invoke(HTML_CHANNELS.printHtml, request),
   renderPrintPreview: (request) => ipcRenderer.invoke(HTML_CHANNELS.printPreview, request),

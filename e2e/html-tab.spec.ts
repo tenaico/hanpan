@@ -260,7 +260,7 @@ test.describe('html editor', () => {
       // (or parks it in the composer while a run is still busy); Summarize sends right away
       await editorPage
         .locator('.ribbon')
-        .getByRole('button', { name: /^Theme$/ })
+        .getByRole('button', { name: /^AI Theme$/ })
         .click()
       const themeMenu = editorPage.locator('.rb-menu')
       await expect(themeMenu.getByRole('menuitem')).toHaveCount(5)

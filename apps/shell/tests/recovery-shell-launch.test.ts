@@ -54,6 +54,11 @@ vi.mock('../../hwp/src/main/hwp-main', () => ({
   hwpRecoveryIdentity: () => null,
   setHwpRecoveryTitle: vi.fn(),
 }))
+vi.mock('../../graphics/src/main/graphics-main', () => ({
+  discardGraphicsRecovery: vi.fn(),
+  graphicsRecoveryIdentity: () => null,
+  setGraphicsRecoveryTitleSource: vi.fn(),
+}))
 vi.mock('../src/main/tab-manager', () => ({ createPlainEditorView: vi.fn() }))
 vi.mock('../src/main/session-record', () => ({
   initSessionRecord: () => ({ previous: { status: 'missing' }, startRun: vi.fn() }),

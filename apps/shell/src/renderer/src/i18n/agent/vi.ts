@@ -1,10 +1,10 @@
 import type { zh } from './zh'
 
 export const vi = {
-  windowTitle: 'Tác tử',
+  windowTitle: 'Làm việc thư mục với AI',
   homeCardSub: 'Làm việc trong thư mục với Claude Code hoặc Codex',
   intro:
-    'Tác tử chạy Claude Code hoặc Codex của bạn trong thư mục bạn chọn. Nó có thể đọc các tệp trong đó, tạo tệp mới, dùng các kỹ năng của bạn, chạy tập lệnh và sửa các tài liệu đang mở trong GenOffice.',
+    'Làm việc thư mục với AI chạy Claude Code hoặc Codex của bạn trong thư mục bạn chọn. Nó có thể đọc các tệp trong đó, tạo tệp mới, dùng các kỹ năng của bạn, chạy tập lệnh và sửa các tài liệu đang mở trong GenOffice.',
   folderLabel: 'Thư mục dự án',
   folderPick: 'Chọn thư mục…',
   folderNone: 'Chưa chọn thư mục',
@@ -43,9 +43,9 @@ export const vi = {
   stop: 'Dừng',
   newSession: 'Phiên mới',
   send: 'Gửi',
-  inputPlaceholder: 'Bạn muốn tác tử làm gì?',
+  inputPlaceholder: 'Bạn muốn AI làm gì?',
   you: 'Bạn',
-  agent: 'Tác tử',
+  agent: 'AI',
   startedLine: 'Đã khởi động {program} trong {folder}',
   skillsLine: 'Có {n} kỹ năng để dùng',
   skillsLineOne: 'Có {n} kỹ năng để dùng',

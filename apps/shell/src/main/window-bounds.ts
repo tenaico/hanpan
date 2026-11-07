@@ -185,3 +185,14 @@ export function installShellWindowBoundsPersistence(
   win.on('resize', schedule)
   win.on('close', save)
 }
+
+/**
+ * A new editor window's size inside the screen it opens on (0.17 리뷰 v2 shell
+ * #12): each kind keeps its usual size where that fits, otherwise the work area.
+ */
+export function fitWindowSize(
+  size: { width: number; height: number },
+  area: { width: number; height: number },
+): { width: number; height: number } {
+  return { width: Math.min(size.width, area.width), height: Math.min(size.height, area.height) }
+}

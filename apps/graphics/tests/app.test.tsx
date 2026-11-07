@@ -39,6 +39,12 @@ function fakeApi() {
     exportFile: vi.fn(),
     pickImage: vi.fn(),
     onMenuCommand: on('menu'),
+    print: vi.fn(async () => ({ ok: true })),
+    writeRecoveryCopy: vi.fn(async () => 'written'),
+    recoveryRestored: vi.fn(async () => false),
+    onRecoveryCopyNow: on('recoveryCopyNow'),
+    recoveryCopyNowDone: vi.fn(),
+    onRecoveryReset: on('recoveryReset'),
   }
   installGraphicsApi(api as unknown as GraphicsApi)
   return { api, listeners }
@@ -112,6 +118,8 @@ describe('the host page', () => {
     await mount('illust')
     await until(() => frame() !== null)
     expect(frame()!.getAttribute('src')).toBe('./web/illust/index.html?embedded=hanpan&lang=ko')
+    // the app reads the PC's fonts (queryLocalFonts) inside the frame
+    expect(frame()!.getAttribute('allow')).toBe('clipboard-read; clipboard-write; local-fonts')
     expect(host.textContent).toContain('앱을 불러오는 중')
     const page = readyPage()
     ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
@@ -140,6 +148,61 @@ describe('the host page', () => {
     await until(() => api.setDirty.mock.calls.some(([d]) => d === true))
   })
 
+  // 0.17 리뷰 v2 G1·G2: 프레임 안의 저장(메뉴·Ctrl+S)은 한판 저장 대화상자로 간다
+  it("a save asked for inside the frame runs Hanpan's save, which writes the file", async () => {
+    const { api } = fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('Untitled-1', true) as FakePage & {
+      onHostRequest?: (h: (r: 'save' | 'saveAs' | 'print') => void) => void
+    }
+    let ask: ((r: 'save' | 'saveAs' | 'print') => void) | null = null
+    page.onHostRequest = (h) => void (ask = h)
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => api.setDirty.mock.calls.some(([d]) => d === true))
+    await until(() => ask !== null)
+    await act(async () => ask!('saveAs'))
+    await until(() => api.commitSave.mock.calls.length === 1)
+    expect(api.beginSave).toHaveBeenCalledWith(expect.objectContaining({ mode: 'saveAs' }))
+    await until(() => api.setDirty.mock.calls.at(-1)?.[0] === false)
+  })
+
+  // 0.17 리뷰 v2 G9: 언어를 바꾸면 문서 없는 탭은 새 언어로 다시 뜨고, 문서 있는 탭은 알려 준다
+  it('a language change reloads an empty tab in the new language and tells a tab with a document', async () => {
+    const { listeners } = fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    expect(frame()!.getAttribute('src')).toContain('lang=ko')
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = readyPage()
+    await until(() => host.querySelector('.gx-cover') === null)
+    await act(async () => listeners.language!('vi' as never))
+    await until(() => frame()?.getAttribute('src')?.includes('lang=vi') === true)
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft =
+      readyPage().withDocument('a.psd', false)
+    await until(() => host.querySelector('.gx-cover') === null)
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 100))
+    })
+    await act(async () => listeners.language!('ko' as never))
+    await until(() => host.querySelector('.gx-notice') !== null)
+    expect(frame()!.getAttribute('src')).toContain('lang=vi')
+  })
+
+  // 0.17 리뷰 v2 W14: 연 파일은 화면에 맞춰 보여 준다
+  it('fits an opened file to the window', async () => {
+    const { api } = fakeApi()
+    api.consumeOpen = vi.fn(async () => ({
+      name: 'a.svg',
+      path: '/x/a.svg',
+      bytes: new Uint8Array([1]),
+    })) as never
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage()
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => page.executed.some(([id]) => id === 'view.fitAll'))
+  })
+
   it('answers a close-save request with the save result', async () => {
     const { api, listeners } = fakeApi()
     await mount('illust')
@@ -153,6 +216,25 @@ describe('the host page', () => {
     expect(api.commitSave).toHaveBeenCalled()
   })
 
+  // 0.17 리뷰 #3: 문서가 없으면 빠른 작업 단추는 꺼져 있고, 왜 꺼졌는지 알려 준다
+  it('keeps the quick buttons off until a document is open', async () => {
+    fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage()
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => host.querySelector('[data-quick="centerOnArtboard"]') !== null)
+    const buttons = () => [...host.querySelectorAll<HTMLButtonElement>('[data-quick]')]
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 80))
+    })
+    expect(buttons().every((b) => b.disabled)).toBe(true)
+    expect(buttons()[0]!.title).toBe('먼저 그림을 열거나 새로 만들어 주세요.')
+    page.withDocument('Untitled-1', false)
+    await until(() => buttons().every((b) => !b.disabled))
+    expect(buttons()[0]!.title).toBe('')
+  })
+
   it('the menu Undo waits while a quick action or the AI holds the app', async () => {
     const { listeners } = fakeApi()
     await mount('illust')
@@ -161,7 +243,11 @@ describe('the host page', () => {
     // a quick action that does not finish: it holds the lock
     page.handlers['document.inspect'] = () => new Promise(() => {})
     ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
-    await until(() => host.querySelector('[data-quick="centerOnArtboard"]') !== null)
+    await until(
+      () =>
+        host.querySelector<HTMLButtonElement>('[data-quick="centerOnArtboard"]')?.disabled ===
+        false,
+    )
     await act(async () =>
       (host.querySelector('[data-quick="centerOnArtboard"]') as HTMLButtonElement).click(),
     )
@@ -170,5 +256,89 @@ describe('the host page', () => {
     await act(async () => listeners.menu!('redo'))
     expect(page.executed.map(([id]) => id)).not.toContain('edit.undo')
     expect(page.executed.map(([id]) => id)).not.toContain('edit.redo')
+  })
+})
+
+describe('printing (0.17)', () => {
+  /** a PNG head that says 3000 × 2000, as base64 */
+  const pngBase64 = (() => {
+    const bytes = new Uint8Array(33)
+    bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52])
+    new DataView(bytes.buffer).setUint32(16, 3000)
+    new DataView(bytes.buffer).setUint32(20, 2000)
+    return btoa(String.fromCharCode(...bytes))
+  })()
+
+  /** PhotoCraft as the photo adapter reads it: one document, and h2's exportImage */
+  function photoPage() {
+    const page = readyPage()
+    const asked: unknown[] = []
+    page.inspect = async () => ({
+      session: { active: 0, documents: [{ name: 'a.psd', dirty: false, revision: 1 }] },
+    })
+    page.request = async (method: string, params?: unknown) => {
+      if (method === 'app.exportImage') {
+        asked.push(params)
+        return { dataBase64: pngBase64, width: 3000, height: 2000, format: 'png' }
+      }
+      throw new Error(`unknown method \`${method}\``)
+    }
+    return { page, asked }
+  }
+
+  async function readyPhoto() {
+    const fake = fakeApi()
+    await mount('photo')
+    await until(() => frame() !== null)
+    const { page, asked } = photoPage()
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).photocraft = page
+    await until(() => host.querySelector('.gx-cover') === null)
+    return { ...fake, asked }
+  }
+
+  it('the menu Print asks the app for its picture and shows the preview', async () => {
+    const { listeners, asked } = await readyPhoto()
+    await act(async () => listeners.menu!('print'))
+    await until(() => host.querySelector('[data-hanpan="image-print-preview"]') !== null)
+    expect(asked[0]).toMatchObject({ format: 'png', maxSide: 3508 })
+    const html = host.querySelector('[data-hanpan="image-print-preview"]')!.getAttribute('srcdoc')!
+    // a wide picture on landscape A4
+    expect(html).toContain('@page { size: 297mm 210mm; margin: 0; }')
+    expect(html).toContain(`data:image/png;base64,${pngBase64}`)
+  })
+
+  // 0.17 리뷰 v2 G3: 프레임 안의 Ctrl+P·파일 › 인쇄는 한판 인쇄 미리 보기로 간다
+  it('a print asked for inside the frame shows the print preview', async () => {
+    const fake = fakeApi()
+    await mount('photo')
+    await until(() => frame() !== null)
+    const { page } = photoPage()
+    let ask: ((r: 'save' | 'saveAs' | 'print') => void) | null = null
+    ;(page as unknown as Record<string, unknown>).onHostRequest = (
+      h: (r: 'save' | 'saveAs' | 'print') => void,
+    ) => void (ask = h)
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).photocraft = page
+    await until(() => host.querySelector('.gx-cover') === null)
+    await until(() => ask !== null)
+    await act(async () => ask!('print'))
+    await until(() => host.querySelector('[data-hanpan="image-print-preview"]') !== null)
+    expect(fake.api.print).not.toHaveBeenCalled()
+  })
+
+  it('prints the same picture on the paper the preview shows, then closes', async () => {
+    const { api, listeners } = await readyPhoto()
+    await act(async () => listeners.menu!('print'))
+    await until(() => host.querySelector('[data-action="image-print-go"]:not([disabled])') !== null)
+    await act(async () =>
+      (host.querySelector('[data-print-orientation="portrait"]') as HTMLInputElement).click(),
+    )
+    await act(async () =>
+      (host.querySelector('[data-action="image-print-go"]') as HTMLButtonElement).click(),
+    )
+    await until(() => api.print.mock.calls.length === 1)
+    const [request] = api.print.mock.calls[0] as unknown as [{ bytes: Uint8Array; sheet: unknown }]
+    expect(request.sheet).toEqual({ widthMm: 210, heightMm: 297, marginMm: 10 })
+    expect(btoa(String.fromCharCode(...request.bytes))).toBe(pngBase64)
+    await until(() => host.querySelector('[data-hanpan="image-print"]') === null)
   })
 })

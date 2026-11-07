@@ -153,7 +153,8 @@ export const th = {
   dlgPivotAddValue: '+ เพิ่มฟิลด์ค่า',
   dlgPivotAddCalc: '+ เพิ่มฟิลด์จากการคำนวณ',
   dlgPivotTargetCell: 'เซลล์เริ่มต้นปลายทาง',
-  dlgPivotTargetPlaceholder: 'เช่น F1',
+  dlgPivotTargetPlaceholder: 'เช่น {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'ขณะแก้ไข เซลล์บนซ้ายของพื้นที่ผลลัพธ์จะไม่เปลี่ยน',
   dlgPivotNote:
     'สร้างเป็น OOXML PivotTable ของจริง หลังบันทึกแล้ว Excel/WPS สามารถจดจำและรีเฟรชได้ทันที',

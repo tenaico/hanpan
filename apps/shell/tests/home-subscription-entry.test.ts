@@ -207,24 +207,31 @@ describe('first-connection notice on the home screen', () => {
     expect(host.querySelector('.first-notice')).toBeNull()
   })
 
-  it('comes up in the settings flow and reports its acknowledgement', async () => {
+  // coordinator report (0.17 review v2): the notice no longer covers the shell when
+  // Settings opens; it sits inside Settings > AI until acknowledged there
+  it('shows inside Settings > AI, not over the shell, and reports its acknowledgement', async () => {
     const onNoticeAcknowledge = vi.fn()
     await renderHome(ready, { noticeDue: true, onNoticeAcknowledge })
     await click(entry())
-    const notice = host.querySelector('.first-notice')!
+    expect(host.querySelector('.first-notice-overlay')).toBeNull()
+    const notice = host.querySelector('[data-ai-notice-due]')!
     expect(notice.textContent).toContain(aiSubscriptionText('en', 'noticeSend'))
     await click(notice.querySelector('.ai-sub-btn'))
     expect(onNoticeAcknowledge).toHaveBeenCalledTimes(1)
   })
 
-  it('is still owed after Settings closed, when the connection is only seen then', async () => {
+  it('is still owed after Settings closed, and waits for the first AI use on Home', async () => {
     const map = statuses({ state: 'signed-out' }, { state: 'signed-out' })
     await renderHome(map, { noticeDue: false })
     await click(entry())
     await click(host.querySelector('.set-close'))
-    expect(host.querySelector('.first-notice')).toBeNull()
-    // the connection made in the dialog arrives with the refresh
+    // the connection made in the dialog arrives with the refresh: no overlay over Home
     await renderHome(ready, { noticeDue: true })
+    expect(host.querySelector('.first-notice')).toBeNull()
+    const ask = Array.from(host.querySelectorAll<HTMLElement>('.sidebar-nav .nav-item')).find(
+      (item) => item.textContent?.includes('Ask'),
+    )
+    await click(ask)
     expect(host.querySelector('.first-notice')).not.toBeNull()
   })
 

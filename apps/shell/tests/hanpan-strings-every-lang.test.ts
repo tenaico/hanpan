@@ -26,3 +26,21 @@ describe('the Vietnam demo strings', () => {
     })
   }
 })
+
+/** short labels that may stay as they are in English (names, file kinds) */
+const SAME_OK = /^[A-Za-z0-9 .()+:·-]{1,12}$/
+
+describe('Hanpan strings.json', () => {
+  it('every key is written in every language and shown as written', () => {
+    const missing: string[] = []
+    for (const [key, entry] of Object.entries(hanpan as Record<string, Record<string, string>>)) {
+      for (const lang of LANGS) {
+        const text = entry[lang]
+        if (!text || (lang !== 'en' && text === entry.en && !SAME_OK.test(entry.en!)))
+          missing.push(`${lang}.${key}`)
+        else if (shown[lang]![key] !== text) missing.push(`${lang}.${key} (strings.ts)`)
+      }
+    }
+    expect(missing).toEqual([])
+  })
+})

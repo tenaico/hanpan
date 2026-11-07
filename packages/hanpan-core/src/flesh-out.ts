@@ -4,7 +4,10 @@
  * person's AI (a local model first). The answer format is one line per topic,
  * `{#n} sentence`, which small local models follow far more reliably than JSON;
  * `n` is a short number the prompt assigns, mapped back to the topic key.
+ * Under any UI language but Korean the prompt is in English and asks for that
+ * language's plain report style instead.
  */
+import { aiLanguageName } from './ai-language'
 import type { PanNode, PanOutline } from './outline'
 
 export interface FleshOutJob {
@@ -26,8 +29,28 @@ export const FLESH_OUT_SYSTEM = [
   '- 번호는 개요에 붙은 번호를 그대로 쓰고, 모든 번호에 답한다.',
 ].join('\n')
 
-/** One job per main branch: a whole map in one request is too long for a small model. */
-export function fleshOutJobs(outline: PanOutline): FleshOutJob[] {
+/** The system prompt for a UI language: Korean's own, or the same rules in English. */
+export function fleshOutSystem(lang: string): string {
+  if (lang === 'ko') return FLESH_OUT_SYSTEM
+  const language = aiLanguageName(lang)
+  return [
+    'You write the body of a report for a public office or a company.',
+    'Expand each item of the given outline into report sentences.',
+    'Rules:',
+    `- Write in ${language}, whatever language the outline is in: 1 or 2 short, plain report sentences per item.`,
+    '- Do not invent figures, organisation names or dates that the outline does not give; write in general terms instead.',
+    '- Output one line per item: `{#number} sentence`. No other words, headings, list marks or Markdown.',
+    '- Use the number given in the outline as it is, and answer every number.',
+  ].join('\n')
+}
+
+/**
+ * One job per main branch: a whole map in one request is too long for a small model.
+ * `lang` is the UI language the sentences are written in (Korean when omitted).
+ */
+export function fleshOutJobs(outline: PanOutline, lang = 'ko'): FleshOutJob[] {
+  const ko = lang === 'ko'
+  const system = fleshOutSystem(lang)
   return outline.nodes.map((branch) => {
     const keys = new Map<string, string>()
     const lines: string[] = []
@@ -35,28 +58,32 @@ export function fleshOutJobs(outline: PanOutline): FleshOutJob[] {
     const visit = (node: PanNode, depth: number) => {
       const id = String(++n)
       keys.set(id, node.key)
-      const note = node.note ? ` (메모: ${node.note.replace(/\s+/g, ' ').slice(0, 300)})` : ''
+      const memo = node.note?.replace(/\s+/g, ' ').slice(0, 300)
+      const note = memo ? (ko ? ` (메모: ${memo})` : ` (note: ${memo})`) : ''
       lines.push(`${'  '.repeat(depth)}{#${id}} ${node.title}${note}`)
       node.children.forEach((c) => visit(c, depth + 1))
     }
     visit(branch, 0)
     const user = [
-      `보고서 제목: ${outline.title}`,
-      outline.note ? `보고서 취지: ${outline.note}` : '',
+      ko ? `보고서 제목: ${outline.title}` : `Report title: ${outline.title}`,
+      outline.note ? (ko ? `보고서 취지: ${outline.note}` : `Purpose: ${outline.note}`) : '',
       '',
-      '개요:',
+      ko ? '개요:' : 'Outline:',
       ...lines,
     ]
       .filter((l, i) => l !== '' || i === 2)
       .join('\n')
-    return { branchKey: branch.key, system: FLESH_OUT_SYSTEM, user, keys }
+    return { branchKey: branch.key, system, user, keys }
   })
 }
 
 const ANSWER_LINE = /^\s*(?:[-*•]\s*)?\{#(\d{1,4})\}\s*(.+?)\s*$/
 
 /** Topic key → sentence, from the model's answer; lines it cannot read are skipped. */
-export function parseFleshOut(answer: string, keys: ReadonlyMap<string, string>): Map<string, string> {
+export function parseFleshOut(
+  answer: string,
+  keys: ReadonlyMap<string, string>,
+): Map<string, string> {
   const out = new Map<string, string>()
   for (const line of answer.split(/\r?\n/)) {
     const m = ANSWER_LINE.exec(line)

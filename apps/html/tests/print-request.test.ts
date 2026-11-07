@@ -68,10 +68,10 @@ describe('HTML print wiring', () => {
     // Chromium rejects executeJavaScript when a window is created with
     // javascript: false, which would make the readiness wait impossible.
     const main = await source(MAIN)
-    const printFn = main.slice(main.indexOf('function printHtml('))
+    const printFn = main.slice(main.indexOf('const documentPrinter = createDocumentPrinter('))
     expect(printFn).toMatch(/new BrowserWindow\(\{\s*show: false/)
-    expect(printFn).not.toMatch(/javascript: false/)
-    expect(printFn).toContain('printHtmlDocument({')
+    expect(printFn.slice(0, 900)).not.toMatch(/javascript: false/)
+    expect(printFn).toContain('print: printHtmlDocument')
   })
 
   it('hands the print outcome back to the renderer, cancel included', async () => {
@@ -79,6 +79,11 @@ describe('HTML print wiring', () => {
     // is what made every failure look like a success to the renderer.
     const main = await source(MAIN)
     const handler = main.slice(main.indexOf('HTML_CHANNELS.printHtml,'))
-    expect(handler).toMatch(/return printHtml\(request\.html, savePathByWc\.get\(e\.sender\.id\)\)/)
+    expect(handler).toMatch(/return documentPrinter\.print\(e\.sender, request\)/)
+  })
+
+  it('aborts a pending print when the app quits, so no process is left behind', async () => {
+    const main = await source(MAIN)
+    expect(main).toMatch(/app\.on\('before-quit', \(\) => documentPrinter\.abortAll\(\)\)/)
   })
 })

@@ -13,6 +13,7 @@ import {
   headerContextMenuLayout,
 } from '../src/renderer/cell-context-menu'
 import { numberFormatCategories } from '../src/renderer/number-format'
+import { getLang } from '../src/renderer/i18n/locale'
 
 describe('cellContextMenuLayout', () => {
   const nodes = cellContextMenuLayout()
@@ -63,7 +64,8 @@ describe('cellContextMenuLayout', () => {
 
   it('Number Format ▸ lists every ribbon category plus More…, each as a format: command', () => {
     const children = byId(NUMBER_FORMAT_MENU_ID)?.children ?? []
-    const categories = numberFormatCategories()
+    // Currency/Accounting follow the UI language the menu was built in
+    const categories = numberFormatCategories(getLang())
     expect(children).toHaveLength(categories.length + 1)
     categories.forEach((category, index) => {
       expect(children[index]?.commandId).toBe(SHELL_COMMAND_ID)

@@ -116,7 +116,7 @@ describe('the mind map strings', () => {
   })
 
   it('give the untitled name its own branch, so it never falls through to the spreadsheet name', () => {
-    expect(source).toMatch(/kind === 'mindmap'\s*\?\s*tm\('untitledMindmap'\)/)
+    expect(source).toMatch(/kind === 'mindmap'\s*\?\s*'untitledMindmap'/)
   })
 })
 

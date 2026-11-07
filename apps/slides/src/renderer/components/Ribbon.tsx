@@ -3,6 +3,9 @@
  * (local state switches tabs, .ribbon-body dispatches); content is trimmed to slide capabilities,
  * unimplemented items are grayed placeholders.
  */
+import { useEscapeToClose } from './use-escape-close'
+import { useEscOverlay } from '../esc-overlay'
+import { showToast } from './toast-bus'
 import React, {
   useCallback,
   useEffect,
@@ -16,6 +19,9 @@ import type { ChartStyleInfo } from '@genoffice/pptx-render'
 import {
   useDismissablePopover,
   useRibbonCollapse,
+  RibbonCollapseButton,
+  RibbonExpandButton,
+  RIBBON_TOGGLE_SHORTCUT,
   Dropdown,
   THEME_COLORS,
   THEME_COLOR_SHADES,
@@ -719,6 +725,8 @@ function DisabledBig({ icon, label }: { icon: ReactNode; label: string }) {
  * body overflows, these groups (in order) fold into a single dropdown button */
 const COLLAPSE_ORDER: Record<string, string[]> = {
   animations: ['motionPaths', 'animation'],
+  // rightmost first; one-button groups (comments, symbols) gain nothing by folding
+  insert: ['media', 'text', 'illustrations', 'images', 'links'],
 }
 
 /** Checkbox row for toggle commands (View tab's Show group) */
@@ -1231,6 +1239,7 @@ export function Ribbon({
   onOpenEquation,
   onInsertMedia,
   onInsertSoundEffect,
+  onInsertGonguPicture,
   onInsertModel3d,
   recording,
   onToggleScreenRecord,
@@ -1269,6 +1278,8 @@ export function Ribbon({
 
   const [tab, setTab] = useState<MainTab | ContextTab>('home')
   const [fileOpen, setFileOpen] = useState(false)
+  const fileTabRef = useRef<HTMLButtonElement>(null)
+  useEscapeToClose(fileOpen, () => setFileOpen(false), fileTabRef)
   const [colorOpen, setColorOpen] = useState(false)
   const [fontOpen, setFontOpen] = useState(false)
   const [sizeOpen, setSizeOpen] = useState(false)
@@ -1318,6 +1329,9 @@ export function Ribbon({
   const [tableHover, setTableHover] = useState({ r: 0, c: 0 })
   const [tableDialogOpen, setTableDialogOpen] = useState(false)
   const [layoutOpen, setLayoutOpen] = useState(false)
+  // Design tab: the theme picked in this window, outlined in the gallery (the file does
+  // not record which built-in preset it came from)
+  const [appliedThemeId, setAppliedThemeId] = useState<string | null>(null)
   // responsive-collapse state (see the collapse effect below)
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([])
   const [collapseOpen, setCollapseOpen] = useState<string | null>(null)
@@ -1402,6 +1416,10 @@ export function Ribbon({
   // commits). The shared installer covers outside mousedown, window blur and
   // the shell app:chrome-pressed relay; panels survive via stopPropagation.
   useDismissablePopover(anyPanelOpen, closePanels)
+  // Esc closes whichever ribbon popup is open (chart, SmartArt, zoom, translate …
+  // used to ignore it); registering as an Esc overlay keeps the canvas from also
+  // treating that Esc as "deselect"
+  useEscOverlay(anyPanelOpen || penFlyout != null, () => closePanels())
 
   // ── Responsive collapse (PowerPoint model): the collapsed set is a pure
   // function of the current width, never of resize history — pick the fewest
@@ -1416,6 +1434,12 @@ export function Ribbon({
     compact: t('ribbonCompact'),
     expandFull: t('ribbonExpand'),
   })
+  // tab tips: a single press no longer collapses, so the selected tab says how to
+  const tabTip = (isActive: boolean): string | undefined => {
+    if (collapse.collapsed || !isActive || collapse.density === 'compact')
+      return collapse.tabTip(isActive)
+    return t('ribbonTabCollapseTip', { key: RIBBON_TOGGLE_SHORTCUT })
+  }
   const bodyRef = useRef<HTMLDivElement | null>(null)
   const inlineWidthsRef = useRef(new Map<string, number>())
   const collapsedWidthsRef = useRef(new Map<string, number>())
@@ -1672,6 +1696,7 @@ export function Ribbon({
     onInsertImage,
     onInsertMedia,
     onInsertSoundEffect,
+    onInsertGonguPicture,
     onInsertModel3d,
     onInsertSmartArt,
     onInsertTable,
@@ -1755,6 +1780,9 @@ export function Ribbon({
         {!IS_MAC && (
           <div className="file-tab-wrap">
             <button
+              ref={fileTabRef}
+              aria-haspopup="menu"
+              aria-expanded={fileOpen}
               className={`ribbon-tab ribbon-tab-file ${fileOpen ? 'open' : ''}`}
               onMouseDown={(e) => {
                 e.stopPropagation()
@@ -1805,19 +1833,19 @@ export function Ribbon({
                   disabled={!hasDoc}
                   onClick={() => {
                     setFileOpen(false)
-                    onPrint()
+                    onExportImages()
                   }}
                 >
-                  {t('ribbonFilePrint')} <span className="file-menu-key">Ctrl+P</span>
+                  {t('ribbonFileExportImages')}
                 </button>
                 <button
                   disabled={!hasDoc}
                   onClick={() => {
                     setFileOpen(false)
-                    onExportImages()
+                    onPrint()
                   }}
                 >
-                  {t('ribbonFileExportImages')}
+                  {t('ribbonFilePrint')} <span className="file-menu-key">Ctrl+P</span>
                 </button>
               </div>
             )}
@@ -1881,9 +1909,11 @@ export function Ribbon({
           <button
             key={tb}
             className={`ribbon-tab ${collapse.tabClass(tab === tb)}`}
-            data-tip={collapse.tabTip(tab === tb)}
+            data-tip={tabTip(tab === tb)}
             onClick={() => {
-              collapse.onTabPress(tab === tb)
+              // a press on the selected tab does nothing (Office on Windows): collapsing
+              // is a double-click, the ˄ button or Ctrl+F1 — it read as "the buttons vanished"
+              collapse.onTabPress(false)
               setTab(tb)
               setFileOpen(false)
             }}
@@ -1896,17 +1926,19 @@ export function Ribbon({
             key={contextTab}
             className={`ribbon-tab ribbon-tab-context ${collapse.tabClass(tab === contextTab)}`}
             onClick={() => {
-              collapse.onTabPress(tab === contextTab)
+              collapse.onTabPress(false)
               setTab(contextTab)
             }}
-            data-tip={collapse.tabTip(tab === contextTab) ?? t(TAB_LABEL[contextTab])}
+            data-tip={tabTip(tab === contextTab) ?? t(TAB_LABEL[contextTab])}
           >
             {t(TAB_LABEL[contextTab])}
           </button>
         )}
+        <RibbonExpandButton state={collapse} label={t('ribbonExpand')} />
         <span className="ribbon-tabs-spacer" />
       </div>
 
+      <RibbonCollapseButton state={collapse} label={t('ribbonCollapse')} />
       <div className="ribbon-body" data-ribbon-body="" ref={bodyRef}>
         {tab === 'home' ? (
           <RibbonHomeTab rb={tabCtx} />
@@ -2085,10 +2117,14 @@ export function Ribbon({
                 {THEME_PRESETS.map((tp) => (
                   <button
                     key={tp.id}
-                    className="theme-card"
+                    className={`theme-card${appliedThemeId === tp.id ? ' active' : ''}`}
+                    aria-pressed={appliedThemeId === tp.id}
                     disabled={!hasDoc}
                     data-tip={t('ribbonApplyThemeTip', { name: themeDisplayName(tp, t) })}
-                    onClick={() => onApplyTheme(tp)}
+                    onClick={() => {
+                      setAppliedThemeId(tp.id)
+                      onApplyTheme(tp)
+                    }}
                     style={{ background: `#${tp.colors.lt1}`, color: `#${tp.colors.dk1}` }}
                   >
                     <span className="theme-card-aa" style={{ fontFamily: tp.majorFont }}>
@@ -2280,6 +2316,7 @@ export function Ribbon({
                   closePanels(['collapse'])
                   setCollapseOpen((v) => (v === 'animation' ? null : 'animation'))
                 },
+                hint: hasSelection ? undefined : t('ribbonAnimSelectFirst'),
                 icon: (
                   <span className="rb-anim-glyph rb-anim-entr">
                     <IconAnimStar size={20} />
@@ -2331,6 +2368,7 @@ export function Ribbon({
                   closePanels(['collapse'])
                   setCollapseOpen((v) => (v === 'motionPaths' ? null : 'motionPaths'))
                 },
+                hint: hasSelection ? undefined : t('ribbonAnimSelectFirst'),
                 icon: (
                   <span className="rb-anim-glyph rb-anim-path">
                     <IconPathDiagonal size={20} />
@@ -2575,7 +2613,10 @@ export function Ribbon({
                 disabled={!hasDoc}
                 data-tip={`${t('ribbonSpellCheckTip')} — ${t('ribbonAiCreditNote')}`}
                 onClick={() => {
-                  if (confirmAiRewrite()) onAiPreset(t('ribbonSpellCheckPrompt'))
+                  if (!confirmAiRewrite()) return
+                  onAiPreset(t('ribbonSpellCheckPrompt'))
+                  // the check runs in the AI pane: say so, or the press looks like it did nothing
+                  showToast(t('ribbonSpellCheckStarted'))
                 }}
               >
                 <span className="rb-big-icon">

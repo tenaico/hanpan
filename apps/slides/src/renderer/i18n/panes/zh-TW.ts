@@ -290,6 +290,11 @@ export const zhTW = {
   paneShowMenuScreen: '螢幕',
   paneShowMenuBlack: '黑色畫面',
   paneShowMenuWhite: '白色畫面',
+  paneShowMenuPointer: '指標選項',
+  paneShowMenuLaser: '雷射筆',
+  paneShowMenuPen: '畫筆',
+  paneShowMenuArrow: '箭頭（按一下換頁）',
+  paneShowMenuEraseInk: '清除投影片上的所有筆跡',
   paneShowMenuEnd: '結束放映',
   panePresenterWhiteOn: '白色畫面中（按 W 鍵恢復）',
 } satisfies Record<keyof typeof zh, string>

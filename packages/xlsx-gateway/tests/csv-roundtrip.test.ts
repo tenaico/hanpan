@@ -82,7 +82,7 @@ describe('xlsx-gateway csv import round trip', () => {
   })
 
   it('writes future markers through the gateway save path with quoted sheet names', async () => {
-    const source = await csvToXlsxBuffer('value\n1')
+    const source = await csvToXlsxBuffer('value\n1', 'Sheet1')
     const mutation = await applyCellEditsToXlsx(source, [
       {
         sheetName: 'Sheet1',

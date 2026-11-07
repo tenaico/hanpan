@@ -1,6 +1,6 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join, win32 } from 'node:path'
 import { app } from 'electron'
 import { HOME_DIR_NAME, installCliLink, launcherFileName } from '@genoffice/cli/install'
 import { readAppSettings, writeAppSetting } from './app-settings'
@@ -24,10 +24,17 @@ interface CliLinkRecord {
 export function installCliLinkBestEffort(settingsPath: string): void {
   if (!app.isPackaged) return
   try {
-    if (isEphemeralInstall(process.resourcesPath, process.env)) {
-      // a DMG under /Volumes or an AppImage FUSE mount vanishes on exit; linking
-      // to it would leave a dead command, so wait for a real install
-      console.log('[genoffice] cli link skipped: app runs from a temporary mount')
+    const skip = cliLinkSkipReason({
+      platform: process.platform,
+      isPackaged: app.isPackaged,
+      execPath: process.execPath,
+      resourcesPath: process.resourcesPath,
+      argv: process.argv,
+      env: process.env,
+      exists: existsSync,
+    })
+    if (skip) {
+      console.log(`[genoffice] cli link skipped: ${skip}`)
       return
     }
     const dir = join(process.resourcesPath, 'cli')
@@ -47,6 +54,51 @@ export function installCliLinkBestEffort(settingsPath: string): void {
   } catch (err) {
     console.warn('[genoffice] cli link failed:', err instanceof Error ? err.message : err)
   }
+}
+
+export interface CliLinkContext {
+  platform: NodeJS.Platform
+  isPackaged: boolean
+  execPath: string
+  resourcesPath: string
+  argv: readonly string[]
+  env: NodeJS.ProcessEnv
+  exists: (path: string) => boolean
+}
+
+/**
+ * Only the installed app may claim `~/.ieumoffice/launcher` and the PATH entry.
+ * A build run straight from a build output folder (`release/win-unpacked`, a
+ * git worktree, an acceptance check on a scratch profile) would otherwise point
+ * the user's CLI and agent skills at a folder that is deleted or rebuilt later.
+ * Returns why this run must leave them alone, or undefined when it may claim.
+ */
+export function cliLinkSkipReason(ctx: CliLinkContext): string | undefined {
+  if (!ctx.isPackaged) return 'not packaged'
+  if (ctx.env.GENOFFICE_USER_DATA || hasUserDataDirSwitch(ctx.argv)) {
+    return 'custom profile (--user-data-dir or GENOFFICE_USER_DATA)'
+  }
+  // a DMG under /Volumes or an AppImage FUSE mount vanishes on exit; linking
+  // to it would leave a dead command, so wait for a real install
+  if (isEphemeralInstall(ctx.resourcesPath, ctx.env)) return 'app runs from a temporary mount'
+  // electron-builder's unpacked output: win-unpacked, win-arm64-unpacked, linux-unpacked
+  if (/(^|[\\/])[^\\/]*-unpacked([\\/]|$)/i.test(ctx.resourcesPath)) {
+    return 'app runs from an unpacked build folder'
+  }
+  if (ctx.platform === 'win32') {
+    // the NSIS installer leaves "Uninstall <productName>.exe" next to the exe;
+    // a copied or extracted build has none
+    const dir = win32.dirname(ctx.execPath)
+    const name = win32.basename(ctx.execPath).replace(/\.exe$/i, '')
+    if (!ctx.exists(win32.join(dir, `Uninstall ${name}.exe`))) {
+      return 'not installed (no uninstaller next to the exe)'
+    }
+  }
+  return undefined
+}
+
+function hasUserDataDirSwitch(argv: readonly string[]): boolean {
+  return argv.some((a) => a === '--user-data-dir' || a.startsWith('--user-data-dir='))
 }
 
 export function isEphemeralInstall(resourcesPath: string, env: NodeJS.ProcessEnv): boolean {

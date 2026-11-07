@@ -62,10 +62,37 @@ body,
 }
 
 .gx-notice {
-  padding: 6px 12px;
-  border-top: 1px solid var(--border);
-  background: var(--surface-subtle);
+  /* a toast over the bottom of the app: it never pushes the canvas or the AI panel */
+  position: fixed;
+  z-index: 40;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 8px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow-modal-strong);
+  color: var(--text);
   font-size: 12.5px;
+  line-height: 1.45;
+  pointer-events: none;
+  animation: gx-notice-in 160ms ease-out;
+}
+
+@keyframes gx-notice-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-notice {
+    animation: none;
+  }
 }
 
 /* the quick-action buttons above the app */
@@ -92,36 +119,71 @@ body,
   background: var(--hover);
 }
 
-.gx-quick-btn:disabled {
-  color: var(--text-muted);
-  cursor: default;
+/* the ring only for the keyboard: a clicked button must not look held down */
+.gx-quick-btn:focus {
+  outline: none;
 }
 
-/* the export dialog */
+.gx-quick-btn:focus-visible {
+  outline: 2px solid var(--color-border-brand);
+  outline-offset: 1px;
+}
+
+.gx-quick-btn:disabled {
+  /* no picture yet: clearly off, not just a shade greyer */
+  background: transparent;
+  border-style: dashed;
+  color: var(--text-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* the export dialog: Hanpan's picture dialog look (packages/ui image-dialogs.css), light and dark from the tokens */
 .gx-dialog-backdrop {
   position: fixed;
   inset: 0;
+  z-index: 50;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   background: var(--color-bg-overlay);
+  backdrop-filter: blur(4px);
 }
 
 .gx-dialog {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 280px;
+  gap: 14px;
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  margin-top: 96px;
   padding: 18px 20px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-8, 8px);
+  overflow-y: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
   background: var(--surface);
+  box-shadow: var(--shadow-modal-strong);
   color: var(--text);
+  font-size: 13px;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] .gx-dialog {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .gx-dialog {
+    color-scheme: dark;
+  }
 }
 
 .gx-dialog-title {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 15px;
+  font-weight: 600;
 }
 
 .gx-dialog-row {
@@ -129,18 +191,164 @@ body,
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 13px;
 }
 
-.gx-dialog-row input,
-.gx-dialog-row select {
-  width: 120px;
+.gx-dialog-row > span:first-child {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* a segmented choice: the format, the scale */
+.gx-seg {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+}
+
+.gx-seg-btn {
+  min-width: 52px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
   font: inherit;
+  cursor: pointer;
+}
+
+.gx-seg-btn:hover {
+  color: var(--text);
+}
+
+.gx-seg-btn[aria-checked='true'],
+.gx-seg-btn[aria-pressed='true'] {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--border-strong);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* width, the ratio lock, height */
+.gx-dialog-size {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.gx-dialog-field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  color: var(--text-secondary);
+}
+
+.gx-dialog input[type='number'] {
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.gx-dialog input[type='number']:focus {
+  border-color: var(--color-border-brand);
+  outline: none;
+}
+
+.gx-ratio-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.gx-ratio-lock:hover {
+  background: var(--hover);
+}
+
+.gx-ratio-lock[aria-pressed='true'] {
+  border-color: var(--border-strong);
+  color: var(--color-border-brand);
+}
+
+.gx-dialog-quality {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.gx-dialog-quality input {
+  flex: 1;
+  max-width: 200px;
+  accent-color: var(--color-border-brand);
+}
+
+.gx-dialog-quality output {
+  width: 40px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .gx-dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 4px;
+}
+
+.gx-dialog-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border-default, var(--border-strong));
+  border-radius: 12px;
+  background: var(--color-bg-page, var(--surface));
+  color: var(--color-text-primary, var(--text));
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.gx-dialog-btn:hover {
+  background: var(--color-bg-subtle, var(--hover));
+}
+
+.gx-dialog-btn.primary {
+  border-color: var(--color-btn-primary);
+  background: var(--color-btn-primary);
+  color: var(--color-btn-primary-text);
+}
+
+.gx-dialog-btn.primary:hover {
+  border-color: var(--color-btn-primary-hover);
+  background: var(--color-btn-primary-hover);
+}
+
+.gx-seg-btn:focus-visible,
+.gx-ratio-lock:focus-visible,
+.gx-dialog-btn:focus-visible {
+  outline: 2px solid var(--color-border-brand);
+  outline-offset: 1px;
 }

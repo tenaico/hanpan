@@ -472,7 +472,7 @@ describe('keys taken from the page', () => {
     expect(shortcutFor(key('S', { control: true, shift: true }), 'win32')).toBe('saveAs')
     expect(shortcutFor(key('o', { control: true }), 'win32')).toBe('open')
     expect(shortcutFor(key('n', { control: true }), 'win32')).toBe('new')
-    expect(shortcutFor(key('p', { control: true }), 'win32')).toBe('swallow')
+    expect(shortcutFor(key('p', { control: true }), 'win32')).toBe('print')
     expect(shortcutFor(key('s', { meta: true }), 'darwin')).toBe('save')
   })
 
@@ -491,5 +491,68 @@ describe('keys taken from the page', () => {
     expect(openFileDialog).toHaveBeenCalled()
     wc.listeners.get('before-input-event')!(event, key('n', { control: true }))
     expect(newDocument).toHaveBeenCalledWith('photo')
+  })
+
+  it('Ctrl+P asks the page for its print preview', () => {
+    const wc = viewFor('illust')
+    const event = { preventDefault: vi.fn() }
+    wc.listeners.get('before-input-event')!(event, key('p', { control: true }))
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(wc.sent).toContainEqual([GRAPHICS_CHANNELS.menuCommand, 'print'])
+  })
+})
+
+describe('printing the picture', () => {
+  // a PNG head that says 3000 × 2000
+  const PNG = new Uint8Array(33)
+  PNG.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52])
+  new DataView(PNG.buffer).setUint32(16, 3000)
+  new DataView(PNG.buffer).setUint32(20, 2000)
+  const sheet = { widthMm: 297, heightMm: 210, marginMm: 10 }
+  const printHtml = vi.fn()
+  beforeEach(() => {
+    printHtml.mockReset()
+    printHtml.mockResolvedValue({ ok: true })
+    configureGraphicsRuntime({ preloadPath: '/pre.js', printHtml })
+  })
+
+  it('prints the PNG the page sent on the paper it chose, through the shared print page', async () => {
+    const wc = viewFor('photo')
+    const result = await call(GRAPHICS_CHANNELS.print, wc, { bytes: PNG, sheet })
+    expect(result).toEqual({ ok: true })
+    const [html, given] = printHtml.mock.calls[0]!
+    expect(given).toEqual(sheet)
+    expect(html).toContain('@page { size: 297mm 210mm; margin: 0; }')
+    // the size comes from the PNG itself: 3:2 inside 277 × 190 mm
+    expect(html).toContain('width:277mm;height:184.667mm')
+    expect(html).toContain(`src="data:image/png;base64,${Buffer.from(PNG).toString('base64')}"`)
+  })
+
+  it('reports a closed print dialog as canceled, not as a failure', async () => {
+    printHtml.mockResolvedValue({ ok: true, canceled: true })
+    const wc = viewFor('illust')
+    expect(await call(GRAPHICS_CHANNELS.print, wc, { bytes: PNG, sheet })).toEqual({
+      ok: true,
+      canceled: true,
+    })
+  })
+
+  it('refuses anything but a PNG, a sane paper, or a view that is not a graphics tab', async () => {
+    const wc = viewFor('photo')
+    const bad = [
+      { bytes: new Uint8Array([1, 2, 3]), sheet },
+      { bytes: PNG, sheet: { widthMm: 1e6, heightMm: 1, marginMm: 0 } },
+      { bytes: PNG },
+      null,
+    ]
+    for (const request of bad)
+      expect(await call<{ ok: boolean }>(GRAPHICS_CHANNELS.print, wc, request)).toMatchObject({
+        ok: false,
+      })
+    const stranger = fakeContents()
+    expect(
+      await call<{ ok: boolean }>(GRAPHICS_CHANNELS.print, stranger, { bytes: PNG, sheet }),
+    ).toMatchObject({ ok: false })
+    expect(printHtml).not.toHaveBeenCalled()
   })
 })

@@ -150,7 +150,8 @@ export const zhTW = {
   dlgPivotAddValue: '+ 新增值欄位',
   dlgPivotAddCalc: '+ 新增計算欄位',
   dlgPivotTargetCell: '目標起始儲存格',
-  dlgPivotTargetPlaceholder: '如 F1',
+  dlgPivotTargetPlaceholder: '如 {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: '編輯樞紐分析表時輸出區左上角保持不變',
   dlgPivotNote:
     '樞紐分析表會產生為真實的 OOXML PivotTable，儲存後 Excel/WPS 可直接識別並重新整理。',

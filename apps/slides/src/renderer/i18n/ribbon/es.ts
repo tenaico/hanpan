@@ -61,7 +61,7 @@ export const es = {
   ribbonGroupSlides: 'Diapositivas',
   ribbonNewSlide: 'Nueva diapositiva',
   ribbonNewSlideTip:
-    'Nueva diapositiva en blanco (conserva el fondo del diseño de la diapositiva actual)',
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'Elegir diseño',
   ribbonChooseLayoutNew: 'Nueva diapositiva con diseño',
   ribbonChooseLayoutChange: 'Cambiar diseño de la diapositiva actual',
@@ -801,4 +801,8 @@ export const es = {
   ribbonZoomSectionItem: 'Diapositiva {n} Sección {k}: {name}',
   ribbonZoomSelectedSlides: '{n} diapositivas seleccionadas',
   ribbonZoomSelectedSections: '{n} secciones seleccionadas',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

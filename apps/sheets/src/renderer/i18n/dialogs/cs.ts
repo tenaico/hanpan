@@ -156,7 +156,8 @@ export const cs = {
   dlgPivotAddValue: '+ Přidat pole hodnot',
   dlgPivotAddCalc: '+ Přidat počítané pole',
   dlgPivotTargetCell: 'Cílová buňka',
-  dlgPivotTargetPlaceholder: 'např. F1',
+  dlgPivotTargetPlaceholder: 'např. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'Při úpravách si výstupní oblast zachová levou horní buňku',
   dlgPivotNote:
     'Vytvoří skutečnou kontingenční tabulku OOXML, kterou Excel/WPS po uložení rozpozná a dokáže aktualizovat.',

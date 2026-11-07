@@ -1,9 +1,10 @@
 /**
- * Word for Mac "Collapse ribbon": the tab row stays, the command band hides.
- * The selected tab doubles as the collapse control; while collapsed no tab is
+ * Office "Collapse ribbon": the tab row stays, the command band hides.
+ * A single press on the selected tab does nothing (as in Office: a first-time
+ * user must not lose the band by accident); double-clicking a tab, Ctrl+F1
+ * (⌥⌘R on macOS) or `RibbonCollapseButton` collapse. While collapsed no tab is
  * selected and pressing any tab expands the band again (it stays expanded —
- * no peek overlay, no pin). Double-clicking a tab and Ctrl+F1 (⌥⌘R on macOS)
- * toggle too. The state persists per app in localStorage.
+ * no peek overlay, no pin). The state persists per app in localStorage.
  *
  * An optional middle density, "compact" (icon-only commands on a shorter
  * band), is opt-in per call site: it needs `labels.compact` / `labels.expandFull`
@@ -168,9 +169,9 @@ export function useRibbonCollapse(
   const pressHistory = useRef<RibbonDensity[]>([])
 
   const onTabPress = useCallback(
-    (wasActive: boolean) => {
+    (_wasActive: boolean) => {
       pressHistory.current = [...pressHistory.current.slice(-1), densityRef.current]
-      if (densityRef.current === 'collapsed' || wasActive) toggle()
+      if (densityRef.current === 'collapsed') toggle()
     },
     [toggle],
   )

@@ -4,7 +4,7 @@ export const vi = {
   windowTitle: 'Tạo tài liệu mới',
   kindLabel: 'Muốn tạo gì',
   kindSlides: 'Bài thuyết trình (PPT)',
-  kindHtml: 'Trang web (HTML)',
+  kindHtml: 'Tài liệu web',
   kindMindmap: 'Sơ đồ tư duy',
   materialsLabel: 'Tài liệu nguồn',
   addMaterials: 'Thêm tệp…',

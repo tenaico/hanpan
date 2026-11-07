@@ -42,6 +42,7 @@ export type {
 } from './types'
 export {
   AI_SUBSCRIPTION_PROVIDERS,
+  accountDefaultProvider,
   isKeyProviderConfigured,
   isSubscriptionProvider,
   providerSelectionOf,

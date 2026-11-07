@@ -62,7 +62,7 @@ export function SendMenu(p: {
     <span ref={wrap} className="gs-dd hp-send-menu">
       <button
         type="button"
-        className={`rb-btn mm-tool${open ? ' active' : ''}`}
+        className={`rb-btn mm-tool hp-send-button${open ? ' active' : ''}`}
         data-action="send-to"
         data-tip={open ? undefined : t('tbSendTo')}
         aria-label={t('tbSendTo')}
@@ -73,6 +73,7 @@ export function SendMenu(p: {
         onClick={() => setOpen((was) => !was)}
       >
         <IconSendTo />
+        <span className="hp-send-button-label">{t('tbSendToLabel')}</span>
       </button>
       {open && (
         <div className="gs-dd-pop" role="menu" aria-label={t('tbSendTo')}>

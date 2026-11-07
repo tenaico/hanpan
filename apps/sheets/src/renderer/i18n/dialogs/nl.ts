@@ -155,7 +155,8 @@ export const nl = {
   dlgPivotAddValue: '+ Waardeveld toevoegen',
   dlgPivotAddCalc: '+ Berekend veld toevoegen',
   dlgPivotTargetCell: 'Doelcel',
-  dlgPivotTargetPlaceholder: 'bijv. F1',
+  dlgPivotTargetPlaceholder: 'bijv. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'Bij het bewerken behoudt het uitvoerbereik zijn cel linksboven',
   dlgPivotNote:
     'Maakt een echte OOXML-draaitabel die Excel/WPS na het opslaan kan herkennen en vernieuwen.',

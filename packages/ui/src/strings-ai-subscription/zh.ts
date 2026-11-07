@@ -62,6 +62,8 @@ export const zh = {
   usageWindowFiveHour: '5 小时额度',
   usageWindowSevenDay: '7 天额度',
   noticeTitle: '使用订阅运行 AI 之前',
+  noticeSummary: '文档和对话会以你自己的账户发送给 Anthropic 或 OpenAI。',
+  noticeMore: '详细信息',
   noticeSend:
     '文档内容和对话会以你本人的账户发送给 Anthropic 或 OpenAI。每次请求也会附上设为“自动使用”的每个技能的名称、标题和说明；使用的技能内容和 AI 读取的技能文件也会一并发送。',
   noticeTraining: '这些内容是否用于 AI 训练，取决于你在该公司账户中的设置。',

@@ -343,11 +343,20 @@ export function planFromOps(
   )
 }
 
-/** Excel-style default name for an inserted sheet: the lowest free SheetN. */
-export function nextSheetName(taken: readonly string[]): string {
+/**
+ * Excel-style default name for an inserted sheet: the lowest free number after the prefix the
+ * workbook already uses — 시트N (a new workbook, 0.17) or SheetN (most existing files) — and,
+ * in a workbook with neither, the UI language's (`appSheetNamePrefix`: 시트 in Korean).
+ */
+export function nextSheetName(taken: readonly string[], fallbackPrefix?: string): string {
+  const prefix = taken.some((name) => /^시트\d+$/.test(name))
+    ? '시트'
+    : taken.some((name) => /^sheet\d+$/i.test(name))
+      ? 'Sheet'
+      : (fallbackPrefix ?? t('appSheetNamePrefix'))
   const lower = new Set(taken.map((name) => name.toLowerCase()))
   for (let n = 1; ; n += 1) {
-    const candidate = `Sheet${n}`
+    const candidate = `${prefix}${n}`
     if (!lower.has(candidate.toLowerCase())) return candidate
   }
 }

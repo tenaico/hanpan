@@ -56,7 +56,8 @@ export const hi = {
     'स्वरूप पेंटर (स्वरूप की प्रतिलिपि बनाकर लागू करने के लिए क्लिक करें; ⌘⇧C स्वरूप की प्रतिलिपि / ⌘⇧V स्वरूप चिपकाएँ)',
   ribbonGroupSlides: 'स्लाइड्स',
   ribbonNewSlide: 'नई स्लाइड',
-  ribbonNewSlideTip: 'नई रिक्त स्लाइड (वर्तमान स्लाइड के लेआउट की पृष्ठभूमि बनाए रखती है)',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'लेआउट चुनें',
   ribbonChooseLayoutNew: 'लेआउट के साथ नई स्लाइड',
   ribbonChooseLayoutChange: 'वर्तमान स्लाइड का लेआउट बदलें',
@@ -787,4 +788,8 @@ export const hi = {
   ribbonZoomSectionItem: 'स्लाइड {n} अनुभाग {k}: {name}',
   ribbonZoomSelectedSlides: '{n} स्लाइड चयनित',
   ribbonZoomSelectedSections: '{n} अनुभाग चयनित',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

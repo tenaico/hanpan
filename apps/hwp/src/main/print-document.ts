@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { BrowserWindow } from 'electron'
 import { MAX_PRINT_CHARS, MAX_PRINT_PAGES } from '../shared/ipc'
-import type { PrintJob, PrintPage } from '../shared/ipc'
+import type { PngExport, PrintJob, PrintPage } from '../shared/ipc'
 
 /**
  * Printing a document: the pages as the editor draws them for print (SVG), one after
@@ -201,4 +201,34 @@ export function printJobToPrinter(
         )
       }),
   )
+}
+
+/** File names for the pages of a picture export: `<name>-<n>.png`, numbered to the same width. */
+export function pngPageNames(base: string, count: number): string[] {
+  const width = String(count).length
+  return Array.from(
+    { length: count },
+    (_, i) => `${base}-${String(i + 1).padStart(width, '0')}.png`,
+  )
+}
+
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+
+/**
+ * Why pictures from the renderer are not written, or null when they may be (0.17): PNG
+ * bytes, every page for 'png', the one current page for 'pngPage'.
+ */
+export function badPngRequest(request: unknown): string | null {
+  if (!request || typeof request !== 'object') return 'not a picture export'
+  const { mode, pngs } = request as Partial<PngExport>
+  if (mode !== 'png' && mode !== 'pngPage') return 'unknown picture mode'
+  if (!Array.isArray(pngs) || pngs.length === 0) return 'no pages'
+  if (pngs.length > MAX_PRINT_PAGES) return 'too many pages'
+  if (mode === 'pngPage' && pngs.length !== 1) return 'not one page'
+  for (const png of pngs) {
+    if (!(png instanceof Uint8Array) || !PNG_SIGNATURE.every((byte, i) => png[i] === byte)) {
+      return 'not a PNG'
+    }
+  }
+  return null
 }

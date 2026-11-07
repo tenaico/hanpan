@@ -7,6 +7,7 @@ import JSZip from 'jszip'
 import { encodeXlsxEscapes } from './xlsx-escapes'
 import { DEFAULT_THEME_XML } from './xlsx-default-theme'
 import { MINIMAL_STYLESHEET_XML } from './xlsx-default-styles'
+import { firstSheetNameFor, newWorkbookStylesheetXml } from './new-workbook-lang'
 import { validateSheetName } from './xlsx-sheets'
 
 const DELIMITERS = [',', ';', '\t'] as const
@@ -343,10 +344,23 @@ function columnIndexFromLabel(label: string): number {
   return index - 1
 }
 
-export async function csvToXlsxBuffer(csvText: string, sheetName = 'Sheet1'): Promise<Buffer> {
+/**
+ * The first sheet of a workbook this package makes from nothing (a blank workbook, a CSV
+ * opened or imported, the AI's create_document) follows the UI language the caller passes
+ * (firstSheetNameFor, new-workbook-lang.ts); without one it is Korean, as Hanpan 0.17
+ * starts new workbooks. A sheet of an existing file keeps its own name; only new ones
+ * take this.
+ */
+export const NEW_WORKBOOK_SHEET_NAME = firstSheetNameFor('ko')
+
+export async function csvToXlsxBuffer(
+  csvText: string,
+  sheetName?: string,
+  lang = 'ko',
+): Promise<Buffer> {
   const rows = parseCsv(csvText, resolveImportDelimiter(csvText))
   if (rows.length === 0) throw new Error('The CSV file has no data rows.')
-  return xlsxBufferFromRows(rows, sheetName)
+  return xlsxBufferFromRows(rows, sheetName ?? firstSheetNameFor(lang))
 }
 
 /**
@@ -357,11 +371,15 @@ export async function csvToXlsxBuffer(csvText: string, sheetName = 'Sheet1'): Pr
  */
 export async function csvToXlsxBufferForOpen(
   csvText: string,
-  sheetName = 'Sheet1',
+  sheetName?: string,
   delimiter?: string,
+  lang = 'ko',
 ): Promise<{ buffer: Buffer; empty: boolean }> {
   const rows = parseCsv(csvText, delimiter ?? resolveImportDelimiter(csvText))
-  return { buffer: await xlsxBufferFromRows(rows, sheetName), empty: rows.length === 0 }
+  return {
+    buffer: await xlsxBufferFromRows(rows, sheetName ?? firstSheetNameFor(lang)),
+    empty: rows.length === 0,
+  }
 }
 
 /**
@@ -406,13 +424,24 @@ function bodyRowsAgreeOnWidth(rows: readonly (readonly string[])[]): boolean {
  * neither), and sniffing would then split the wrong columns — and an
  * all-empty grid becomes a valid blank workbook instead of an import error.
  */
-export async function sheetCsvToXlsxBuffer(csvText: string, sheetName = 'Sheet1'): Promise<Buffer> {
-  return xlsxBufferFromRows(parseCsv(csvText, ','), sheetName)
+export async function sheetCsvToXlsxBuffer(
+  csvText: string,
+  sheetName?: string,
+  lang = 'ko',
+): Promise<Buffer> {
+  return xlsxBufferFromRows(parseCsv(csvText, ','), sheetName ?? firstSheetNameFor(lang))
 }
 
-/** minimal empty workbook: the backing file for a "new blank spreadsheet" tab */
-export async function blankXlsxBuffer(sheetName = 'Sheet1'): Promise<Buffer> {
-  return xlsxBufferFromRows([], sheetName)
+/**
+ * minimal empty workbook: the backing file for a "new blank spreadsheet" tab. The first
+ * sheet's name (unless the caller gives one) and the Normal font follow the UI language
+ * (Hanpan 0.17, new-workbook-lang.ts); without a language it starts in Korean: 시트1, 맑은 고딕.
+ */
+export async function blankXlsxBuffer(sheetName?: string, lang = 'ko'): Promise<Buffer> {
+  return xlsxBufferFromSheets(
+    [{ name: sheetName ?? firstSheetNameFor(lang), rows: [] }],
+    newWorkbookStylesheetXml(lang),
+  )
 }
 
 export interface MinimalWorksheet {
@@ -432,6 +461,7 @@ async function xlsxBufferFromRows(
 /** A minimal workbook from plain cell text, shared by CSV and HTML imports. */
 export async function xlsxBufferFromSheets(
   worksheets: readonly MinimalWorksheet[],
+  stylesheet: string = MINIMAL_STYLESHEET_XML,
 ): Promise<Buffer> {
   if (worksheets.length === 0) throw new Error('A workbook needs at least one worksheet.')
   for (const worksheet of worksheets) validateSheetName(worksheet.name)
@@ -489,7 +519,7 @@ export async function xlsxBufferFromSheets(
       '</Relationships>',
   )
   zip.file('xl/theme/theme1.xml', DEFAULT_THEME_XML)
-  zip.file('xl/styles.xml', MINIMAL_STYLESHEET_XML)
+  zip.file('xl/styles.xml', stylesheet)
   worksheets.forEach((worksheet, index) => {
     zip.file(
       `xl/worksheets/sheet${index + 1}.xml`,

@@ -16,7 +16,7 @@ import type {
   TransitionKind,
 } from '../../shared/ipc'
 import type { InkPenSettings, InkTool } from '../ink'
-import type { WordArtPreset } from '@genoffice/ui'
+import type { GonguPicked, WordArtPreset } from '@genoffice/ui'
 import type { ChartPresetDef, IconDef, SmartArtDef } from '../insert-presets'
 import type { ZoomMode } from '../zoom-actions'
 import type { SlideThemePreset } from '../themes'
@@ -244,7 +244,14 @@ export function Group({
   /** identity for width measurement + collapse bookkeeping */
   groupId?: string
   /** present on collapsible groups; `collapsed` switches to the dropdown form */
-  collapse?: { collapsed: boolean; open: boolean; onToggle: () => void; icon: ReactNode }
+  collapse?: {
+    collapsed: boolean
+    open: boolean
+    onToggle: () => void
+    icon: ReactNode
+    /** a line above the folded buttons, e.g. why they are all greyed out */
+    hint?: string
+  }
 }) {
   if (collapse?.collapsed) {
     return (
@@ -265,6 +272,11 @@ export function Group({
             </button>
             {collapse.open && (
               <div className="rb-drop rb-collapse-panel" onMouseDown={(e) => e.stopPropagation()}>
+                {collapse.hint && (
+                  <div className="rb-collapse-hint" role="note">
+                    {collapse.hint}
+                  </div>
+                )}
                 {children}
               </div>
             )}
@@ -508,6 +520,8 @@ export interface Props {
   onInsertMedia: (kind: 'video' | 'audio') => void
   /** Hanpan: insert one of the bundled sound effects */
   onInsertSoundEffect: (id: string) => void
+  /** Hanpan: insert a Gongu picture with its credit line; false when nothing went in */
+  onInsertGonguPicture: (picked: GonguPicked) => Promise<boolean>
   /** Open a dialog to insert a 3D model (embedded glb + poster placeholder) */
   onInsertModel3d: () => void
   /** Screen recording state (true = recording, button shows stop) */
@@ -631,6 +645,7 @@ export interface RibbonTabCtx extends Pick<
   | 'onInsertImage'
   | 'onInsertMedia'
   | 'onInsertSoundEffect'
+  | 'onInsertGonguPicture'
   | 'onInsertModel3d'
   | 'onInsertSmartArt'
   | 'onInsertTable'

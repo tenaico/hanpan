@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactElement } from 'react'
 import type { SplitHint, SplitViewState } from '../../shared/split-view-api'
 import type { TabsApi, TabSummary } from '../../shared/tabs-api'
@@ -6,6 +6,7 @@ import { TEAR_OFF_SLACK, insertionIndexForX, isBeyondBand } from '../../shared/t
 import { notifyFilesChanged } from './file-events'
 import { productName } from '@genoffice/i18n'
 import { useI18n } from './locale'
+import { tabLabels } from './tab-labels'
 import iconDocx from './assets/file-docx.svg'
 import iconXlsx from './assets/file-xlsx.svg'
 import iconPptx from './assets/file-pptx.svg'
@@ -38,8 +39,9 @@ function FileKindIcon({ src }: { src: string }) {
  * - Tabs with a saved filePath show the full title on line 1, and the full absolute path on line 2.
  * - Untitled or Home/Help tabs without a filePath show the title alone.
  */
-export function formatTabTooltip(tab: TabSummary): string {
-  return tab.filePath ? `${tab.title}\n${tab.filePath}` : tab.title
+export function formatTabTooltip(tab: TabSummary, unsavedLabel?: string): string {
+  const head = tab.dirty && unsavedLabel ? `${tab.title} — ${unsavedLabel}` : tab.title
+  return tab.filePath ? `${head}\n${tab.filePath}` : head
 }
 
 function HelpIcon() {
@@ -125,6 +127,8 @@ interface TabBarProps {
 export function TabBar({ split }: TabBarProps) {
   const { t, lang } = useI18n()
   const [tabs, setTabs] = useState<TabSummary[]>([])
+  // 0.17 리뷰 #15: 같은 이름은 번호로 나누고 번호는 말줄임에 잘리지 않게
+  const labels = useMemo(() => tabLabels(tabs), [tabs])
   // where a tab drag would split the window (main sends it while dragging)
   const [splitHint, setSplitHint] = useState<SplitHint | null>(null)
   const stripRef = useRef<HTMLDivElement>(null)
@@ -431,6 +435,8 @@ export function TabBar({ split }: TabBarProps) {
       <div
         className={`tab-strip ${dragVisual ? 'dragging' : ''} ${dockX !== null ? 'dock-target' : ''}`}
         ref={stripRef}
+        role="tablist"
+        aria-label={t('tabList')}
         // the strip, not the grabbed tab, owns the pointer capture: a torn-off
         // tab's element unmounts mid-gesture, and the moves must keep coming
         onPointerMove={handleDragMove}
@@ -442,6 +448,7 @@ export function TabBar({ split }: TabBarProps) {
           <div className="tab-dock-indicator" style={{ left: dockX }} aria-hidden="true" />
         )}
         {tabs.map((tab, index) => {
+          const label = labels.get(tab.id) ?? { base: tab.title, tail: '', ext: '' }
           // a tab that sits in a split pane keeps a marker: pane a on the
           // left of its plate, pane b on the right; the focus pane's tab is
           // still the one with the ordinary active plate
@@ -466,10 +473,38 @@ export function TabBar({ split }: TabBarProps) {
           return (
             <div
               key={tab.id}
-              className={`tab-item ${tab.kind === 'home' ? 'tab-home' : ''} ${tab.active ? 'active' : ''} ${dragVisual?.id === tab.id ? 'drag-source' : ''}${pane}`}
+              className={`tab-item ${tab.kind === 'home' ? 'tab-home' : ''} ${tab.active ? 'active' : ''} ${dragVisual?.id === tab.id ? 'drag-source' : ''}${pane}${tab.dirty ? ' dirty' : ''}`}
+              // a tab list for the keyboard (0.17 리뷰 v2 shell #31): one Tab stop
+              // (the active tab), arrows between tabs, Enter/Space shows, Delete closes
+              role="tab"
+              aria-selected={tab.active}
+              tabIndex={tab.active ? 0 : -1}
+              onKeyDown={(event) => {
+                if (renaming?.id === tab.id) return
+                const all = Array.from(
+                  stripRef.current?.querySelectorAll<HTMLElement>('[role="tab"]') ?? [],
+                )
+                const move = (to: number) => {
+                  event.preventDefault()
+                  all[Math.max(0, Math.min(all.length - 1, to))]?.focus()
+                }
+                if (event.key === 'ArrowRight') move(index + 1)
+                else if (event.key === 'ArrowLeft') move(index - 1)
+                else if (event.key === 'Home') move(0)
+                else if (event.key === 'End') move(all.length - 1)
+                else if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  void window.aiOfficeTabs.activate(tab.id)
+                } else if (event.key === 'Delete' && tab.closable) {
+                  event.preventDefault()
+                  void window.aiOfficeTabs.close(tab.id)
+                }
+              }}
               // long file names ellipsize in the strip — hover reveals the
               // full title and where the file is (the close button's own tooltip still wins there)
-              title={tab.kind === 'home' ? productName(lang) : formatTabTooltip(tab)}
+              title={
+                tab.kind === 'home' ? productName(lang) : formatTabTooltip(tab, t('tabUnsaved'))
+              }
               style={dragStyle}
               onContextMenu={(event) => {
                 event.preventDefault()
@@ -560,46 +595,59 @@ export function TabBar({ split }: TabBarProps) {
                 />
               ) : (
                 <span className="tab-title">
-                  {tab.kind === 'home' ? productName(lang) : tab.title}
+                  {tab.kind === 'home' ? (
+                    productName(lang)
+                  ) : (
+                    <>
+                      <span className="tab-title-base">{label.base}</span>
+                      {label.tail && <span className="tab-title-tail">{label.tail}</span>}
+                      {label.ext && <span className="tab-title-ext">{label.ext}</span>}
+                    </>
+                  )}
                 </span>
               )}
               {tab.closable && (
                 <button
                   className="tab-close"
+                  tabIndex={-1}
                   title={t('closeTab')}
-                  aria-label={t('closeTab')}
+                  aria-label={tab.dirty ? `${t('closeTab')} (${t('tabUnsaved')})` : t('closeTab')}
                   onClick={(event) => {
                     event.stopPropagation()
                     void window.aiOfficeTabs.close(tab.id)
                   }}
                 >
-                  ×
+                  {/* 저장 안 된 탭은 닫기 자리에 점을 보이고, 마우스를 올리면 ×로 바뀐다 */}
+                  {tab.dirty && <span className="tab-dirty-dot" aria-hidden="true" />}
+                  <span className="tab-close-x">×</span>
                 </button>
               )}
             </div>
           )
         })}
-        <button
-          className="tab-new-btn"
-          title={t('newTab')}
-          aria-label={t('newTab')}
-          onClick={(event) => {
-            const rect = event.currentTarget.getBoundingClientRect()
-            void window.aiOfficeTabs.showNewMenu(Math.round(rect.left), Math.round(rect.bottom))
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M12 4.286v15.429M4.286 12h15.429"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
       </div>
+      {/* outside the scrolling strip: "+" never scrolls away (0.17 리뷰 v2 shell #11) */}
+      <button
+        className="tab-new-btn"
+        title={t('newTab')}
+        aria-label={t('newTab')}
+        onClick={(event) => {
+          const rect = event.currentTarget.getBoundingClientRect()
+          void window.aiOfficeTabs.showNewMenu(Math.round(rect.left), Math.round(rect.bottom))
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M12 4.286v15.429M4.286 12h15.429"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+      <div className="tab-strip-rest" />
       {splitHint && (
         <div
           className={`tab-split-hint ${splitHint.orientation === 'side' ? 'for-side' : 'for-stack'}`}

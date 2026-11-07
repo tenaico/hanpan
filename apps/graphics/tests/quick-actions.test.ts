@@ -4,7 +4,10 @@ import { keepRatio } from '../src/renderer/quick/resize'
 import type { GraphicsAdapter } from '../src/renderer/adapters'
 
 /** An app whose commands are scripted by id; records what ran. */
-function fakeApp(handlers: Record<string, (params: Record<string, unknown>) => unknown> = {}) {
+function fakeApp(
+  handlers: Record<string, (params: Record<string, unknown>) => unknown> = {},
+  hasDocument = true,
+) {
   const executed: Array<[string, Record<string, unknown>]> = []
   const placed: string[] = []
   const adapter = {
@@ -22,7 +25,10 @@ function fakeApp(handlers: Record<string, (params: Record<string, unknown>) => u
       placed.push(name)
     }),
     exportBytes: vi.fn(async () => new Uint8Array([1, 2, 3])),
-    docInfo: async () => ({ hasDocument: true, dirty: false, title: 'logo.svg' }),
+    docInfo: async () =>
+      hasDocument
+        ? { hasDocument: true, dirty: false, title: 'logo.svg' }
+        : { hasDocument: false, dirty: false, title: null },
   } as unknown as GraphicsAdapter
   return { adapter, executed, placed }
 }
@@ -49,7 +55,7 @@ describe('the quick actions', () => {
     expect(QUICK_ACTIONS.illust).toEqual(['traceImage', 'centerOnArtboard', 'exportPngSvg'])
   })
 
-  it('removeBackground runs layer.removeBackground and reports the app refusal reason', async () => {
+  it('removeBackground runs layer.removeBackground; a refusal gets a plain message, not the app text', async () => {
     const ok = fakeApp()
     expect(await runQuickAction('removeBackground', deps(ok.adapter))).toMatchObject({
       ok: true,
@@ -63,8 +69,64 @@ describe('the quick actions', () => {
     })
     expect(await runQuickAction('removeBackground', deps(refused.adapter))).toEqual({
       ok: false,
-      messageKey: 'quickRefused',
-      detail: 'select a pixel layer first',
+      messageKey: 'quickNeedPixelLayer',
+    })
+  })
+
+  // 0.17 UX v2 G4: 무엇을 했는지, 왜 못 했는지를 동작마다 말한다
+  it.each([
+    ['removeBackground', 'quickDoneRemoveBackground', {}],
+    ['autoTone', 'quickDoneAutoTone', {}],
+    ['centerOnArtboard', 'quickDoneCenter', { 'document.inspect': () => ({ selection: [3] }) }],
+    [
+      'traceImage',
+      'quickDoneTrace',
+      {
+        'document.inspect': () => ({ selection: [7] }),
+        'document.node': () => ({ id: 7, kind: { type: 'image' } }),
+      },
+    ],
+  ] as const)('%s says what it did (%s)', async (id, key, handlers) => {
+    const app = fakeApp(handlers as Record<string, () => unknown>)
+    expect(await runQuickAction(id, deps(app.adapter))).toEqual({ ok: true, messageKey: key })
+  })
+
+  it.each([
+    ['removeBackground', 'layer.removeBackground', 'quickNeedPixelLayer'],
+    ['autoTone', 'image.autoTone', 'quickNeedPixelLayer'],
+    ['centerOnArtboard', 'object.align', 'quickCenterFailed'],
+    ['traceImage', 'imageTrace.makeAndExpand', 'quickTraceFailed'],
+  ] as const)('%s tells the likely cause when the app refuses', async (id, command, key) => {
+    const app = fakeApp({
+      'document.inspect': () => ({ selection: [] }),
+      [command]: () => {
+        throw new Error('nothing to change')
+      },
+    })
+    expect(await runQuickAction(id, deps(app.adapter))).toEqual({ ok: false, messageKey: key })
+  })
+
+  // 0.17 리뷰 #3: 문서 없이 누르면 앱에 명령을 보내지 않고 사람 말로 알린다
+  it.each([...QUICK_ACTIONS.photo, ...QUICK_ACTIONS.illust])(
+    '%s without an open document sends the app nothing and asks for a picture first',
+    async (id) => {
+      const app = fakeApp({}, false)
+      const d = deps(app.adapter)
+      expect(await runQuickAction(id, d)).toEqual({ ok: false, messageKey: 'quickNoDocument' })
+      expect(app.executed).toEqual([])
+      expect(d.pickImage).not.toHaveBeenCalled()
+      expect(d.askExport).not.toHaveBeenCalled()
+    },
+  )
+
+  it('a failed export says so plainly, without the main process error text', async () => {
+    const app = fakeApp()
+    const d = deps(app.adapter, {
+      exportFile: vi.fn(async () => ({ ok: false as const, error: 'EACCES: permission denied' })),
+    })
+    expect(await runQuickAction('exportPngSvg', d)).toEqual({
+      ok: false,
+      messageKey: 'quickExportFailed',
     })
   })
 
@@ -144,6 +206,48 @@ describe('the quick actions', () => {
       defaultName: 'logo.jpg',
       format: 'jpg',
     })
+  })
+
+  it('exportAtSize passes the chosen JPG quality to the resize', async () => {
+    const app = fakeApp()
+    const d = deps(app.adapter, {
+      askExport: vi.fn(async () => ({
+        format: 'jpg' as const,
+        width: 1000,
+        height: 500,
+        quality: 0.7,
+      })),
+    })
+    await runQuickAction('exportAtSize', d)
+    expect(d.resize).toHaveBeenCalledWith(new Uint8Array([1, 2, 3]), 1000, 500, 'jpg', 0.7)
+  })
+
+  // 0.17 UX v2 G6: 앱이 붙인 "Untitled-1" 대신 한판 탭의 이름으로 내보낸다
+  it.each(['Untitled-1', 'Untitled-12', 'Untitled', null])(
+    'an export of the app default name %s takes the tab name',
+    async (title) => {
+      const app = fakeApp()
+      app.adapter.docInfo = async () => ({ hasDocument: true, dirty: true, title })
+      const d = deps(app.adapter, { untitledName: '제목 없는 사진' })
+      await runQuickAction('exportAtSize', d)
+      expect(d.exportFile).toHaveBeenCalledWith(
+        expect.objectContaining({ defaultName: '제목 없는 사진.png' }),
+      )
+    },
+  )
+
+  it('an export keeps a real file name', async () => {
+    const app = fakeApp()
+    app.adapter.docInfo = async () => ({
+      hasDocument: true,
+      dirty: true,
+      title: 'Untitled-art.svg',
+    })
+    const d = deps(app.adapter, { untitledName: '제목 없는 일러스트' })
+    await runQuickAction('exportPngSvg', d)
+    expect(d.exportFile).toHaveBeenCalledWith(
+      expect.objectContaining({ defaultName: 'Untitled-art.png' }),
+    )
   })
 
   it('exportPngSvg hands an SVG over as the app wrote it', async () => {

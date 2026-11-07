@@ -76,11 +76,14 @@ export function AiAskTrigger({ getAnchorRect, onOpen }: TriggerProps): React.JSX
         setPos(null)
         return
       }
-      const w = btnRef.current?.offsetWidth ?? 96
-      const h = btnRef.current?.offsetHeight ?? 32
+      const w = btnRef.current?.offsetWidth || 96
+      const h = btnRef.current?.offsetHeight || 32
       const bottom = Math.min(rect.viewBottom, window.innerHeight)
+      // 무대 오른쪽 끝을 넘지 않는다: 측면 창(애니메이션·서식 창)이 열려 있으면 그 위에 겹치지 않게
+      const stageRight = document.querySelector('.stage-wrap')?.getBoundingClientRect().right
+      const right = Math.min(window.innerWidth, stageRight || window.innerWidth)
       setPos({
-        left: Math.min(rect.right + 6, window.innerWidth - w - EDGE),
+        left: Math.max(EDGE, Math.min(rect.right + 6, right - w - EDGE)),
         top: Math.min(rect.bottom + 4, bottom - h - EDGE),
       })
     }
@@ -97,12 +100,23 @@ export function AiAskTrigger({ getAnchorRect, onOpen }: TriggerProps): React.JSX
     const scroller = document.querySelector('.stage-wrap')
     scroller?.addEventListener('scroll', update, { passive: true })
     window.addEventListener('resize', update)
+    // 측면 창이 열리고 닫히면 창 크기는 그대로인 채 무대만 줄고 늘어난다: 무대 크기 변화도 다시 잰다
+    const resizeObs =
+      scroller && typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => {
+            update()
+            // 무대가 줄면 캔버스가 맞춤 배율로 다시 그려진 뒤에야 요소 자리가 정해진다
+            requestAnimationFrame(update)
+          })
+        : null
+    if (scroller) resizeObs?.observe(scroller)
     document.addEventListener('pointerdown', onPointerDown, true)
     document.addEventListener('pointerup', onPointerUp, true)
     document.addEventListener('pointercancel', onPointerUp, true)
     return () => {
       scroller?.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
+      resizeObs?.disconnect()
       document.removeEventListener('pointerdown', onPointerDown, true)
       document.removeEventListener('pointerup', onPointerUp, true)
       document.removeEventListener('pointercancel', onPointerUp, true)

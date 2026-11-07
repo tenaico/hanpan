@@ -20,6 +20,7 @@ import type {
 import type { UpdateChannel, UpdateUiState } from './update-api'
 import type { KbFileInfo, KbReadPage, KbSearchHit } from '@genoffice/agent-core'
 import type { AiPanelPrefs } from '@genoffice/ui/ai-panel-prefs'
+import type { HomeLayout, ShortcutTarget } from './home-layout'
 
 /** UI language; kept self-contained here (mirrors Lang in @genoffice/i18n) */
 
@@ -297,6 +298,8 @@ export interface HomeApi {
   duplicateFile(path: string): Promise<void>
   /** move files to the trash and drop them from the recent list */
   deleteFiles(paths: string[]): Promise<void>
+  /** which of these files are open in a tab (deleting them closes those tabs first) */
+  openTabPaths?(paths: string[]): Promise<string[]>
   /** open the OS trash, where deleted files can be restored */
   openTrash(): Promise<void>
   /** the tree roots: the default save folder first, then the folders the user added */
@@ -362,6 +365,14 @@ export interface HomeApi {
   /** persist the switch; broadcasts 'app:korean-doc-features-changed' to all web contents */
   setKoreanDocFeatures?(on: boolean): Promise<void>
   onKoreanDocFeaturesChanged?(handler: (stored: boolean | null) => void): () => void
+  /** 0.17: Home's widgets, app card arrangement and quick memo (userData/app-settings.json `homeLayout`) */
+  getHomeLayout?(): Promise<HomeLayout>
+  /** store the layout (cleaned up in main); resolves to what was stored */
+  setHomeLayout?(layout: HomeLayout): Promise<HomeLayout>
+  /** open a shortcut widget's file, folder or http(s) link; main checks it again. false when refused */
+  openWidgetTarget?(target: ShortcutTarget): Promise<boolean>
+  /** a file or folder picker for a shortcut widget; null when cancelled */
+  pickWidgetTarget?(kind: 'file' | 'folder'): Promise<string | null>
   /** current local MCP server state (running/enabled/port/url) */
   getMcpStatus(): Promise<McpStatus>
   /** enable/disable the MCP server and/or change its port/background/logging; applies and persists, returns the new state */
@@ -585,6 +596,7 @@ export const HOME_CHANNELS = {
   renameFile: 'home:rename-file',
   duplicateFile: 'home:duplicate-file',
   deleteFiles: 'home:delete-files',
+  openTabPaths: 'home:open-tab-paths',
   openTrash: 'home:open-trash',
   folderRoots: 'home:folder-roots',
   addFolderRoot: 'home:folder-root-add',
@@ -613,6 +625,10 @@ export const HOME_CHANNELS = {
   getAutoSaveDefault: 'home:get-auto-save-default',
   setAutoSaveDefault: 'home:set-auto-save-default',
   getKoreanDocFeatures: 'home:get-korean-doc-features',
+  getHomeLayout: 'home:get-home-layout',
+  setHomeLayout: 'home:set-home-layout',
+  openWidgetTarget: 'home:open-widget-target',
+  pickWidgetTarget: 'home:pick-widget-target',
   setKoreanDocFeatures: 'home:set-korean-doc-features',
   getMcpStatus: 'home:get-mcp-status',
   setMcpSettings: 'home:set-mcp-settings',

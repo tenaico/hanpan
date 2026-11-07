@@ -14,6 +14,7 @@ import {
   type OpenDocumentsControl,
 } from '../mcp/tools/open-documents-tools'
 import { createPdfTools } from '../mcp/tools/pdf-tools'
+import { createSendToAppTools, type SendToAppControl } from '../mcp/tools/send-to-app-tools'
 import { createSessionHost, type TargetResolver } from '../mcp/tools/session-tools'
 import { createSheetsTools, type SheetsControl } from '../mcp/tools/sheets-tools'
 import { createSlidesTools, type SlidesControl } from '../mcp/tools/slides-tools'
@@ -40,10 +41,13 @@ import type { AgentOpenTab } from './agent-skills'
  * - `read_hwp` and `read_pdf` only inside the project folder;
  * - `propose_skill` and `propose_skill_install` (spec 6.3, 6.4) only show a
  *   card or an install proposal in the agent window: they never write a file
- *   and never install; the person's click in the window does.
+ *   and never install; the person's click in the window does;
+ * - `send_to_app` (다른 앱으로 보내기) opens an open document as a new, unsaved
+ *   document of another editor; it writes no file of the person's and reads
+ *   through the same withholding as the cross-file reads.
  */
 
-/** The 13 tools; the programs' start checks hold a session to the same list */
+/** The 14 tools; the programs' start checks hold a session to the same list */
 export const AGENT_MCP_TOOL_NAMES = AGENT_APP_MCP_TOOLS
 
 /** What `propose_skill` hands to the agent window (spec 5.6, 6.3) */
@@ -193,6 +197,8 @@ export interface AgentMcpDeps {
   resolveTarget?: TargetResolver | undefined
   /** the agent window's skill card and install proposal; absent, the two tools refuse */
   skillTools?: AgentSkillToolHooks | undefined
+  /** 다른 앱으로 보내기; absent, the tool is left out */
+  sendToAppControl?: SendToAppControl | undefined
 }
 
 const WITHHELD_DECK =
@@ -300,6 +306,7 @@ export function buildAgentMcpTools(
       const control = deps.openDocumentsControl
       return control ? await control.list() : []
     }),
+    ...(deps.sendToAppControl ? createSendToAppTools(deps.sendToAppControl) : []),
   ]
   const wanted = new Set<string>(AGENT_MCP_TOOL_NAMES)
   return all

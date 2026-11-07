@@ -30,7 +30,8 @@ export const zoteroStrings = defineStrings({
     zoteroDocumentSettingsTip: 'Zotero document settings',
     zoteroDocumentPreferences: 'Document Preferences',
     zoteroRemoveCodes: 'Remove Field Codes',
-    zoteroConnectionError: 'Unable to connect to Zotero. Start Zotero and keep it running.',
+    zoteroConnectionError:
+      'Unable to connect to Zotero. These buttons work with the free Zotero desktop app (zotero.org): install it, start it and keep it running.',
     zoteroOperationError: 'The Zotero operation failed.',
     zoteroNoteFieldsUnsupported:
       'This document has Zotero citations in footnotes or endnotes, which GenOffice cannot update yet. Zotero commands are turned off here so the bibliography stays intact.',
@@ -64,7 +65,8 @@ export const zoteroStrings = defineStrings({
     zoteroDocumentSettingsTip: 'Zotero 문서 설정',
     zoteroDocumentPreferences: '문서 환경설정',
     zoteroRemoveCodes: '필드 코드 제거',
-    zoteroConnectionError: 'Zotero에 연결할 수 없습니다. Zotero를 실행한 상태로 유지하세요.',
+    zoteroConnectionError:
+      'Zotero에 연결할 수 없습니다. 이 단추들은 무료 참고문헌 관리 프로그램 Zotero(zotero.org)와 함께 씁니다. 설치해 실행해 둔 뒤 다시 누르세요.',
     zoteroOperationError: 'Zotero 작업에 실패했습니다.',
     zoteroNoteFieldsUnsupported:
       '이 문서의 각주 또는 미주에 Zotero 인용이 있으며 GenOffice는 아직 이를 업데이트할 수 없습니다. 참고문헌을 그대로 유지하기 위해 이 문서에서는 Zotero 명령이 비활성화되었습니다.',
@@ -366,7 +368,7 @@ export const zoteroStrings = defineStrings({
     zoteroDocumentPreferences: 'Tùy chọn tài liệu',
     zoteroRemoveCodes: 'Xóa mã trường',
     zoteroConnectionError:
-      'Không thể kết nối với Zotero. Hãy khởi động Zotero và giữ ứng dụng luôn chạy.',
+      'Không thể kết nối với Zotero. Các nút này dùng cùng ứng dụng Zotero miễn phí (zotero.org): hãy cài đặt, khởi động và giữ ứng dụng luôn chạy.',
     zoteroOperationError: 'Thao tác Zotero thất bại.',
     zoteroNoteFieldsUnsupported:
       'Tài liệu này có chứa trích dẫn Zotero trong chú thích cuối trang hoặc chú thích cuối tài liệu mà GenOffice hiện chưa thể cập nhật. Các lệnh Zotero đã bị tắt tại đây để giữ nguyên danh mục tài liệu tham khảo.',

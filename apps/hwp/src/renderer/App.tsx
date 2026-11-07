@@ -17,16 +17,19 @@ import { createAgentBridge } from './ai/agent-bridge'
 import {
   DIRTY_EVENT,
   FILE_COMMAND_EVENT,
+  OPEN_LICENSES_EVENT,
   MEMO_NOT_COPIED_EVENT,
   MEMO_REMOVED_EVENT,
 } from '../../studio-plugin/agent-plugin.mjs'
 import blankHwpUrl from './assets/blank.hwp?url'
-import { useI18n, type StringKey } from './i18n/locale'
+import { t as tNow, useI18n, type StringKey } from './i18n/locale'
 import { MEMO_INSERT_EVENT, memoNoticeOf, type MemoNotice } from './MemoPanel'
 import { MemoSide, MemoToggle, memoPanelInitiallyOpen, rememberMemoPanelOpen } from './MemoSide'
 import { openDocumentsDroppedOn } from './editor-drop'
 import { hwpPresentationKeyOf } from './presentation-keys'
-import { gatherPrintJob } from './print-flow'
+import { gatherPageJob, gatherPrintJob, rasterizePage } from './print-flow'
+import { PrintPreview } from './PrintPreview'
+import { exportNoticeOf, savedNoticeOf, type FileNotice } from './export-notice'
 import {
   RECOVERY_TICK_MS,
   createRecoveryCopier,
@@ -36,9 +39,15 @@ import {
 import { runSave, type SaveEditorPort } from './save-flow'
 import { AUTOSAVE_IDLE_MS, startAutosave } from './autosave-flow'
 import { PASSWORD_FLAG } from '../../scripts/rhwp-patches.mjs'
-import { STUDIO_SETTINGS_KEY, seededStudioSettings, studioUrl } from './studio-settings'
+import { languageSwitchPlan, reopenNoticeAfter } from './language-switch'
+import {
+  STUDIO_SETTINGS_KEY,
+  seededStudioSettings,
+  studioLocale,
+  studioUrl,
+} from './studio-settings'
 import { hwpFormatOfPath } from '../shared/ipc'
-import type { HwpFormat, SaveMode, UiTheme } from '../shared/ipc'
+import type { HwpFormat, PrintJob, SaveMode, UiTheme } from '../shared/ipc'
 
 /**
  * booting: the editor itself is starting. loading: the editor is up and working
@@ -57,7 +66,17 @@ interface Notice {
   detail?: string
   /** an information that stays until dismissed, as errors do */
   sticky?: true
+  /** the file a save or an export wrote: the notice's buttons open it or show its folder */
+  file?: FileNotice
 }
+
+/** A notice about a file the tab wrote, with the buttons that reach it. */
+const fileNotice = (file: FileNotice): Notice => ({
+  tone: 'info',
+  key: file.key,
+  params: file.params,
+  file,
+})
 
 /**
  * How often the editor is asked whether the document has unsaved changes, besides being
@@ -74,8 +93,6 @@ const AI_OPEN_KEY = 'hwpapp.showAi'
 const MEMO_TICK_MS = 500
 
 const fileNameOf = (path: string) => path.split(/[\\/]/).pop() ?? path
-/** the name the editor holds a new document under; the user names the file at its first save */
-const BLANK_NAME = 'blank.hwp'
 const detailOf = (error: unknown) => (error instanceof Error ? error.message : String(error))
 /**
  * The bridge gives up on a load after a minute, but the editor may still be
@@ -176,18 +193,29 @@ export default function App() {
     rememberMemoPanelOpen(memoOpen)
   }, [memoOpen])
 
-  // boot the editor once and load the file queued for this view
+  /** bumped to open the editor again (a UI language change): the boot effect runs anew */
+  const [bootGen, setBootGen] = useState(0)
+  /** the file a reboot reads back (null: the blank new document); unset on the first boot */
+  const reloadRef = useRef<{ path: string | null } | null>(null)
+  /** the studio language the editor in the tab was opened with */
+  const bootedLocaleRef = useRef<ReturnType<typeof studioLocale> | null>(null)
+
+  // boot the editor and load the file queued for this view; again, from the same file, when
+  // a language change reopens it
   useEffect(() => {
     let disposed = false
     let editor: RhwpEditor | null = null
     let stopDrop: (() => void) | null = null
+    const reload = reloadRef.current
+    reloadRef.current = null
     void (async () => {
       try {
         const [path, theme, lang] = await Promise.all([
-          window.hwpApi.consumePending(),
+          reload ? reload.path : window.hwpApi.consumePending(),
           window.hwpApi.getTheme().catch((): UiTheme => 'system'),
           window.hwpApi.getLanguage(),
         ])
+        bootedLocaleRef.current = studioLocale(lang)
         // the studio reads its settings before first paint, so they are seeded before it exists
         localStorage.setItem(
           STUDIO_SETTINGS_KEY,
@@ -207,14 +235,17 @@ export default function App() {
           // a new document: the blank one bundled with the app, which has no file until
           // its first save (Save As)
           const blank = new Uint8Array(await (await fetch(blankHwpUrl)).arrayBuffer())
-          await editor.loadFile(blank, BLANK_NAME, { skipUnsavedGuard: true })
+          await editor.loadFile(blank, tNow('untitledHwp'), { skipUnsavedGuard: true })
           if (!disposed) setPhase('ready')
           return
         }
         formatRef.current = hwpFormatOfPath(path) ?? 'hwp'
         // an untitled copy (a skill template's, spec 5.7) is read from its temp file but
         // has no file of its own: the AI conversation and the first save treat it as new
-        const copy = (await window.hwpApi.untitledCopy?.().catch(() => null)) ?? null
+        // (a reload never reads one back: languageSwitchPlan leaves a copy alone)
+        const copy = reload
+          ? null
+          : ((await window.hwpApi.untitledCopy?.().catch(() => null)) ?? null)
         if (copy) {
           formatRef.current = copy.format
           copyNameRef.current = copy.name
@@ -225,6 +256,7 @@ export default function App() {
         })
         if (disposed) return
         setPhase('ready')
+        if (reload) return
         if (await window.hwpApi.trackingDropped().catch(() => false)) {
           if (!disposed) setNotice({ tone: 'info', key: 'openedTracked', sticky: true })
         }
@@ -245,7 +277,56 @@ export default function App() {
       stopDrop?.()
       editor?.destroy()
     }
-  }, [])
+  }, [bootGen])
+
+  // the studio picks its language when its page loads: a language change opens the editor
+  // again, from the document's file, when nothing would be lost; otherwise it waits for the
+  // tab to be opened again and says so
+  const phaseRef = useRef(phase)
+  phaseRef.current = phase
+  const filePathRef = useRef(filePath)
+  filePathRef.current = filePath
+  useEffect(() => {
+    const from = bootedLocaleRef.current
+    const to = studioLocale(lang)
+    if (!from) return
+    const clearReopenNotice = () =>
+      setNotice((shown) => (shown?.key === 'languageOnReopen' ? null : shown))
+    if (from === to) {
+      // back in the language the editor was opened with: nothing waits for a reopen any more
+      clearReopenNotice()
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      const editor = editorRef.current
+      const ready = phaseRef.current === 'ready' && !!editor && !savingRef.current
+      const context = ready ? await editor.commands.context().catch(() => null) : null
+      if (cancelled) return
+      const plan = languageSwitchPlan({
+        from,
+        to,
+        ready: ready && !!context,
+        dirty: context?.isDirty !== false,
+        restored: restoredRef.current,
+        passwordProtected: context?.[PASSWORD_FLAG] === true,
+        untitledCopy: copyNameRef.current !== null,
+      })
+      if (reopenNoticeAfter(plan) === 'clear') clearReopenNotice()
+      if (plan === 'none') return
+      if (plan === 'later') {
+        setNotice({ tone: 'info', key: 'languageOnReopen', sticky: true })
+        return
+      }
+      bootedLocaleRef.current = to
+      reloadRef.current = { path: filePathRef.current }
+      setPhase('booting')
+      setBootGen((gen) => gen + 1)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [lang])
 
   // a document can arrive after the load call gave up or failed (a password
   // entered late, a second try in the editor's own prompt): notice it and go on
@@ -388,7 +469,17 @@ export default function App() {
               ...(backup ? { detail: t('backupKept', backup) } : {}),
             })
           } else if (!automatic) {
-            setNotice(backup ? { tone: 'info', key: 'backupKept', params: backup } : null)
+            // a save the user asked for says so, with the way to its folder (0.17 UX v2 #7)
+            setNotice(
+              backup
+                ? {
+                    tone: 'info',
+                    key: 'backupKept',
+                    params: backup,
+                    file: savedNoticeOf(outcome.path),
+                  }
+                : fileNotice(savedNoticeOf(outcome.path)),
+            )
           }
           return true
         }
@@ -433,15 +524,28 @@ export default function App() {
     if (!frame) return
     void agentBridge
       .installFileMenu({
+        open: t('fileOpen'),
         save: t('fileSave'),
         saveAs: t('fileSaveAs'),
         pdf: t('fileExportPdf'),
+        docx: t('fileExportDocx'),
+        png: t('fileExportPng'),
+        pngPage: t('fileExportPngPage'),
         print: t('filePrint'),
       })
       .catch(() => {})
     const onCommand = (event: Event) => {
       const command = (event as CustomEvent<unknown>).detail
-      if (command === 'save' || command === 'saveAs' || command === 'pdf' || command === 'print') {
+      if (
+        command === 'open' ||
+        command === 'save' ||
+        command === 'saveAs' ||
+        command === 'pdf' ||
+        command === 'docx' ||
+        command === 'png' ||
+        command === 'pngPage' ||
+        command === 'print'
+      ) {
         window.hwpApi.requestFileCommand(command)
       }
     }
@@ -452,9 +556,13 @@ export default function App() {
     }
     frame.addEventListener(FILE_COMMAND_EVENT, onCommand)
     frame.addEventListener(MEMO_INSERT_EVENT, onMemoInsert)
+    // the About box's licence button (0.17 UI/UX review v2 #6)
+    const onLicenses = () => window.hwpApi.openLicenses()
+    frame.addEventListener(OPEN_LICENSES_EVENT, onLicenses)
     return () => {
       frame.removeEventListener(FILE_COMMAND_EVENT, onCommand)
       frame.removeEventListener(MEMO_INSERT_EVENT, onMemoInsert)
+      frame.removeEventListener(OPEN_LICENSES_EVENT, onLicenses)
     }
   }, [phase, agentBridge, t])
 
@@ -581,37 +689,110 @@ export default function App() {
     }
   }, [phase, save, showMemoBlocked])
 
-  // PDF and print asked for by the menu and Ctrl+P: the pages are gathered here, and the
-  // main process makes the PDF or opens the print dialog
+  // PDF, Word, pictures and print asked for by the menu and Ctrl+P: the pages (or, for Word,
+  // the document's HTML) are gathered here, and the main process writes the file or opens
+  // the print dialog. Print first shows the pages in the app's own preview (0.17).
   const printingRef = useRef(false)
+  const [previewJob, setPreviewJob] = useState<PrintJob | null>(null)
   useEffect(
     () =>
       window.hwpApi.onPrintRequest((mode) => {
         if (phase !== 'ready' || printingRef.current) return
         printingRef.current = true
+        let previewing = false
         void (async () => {
-          const failed = mode === 'pdf' ? 'pdfFailed' : 'printFailed'
+          const failed =
+            mode === 'pdf'
+              ? 'pdfFailed'
+              : mode === 'docx'
+                ? 'docxFailed'
+                : mode === 'png' || mode === 'pngPage'
+                  ? 'pngFailed'
+                  : 'printFailed'
           try {
-            const job = await gatherPrintJob(agentBridge, mode, (done, total) =>
-              setNotice({
-                tone: 'info',
-                key: 'printPreparing',
-                params: { done, total },
-                sticky: true,
-              }),
-            )
+            if (mode === 'docx') {
+              setNotice({ tone: 'info', key: 'docxPreparing', sticky: true })
+              const { html } = await agentBridge.exportHtml()
+              const result = await window.hwpApi.exportDocx(html)
+              const written = exportNoticeOf(mode, result, 0)
+              setNotice(
+                written
+                  ? fileNotice(written)
+                  : result.ok
+                    ? null
+                    : { tone: 'error', key: failed, detail: result.error },
+              )
+              return
+            }
+            const job =
+              mode === 'pngPage'
+                ? await gatherPageJob(agentBridge, mode, await agentBridge.currentPage())
+                : await gatherPrintJob(agentBridge, mode, (done, total) =>
+                    setNotice({
+                      tone: 'info',
+                      key: 'printPreparing',
+                      params: { done, total },
+                      sticky: true,
+                    }),
+                  )
+            if (mode === 'print') {
+              // the pages go to the printer only from the preview's Print button
+              setNotice(null)
+              previewing = true
+              setPreviewJob(job)
+              return
+            }
             setNotice({ tone: 'info', key: 'printSending', sticky: true })
-            const result = await window.hwpApi.printPages(job)
-            setNotice(result.ok ? null : { tone: 'error', key: failed, detail: result.error })
+            const result =
+              mode === 'png' || mode === 'pngPage'
+                ? await window.hwpApi.savePngs({
+                    mode,
+                    pngs: await Promise.all(job.pages.map((_, index) => rasterizePage(job, index))),
+                  })
+                : await window.hwpApi.printPages(job)
+            // the file stays where it was written; the notice offers it (0.17 UX v2 #8)
+            const written = exportNoticeOf(mode, result, job.pages.length)
+            setNotice(
+              written
+                ? fileNotice(written)
+                : result.ok
+                  ? null
+                  : { tone: 'error', key: failed, detail: result.error },
+            )
           } catch (error) {
             setNotice({ tone: 'error', key: failed, detail: detailOf(error) })
           } finally {
-            printingRef.current = false
+            if (!previewing) printingRef.current = false
           }
         })()
       }),
     [phase, agentBridge],
   )
+
+  const closePreview = useCallback(() => {
+    setPreviewJob(null)
+    printingRef.current = false
+  }, [])
+
+  const printPreviewed = useCallback(() => {
+    const job = previewJob
+    setPreviewJob(null)
+    if (!job) {
+      printingRef.current = false
+      return
+    }
+    void (async () => {
+      try {
+        setNotice({ tone: 'info', key: 'printSending', sticky: true })
+        const result = await window.hwpApi.printPages(job)
+        setNotice(result.ok ? null : { tone: 'error', key: 'printFailed', detail: result.error })
+      } catch (error) {
+        setNotice({ tone: 'error', key: 'printFailed', detail: detailOf(error) })
+      } finally {
+        printingRef.current = false
+      }
+    })()
+  }, [previewJob])
 
   // autosave to the document's own file: 30 s and window blur, after the user has
   // paused (exporting a whole HWP document costs more than the other editors' saves)
@@ -666,7 +847,7 @@ export default function App() {
       window.hwpApi.onHanpanReplace?.((bytes) => {
         const editor = editorRef.current
         if (!editor || phase !== 'ready') return
-        const name = filePath ? fileNameOf(filePath) : (copyNameRef.current ?? BLANK_NAME)
+        const name = filePath ? fileNameOf(filePath) : (copyNameRef.current ?? tNow('untitledHwp'))
         void editor
           .loadFile(bytes, name, { skipUnsavedGuard: true })
           .then(() => window.hwpApi.setDirty(true))
@@ -834,6 +1015,9 @@ export default function App() {
         <div className="hwp-stage">
           <div ref={hostRef} className="hwp-editor-host" />
           {phase === 'booting' && <div className="hwp-cover">{t('loading')}</div>}
+          {previewJob && (
+            <PrintPreview job={previewJob} onPrint={printPreviewed} onCancel={closePreview} />
+          )}
           {notice && (
             <div
               className={`hwp-notice hwp-notice-${notice.tone}`}
@@ -843,6 +1027,19 @@ export default function App() {
                 <span>{notice.text ?? (notice.key ? t(notice.key, notice.params) : '')}</span>
                 {notice.detail && <span className="hwp-notice-detail">{notice.detail}</span>}
               </div>
+              {notice.file?.actions.map((action) => (
+                <button
+                  key={action}
+                  type="button"
+                  className="hwp-notice-action"
+                  onClick={() => {
+                    const path = notice.file?.path
+                    if (path) void window.hwpApi.revealOutput(path, action)
+                  }}
+                >
+                  {t(action === 'open' ? 'noticeOpen' : 'noticeOpenFolder')}
+                </button>
+              ))}
               <button
                 type="button"
                 className="hwp-notice-close"

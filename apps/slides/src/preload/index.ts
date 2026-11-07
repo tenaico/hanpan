@@ -354,6 +354,10 @@ const api: SlidesApi = {
     ipcRenderer.invoke('slides:replace-picture-bytes', op),
   insertMedia: (slideIndex: number, kind: 'video' | 'audio', fitWidthPx: number) =>
     ipcRenderer.invoke('slides:insert-media', slideIndex, kind, fitWidthPx),
+  // Hanpan: registered by the shell main (apps/shell/src/main/hanpan/gongu-pictures.ts)
+  gonguSearch: (query: string, page: number) =>
+    ipcRenderer.invoke('hanpan:gongu-pictures-search', query, page),
+  gonguPicture: (workId: string) => ipcRenderer.invoke('hanpan:gongu-pictures-picture', workId),
   insertSoundEffect: (slideIndex: number, id: string, fitWidthPx: number) =>
     ipcRenderer.invoke('slides:insert-sound-effect', slideIndex, id, fitWidthPx),
   addMediaBytes: (op: AddMediaBytesOp) => ipcRenderer.invoke('slides:add-media-bytes', op),
@@ -405,6 +409,7 @@ const api: SlidesApi = {
   redo: () => ipcRenderer.invoke('slides:redo'),
   pickExportDir: () => ipcRenderer.invoke('slides:pick-export-dir'),
   exportImages: (op: ExportImagesOp) => ipcRenderer.invoke('slides:export-images', op),
+  revealExportFolder: (dir: string) => ipcRenderer.invoke('slides:reveal-export-folder', dir),
   pickExportPdfPath: (defaultName: string) =>
     ipcRenderer.invoke('slides:pick-export-pdf-path', defaultName),
   savePicture: (op: SavePictureOp) => ipcRenderer.invoke('slides:save-picture', op),
@@ -460,6 +465,7 @@ const api: SlidesApi = {
     return () => ipcRenderer.removeListener('ai:settings-changed', listener)
   },
   openAiModelSettings: () => ipcRenderer.invoke('ai:open-model-settings'),
+  openIntegrationSettings: () => ipcRenderer.invoke('ai:open-model-settings', 'integrations'),
   aiStream: (request: AiStreamRequest) => ipcRenderer.invoke('ai:stream', request),
   aiStreamCancel: (requestId: string) => ipcRenderer.invoke('ai:stream-cancel', requestId),
   aiSubscription: subscriptionApi,

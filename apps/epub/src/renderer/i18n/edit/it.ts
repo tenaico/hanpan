@@ -6,6 +6,7 @@ export const it = {
   editBold: 'Grassetto',
   editItalic: 'Corsivo',
   editReplace: 'Sostituisci',
+  editFindReplaceTitle: 'Trova e sostituisci',
   editReplaceWith: 'Sostituisci con',
   editReplaceOne: 'Sostituisci',
   editReplaceAll: 'Sostituisci tutto',

@@ -27,6 +27,12 @@ export interface GraphicsAdapter {
   saveBytes(fileName: string, format: string): Promise<Uint8Array>
   /** A picture or SVG of the document; the document itself is left as it is. */
   exportBytes(format: 'png' | 'jpg' | 'svg'): Promise<Uint8Array>
+  /**
+   * The document for a crash-recovery copy, the document left as it is (no save,
+   * no changed mark moved): bytes and the extension they are in. Null when the
+   * app gives none.
+   */
+  recoveryBytes(): Promise<{ bytes: Uint8Array; ext: string } | null>
   /** The document holds layers, type or masks that a format without layers would drop. */
   isLayered(): Promise<boolean>
   /** How many entries the app's undo history holds now. */

@@ -58,7 +58,7 @@ function setup(kind: 'photo' | 'illust' = 'illust') {
 }
 
 describe('the graphics skill', () => {
-  it('offers the seven tools and the context', () => {
+  it('offers the eight tools and the context', () => {
     const { skill } = setup()
     expect(skill.tools.map((t) => t.name)).toEqual([
       'find_commands',
@@ -68,9 +68,34 @@ describe('the graphics skill', () => {
       'inspect_document',
       'export_file',
       'load_guide',
+      'pc_fonts',
     ])
     expect(skill.buildContext?.()).toBe('CONTEXT')
     expect(skill.systemPrompt).toMatch(/VectorCraft/)
+  })
+
+  // the web builds read the PC's fonts in embedded mode: request('fonts.local', {family?})
+  it('pc_fonts lists the PC fonts, or loads one by family, through the page API', async () => {
+    const { run, page, skill } = setup()
+    const tool = skill.tools.find((t) => t.name === 'pc_fonts')!
+    expect(tool.description).toMatch(/installed on this PC/)
+    page.requestHandlers['fonts.local'] = (params) =>
+      (params as { family?: string }).family
+        ? { loaded: '맑은 고딕' }
+        : { families: ['맑은 고딕', 'NanumGothic'] }
+    const list = await run('pc_fonts')
+    expect(list.isError).toBeFalsy()
+    expect(list.output).toContain('NanumGothic')
+    expect(page.requested.at(-1)).toEqual(['fonts.local', {}])
+    const load = await run('pc_fonts', { family: '맑은 고딕' })
+    expect(load.output).toContain('"loaded":"맑은 고딕"')
+    expect(page.requested.at(-1)).toEqual(['fonts.local', { family: '맑은 고딕' }])
+  })
+
+  it('pc_fonts reports an app without PC fonts as an error, not a crash', async () => {
+    const { run } = setup()
+    const result = await run('pc_fonts')
+    expect(result.isError).toBe(true)
   })
 
   it('find_commands hides blocked commands', async () => {

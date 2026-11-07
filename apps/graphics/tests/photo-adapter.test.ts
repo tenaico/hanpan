@@ -35,6 +35,8 @@ class FakePhotoPage {
   captured = new Map<string, Uint8Array>()
   capturing = false
   requests: Array<[string, Record<string, unknown>]> = []
+  /** h4 answers `app.exportImage {format: 'psd'}`; h3 refuses it */
+  psdExport = false
   executed: string[] = []
 
   open(): this {
@@ -67,6 +69,10 @@ class FakePhotoPage {
           // h2: the composited image, no file, no save, no status line
           if (!page.doc) throw new Error('no document')
           const fmt = String(params.format ?? 'png')
+          if (fmt === 'psd') {
+            if (!page.psdExport) throw new Error('format must be png or jpeg')
+            return { dataBase64: btoa('PSD'), format: 'psd' }
+          }
           return {
             dataBase64: btoa(fmt === 'jpeg' ? 'JPG' : 'PNG'),
             width: 400,
@@ -276,5 +282,36 @@ describe('the PhotoCraft adapter', () => {
     page.second = { name: 'Layer 1.psb', dirty: true }
     await expect(photo(page).saveBytes('poster.psd', 'psd')).rejects.toThrow(/another document/)
     expect(page.requests).toEqual([])
+  })
+})
+
+describe('the recovery copy', () => {
+  it('is the layered PSD when the web build gives one, and leaves the document alone', async () => {
+    const page = new FakePhotoPage().open()
+    page.psdExport = true
+    page.edit('Fill')
+    const copy = await photo(page).recoveryBytes()
+    expect(copy && { text: new TextDecoder().decode(copy.bytes), ext: copy.ext }).toEqual({
+      text: 'PSD',
+      ext: 'psd',
+    })
+    expect(page.requests).toEqual([['app.exportImage', { format: 'psd' }]])
+    expect(page.captured.size).toBe(0)
+    expect(page.doc!.dirty).toBe(true)
+  })
+
+  it('falls back to the flattened PNG on a build without PSD export', async () => {
+    const page = new FakePhotoPage().open()
+    page.edit('Fill')
+    const copy = await photo(page).recoveryBytes()
+    expect(copy && { text: new TextDecoder().decode(copy.bytes), ext: copy.ext }).toEqual({
+      text: 'PNG',
+      ext: 'png',
+    })
+    expect(page.doc!.dirty).toBe(true)
+  })
+
+  it('is null without a document', async () => {
+    expect(await photo(new FakePhotoPage()).recoveryBytes()).toBeNull()
   })
 })

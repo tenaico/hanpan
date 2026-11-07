@@ -6,6 +6,7 @@ export const ru = {
   editBold: 'Полужирный',
   editItalic: 'Курсив',
   editReplace: 'Заменить',
+  editFindReplaceTitle: 'Найти и заменить',
   editReplaceWith: 'Заменить на',
   editReplaceOne: 'Заменить',
   editReplaceAll: 'Заменить все',

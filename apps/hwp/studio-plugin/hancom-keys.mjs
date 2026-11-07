@@ -16,6 +16,8 @@
  * (hancomHooks), and a release that renames one fails the build.
  */
 
+import { UX_CORRECTIONS } from './studio-locales/ux-strings.mjs'
+
 export const HANCOM_KEYS_MODULE = '@ieum/hancom-keys'
 
 /**
@@ -104,13 +106,94 @@ const locallyResizedTables = new WeakMap()
 
 /** The studio's locale, so a message from a key handler speaks the same language. */
 let koreanUi = false
+/** The studio's locale itself: English names and messages show in Vietnamese where it is 'vi'. */
+let uiLocale = 'en'
+
+/**
+ * The Vietnamese of this module's English names and messages (the studio's own text is in
+ * studio-locales/vi.mjs). Keyed by the English, so every `ko ? '…' : '…'` stays as it is and
+ * `localText` swaps the English at the edge: command labels, menu items, the page number
+ * dialog and the toasts.
+ */
+export const VI_TEXT = {
+  // commands and menu items
+  'Delete Line': 'Xóa dòng',
+  'Black Text': 'Chữ màu đen',
+  'Red Text': 'Chữ màu đỏ',
+  'Blue Text': 'Chữ màu xanh dương',
+  'Plum Text': 'Chữ màu mận',
+  'Green Text': 'Chữ màu xanh lá',
+  'Yellow Text': 'Chữ màu vàng',
+  'Teal Text': 'Chữ màu xanh mòng két',
+  'White Text': 'Chữ màu trắng',
+  'Normal Shape': 'Định dạng thường',
+  'Date String': 'Chuỗi ngày/giờ',
+  'Find Backward': 'Tìm ngược lại',
+  'Page Numbering': 'Đánh số trang',
+  'Flip Table': 'Lật bảng',
+  'Cell Border': 'Viền ô',
+  'Cell Background': 'Nền ô',
+  'Insert Row Below': 'Chèn hàng bên dưới',
+  'Resize Table': 'Đổi kích thước bảng',
+  'Table Order': 'Thứ tự bảng',
+  'Table Text Wrap': 'Bố trí chữ quanh bảng',
+  'Resize Cell Block': 'Đổi kích thước khối ô',
+  'Resize Row/Column': 'Đổi kích thước hàng/cột',
+  'Resize Cell': 'Đổi kích thước ô',
+  'Sum Left': 'Tổng theo hàng',
+  'Sum Above': 'Tổng theo cột',
+  'Average Left': 'Trung bình theo hàng',
+  'Average Above': 'Trung bình theo cột',
+  'Product Left': 'Tích theo hàng',
+  'Product Above': 'Tích theo cột',
+  // the page number dialog
+  Position: 'Vị trí',
+  'Number format': 'Kiểu số',
+  'Dashes (- 1 -)': 'Thêm gạch ngang (- 1 -)',
+  'Top left': 'Trên bên trái',
+  'Top center': 'Trên ở giữa',
+  'Top right': 'Trên bên phải',
+  'Bottom left': 'Dưới bên trái',
+  'Bottom center': 'Dưới ở giữa',
+  'Bottom right': 'Dưới bên phải',
+  'Outside top': 'Trên phía ngoài',
+  'Outside bottom': 'Dưới phía ngoài',
+  'Inside top': 'Trên phía trong',
+  'Inside bottom': 'Dưới phía trong',
+  None: 'Không',
+  // messages
+  'A table inside a cell cannot be moved by cell yet.':
+    'Chưa thể di chuyển theo ô trong bảng nằm trong ô.',
+  'A table inside a cell cannot be copied yet.': 'Chưa thể sao chép bảng nằm trong ô.',
+  'Not copied: the table has merged cells.': 'Không sao chép: bảng có ô đã gộp.',
+  'A table inside a cell cannot be sized equally yet.':
+    'Chưa thể chia đều kích thước bảng nằm trong ô.',
+  'Not changed: the table has merged cells.': 'Không thay đổi: bảng có ô đã gộp.',
+  'Select the whole table to equalize row heights.':
+    'Hãy chọn toàn bộ bảng để chia đều chiều cao hàng.',
+  'Select the whole table to equalize column widths.':
+    'Hãy chọn toàn bộ bảng để chia đều chiều rộng cột.',
+  'A table inside a cell cannot be resized yet.': 'Chưa thể đổi kích thước bảng nằm trong ô.',
+  'Not changed: Shift+arrow cannot resize a table with merged cells.':
+    'Không thay đổi: Shift+mũi tên không đổi được kích thước bảng có ô đã gộp.',
+  'A table inside a cell cannot be flipped yet.': 'Chưa thể lật bảng nằm trong ô.',
+  'A table inside a cell cannot be changed yet.': 'Chưa thể thay đổi bảng nằm trong ô.',
+}
+
+/** The English of this module in the studio's language: Vietnamese where there is one. */
+function localText(en, locale = uiLocale) {
+  if (locale !== 'vi' || typeof en !== 'string') return en
+  const style = /^Apply Style (\d+)$/.exec(en)
+  if (style) return `Áp dụng kiểu ${style[1]}`
+  return VI_TEXT[en] ?? en
+}
 
 /** The studio's tab command, for Ctrl+Tab in a cell (the main process takes that key first). */
 let insertTabCommand = null
 
 function tellUser(message) {
   try {
-    toastSink?.({ message })
+    toastSink?.({ message: localText(message) })
   } catch {
     // the editor is closing; nothing to tell
   }
@@ -171,11 +254,29 @@ const sameDef = (a, b) =>
   !!a.alt === !!b.alt &&
   (a.platform ?? null) === (b.platform ?? null)
 
+/**
+ * The studio's file commands and the app's File menu commands (agent-plugin.mjs, FILE_MENU) that
+ * stand for them. The embedded editor registers none of its own file commands, so a file key
+ * that reaches it (the main process takes them first, but input that skips `before-input-event`,
+ * such as a DevTools-protocol key, does not pass there) would be dropped. Pointed at the app's
+ * commands, the key saves or prints the way the File menu does.
+ */
+export const APP_FILE_COMMANDS = {
+  'file:open': 'ext:ieum-open',
+  'file:save': 'ext:ieum-save',
+  'file:save-as': 'ext:ieum-save-as',
+  'file:print': 'ext:ieum-print',
+}
+
 /** Turns the studio's shortcut table (in place: the studio holds the one array) into Hangul's. */
 export function adaptToHancom(shortcuts) {
   for (const [def, id] of REMOVED_SHORTCUTS) {
     const at = shortcuts.findIndex(([d, c]) => c === id && sameDef(d, def))
     if (at !== -1) shortcuts.splice(at, 1)
+  }
+  for (const entry of shortcuts) {
+    const app = APP_FILE_COMMANDS[entry[1]]
+    if (app) entry[1] = app
   }
   shortcuts.unshift(...ADDED_SHORTCUTS)
   return shortcuts
@@ -1519,6 +1620,88 @@ export function deleteLine(ih) {
   return true
 }
 
+const WORD_LETTER = /[\p{L}\p{N}]/u
+
+/** The text of the paragraph a caret is in: the body's, or a table cell's (by path when nested). */
+function caretParagraphText(wasm, pos) {
+  const sec = pos.sectionIndex
+  if (pos.parentParaIndex === undefined) {
+    return wasm.getTextRange(
+      sec,
+      pos.paragraphIndex,
+      0,
+      wasm.getParagraphLength(sec, pos.paragraphIndex),
+    )
+  }
+  const path = pos.cellPath ?? []
+  if (path.length > 0) {
+    const json = JSON.stringify(path)
+    const length = wasm.getCellParagraphLengthByPath(sec, pos.parentParaIndex, json)
+    return wasm.getTextInCellByPath(sec, pos.parentParaIndex, json, 0, length)
+  }
+  const { parentParaIndex: ppi, controlIndex: ci, cellIndex: cell, cellParaIndex: cpi } = pos
+  const length = wasm.getCellParagraphLength(sec, ppi, ci, cell, cpi)
+  return wasm.getTextInCell(sec, ppi, ci, cell, cpi, 0, length)
+}
+
+/**
+ * The word the caret is in, as a range: Hangul's 글자 모양 with no block works on that word. A
+ * caret right behind the last letter still means that word, as a double click does. Body text
+ * and table cells; null in a header, a note, a text box, a selected object or cell block, or
+ * when the caret is not at a word (a blank, an empty paragraph).
+ */
+export function caretWordRange(ih) {
+  const cursor = ih?.cursor
+  const wasm = ih?.wasm
+  if (!cursor || !wasm) return null
+  const elsewhere = [
+    'isInHeaderFooter',
+    'isInFootnote',
+    'isInPictureObjectSelection',
+    'isInTableObjectSelection',
+    'isInCellSelectionMode',
+  ].some((mode) => typeof cursor[mode] === 'function' && cursor[mode]())
+  if (elsewhere) return null
+  const pos = cursor.getPosition()
+  if (!pos || pos.isTextBox) return null
+  let text
+  try {
+    text = String(caretParagraphText(wasm, pos) ?? '')
+  } catch {
+    return null
+  }
+  let at = Math.min(pos.charOffset, text.length - 1)
+  if (at < 0) return null
+  if (!WORD_LETTER.test(text[at]) && at > 0 && WORD_LETTER.test(text[at - 1])) at -= 1
+  if (!WORD_LETTER.test(text[at])) return null
+  let start = at
+  let end = at + 1
+  while (start > 0 && WORD_LETTER.test(text[start - 1])) start -= 1
+  while (end < text.length && WORD_LETTER.test(text[end])) end += 1
+  return { start: { ...pos, charOffset: start }, end: { ...pos, charOffset: end } }
+}
+
+/**
+ * What the character shape dialog changes: the block, or with no block the word at the caret.
+ * Null leaves it to the editor's own path (the toolbar's font box does the same): in a cell block
+ * it changes the block's cells, between words it waits for what is typed next.
+ */
+export function charShapeTarget(ih) {
+  const selection = ih?.getSelection?.() ?? null
+  if (
+    selection &&
+    !(
+      samePlace(selection.start, selection.end) &&
+      paraOf(selection.start) === paraOf(selection.end) &&
+      selection.start.charOffset === selection.end.charOffset
+    )
+  ) {
+    return selection
+  }
+  if (ih?.cursor?.isInCellSelectionMode?.()) return null
+  return caretWordRange(ih)
+}
+
 /** What Hangul's 보통 모양 (Alt+Shift+C) takes off; size, font, ratio, spacing and shade stay. */
 export const NORMAL_SHAPE = {
   bold: false,
@@ -1858,7 +2041,7 @@ function wrapSelectedTable(services, mode) {
 function pageNumberDialog(ModalDialog, ko, start, onApply) {
   class PageNumberDialog extends ModalDialog {
     constructor() {
-      super(ko ? '쪽 번호 매기기' : 'Page Numbering', 380)
+      super(ko ? '쪽 번호 매기기' : localText('Page Numbering'), 380)
       this.setting = { ...start }
     }
 
@@ -1872,7 +2055,7 @@ function pageNumberDialog(ModalDialog, ko, start, onApply) {
         h.textContent = text
         return h
       }
-      body.appendChild(heading(ko ? '번호 위치' : 'Position'))
+      body.appendChild(heading(ko ? '번호 위치' : localText('Position')))
       const grid = doc.createElement('div')
       grid.style.cssText =
         'display:grid;grid-template-columns:repeat(3,1fr);gap:4px 12px;margin:6px 0 12px'
@@ -1887,11 +2070,11 @@ function pageNumberDialog(ModalDialog, ko, start, onApply) {
         input.addEventListener('change', () => {
           if (input.checked) this.setting.position = p.code
         })
-        label.append(input, ko ? p.ko : p.en)
+        label.append(input, ko ? p.ko : localText(p.en))
         grid.appendChild(label)
       }
       body.appendChild(grid)
-      body.appendChild(heading(ko ? '번호 모양' : 'Number format'))
+      body.appendChild(heading(ko ? '번호 모양' : localText('Number format')))
       const select = doc.createElement('select')
       select.className = 'dialog-select'
       select.style.margin = '6px 0 12px'
@@ -1914,7 +2097,7 @@ function pageNumberDialog(ModalDialog, ko, start, onApply) {
       box.addEventListener('change', () => {
         this.setting.dash = box.checked
       })
-      dash.append(box, ko ? '줄표 넣기 (- 1 -)' : 'Dashes (- 1 -)')
+      dash.append(box, ko ? '줄표 넣기 (- 1 -)' : localText('Dashes (- 1 -)'))
       body.appendChild(dash)
       return body
     }
@@ -1928,14 +2111,15 @@ function pageNumberDialog(ModalDialog, ko, start, onApply) {
 }
 
 /**
- * The commands behind the keys the studio has no command for. `locale` is the studio's, which
- * shows itself in Korean or English only; the labels show in its command palette. `studio` hands
+ * The commands behind the keys the studio has no command for. `locale` is the studio's: Korean,
+ * English, or Vietnamese through VI_TEXT; the labels show in its command palette and menus. `studio` hands
  * over what of the studio a command builds on (the studio-hancom-commands patch passes it):
  * InsertTextCommand, ModalDialog, FindDialog and navigateToSearchHit.
  */
 export function hancomCommands(locale, studio = {}) {
   const ko = locale === 'ko'
   koreanUi = ko
+  uiLocale = locale
   toastSink = studio.showToast ?? toastSink
   insertTabCommand = studio.InsertTabCommand ?? insertTabCommand
   const commands = [
@@ -2121,6 +2305,9 @@ export function hancomCommands(locale, studio = {}) {
       },
     })
   }
+  if (locale === 'vi') {
+    for (const command of commands) command.label = localText(command.label, locale)
+  }
   return commands
 }
 
@@ -2156,9 +2343,75 @@ export function installHancomMenuItems(doc, locale, mac = onMac()) {
     icon.className = 'md-icon'
     const label = doc.createElement('span')
     label.className = 'md-label'
-    label.textContent = ko ? nameKo : nameEn
+    label.textContent = ko ? nameKo : localText(nameEn, locale)
     item.append(icon, label)
     anchor.after(item)
+  }
+  tidyStudioMenus(doc)
+  showCorrectedLabels(doc, locale)
+}
+
+const LOCALE_COLUMN = { ko: 0, en: 1, vi: 2 }
+
+/**
+ * The words of UX_CORRECTIONS (studio-locales/ux-strings.mjs) in the page's own markup. The
+ * studio's catalogs carry them, but it translates its markup only outside Korean, so a Korean
+ * menu kept rhwp's "찾기(F)" and "필드 입력". Only the element's own text changes: an icon or a
+ * shortcut beside it stays.
+ */
+export function showCorrectedLabels(doc, locale) {
+  const column = LOCALE_COLUMN[locale] ?? 1
+  for (const [key, words] of Object.entries(UX_CORRECTIONS)) {
+    for (const el of doc.querySelectorAll(`[data-i18n="${key}"]`)) {
+      const texts = [...el.childNodes].filter(
+        (node) => node.nodeType === 3 && (node.nodeValue ?? '').trim() !== '',
+      )
+      if (texts.length === 0) el.prepend(doc.createTextNode(words[column]))
+      else {
+        texts[0].nodeValue = words[column]
+        for (const extra of texts.slice(1)) extra.nodeValue = ''
+      }
+    }
+  }
+}
+
+/**
+ * The studio's menus as the 0.17 UI/UX review v2 left them (hwp-design #14, #23):
+ * - 문서 이력 관리 (and 문서 비교) sat in the middle of the find items of the Edit menu and of
+ *   the toolbar's find button: they go to the Tools menu, above 환경 설정.
+ * - View > 테마 offered its own light/dark and skins beside the app's theme, which the app
+ *   already hands to the editor: it goes, with the separator before it.
+ * - 쪽 > 머리말·꼬리말 listed its five presets twice (#11): the repeats go.
+ * Running it again changes nothing.
+ */
+export function tidyStudioMenus(doc) {
+  const tools = doc.querySelector('.menu-item[data-menu="tool"] .menu-dropdown')
+  const moved = ['edit:compare-documents', 'edit:document-history']
+    .map((id) => doc.querySelector(`.menu-item[data-menu="edit"] .md-item[data-cmd="${id}"]`))
+    .filter(Boolean)
+  if (tools && moved.length > 0) {
+    const sep = doc.createElement('div')
+    sep.className = 'md-sep'
+    tools.prepend(...moved, sep)
+  }
+  for (const item of doc.querySelectorAll('.tb-split-item[data-cmd="edit:document-history"]')) {
+    item.remove()
+  }
+  // header/footer presets 6-10: the engine writes them exactly as 1-5 (same text, plain
+  // characters), so the bold-printed second group looked like a choice it is not (#11)
+  for (const panel of doc.querySelectorAll('.md-hf-template-panel')) {
+    const repeats = [...panel.querySelectorAll('[data-template-id]')].filter(
+      (item) => Number(item.dataset.templateId) >= 6,
+    )
+    const before = repeats[0]?.previousElementSibling
+    if (before?.classList.contains('md-sep')) before.remove()
+    for (const item of repeats) item.remove()
+  }
+  const theme = doc.querySelector('[data-cmd="view:theme-system"]')?.closest('.md-sub')
+  if (theme) {
+    const before = theme.previousElementSibling
+    if (before?.classList.contains('md-sep')) before.remove()
+    theme.remove()
   }
 }
 

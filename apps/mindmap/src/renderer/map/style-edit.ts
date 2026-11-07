@@ -108,6 +108,19 @@ export const FONT_FAMILIES = [
   'Courier New',
 ] as const
 
+/** Korean names of the Korean fonts of the list, as Windows and the slide editor show them. */
+const KOREAN_FONT_NAMES: Readonly<Record<string, string>> = {
+  'Malgun Gothic': '맑은 고딕',
+  'Noto Sans KR': '본고딕(Noto Sans KR)',
+  'Nanum Gothic': '나눔고딕',
+  'Nanum Myeongjo': '나눔명조',
+}
+
+/** How the font list names a family: in Korean for a Korean font when the app is in Korean. */
+export function fontFamilyName(family: string, lang: string): string {
+  return (lang === 'ko' && KOREAN_FONT_NAMES[family]) || family
+}
+
 /** The colours every colour menu offers after the theme's own: black, white, grey and six clear hues. */
 export const BASIC_COLORS = [
   '#000000',

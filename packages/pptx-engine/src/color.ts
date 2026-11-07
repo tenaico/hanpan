@@ -386,3 +386,20 @@ function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: n
   }
   return { r: f(h + 1 / 3) * 255, g: f(h) * 255, b: f(h - 1 / 3) * 255 }
 }
+
+/** WCAG relative luminance of #RRGGBB (alpha suffix ignored). */
+export function relativeLuminance(hex: string): number {
+  const { r, g, b } = hexToRgb(hex)
+  const ch = (v: number) => {
+    const s = v / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  }
+  return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
+}
+
+/** WCAG contrast ratio between two #RRGGBB colours (1..21). */
+export function contrastRatio(a: string, b: string): number {
+  const la = relativeLuminance(a)
+  const lb = relativeLuminance(b)
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+}

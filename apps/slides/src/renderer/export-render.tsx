@@ -25,6 +25,8 @@ export async function renderSlidesToPngBase64(
   slides: RenderSlide[],
   images: Map<string, HTMLImageElement>,
   pixelRatio: number = EXPORT_PIXEL_RATIO,
+  mimeType: 'image/png' | 'image/jpeg' = 'image/png',
+  onProgress?: (done: number, total: number) => void,
 ): Promise<string[]> {
   // Offscreen container: mounted outside the body viewport (display:none would give the Konva canvas zero size, unusable)
   const container = document.createElement('div')
@@ -46,8 +48,13 @@ export async function renderSlidesToPngBase64(
       })
       // Wait one frame for Konva to finish batchDraw, then capture
       await new Promise((r) => requestAnimationFrame(r))
-      const dataUrl = stage.toDataURL({ mimeType: 'image/png', pixelRatio })
-      out.push(dataUrl.replace(/^data:image\/png;base64,/, ''))
+      const dataUrl = stage.toDataURL({
+        mimeType,
+        pixelRatio,
+        ...(mimeType === 'image/jpeg' ? { quality: 0.92 } : {}),
+      })
+      out.push(dataUrl.replace(/^data:image\/[a-z]+;base64,/, ''))
+      onProgress?.(out.length, slides.length)
     }
   } finally {
     root.unmount()

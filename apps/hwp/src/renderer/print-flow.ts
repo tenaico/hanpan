@@ -54,3 +54,54 @@ export async function gatherPrintJob(
   }
   throw new Error('the pages could not be drawn')
 }
+
+/**
+ * One page of the document as a job of its own (0.17 "this page as a picture"): the page
+ * `page` (0-based) with its pictures kept once, as gatherPrintJob keeps them.
+ */
+export async function gatherPageJob(
+  bridge: Pick<AgentBridge, 'printPages'>,
+  mode: PrintMode,
+  page: number,
+): Promise<PrintJob> {
+  const batch = await bridge.printPages(page)
+  const first = batch.pages[0]
+  if (!first || batch.from !== page) throw new Error('the page could not be drawn')
+  const images: string[] = []
+  const svg = sharePictures(first.svg, images, new Map())
+  return { mode, pages: [{ ...first, svg }], images }
+}
+
+/** Page `index` of the job as an image URL for the screen (the print preview). */
+export function pageImageUrl(job: PrintJob, index: number): string {
+  const page = job.pages[index]
+  if (!page) return ''
+  const svg = page.svg.replace(
+    /\bhref="ieum-image:(\d+)"/g,
+    (_, n: string) => `href="${job.images[Number(n)] ?? ''}"`,
+  )
+  const withNs = svg.includes('xmlns=')
+    ? svg
+    : svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(withNs)}`
+}
+
+/** Page `index` of the job drawn as PNG bytes at `scale` (the page picture export). */
+export async function rasterizePage(job: PrintJob, index: number, scale = 2): Promise<Uint8Array> {
+  const page = job.pages[index]
+  if (!page) throw new Error('no such page')
+  const image = new Image()
+  image.src = pageImageUrl(job, index)
+  await image.decode()
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(page.width * scale)
+  canvas.height = Math.round(page.height * scale)
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('no canvas')
+  context.fillStyle = '#fff'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+  context.drawImage(image, 0, 0, canvas.width, canvas.height)
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
+  if (!blob) throw new Error('the picture could not be written')
+  return new Uint8Array(await blob.arrayBuffer())
+}

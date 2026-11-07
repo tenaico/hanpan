@@ -293,6 +293,11 @@ export const pl = {
   paneShowMenuScreen: 'Ekran',
   paneShowMenuBlack: 'Czarny ekran',
   paneShowMenuWhite: 'Biały ekran',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'Zakończ pokaz',
   panePresenterWhiteOn: 'Biały ekran (W, aby wrócić)',
 } satisfies Record<keyof typeof zh, string>

@@ -51,6 +51,19 @@
     "hi": "विषय लिखें, उसी को बीच में रखकर माइंड मैप खुल जाएगा",
     "vi": "Nhập một chủ đề, sơ đồ tư duy sẽ mở ra với chủ đề đó ở giữa"
   },
+  "hpStartNeedTopic": {
+    "ko": "먼저 주제를 적어 주세요. 그 주제를 가운데 둔 마인드맵이 열립니다",
+    "en": "Type a topic first: the mind map opens around it",
+    "zh": "请先输入主题，思维导图会以它为中心打开",
+    "zh-TW": "Type a topic first: the mind map opens around it",
+    "ja": "Type a topic first: the mind map opens around it",
+    "th": "Type a topic first: the mind map opens around it",
+    "ru": "Type a topic first: the mind map opens around it",
+    "ar": "Type a topic first: the mind map opens around it",
+    "he": "Type a topic first: the mind map opens around it",
+    "hi": "Type a topic first: the mind map opens around it",
+    "vi": "Hãy nhập chủ đề trước: sơ đồ tư duy sẽ mở với chủ đề ở giữa"
+  },
   "hpExample1": {
     "ko": "2026년 AI 연수 계획",
     "en": "2026 AI training plan",

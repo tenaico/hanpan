@@ -55,6 +55,8 @@ const METHODS = [
   'createStyle',
   'editStyle',
   'printPages',
+  'exportHtml',
+  'currentPage',
   'formatCells',
   'mergeCells',
   'splitCell',

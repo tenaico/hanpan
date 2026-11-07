@@ -29,3 +29,22 @@ describe('selection Ask AI gesture', () => {
     expect(position.left + 220).toBeLessThanOrEqual(viewport.right - 4)
   })
 })
+
+describe('X8: the trigger sits beside the selection, not on the cells under it', () => {
+  it('goes to the right of the selection, level with its top row', () => {
+    const selection = { left: 200, top: 120, right: 400, bottom: 260 }
+    // the drag ended at the bottom-right cell; the old rule put the trigger on the row below
+    expect(selectionAskPosition({ x: 390, y: 250 }, viewport, 92, 32, 8, selection)).toEqual({
+      left: 408,
+      top: 120,
+    })
+  })
+
+  it('goes above the selection when there is no room to the right', () => {
+    const selection = { left: 600, top: 300, right: 880, bottom: 400 }
+    expect(selectionAskPosition({ x: 870, y: 390 }, viewport, 92, 32, 8, selection)).toEqual({
+      left: 788,
+      top: 260,
+    })
+  })
+})

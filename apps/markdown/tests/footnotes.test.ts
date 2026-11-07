@@ -329,3 +329,16 @@ describe('footnote editing', () => {
     expect(nextFootnoteLabel(editor.state.doc)).toBe('1')
   })
 })
+
+describe('footnote display (UX v2 #31)', () => {
+  it('shows the reference as a superscript number and the definition as "n."', () => {
+    const editor = createEditor()
+    editor.commands.setContent('Body text.[^1]\n\n[^1]: The note.', { contentType: 'markdown' })
+    const ref = editor.view.dom.querySelector('sup.md-footnote-ref')
+    const defLabel = editor.view.dom.querySelector('.md-footnote-def-label')
+    expect(ref?.textContent).toBe('1')
+    expect(defLabel?.textContent).toBe('1.')
+    // the source stays GFM
+    expect(editor.getMarkdown()).toContain('[^1]')
+  })
+})

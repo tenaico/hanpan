@@ -8,6 +8,25 @@ import type { ReactNode } from 'react'
 import type { LinkInputKind } from '../document/link-input'
 import { type StringKey, useI18n } from '../i18n/locale'
 
+/**
+ * A side panel closes on Escape, as the menus and dialogs do. Typing in a
+ * field of the page (a topic's edit box, the find bar) keeps its own Escape.
+ */
+export function useEscapeToClose(onClose: () => void): void {
+  const close = useRef(onClose)
+  close.current = onClose
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return
+      const target = event.target instanceof Element ? event.target : null
+      if (target?.closest('input, textarea, select, [contenteditable="true"], #input-box')) return
+      close.current()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+}
+
 export function Modal(p: { title: string; onCancel(): void; children: ReactNode; kind: string }) {
   return (
     <div

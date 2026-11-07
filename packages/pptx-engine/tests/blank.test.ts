@@ -50,3 +50,56 @@ describe('createBlankPptx', () => {
     expect(texts).toBe('Generated Title')
   })
 })
+
+describe('createBlankPptx language defaults (Hanpan 0.17 #11)', () => {
+  const latin = (theme: string, which: 'major' | 'minor') =>
+    new RegExp(`<a:${which}Font><a:latin typeface="([^"]*)"`).exec(theme)?.[1]
+
+  it('a Korean deck starts in 맑은 고딕, a Vietnamese one in Arial, others keep Calibri', async () => {
+    for (const [lang, major, minor] of [
+      ['ko', '맑은 고딕', '맑은 고딕'],
+      ['vi', 'Arial', 'Arial'],
+      ['en', 'Calibri Light', 'Calibri'],
+      ['ja', 'Calibri Light', 'Calibri'],
+    ] as const) {
+      const opened = await openPptx(await createBlankPptx({ lang }))
+      const theme = opened.archive.readText('ppt/theme/theme1.xml')!
+      expect([lang, latin(theme, 'major'), latin(theme, 'minor')]).toEqual([lang, major, minor])
+    }
+  })
+})
+
+describe('createBlankPptx title slide (Hanpan 0.17 #17)', () => {
+  it('starts with empty title and subtitle placeholders when asked', async () => {
+    const opened = await openPptx(await createBlankPptx({ titleSlide: true }))
+    const slide = opened.deck.slides[0]!
+    const phs = slide.elements.map((e: any) => e.placeholder?.type ?? e.placeholder)
+    expect(phs).toEqual(['ctrTitle', 'subTitle'])
+    const reopened = await openPptx(await savePptx(opened))
+    expect(reopened.deck.slides[0]!.elements.length).toBe(2)
+  })
+
+  it('keeps the plain blank deck by default (pipelines build on an empty first slide)', async () => {
+    const opened = await openPptx(await createBlankPptx())
+    expect(opened.deck.slides[0]!.elements.length).toBe(0)
+  })
+})
+
+describe('createBlankPptx title slide text styles', () => {
+  it('the master carries PowerPoint-like title/body styles in the theme fonts', async () => {
+    const opened = await openPptx(await createBlankPptx({ titleSlide: true, lang: 'ko' }))
+    const master = opened.archive.readText('ppt/slideMasters/slideMaster1.xml')!
+    expect(master).toMatch(/<p:titleStyle><a:lvl1pPr[^>]*><a:defRPr sz="4400"[^>]*>.*\+mj-lt/)
+    expect(master).toMatch(/<p:bodyStyle><a:lvl1pPr[^>]*>.*<a:defRPr sz="2400"[^>]*>.*\+mn-lt/)
+  })
+})
+
+describe('createBlankPptx title slide typing defaults', () => {
+  it('the empty title carries a paragraph mark that resolves to the title style', async () => {
+    const opened = await openPptx(await createBlankPptx({ titleSlide: true, lang: 'ko' }))
+    const title = opened.deck.slides[0]!.elements[0] as any
+    const mark = title.text.paragraphs[0].runs[0]
+    expect(mark?.paraMark).toBe(true)
+    expect(mark.fontSize).toBe(60)
+  })
+})

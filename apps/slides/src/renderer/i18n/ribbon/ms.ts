@@ -57,7 +57,8 @@ export const ms = {
     'Penyalin Format (klik untuk menyalin dan menggunakan pemformatan; ⌘⇧C salin format / ⌘⇧V tampal format)',
   ribbonGroupSlides: 'Slaid',
   ribbonNewSlide: 'Slaid Baharu',
-  ribbonNewSlideTip: 'Slaid kosong baharu (mengekalkan latar belakang tataletak slaid semasa)',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'Pilih Tataletak',
   ribbonChooseLayoutNew: 'Slaid Baharu dengan Tataletak',
   ribbonChooseLayoutChange: 'Tukar Tataletak Slaid Semasa',
@@ -794,4 +795,8 @@ export const ms = {
   ribbonZoomSectionItem: 'Slaid {n} Seksyen {k}: {name}',
   ribbonZoomSelectedSlides: '{n} slaid dipilih',
   ribbonZoomSelectedSections: '{n} seksyen dipilih',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

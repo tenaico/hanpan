@@ -22,6 +22,17 @@ export function keepRatio(
   return { width: Math.max(1, Math.round(height * ratio)), height }
 }
 
+/** Chromium's canvas stops at 16384 pixels a side: an export never asks for more. */
+export const MAX_EXPORT_SIDE = 16384
+
+/** The size times a factor (a scale preset), never less than one pixel. */
+export function scaleSize(size: PixelSize, factor: number): PixelSize {
+  return {
+    width: Math.max(1, Math.round(size.width * factor)),
+    height: Math.max(1, Math.round(size.height * factor)),
+  }
+}
+
 /** The size of a picture the page can decode. */
 export async function measureImage(bytes: Uint8Array): Promise<PixelSize> {
   const bitmap = await createImageBitmap(new Blob([bytes as BlobPart]))

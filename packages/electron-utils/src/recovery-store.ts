@@ -68,6 +68,8 @@ export const RECOVERY_EDITOR_KINDS = [
   'markdown',
   'html',
   'mindmap',
+  'photo',
+  'illust',
 ] as const
 
 export type RecoveryEditorKind = (typeof RECOVERY_EDITOR_KINDS)[number]
@@ -352,10 +354,11 @@ export function resumeDiscardedCopies(): void {
 
 const META_SUFFIX = '.meta.json'
 const UNTITLED_DIR = 'untitled'
-const EXT_RE = /^\.[a-z0-9]{1,10}$/
+// up to 12 letters: VectorCraft's `.vectorcraft` has 11
+const EXT_RE = /^\.[a-z0-9]{1,12}$/
 const UNTITLED_ID_RE = /^[A-Za-z0-9_-]{1,64}$/
-const FILE_COPY_RE = /^[0-9a-f]{16}\.[a-z0-9]{1,10}$/
-const UNTITLED_COPY_RE = /^[A-Za-z0-9_-]{1,64}\.[a-z0-9]{1,10}$/
+const FILE_COPY_RE = /^[0-9a-f]{16}\.[a-z0-9]{1,12}$/
+const UNTITLED_COPY_RE = /^[A-Za-z0-9_-]{1,64}\.[a-z0-9]{1,12}$/
 const TEMP_RE = /^\..+\.[0-9a-f]{12}\.tmp$/
 
 const KIND_DEFAULT_EXT: Record<RecoveryEditorKind, string> = {
@@ -367,6 +370,8 @@ const KIND_DEFAULT_EXT: Record<RecoveryEditorKind, string> = {
   markdown: '.md',
   html: '.html',
   mindmap: '.xmind',
+  photo: '.psd',
+  illust: '.vectorcraft',
 }
 
 export function recoveryFolderName(kind: RecoveryEditorKind): string {

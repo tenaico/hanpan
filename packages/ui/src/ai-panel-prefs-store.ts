@@ -23,10 +23,12 @@ function subscribe(listener: () => void): () => void {
  */
 export function applyAiPanelPrefs(raw: unknown): void {
   const next = normalizeAiPanelPrefs(raw)
+  const html = document.documentElement
+  // set even when nothing changed: the first apply of the default side must still mark the
+  // page, or the stylesheets fall back to their unmarked (left) layout
+  html.dataset.aiPanelSide = next.side
   if (sameAiPanelPrefs(next, current)) return
   current = next
-  const html = document.documentElement
-  html.dataset.aiPanelSide = next.side
   if (next.fontSize === 'default') {
     delete html.dataset.aiFontSize
     html.style.removeProperty('--ai-font-zoom')
