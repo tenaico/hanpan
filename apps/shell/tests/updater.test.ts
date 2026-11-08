@@ -1395,6 +1395,24 @@ describe('checkForUpdatesNow (r148 manual check)', () => {
     expect(showUpdateWindow).not.toHaveBeenCalled()
   })
 
+  it('titles the result with the product name in every UI language (0.17 review v2 shell #33)', async () => {
+    const { LANGS, getUiLang, productName, setUiLang } = await import('@genoffice/i18n')
+    const { initAutoUpdater, checkForUpdatesNow } = await loadUpdater()
+    initAutoUpdater(() => null)
+    checkForUpdates.mockImplementation(() => Promise.resolve({ isUpdateAvailable: false } as never))
+    const before = getUiLang()
+    try {
+      for (const lang of LANGS) {
+        setUiLang(lang)
+        await checkForUpdatesNow()
+        const title = (showMessageBox.mock.calls.at(-1)![0] as { title: string }).title
+        expect(title, lang).toContain(productName(lang))
+      }
+    } finally {
+      setUiLang(before)
+    }
+  })
+
   it('does not report up-to-date when the updater skips the check', async () => {
     const { initAutoUpdater, checkForUpdatesNow } = await loadUpdater()
     initAutoUpdater(() => null)

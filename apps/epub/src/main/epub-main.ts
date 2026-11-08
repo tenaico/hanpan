@@ -248,9 +248,12 @@ export async function requestEpubClose(
   parent?: BrowserWindow | null,
 ): Promise<boolean> {
   if (contents.isDestroyed() || !epubIsDirty(contents.id)) return true
+  // name the document: closing the window asks once per dirty tab, and "this
+  // document" alone does not say which one is asking
+  const fileName = basename(savePathByWc.get(contents.id) ?? '')
   const options = {
     type: 'warning' as const,
-    message: tm('closeUnsavedMsg'),
+    message: fileName ? tm('closeUnsavedNamedMsg', { name: fileName }) : tm('closeUnsavedMsg'),
     detail: tm('closeUnsavedDetail'),
     buttons: [tm('btnSave'), tm('btnDontSave'), tm('btnCancel')],
     defaultId: 0,

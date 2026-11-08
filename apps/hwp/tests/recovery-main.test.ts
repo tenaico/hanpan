@@ -375,6 +375,18 @@ describe('a recovery copy of a file', () => {
     expect(store().copyInfo(fileIdentity(path))).toBeNull()
   })
 
+  it('the close prompt names the document (closing the window walks several dirty tabs)', async () => {
+    const path = join(dir, '주간 보고.hwp')
+    writeFileSync(path, fileWithTails('본문'))
+    const contents = view(path)
+    await call(HWP_CHANNELS.readFile, contents, path)
+    call(HWP_CHANNELS.dirtyChanged, contents, true)
+    showMessageBox.mockResolvedValueOnce({ response: 2 })
+    expect(await requestHwpClose(contents as never)).toBe(false)
+    const options = showMessageBox.mock.calls[0]!.at(-1) as { message: string }
+    expect(options.message).toContain('주간 보고.hwp')
+  })
+
   it('is removed by "Don\'t Save", and none is taken while the tab closes', async () => {
     const path = join(dir, 'report.hwp')
     const original = fileWithTails('본문')
