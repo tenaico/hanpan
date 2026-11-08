@@ -290,6 +290,7 @@ describe('MarginDialog', () => {
     expect(onApply).toHaveBeenCalledWith(
       { top: 1440, right: 1440, bottom: 1440, left: 1134 },
       false,
+      { pageWidth: 12240, pageHeight: 15840, orientation: 'portrait' },
     )
     unmount()
   })

@@ -559,7 +559,7 @@ export const de = {
   ribbonMarginOutside: 'Außen',
   ribbonMarginLastCustom: 'Letzte benutzerdefinierte Einstellung',
   ribbonMarginCustom: 'Benutzerdefinierte Seitenränder…',
-  ribbonMarginDialogTitle: 'Benutzerdefinierte Seitenränder',
+  ribbonMarginDialogTitle: 'Seite einrichten',
   ribbonMarginTop: 'Oben',
   ribbonMarginBottom: 'Unten',
   ribbonMarginLeft: 'Links',

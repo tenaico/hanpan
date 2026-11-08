@@ -136,6 +136,12 @@ import {
 } from '@genoffice/electron-utils'
 import { SPLIT_PANE_CHANNELS } from '@genoffice/electron-utils/split-pane-bridge'
 import {
+  installPrintDialogExitGuard,
+  printDialogWindowCount,
+  releasePrintDialogWindows,
+  systemPrintDialogPending,
+} from '@genoffice/electron-utils/print-window'
+import {
   agentSkillNoticeDue,
   markAgentSkillNoticeSeen,
   documentThemeOf,
@@ -5696,6 +5702,10 @@ function createShellWindow(): void {
       // the quit follows, and its record keeps the strip for undecided copies)
       else if (!appQuitting && process.platform === 'darwin') noteLiveSession()
     }
+    // a print window still waiting on a system dialog is all that is left:
+    // it must not keep the app running (window-all-closed counts it)
+    const left = BrowserWindow.getAllWindows().filter((w) => w !== win && !w.isDestroyed())
+    if (left.length > 0 && left.length === printDialogWindowCount()) releasePrintDialogWindows()
     // the split bookkeeping follows this manager; a rebuilt window restarts
     // tab ids, so a stale shape must not leak into the next one
     lastSplitState = null
@@ -10689,3 +10699,14 @@ function releaseAppResources(): void {
 // one event every such way out still emits, so no subscription CLI outlives
 // the app. A process killed outright runs nothing: the next start cleans up.
 process.on('exit', () => shutdownSubscriptionChildren())
+
+// A system print dialog left open (Windows: it outlives its job and its tab)
+// holds the browser process in its native teardown until someone closes it.
+// After the quit handlers and every 'exit' listener, end the process.
+installPrintDialogExitGuard({
+  app,
+  process,
+  pending: systemPrintDialogPending,
+  flushStorage: () => session.defaultSession.flushStorageData(),
+  terminate: () => process.kill(process.pid, 'SIGKILL'),
+})

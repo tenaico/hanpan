@@ -30,6 +30,7 @@ import {
   IconProperties,
   IconRedo,
   IconSave,
+  IconSaveAs,
   IconSearch,
   IconEyeOff,
   IconSourceCode,
@@ -612,14 +613,14 @@ export function Ribbon({
         </button>
         <button
           type="button"
-          className="qa-btn qa-save-as"
+          className="qa-btn"
           data-tip={t('saveAs')}
           aria-label={t('saveAs')}
           disabled={disabled}
           onMouseDown={(e) => e.preventDefault()}
           onClick={onSaveAs}
         >
-          {t('saveAs')}
+          <IconSaveAs size={16} />
         </button>
         <button
           type="button"

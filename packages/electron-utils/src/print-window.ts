@@ -28,6 +28,72 @@ export interface PrintDocumentJob {
   duplexMode?: 'simplex' | 'longEdge' | 'shortEdge'
 }
 
+/**
+ * System print dialogs this process opened that have not answered yet. On
+ * Windows the dialog lives on after its job is abandoned (tab closed, print
+ * window destroyed), and while it is open the browser process cannot finish
+ * its exit: it waits in Chromium's teardown until the dialog is closed.
+ */
+let openSystemDialogs = 0
+/**
+ * A job was abandoned (tab closed, app quitting, window destroyed) while its
+ * dialog was open. Chromium then answers the print() callback, but the dialog
+ * stays on screen; nothing tells the app when it goes, so this stays set.
+ */
+let orphanedDialog = false
+
+/** a system print dialog opened by `printHtmlDocument` may still be on screen */
+export function systemPrintDialogPending(): boolean {
+  return openSystemDialogs > 0 || orphanedDialog
+}
+
+/** the print windows whose job is waiting on a system dialog (Windows shows them) */
+const dialogWindows = new Set<PrintDialogWindow>()
+
+export function printDialogWindowCount(): number {
+  return dialogWindows.size
+}
+
+/**
+ * The app's own windows are gone: a print window waiting on its dialog must
+ * not keep the app running (it counts toward window-all-closed). Destroying
+ * it ends its job as canceled; the dialog itself is left to the exit guard.
+ */
+export function releasePrintDialogWindows(): void {
+  for (const win of [...dialogWindows]) {
+    dialogWindows.delete(win)
+    if (!win.isDestroyed()) win.destroy()
+  }
+}
+
+/** the app and process events the exit guard needs (structural: no Electron import) */
+export interface PrintDialogExitDeps {
+  app: { on(event: 'will-quit', listener: () => void): unknown }
+  process: { on(event: 'exit', listener: () => void): unknown }
+  pending(): boolean
+  /** write what the renderers stored (DOM storage) before the process ends early */
+  flushStorage(): void
+  /** end the process now (TerminateProcess), past the native teardown */
+  terminate(): void
+}
+
+/**
+ * A quit with a system print dialog still open ends the process itself once
+ * every quit handler and 'exit' listener has run, instead of waiting until
+ * the user finds and closes a dialog for an app they already closed. An
+ * ordinary quit is not touched.
+ */
+export function installPrintDialogExitGuard(deps: PrintDialogExitDeps): void {
+  deps.app.on('will-quit', () => {
+    if (!deps.pending()) return
+    deps.flushStorage()
+    // added now, so it runs after every 'exit' listener registered while the app ran
+    deps.process.on('exit', () => {
+      if (deps.pending()) deps.terminate()
+    })
+  })
+}
+
 /** a silent job the spooler never answers is given up after this long */
 const SILENT_PRINT_TIMEOUT_MS = 60_000
 
@@ -90,6 +156,7 @@ export async function printHtmlDocument({
     signal?.addEventListener('abort', onAbort, { once: true })
   })
   let printTimer: ReturnType<typeof setTimeout> | undefined
+  let dialogUnanswered = (): boolean => false
   try {
     // a temp file, not a data: URL: long documents truncate the URL
     tempDir = await mkdtemp(join(tmpdir(), dirPrefix))
@@ -114,10 +181,33 @@ export async function printHtmlDocument({
       win.focus()
     }
     const options = { ...job, silent, printBackground: true }
+    // counted until the dialog answers, which may be after this job settled
+    let dialogOpen = !silent
+    if (dialogOpen) {
+      openSystemDialogs += 1
+      dialogWindows.add(win)
+    }
+    const answered = () => {
+      if (!dialogOpen) return
+      dialogOpen = false
+      openSystemDialogs -= 1
+    }
+    dialogUnanswered = () => {
+      if (!dialogOpen) return false
+      answered()
+      return true
+    }
     const printed = new Promise<{ success: boolean; failureReason: string }>((resolve) => {
-      win.webContents.print(options, (success, failureReason) =>
-        resolve({ success, failureReason }),
-      )
+      try {
+        win.webContents.print(options, (success, failureReason) => {
+          answered()
+          resolve({ success, failureReason })
+        })
+      } catch (err) {
+        // no dialog opened
+        answered()
+        throw err
+      }
     })
     const timedOut = silent
       ? new Promise<'timeout'>((resolve) => {
@@ -136,6 +226,8 @@ export async function printHtmlDocument({
     return { ok: false, error: err instanceof Error ? err.message : String(err) }
   } finally {
     clearTimeout(printTimer)
+    dialogWindows.delete(win)
+    if (dialogUnanswered()) orphanedDialog = true
     if (onAbort) signal?.removeEventListener('abort', onAbort)
     try {
       if (!win.isDestroyed()) win.destroy()

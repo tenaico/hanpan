@@ -566,7 +566,7 @@ export const zh = {
   ribbonMarginOutside: '外侧',
   ribbonMarginLastCustom: '上次的自定义设置',
   ribbonMarginCustom: '自定义边距…',
-  ribbonMarginDialogTitle: '自定义页边距',
+  ribbonMarginDialogTitle: '页面设置',
   ribbonMarginTop: '上',
   ribbonMarginBottom: '下',
   ribbonMarginLeft: '左',

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/core'
 import { latexToOmml, ommlToMathML } from '@genoffice/docx-engine'
 import { t, useI18n, type StringKey } from '../i18n/locale'
@@ -163,6 +163,12 @@ export function EquationModal({
   )
 }
 
+/** zoom that fits a thumbnail of `contentW` into `boxW` (1 when it fits or is unmeasured) */
+export function galleryPreviewScale(contentW: number, boxW: number): number {
+  if (!(boxW > 0) || !(contentW > boxW)) return 1
+  return boxW / contentW
+}
+
 /** Built-in equation gallery (ribbon Equation ▾ dropdown), with MathML thumbnail previews */
 export function EquationGallery({
   editor,
@@ -174,8 +180,21 @@ export function EquationGallery({
   onCustom: () => void
 }) {
   const { t } = useI18n()
+  const panelRef = useRef<HTMLDivElement>(null)
+  // a formula wider than the panel shrinks to fit rather than being clipped
+  useLayoutEffect(() => {
+    for (const el of panelRef.current?.querySelectorAll<HTMLElement>('.equation-gallery-preview') ??
+      []) {
+      // zoom the formula, not its box: the box keeps the panel's width and clips nothing
+      const math = el.querySelector<HTMLElement>('.equation-gallery-formula')
+      if (!math) continue
+      math.style.zoom = ''
+      const scale = galleryPreviewScale(el.scrollWidth, el.clientWidth)
+      if (scale < 1) math.style.zoom = String(scale)
+    }
+  }, [])
   return (
-    <div data-rb-panel="" className="equation-gallery">
+    <div data-rb-panel="" className="equation-gallery" ref={panelRef}>
       {BUILTIN_EQUATIONS.map((eq) => {
         const preview = previewOf(eq.latex)
         return (
@@ -190,10 +209,12 @@ export function EquationGallery({
           >
             <span className="equation-gallery-name">{t(eq.nameKey)}</span>
             {preview !== null && 'mathml' in preview && (
-              <span
-                className="equation-gallery-preview"
-                dangerouslySetInnerHTML={{ __html: preview.mathml }}
-              />
+              <span className="equation-gallery-preview">
+                <span
+                  className="equation-gallery-formula"
+                  dangerouslySetInnerHTML={{ __html: preview.mathml }}
+                />
+              </span>
             )}
           </button>
         )

@@ -34,6 +34,15 @@ describe('Gongu picker strings', () => {
     expect(gonguPickerText('ko', 'total', { count: 86 })).toBe('86건')
     expect(gonguPickerText('en', 'insert')).toBe(GONGU_PICKER_STRINGS.en.insert)
   })
+
+  // Hanpan 0.17.1 docs #34: "Hình ảnh Gongu" told a Vietnamese reader nothing
+  // and was one of the labels pushing the 1366 px Insert ribbon past the window
+  it('says what Gongu is in Vietnamese, in a ribbon-sized label', () => {
+    expect(gonguPickerText('vi', 'title')).toBe('Ảnh công cộng')
+    expect(gonguPickerText('vi', 'find')).toContain('công cộng')
+    // the settings card the hint points at carries the same name
+    expect(gonguPickerText('vi', 'noKeyHint')).toContain('"Ảnh công cộng (Gongu)"')
+  })
 })
 
 describe('gonguInsertWarnings', () => {

@@ -553,7 +553,7 @@ export const th = {
   ribbonMarginOutside: 'ด้านนอก',
   ribbonMarginLastCustom: 'การตั้งค่ากำหนดเองล่าสุด',
   ribbonMarginCustom: 'ระยะขอบแบบกำหนดเอง…',
-  ribbonMarginDialogTitle: 'ระยะขอบหน้าแบบกำหนดเอง',
+  ribbonMarginDialogTitle: 'ตั้งค่าหน้ากระดาษ',
   ribbonMarginTop: 'บน',
   ribbonMarginBottom: 'ล่าง',
   ribbonMarginLeft: 'ซ้าย',

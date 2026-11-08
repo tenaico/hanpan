@@ -62,6 +62,7 @@ import {
   ATTACHABLE_IMAGE_MAX_BYTES,
 } from '@genoffice/file-parse'
 import { convertHtmlToDocx } from '../../../../packages/html2docx/src'
+import { HTML_WORD_EXPORT_OPTIONS } from './word-export-options'
 import { atomicWriteFile } from './atomic-write'
 import { ElectronBrowserDriver } from '../../../../packages/html2docx/src/drivers/electron'
 import {
@@ -1156,9 +1157,11 @@ async function renderHtmlDocx(
     // executeJavaScript pending forever, which would strand the hidden
     // window and this handler; race a watchdog and destroy the window on
     // timeout (same shape as the slides export guard).
-    const conversion = convertHtmlToDocx({ url: pathToFileURL(htmlPath).href }, driver).then(
-      ({ docx }) => docx,
-    )
+    const conversion = convertHtmlToDocx(
+      { url: pathToFileURL(htmlPath).href },
+      driver,
+      HTML_WORD_EXPORT_OPTIONS,
+    ).then(({ docx }) => docx)
     let watchdog: ReturnType<typeof setTimeout> | undefined
     return await Promise.race([
       conversion,

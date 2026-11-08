@@ -555,7 +555,7 @@ export const en = {
   ribbonMarginOutside: 'Outside',
   ribbonMarginLastCustom: 'Last Custom Setting',
   ribbonMarginCustom: 'Custom Margins…',
-  ribbonMarginDialogTitle: 'Custom Page Margins',
+  ribbonMarginDialogTitle: 'Page Setup',
   ribbonMarginTop: 'Top',
   ribbonMarginBottom: 'Bottom',
   ribbonMarginLeft: 'Left',
