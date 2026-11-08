@@ -554,7 +554,7 @@ export const vi = {
   ribbonMarginOutside: 'Ngoài',
   ribbonMarginLastCustom: 'Cài đặt tùy chỉnh lần trước',
   ribbonMarginCustom: 'Lề tùy chỉnh…',
-  ribbonMarginDialogTitle: 'Lề trang tùy chỉnh',
+  ribbonMarginDialogTitle: 'Thiết lập trang',
   ribbonMarginTop: 'Trên',
   ribbonMarginBottom: 'Dưới',
   ribbonMarginLeft: 'Trái',

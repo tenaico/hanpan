@@ -552,7 +552,7 @@ export const he = {
   ribbonMarginOutside: 'חיצוני',
   ribbonMarginLastCustom: 'ההגדרה המותאמת אישית האחרונה',
   ribbonMarginCustom: 'שוליים מותאמים אישית…',
-  ribbonMarginDialogTitle: 'שולי עמוד מותאמים אישית',
+  ribbonMarginDialogTitle: 'הגדרת עמוד',
   ribbonMarginTop: 'עליון',
   ribbonMarginBottom: 'תחתון',
   ribbonMarginLeft: 'שמאל',

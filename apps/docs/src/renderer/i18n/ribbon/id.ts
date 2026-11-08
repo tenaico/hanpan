@@ -556,7 +556,7 @@ export const id = {
   ribbonMarginOutside: 'Luar',
   ribbonMarginLastCustom: 'Pengaturan Kustom Terakhir',
   ribbonMarginCustom: 'Margin Kustom…',
-  ribbonMarginDialogTitle: 'Margin Halaman Kustom',
+  ribbonMarginDialogTitle: 'Penyetelan Halaman',
   ribbonMarginTop: 'Atas',
   ribbonMarginBottom: 'Bawah',
   ribbonMarginLeft: 'Kiri',

@@ -559,7 +559,7 @@ export const fr = {
   ribbonMarginOutside: 'Extérieur',
   ribbonMarginLastCustom: 'Dernier réglage personnalisé',
   ribbonMarginCustom: 'Marges personnalisées…',
-  ribbonMarginDialogTitle: 'Marges de page personnalisées',
+  ribbonMarginDialogTitle: 'Mise en page',
   ribbonMarginTop: 'Haut',
   ribbonMarginBottom: 'Bas',
   ribbonMarginLeft: 'Gauche',

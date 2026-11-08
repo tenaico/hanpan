@@ -557,7 +557,7 @@ export const pl = {
   ribbonMarginOutside: 'Zewnętrzny',
   ribbonMarginLastCustom: 'Ostatnie ustawienie niestandardowe',
   ribbonMarginCustom: 'Marginesy niestandardowe…',
-  ribbonMarginDialogTitle: 'Niestandardowe marginesy strony',
+  ribbonMarginDialogTitle: 'Ustawienia strony',
   ribbonMarginTop: 'Górny',
   ribbonMarginBottom: 'Dolny',
   ribbonMarginLeft: 'Lewy',

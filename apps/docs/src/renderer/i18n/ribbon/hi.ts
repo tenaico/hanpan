@@ -556,7 +556,7 @@ export const hi = {
   ribbonMarginOutside: 'बाहर',
   ribbonMarginLastCustom: 'पिछली कस्टम सेटिंग',
   ribbonMarginCustom: 'कस्टम मार्जिन…',
-  ribbonMarginDialogTitle: 'कस्टम पेज मार्जिन',
+  ribbonMarginDialogTitle: 'पेज सेटअप',
   ribbonMarginTop: 'ऊपर',
   ribbonMarginBottom: 'नीचे',
   ribbonMarginLeft: 'बाएँ',

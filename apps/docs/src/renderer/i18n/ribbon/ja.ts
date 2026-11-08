@@ -571,7 +571,7 @@ export const ja = {
   ribbonMarginOutside: '外側',
   ribbonMarginLastCustom: '前回のユーザー設定',
   ribbonMarginCustom: 'ユーザー設定の余白…',
-  ribbonMarginDialogTitle: '余白のユーザー設定',
+  ribbonMarginDialogTitle: 'ページ設定',
   ribbonMarginTop: '上',
   ribbonMarginBottom: '下',
   ribbonMarginLeft: '左',

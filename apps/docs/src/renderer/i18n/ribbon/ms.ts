@@ -556,7 +556,7 @@ export const ms = {
   ribbonMarginOutside: 'Luar',
   ribbonMarginLastCustom: 'Tetapan Tersuai Terakhir',
   ribbonMarginCustom: 'Jidar Tersuai…',
-  ribbonMarginDialogTitle: 'Jidar Halaman Tersuai',
+  ribbonMarginDialogTitle: 'Persediaan Halaman',
   ribbonMarginTop: 'Atas',
   ribbonMarginBottom: 'Bawah',
   ribbonMarginLeft: 'Kiri',

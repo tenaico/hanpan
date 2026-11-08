@@ -569,7 +569,7 @@ export const ko = {
   ribbonMarginOutside: '바깥쪽',
   ribbonMarginLastCustom: '마지막 사용자 지정 설정',
   ribbonMarginCustom: '사용자 지정 여백…',
-  ribbonMarginDialogTitle: '사용자 지정 페이지 여백',
+  ribbonMarginDialogTitle: '페이지 설정',
   ribbonMarginTop: '위쪽',
   ribbonMarginBottom: '아래쪽',
   ribbonMarginLeft: '왼쪽',
