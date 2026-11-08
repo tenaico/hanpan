@@ -644,6 +644,12 @@ export const ru = {
   dlgPrintNextPage: 'Следующая страница',
   dlgPrintZoomFit: 'По размеру страницы',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'По ширине',
+  dlgPrintColumnsSplit:
+    'Столбцы листа «{sheets}» не помещаются по ширине страницы; правые столбцы печатаются на следующих страницах.',
+  dlgPrintPastEdge: 'Некоторые столбцы выходят за правый край страницы и будут обрезаны.',
+  dlgPrintClippedText:
+    'Часть текста в крайнем правом столбце выходит за область печати и будет обрезана. Расширьте столбец или включите перенос текста.',
   dlgPrintButton: 'Печать',
   dlgPrintToPdf: 'Печать в PDF',
   dlgPrintPageSetup: 'Параметры страницы…',

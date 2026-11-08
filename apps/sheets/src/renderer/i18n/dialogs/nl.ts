@@ -641,6 +641,13 @@ export const nl = {
   dlgPrintNextPage: 'Volgende pagina',
   dlgPrintZoomFit: 'Pagina passend',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Breedte passend',
+  dlgPrintColumnsSplit:
+    'De kolommen van "{sheets}" passen niet in de breedte van één pagina; de rechterkolommen worden op volgende pagina\'s afgedrukt.',
+  dlgPrintPastEdge:
+    'Sommige kolommen lopen over de rechterrand van de pagina en worden afgesneden.',
+  dlgPrintClippedText:
+    'Een deel van de tekst in de laatste kolom valt buiten het afdrukgebied en wordt afgesneden. Maak die kolom breder of zet Tekstterugloop aan.',
   dlgPrintButton: 'Afdrukken',
   dlgPrintToPdf: 'Afdrukken naar PDF',
   dlgPrintPageSetup: 'Pagina-instelling…',

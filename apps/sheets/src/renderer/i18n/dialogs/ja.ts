@@ -639,6 +639,12 @@ export const ja = {
   dlgPrintNextPage: '次のページ',
   dlgPrintZoomFit: 'ページに合わせる',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: '幅に合わせる',
+  dlgPrintColumnsSplit:
+    '「{sheets}」の列が 1 ページの幅に収まらず、右側の列は次のページに印刷されます。',
+  dlgPrintPastEdge: '一部の列がページの右端からはみ出し、切れて印刷されます。',
+  dlgPrintClippedText:
+    '右端の列の文字が印刷範囲からはみ出し、切れて印刷されます。列の幅を広げるか、［折り返して全体を表示する］をオンにしてください。',
   dlgPrintButton: '印刷',
   dlgPrintToPdf: 'PDF に印刷',
   dlgPrintPageSetup: 'ページ設定…',

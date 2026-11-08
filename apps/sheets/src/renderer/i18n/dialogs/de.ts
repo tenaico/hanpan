@@ -645,6 +645,13 @@ export const de = {
   dlgPrintNextPage: 'Nächste Seite',
   dlgPrintZoomFit: 'Seite anpassen',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Breite anpassen',
+  dlgPrintColumnsSplit:
+    'Die Spalten von „{sheets}“ passen nicht auf eine Seitenbreite; die rechten Spalten werden auf weiteren Seiten gedruckt.',
+  dlgPrintPastEdge:
+    'Einige Spalten reichen über den rechten Seitenrand hinaus und werden abgeschnitten.',
+  dlgPrintClippedText:
+    'Text in der rechten Spalte reicht über den Druckbereich hinaus und wird abgeschnitten. Verbreitern Sie die Spalte oder aktivieren Sie den Zeilenumbruch.',
   dlgPrintButton: 'Drucken',
   dlgPrintToPdf: 'Als PDF drucken',
   dlgPrintPageSetup: 'Seite einrichten…',

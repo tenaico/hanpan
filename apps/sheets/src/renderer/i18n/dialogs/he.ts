@@ -631,6 +631,12 @@ export const he = {
   dlgPrintNextPage: 'העמוד הבא',
   dlgPrintZoomFit: 'התאם לעמוד',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'התאם לרוחב',
+  dlgPrintColumnsSplit:
+    'העמודות של "{sheets}" אינן נכנסות ברוחב עמוד אחד; העמודות הימניות יודפסו בעמודים הבאים.',
+  dlgPrintPastEdge: 'חלק מהעמודות חורגות מהשוליים הימניים של הדף וייחתכו בהדפסה.',
+  dlgPrintClippedText:
+    'חלק מהטקסט בעמודה האחרונה חורג מאזור ההדפסה וייחתך. הרחיבו את העמודה או הפעילו גלישת טקסט.',
   dlgPrintButton: 'הדפסה',
   dlgPrintToPdf: 'הדפסה ל-PDF',
   dlgPrintPageSetup: 'הגדרת עמוד…',
