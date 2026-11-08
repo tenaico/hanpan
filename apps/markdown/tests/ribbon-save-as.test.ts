@@ -65,7 +65,10 @@ describe('Save As quick-access button', () => {
   it('can save a copy of an unchanged document without triggering normal save', () => {
     const { container, onSave, onSaveAs } = renderRibbon()
     const button = saveAsButton(container)
-    expect(button.textContent).toBe('\u53e6\u5b58\u4e3a\u2026')
+    // an icon button beside Save, as in the Word editor: the name is the tooltip
+    expect(button.textContent).toBe('')
+    expect(button.querySelector('svg')).not.toBeNull()
+    expect(button.getAttribute('data-tip')).toBe('\u53e6\u5b58\u4e3a\u2026')
     expect(button.disabled).toBe(false)
     act(() => button.click())
     expect(onSaveAs).toHaveBeenCalledOnce()
