@@ -18,6 +18,7 @@ export {
   IconPicture,
   IconLink,
   IconSave,
+  IconSaveAs,
   IconUndo,
   IconRedo,
   IconCopy,

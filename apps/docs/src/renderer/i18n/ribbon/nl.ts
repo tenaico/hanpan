@@ -558,7 +558,7 @@ export const nl = {
   ribbonMarginOutside: 'Buiten',
   ribbonMarginLastCustom: 'Laatste aangepaste instelling',
   ribbonMarginCustom: 'Aangepaste marges…',
-  ribbonMarginDialogTitle: 'Aangepaste paginamarges',
+  ribbonMarginDialogTitle: 'Pagina-instelling',
   ribbonMarginTop: 'Boven',
   ribbonMarginBottom: 'Onder',
   ribbonMarginLeft: 'Links',

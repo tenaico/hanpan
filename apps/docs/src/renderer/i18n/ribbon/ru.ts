@@ -555,7 +555,7 @@ export const ru = {
   ribbonMarginOutside: 'Снаружи',
   ribbonMarginLastCustom: 'Последние настраиваемые поля',
   ribbonMarginCustom: 'Настраиваемые поля…',
-  ribbonMarginDialogTitle: 'Настраиваемые поля страницы',
+  ribbonMarginDialogTitle: 'Параметры страницы',
   ribbonMarginTop: 'Верхнее',
   ribbonMarginBottom: 'Нижнее',
   ribbonMarginLeft: 'Левое',

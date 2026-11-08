@@ -454,6 +454,18 @@ describe('the menu and closing', () => {
     expect(await closing).toBe(true)
   })
 
+  it('the close prompt names the saved map (closing the window walks several dirty tabs)', async () => {
+    const path = join(dir, '신사업 계획.xmind')
+    writeFileSync(path, await mapBytes())
+    const contents = view(path)
+    await open(contents, path)
+    call(MINDMAP_CHANNELS.dirtyChanged, contents, true)
+    showMessageBox.mockResolvedValueOnce({ response: 2 })
+    expect(await requestMindmapClose(contents as never)).toBe(false)
+    const options = showMessageBox.mock.calls[0]!.at(-1) as { message: string }
+    expect(options.message).toContain('신사업 계획.xmind')
+  })
+
   it('menu commands, export and print requests go to the renderer under their own channels', () => {
     const contents = view(null)
     sendMindmapMenuCommand(contents as never, 'undo')

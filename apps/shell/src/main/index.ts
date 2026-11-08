@@ -120,6 +120,7 @@ import {
   aboutMenuItem,
   appMenuPopupTemplate,
   helpCheckUpdatesItems,
+  setAboutReleaseIsBeta,
   setUpdateCheckInvoker,
   installRendererProtocol,
   AUTHOR_NAME_KEY,
@@ -134,6 +135,12 @@ import {
   type RecoveryUntitledIdentity,
 } from '@genoffice/electron-utils'
 import { SPLIT_PANE_CHANNELS } from '@genoffice/electron-utils/split-pane-bridge'
+import {
+  installPrintDialogExitGuard,
+  printDialogWindowCount,
+  releasePrintDialogWindows,
+  systemPrintDialogPending,
+} from '@genoffice/electron-utils/print-window'
 import {
   agentSkillNoticeDue,
   markAgentSkillNoticeSeen,
@@ -402,6 +409,7 @@ import type {
   FileSearchSettings,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
+import { RELEASE_IS_BETA } from '../shared/release-stage'
 import {
   normalizeAiPanelPrefs,
   sameAiPanelPrefs,
@@ -5694,6 +5702,10 @@ function createShellWindow(): void {
       // the quit follows, and its record keeps the strip for undecided copies)
       else if (!appQuitting && process.platform === 'darwin') noteLiveSession()
     }
+    // a print window still waiting on a system dialog is all that is left:
+    // it must not keep the app running (window-all-closed counts it)
+    const left = BrowserWindow.getAllWindows().filter((w) => w !== win && !w.isDestroyed())
+    if (left.length > 0 && left.length === printDialogWindowCount()) releasePrintDialogWindows()
     // the split bookkeeping follows this manager; a rebuilt window restarts
     // tab ids, so a stale shape must not leak into the next one
     lastSplitState = null
@@ -10508,6 +10520,8 @@ app.whenReady().then(async () => {
   installDocumentLinkMenuItems()
   installDockMenu()
   setUpdateCheckInvoker(() => void checkForUpdatesNow())
+  // About says "beta" after the version, as Settings › About does
+  setAboutReleaseIsBeta(RELEASE_IS_BETA)
   initAutoUpdater(() => shellWindow, currentUpdateChannel(), autoUpdateCheckEnabled)
   // crash record on this PC (crash-log.jsonl in userData) and, outside
   // headless runs, a prompt when the renderer of an open document dies
@@ -10685,3 +10699,14 @@ function releaseAppResources(): void {
 // one event every such way out still emits, so no subscription CLI outlives
 // the app. A process killed outright runs nothing: the next start cleans up.
 process.on('exit', () => shutdownSubscriptionChildren())
+
+// A system print dialog left open (Windows: it outlives its job and its tab)
+// holds the browser process in its native teardown until someone closes it.
+// After the quit handlers and every 'exit' listener, end the process.
+installPrintDialogExitGuard({
+  app,
+  process,
+  pending: systemPrintDialogPending,
+  flushStorage: () => session.defaultSession.flushStorageData(),
+  terminate: () => process.kill(process.pid, 'SIGKILL'),
+})

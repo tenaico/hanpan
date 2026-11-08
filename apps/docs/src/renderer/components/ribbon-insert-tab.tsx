@@ -374,7 +374,8 @@ export function ChartInsertModal({ editor, onClose }: { editor: Editor; onClose:
           ).map(([value, label]) => (
             <button
               key={value}
-              className={kind === value ? 'btn-primary' : ''}
+              className="modal-btn"
+              aria-pressed={kind === value}
               onClick={() => setKind(value)}
             >
               {label}
@@ -419,8 +420,10 @@ export function ChartInsertModal({ editor, onClose }: { editor: Editor; onClose:
           </tbody>
         </table>
         <div className="modal-row">
-          <button onClick={addCategory}>{t('ribbonChartAddCategory')}</button>
-          <button onClick={addSeries} disabled={kind === 'pie'}>
+          <button className="modal-btn" onClick={addCategory}>
+            {t('ribbonChartAddCategory')}
+          </button>
+          <button className="modal-btn" onClick={addSeries} disabled={kind === 'pie'}>
             {t('ribbonChartAddSeries')}
           </button>
         </div>

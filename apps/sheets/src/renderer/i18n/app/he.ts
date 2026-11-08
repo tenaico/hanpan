@@ -1279,6 +1279,8 @@ export const he = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint: "אין עדיין כללים. בחרו את התאים ולחצו על 'הוסף כלל' כדי לעצב אותם לפי תנאי.",
+  appCfAddRule: 'הוסף כלל',
   appSheetBarAdd: 'New sheet',
   appSheetBarAll: 'All sheets',
   appCloseSidebar: 'Close pane',

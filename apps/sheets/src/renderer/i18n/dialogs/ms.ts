@@ -640,6 +640,12 @@ export const ms = {
   dlgPrintNextPage: 'Halaman seterusnya',
   dlgPrintZoomFit: 'Muatkan halaman',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Muatkan lebar',
+  dlgPrintColumnsSplit:
+    'Lajur "{sheets}" tidak muat dalam lebar satu halaman; lajur di sebelah kanan dicetak pada halaman seterusnya.',
+  dlgPrintPastEdge: 'Sesetengah lajur melepasi tepi kanan halaman dan akan terpotong.',
+  dlgPrintClippedText:
+    'Sebahagian teks dalam lajur paling kanan melepasi kawasan cetakan dan akan terpotong. Lebarkan lajur itu atau hidupkan Balut Teks.',
   dlgPrintButton: 'Cetak',
   dlgPrintToPdf: 'Cetak ke PDF',
   dlgPrintPageSetup: 'Persediaan Halaman…',

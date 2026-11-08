@@ -1,10 +1,13 @@
 import { HanpanTools } from './hanpan/HanpanTools'
+import { insertGonguPicture } from './hanpan/gongu-picture'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createEditor } from '@rhwp/editor'
 import type { ChromeVisibility, RhwpEditor } from '@rhwp/editor'
 import type { Params } from '@genoffice/i18n'
 import {
+  GonguPicker,
   aiPanelInitiallyOpen,
+  gonguPickerText,
   rememberAiPanelOpen,
   skillTemplateText,
   templateDocumentOf,
@@ -17,6 +20,7 @@ import { createAgentBridge } from './ai/agent-bridge'
 import {
   DIRTY_EVENT,
   FILE_COMMAND_EVENT,
+  GONGU_PICTURE_EVENT,
   OPEN_LICENSES_EVENT,
   MEMO_NOT_COPIED_EVENT,
   MEMO_REMOVED_EVENT,
@@ -24,7 +28,17 @@ import {
 import blankHwpUrl from './assets/blank.hwp?url'
 import { t as tNow, useI18n, type StringKey } from './i18n/locale'
 import { MEMO_INSERT_EVENT, memoNoticeOf, type MemoNotice } from './MemoPanel'
-import { MemoSide, MemoToggle, memoPanelInitiallyOpen, rememberMemoPanelOpen } from './MemoSide'
+import {
+  MemoSide,
+  MemoToggle,
+  clampMemoWidth,
+  loadMemoWidth,
+  memoPanelInitiallyOpen,
+  memoToggleNext,
+  rememberMemoPanelOpen,
+  sidesShown,
+  type SidePanel,
+} from './MemoSide'
 import { openDocumentsDroppedOn } from './editor-drop'
 import { hwpPresentationKeyOf } from './presentation-keys'
 import { gatherPageJob, gatherPrintJob, rasterizePage } from './print-flow'
@@ -155,6 +169,20 @@ export default function App() {
   const [aiOpen, setAiOpen] = useState(() => aiPanelInitiallyOpen(AI_OPEN_KEY))
   /** the memo column beside the document: out or not, independent of the AI dock */
   const [memoOpen, setMemoOpen] = useState(memoPanelInitiallyOpen)
+  /** the side panel opened last: on a narrow window it is the one that stays out */
+  const [lastSide, setLastSide] = useState<SidePanel>('ai')
+  const [windowWidth, setWindowWidth] = useState(() => window.innerWidth)
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+  const openAi = useCallback((open: boolean) => {
+    if (open) setLastSide('ai')
+    setAiOpen(open)
+  }, [])
+  /** the Gongu picture picker, opened from the editor's Picture choice (0.17.1 #15) */
+  const [gonguOpen, setGonguOpen] = useState(false)
   /** a memo editor is open here or in another tab: save, close and quit must wait */
   const [memoBlocked, setMemoBlocked] = useState(false)
   const memoBlockedRef = useRef(false)
@@ -534,6 +562,15 @@ export default function App() {
         print: t('filePrint'),
       })
       .catch(() => {})
+    // the Picture button and the Insert menu offer Gongu pictures as well (0.17.1 #15)
+    void agentBridge
+      .installPictureChoice({
+        fromPc: t('pictureFromPc'),
+        gongu: `${gonguPickerText(lang, 'find')}…`,
+      })
+      .catch(() => {})
+    const onGongu = () => setGonguOpen(true)
+    frame.addEventListener(GONGU_PICTURE_EVENT, onGongu)
     const onCommand = (event: Event) => {
       const command = (event as CustomEvent<unknown>).detail
       if (
@@ -552,6 +589,7 @@ export default function App() {
     // the editor's Insert > Memo menu (T4): bring the memo column out and start adding
     const onMemoInsert = () => {
       setMemoOpen(true)
+      setLastSide('memo')
       setMemoInsertTick((tick) => tick + 1)
     }
     frame.addEventListener(FILE_COMMAND_EVENT, onCommand)
@@ -563,8 +601,9 @@ export default function App() {
       frame.removeEventListener(FILE_COMMAND_EVENT, onCommand)
       frame.removeEventListener(MEMO_INSERT_EVENT, onMemoInsert)
       frame.removeEventListener(OPEN_LICENSES_EVENT, onLicenses)
+      frame.removeEventListener(GONGU_PICTURE_EVENT, onGongu)
     }
-  }, [phase, agentBridge, t])
+  }, [phase, agentBridge, t, lang])
 
   // crash-recovery copies while the document has unsaved changes; typing never waits on one
   useEffect(() => {
@@ -972,11 +1011,33 @@ export default function App() {
     [phase, filePath, lang],
   )
 
+  // the AI panel and the memo column side by side only while the editor keeps its room (#21)
+  const sides = sidesShown({
+    windowWidth,
+    aiWidth:
+      parseFloat(
+        document
+          .querySelector<HTMLElement>('.ai-dock')
+          ?.style.getPropertyValue('--ai-panel-width') ?? '',
+      ) || 360,
+    memoWidth: clampMemoWidth(loadMemoWidth(), windowWidth),
+    aiOpen,
+    memoOpen,
+    last: lastSide,
+  })
+
   return (
     <div className={`hwp-app${presenting ? ' hwp-presenting' : ''}`} data-phase={phase}>
       {phase === 'ready' && (
         <div className="hwp-topbar">
-          <MemoToggle open={memoOpen} onToggle={() => setMemoOpen((open) => !open)} />
+          <MemoToggle
+            open={sides.memo}
+            onToggle={() => {
+              const next = memoToggleNext({ memoOpen, memoShown: sides.memo })
+              if (next.open) setLastSide(next.last)
+              setMemoOpen(next.open)
+            }}
+          />
           <HanpanTools bridge={agentBridge} />
           <label className={`autosave-toggle${autoSave ? ' on' : ''}`} data-tip={t('autoSaveTip')}>
             <span className="autosave-knob" />
@@ -995,7 +1056,9 @@ export default function App() {
         {phase === 'ready' && (
           <HwpAiDock
             open={aiOpen}
-            setOpen={setAiOpen}
+            setOpen={openAi}
+            folded={aiOpen && !sides.ai}
+            onUnfold={() => setLastSide('ai')}
             bridge={agentBridge}
             filePath={filePath}
             templateDocument={templateDocument}
@@ -1003,7 +1066,7 @@ export default function App() {
         )}
         {phase === 'ready' && (
           <MemoSide
-            open={memoOpen}
+            open={sides.memo}
             bridge={agentBridge}
             changeTick={docTick}
             insertTick={memoInsertTick}
@@ -1017,6 +1080,17 @@ export default function App() {
           {phase === 'booting' && <div className="hwp-cover">{t('loading')}</div>}
           {previewJob && (
             <PrintPreview job={previewJob} onPrint={printPreviewed} onCancel={closePreview} />
+          )}
+          {gonguOpen && (
+            <GonguPicker
+              lang={lang}
+              api={window.hwpApi}
+              onInsert={(picked) => insertGonguPicture(agentBridge, picked, lang)}
+              onClose={() => {
+                setGonguOpen(false)
+                editorRef.current?.element.focus()
+              }}
+            />
           )}
           {notice && (
             <div

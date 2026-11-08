@@ -25,6 +25,10 @@ export interface AppMenuLabels extends ContextMenuLabels {
   about: string
   checkUpdates: string
   version: string
+  /** About dialog: the button that copies the product name and version */
+  copyVersion: string
+  /** About dialog: after the version number while the release is a beta */
+  beta: string
 }
 
 type Labels = Omit<AppMenuLabels, keyof ContextMenuLabels>
@@ -49,6 +53,8 @@ const EN: Labels = {
   about: 'About GenOffice',
   checkUpdates: 'Check for Updates…',
   version: 'Version',
+  copyVersion: 'Copy version info',
+  beta: 'Beta',
 }
 
 // Shared table, same rationale as context-menu.ts: one copy instead of
@@ -74,6 +80,8 @@ const LABELS: Record<string, Labels> = {
     about: '关于 GenOffice',
     checkUpdates: '检查更新…',
     version: '版本',
+    copyVersion: '复制版本信息',
+    beta: '测试版',
   },
   en: EN,
   ja: {
@@ -96,6 +104,8 @@ const LABELS: Record<string, Labels> = {
     about: 'GenOffice について',
     checkUpdates: '更新を確認…',
     version: 'バージョン',
+    copyVersion: 'バージョン情報をコピー',
+    beta: 'ベータ版',
   },
   ko: {
     window: '창',
@@ -117,6 +127,8 @@ const LABELS: Record<string, Labels> = {
     about: 'GenOffice 정보',
     checkUpdates: '업데이트 확인…',
     version: '버전',
+    copyVersion: '버전 정보 복사',
+    beta: '베타',
   },
   fr: {
     window: 'Fenêtre',
@@ -138,6 +150,8 @@ const LABELS: Record<string, Labels> = {
     about: 'À propos de GenOffice',
     checkUpdates: 'Rechercher les mises à jour…',
     version: 'Version',
+    copyVersion: 'Copier les infos de version',
+    beta: 'Bêta',
   },
   de: {
     window: 'Fenster',
@@ -159,6 +173,8 @@ const LABELS: Record<string, Labels> = {
     about: 'Über GenOffice',
     checkUpdates: 'Nach Updates suchen…',
     version: 'Version',
+    copyVersion: 'Versionsinfo kopieren',
+    beta: 'Beta',
   },
   es: {
     window: 'Ventana',
@@ -180,6 +196,8 @@ const LABELS: Record<string, Labels> = {
     about: 'Acerca de GenOffice',
     checkUpdates: 'Buscar actualizaciones…',
     version: 'Versión',
+    copyVersion: 'Copiar información de la versión',
+    beta: 'Beta',
   },
   th: {
     window: 'หน้าต่าง',
@@ -201,6 +219,8 @@ const LABELS: Record<string, Labels> = {
     about: 'เกี่ยวกับ GenOffice',
     checkUpdates: 'ตรวจหาการอัปเดต…',
     version: 'เวอร์ชัน',
+    copyVersion: 'คัดลอกข้อมูลเวอร์ชัน',
+    beta: 'เบต้า',
   },
   id: {
     window: 'Jendela',
@@ -222,6 +242,8 @@ const LABELS: Record<string, Labels> = {
     about: 'Tentang GenOffice',
     checkUpdates: 'Periksa Pembaruan…',
     version: 'Versi',
+    copyVersion: 'Salin info versi',
+    beta: 'Beta',
   },
   ru: {
     window: 'Окно',
@@ -243,6 +265,8 @@ const LABELS: Record<string, Labels> = {
     about: 'О GenOffice',
     checkUpdates: 'Проверить обновления…',
     version: 'Версия',
+    copyVersion: 'Копировать сведения о версии',
+    beta: 'Бета',
   },
   ar: {
     window: 'نافذة',
@@ -264,6 +288,8 @@ const LABELS: Record<string, Labels> = {
     about: 'حول GenOffice',
     checkUpdates: 'التحقق من التحديثات…',
     version: 'الإصدار',
+    copyVersion: 'نسخ معلومات الإصدار',
+    beta: 'تجريبي',
   },
   pt: {
     window: 'Janela',
@@ -285,6 +311,8 @@ const LABELS: Record<string, Labels> = {
     about: 'Sobre o GenOffice',
     checkUpdates: 'Procurar atualizações…',
     version: 'Versão',
+    copyVersion: 'Copiar informações da versão',
+    beta: 'Beta',
   },
   it: {
     window: 'Finestra',
@@ -306,6 +334,8 @@ const LABELS: Record<string, Labels> = {
     about: 'Informazioni su GenOffice',
     checkUpdates: 'Controlla aggiornamenti…',
     version: 'Versione',
+    copyVersion: 'Copia informazioni sulla versione',
+    beta: 'Beta',
   },
   pl: {
     window: 'Okno',
@@ -327,6 +357,8 @@ const LABELS: Record<string, Labels> = {
     about: 'O programie GenOffice',
     checkUpdates: 'Sprawdź aktualizacje…',
     version: 'Wersja',
+    copyVersion: 'Kopiuj informacje o wersji',
+    beta: 'Beta',
   },
   cs: {
     window: 'Okno',
@@ -348,6 +380,8 @@ const LABELS: Record<string, Labels> = {
     about: 'O aplikaci GenOffice',
     checkUpdates: 'Zkontrolovat aktualizace…',
     version: 'Verze',
+    copyVersion: 'Kopírovat informace o verzi',
+    beta: 'Beta',
   },
   nl: {
     window: 'Venster',
@@ -369,6 +403,8 @@ const LABELS: Record<string, Labels> = {
     about: 'Over GenOffice',
     checkUpdates: 'Controleren op updates…',
     version: 'Versie',
+    copyVersion: 'Versie-informatie kopiëren',
+    beta: 'Bèta',
   },
   ms: {
     window: 'Tetingkap',
@@ -390,6 +426,8 @@ const LABELS: Record<string, Labels> = {
     about: 'Perihal GenOffice',
     checkUpdates: 'Semak Kemas Kini…',
     version: 'Versi',
+    copyVersion: 'Salin maklumat versi',
+    beta: 'Beta',
   },
   he: {
     window: 'חלון',
@@ -411,6 +449,8 @@ const LABELS: Record<string, Labels> = {
     about: 'אודות GenOffice',
     checkUpdates: 'בדוק עדכונים…',
     version: 'גרסה',
+    copyVersion: 'העתקת פרטי הגרסה',
+    beta: 'בטא',
   },
   hi: {
     window: 'विंडो',
@@ -432,6 +472,8 @@ const LABELS: Record<string, Labels> = {
     about: 'GenOffice के बारे में',
     checkUpdates: 'अपडेट जांचें…',
     version: 'संस्करण',
+    copyVersion: 'संस्करण जानकारी कॉपी करें',
+    beta: 'बीटा',
   },
   vi: {
     window: 'Cửa sổ',
@@ -453,6 +495,8 @@ const LABELS: Record<string, Labels> = {
     about: 'Giới thiệu GenOffice',
     checkUpdates: 'Kiểm tra bản cập nhật…',
     version: 'Phiên bản',
+    copyVersion: 'Sao chép thông tin phiên bản',
+    beta: 'Beta',
   },
   'zh-TW': {
     window: '視窗',
@@ -474,6 +518,8 @@ const LABELS: Record<string, Labels> = {
     about: '關於 GenOffice',
     checkUpdates: '檢查更新…',
     version: '版本',
+    copyVersion: '複製版本資訊',
+    beta: '測試版',
   },
 }
 
@@ -604,6 +650,14 @@ export function setUpdateCheckInvoker(invoke: (() => void) | null): void {
   updateCheckInvoker = invoke
 }
 
+/** Whether this release is a beta: the shell knows (its release stage), the
+ * About dialog says so after the version as Settings › About does. */
+let aboutReleaseIsBeta = false
+
+export function setAboutReleaseIsBeta(beta: boolean): void {
+  aboutReleaseIsBeta = beta
+}
+
 /** Check for Updates…: user-triggered update check (the ☰ popup on Windows and
  * Linux, right above About in Help on macOS). The shell-injected check owns all feedback: the update
  * window when newer exists, "you're up to date (version x)" otherwise. */
@@ -628,8 +682,8 @@ export function aboutMenuItem(labels: AppMenuLabels): MenuItemConstructorOptions
         type: 'info',
         title: name,
         message: name,
-        detail: `${labels.version} ${version}`,
-        buttons: ['OK', labels.copy, ...(canCheck ? [labels.checkUpdates] : [])],
+        detail: `${labels.version} ${version}${aboutReleaseIsBeta ? ` · ${labels.beta}` : ''}`,
+        buttons: ['OK', labels.copyVersion, ...(canCheck ? [labels.checkUpdates] : [])],
         defaultId: 0,
         cancelId: 0,
       })

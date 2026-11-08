@@ -1387,6 +1387,9 @@ export const ja = {
   appCfMenuClearSelection: '選択したセルからルールをクリア',
   appCfMenuClearSheet: 'シート全体からルールをクリア',
   appCfMenuManage: 'ルールの管理…',
+  appCfEmptyHint:
+    'ルールはまだありません。セルを選択して［ルールの追加］を押すと、条件に合うセルに書式を設定できます。',
+  appCfAddRule: 'ルールの追加',
   appSheetBarAdd: '新しいシート',
   appSheetBarAll: 'すべてのシート',
   appCloseSidebar: '作業ウィンドウを閉じる',

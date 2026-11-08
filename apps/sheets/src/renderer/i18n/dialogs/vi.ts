@@ -638,6 +638,12 @@ export const vi = {
   dlgPrintNextPage: 'Trang sau',
   dlgPrintZoomFit: 'Vừa trang',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Vừa chiều rộng',
+  dlgPrintColumnsSplit:
+    'Các cột của "{sheets}" không vừa chiều rộng một trang; các cột bên phải sẽ in sang trang sau.',
+  dlgPrintPastEdge: 'Một số cột vượt quá mép phải của trang và sẽ bị cắt khi in.',
+  dlgPrintClippedText:
+    'Một phần chữ ở cột ngoài cùng bên phải vượt quá vùng in và sẽ bị cắt. Hãy nới rộng cột đó hoặc bật Ngắt dòng văn bản.',
   dlgPrintButton: 'In',
   dlgPrintToPdf: 'In ra PDF',
   dlgPrintPageSetup: 'Thiết lập trang…',

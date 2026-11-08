@@ -24,7 +24,14 @@ const GUIDE = '이곳을 마우스로 누르고 내용을 입력하세요.'
  * A small document built with the engine itself:
  *   제목 / 첫째 문단입니다. / 둘째 문단입니다. / [2×2 table: 구분 내용 대상 업체] / 끝 문단입니다.
  */
-function openEditor(options: { fields?: boolean; endsWithTable?: boolean } = {}) {
+function openEditor(
+  options: {
+    fields?: boolean
+    endsWithTable?: boolean
+    /** where the editor's caret is (its cursor position), for what works at the caret */
+    caret?: Record<string, unknown> | null
+  } = {},
+) {
   let doc = HwpDocument.createEmpty()
   doc.createBlankDocument()
   // the empty fourth paragraph is where the table goes
@@ -55,6 +62,7 @@ function openEditor(options: { fields?: boolean; endsWithTable?: boolean } = {})
   }
 
   const history: Uint8Array[] = []
+  const commands = new Map<string, (services: unknown) => void>()
   const listeners: (() => void)[] = []
   const emit = () => listeners.forEach((listener) => listener())
   const host = {
@@ -73,8 +81,29 @@ function openEditor(options: { fields?: boolean; endsWithTable?: boolean } = {})
     },
     events: { on: (_name: string, handler: () => void) => listeners.push(handler) },
     automation: {
-      // the editor's undo; other commands (the plugin's own) do nothing here
+      // the editor's undo; other commands (the plugin's own) do nothing here, except with a
+      // caret, where they run with an editor whose cursor stands there
+      ...('caret' in options
+        ? {
+            registerCommand: (command: { id: string; execute: (s: unknown) => void }) =>
+              commands.set(command.id, command.execute),
+          }
+        : {}),
       execute: (command: string) => {
+        const own = commands.get(command)
+        if (own) {
+          own({
+            getInputHandler: () => ({
+              cursor: {
+                getPosition: () => options.caret,
+                hasSelection: () => false,
+                clearSelection: () => {},
+                moveTo: () => {},
+              },
+            }),
+          })
+          return null
+        }
         if (command !== 'edit:undo') return null
         const before = history.pop()
         if (!before) return { ok: false }
@@ -736,6 +765,63 @@ describe('adding a picture', () => {
     expect(controls(editor)).toBe(objects + 1)
     expect(editor.lines()).toEqual(paragraphs)
     expect(editor.reopened()).toEqual(paragraphs)
+  })
+
+  // 0.17.1 #15: a Gongu picture picked from the toolbar goes in where the person is writing
+  it('puts it under the paragraph of the caret, with its caption, as one step', () => {
+    const caption = '「호작도」, 저작자 미상 / 출처: 공유마당(한국저작권위원회), 만료저작물'
+    const editor = openEditor({ caret: { sectionIndex: 0, paragraphIndex: 1, charOffset: 2 } })
+    const objects = controls(editor)
+    const result = editor.plugin.insertPictureAtCaret(
+      PNG.toString('base64'),
+      240,
+      1,
+      1,
+      'png',
+      caption,
+    )
+    expect(result).toMatchObject({ ok: true, inTable: false })
+    expect(editor.steps()).toBe(1)
+    expect(controls(editor)).toBe(objects + 1)
+    const lines = editor.lines()
+    // the caret's paragraph stays whole; the picture and its caption come right after it
+    expect(lines.indexOf(caption)).toBe(lines.indexOf('첫째 문단입니다.') + 1)
+    expect(result.ok && result.place.para).toBe(2)
+    // it stands in its own line like a character: a picture left floating at the paper's
+    // corner covered the text above it in the built app
+    const props = JSON.parse(editor.doc().getPictureProperties(0, 2, 0)) as {
+      treatAsChar: boolean
+      width: number
+    }
+    expect(props.treatAsChar).toBe(true)
+    // 240 pt wide on the page: 100 HWPUNIT to a point (it was twice that, 0.17.1)
+    expect(props.width).toBe(24_000)
+  })
+
+  it('puts it in the cell the caret is in', () => {
+    const editor = openEditor({
+      caret: {
+        sectionIndex: 0,
+        paragraphIndex: 3,
+        charOffset: 1,
+        parentParaIndex: 3,
+        controlIndex: 0,
+        cellIndex: 1,
+        cellParaIndex: 0,
+      },
+    })
+    const objects = controls(editor)
+    const result = editor.plugin.insertPictureAtCaret(PNG.toString('base64'), 60, 1, 1, 'png')
+    expect(result).toMatchObject({ ok: true, inTable: true })
+    expect(controls(editor)).toBe(objects + 1)
+    expect(editor.lines()).toEqual(ORIGINAL)
+  })
+
+  it('puts it at the end of the document when the caret has no place it can address', () => {
+    const editor = openEditor({ caret: null })
+    const result = editor.plugin.insertPictureAtCaret(PNG.toString('base64'), 60, 1, 1, 'png')
+    expect(result).toMatchObject({ ok: true, inTable: false })
+    expect(result.ok && result.place.para).toBe(editor.doc().getParagraphCount(0) - 1)
   })
 
   it('refuses bytes that are not the picture the extension names', () => {

@@ -1276,6 +1276,8 @@ export const zh = {
   appCfMenuClearSelection: '清除所选单元格的规则',
   appCfMenuClearSheet: '清除整个工作表的规则',
   appCfMenuManage: '管理规则…',
+  appCfEmptyHint: '还没有规则。选中单元格后点击“添加规则”，为其设置条件格式。',
+  appCfAddRule: '添加规则',
   appSheetBarAdd: '新建工作表',
   appCloseSidebar: '关闭窗格',
   appSheetBarNext: '下一个工作表',

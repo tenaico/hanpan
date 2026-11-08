@@ -29,6 +29,7 @@ import {
   IconPreview,
   IconRedo,
   IconSave,
+  IconSaveAs,
   IconSearch,
   IconSection,
   IconSigma,
@@ -324,14 +325,14 @@ export function Ribbon(p: Props) {
         </button>
         <button
           type="button"
-          className="qa-btn qa-save-as"
+          className="qa-btn"
           data-tip={t('saveAs')}
           aria-label={t('saveAs')}
           disabled={off}
           onMouseDown={(e) => e.preventDefault()}
           onClick={p.onSaveAs}
         >
-          {t('saveAs')}
+          <IconSaveAs size={16} />
         </button>
         <button
           type="button"

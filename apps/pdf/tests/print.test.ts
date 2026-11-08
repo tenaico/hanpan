@@ -63,6 +63,25 @@ describe('printPdf', () => {
     expect(render.mock.calls[0]?.[0]).toMatchObject({ annotationMode: 0 })
   })
 
+  it('sends the rendered pages to a chosen printer instead of opening the dialog (P4)', async () => {
+    const { doc } = fakeDoc(2)
+    let imgsAtSend = 0
+    const send = vi.fn(async () => {
+      imgsAtSend = document.querySelectorAll('.pdf-print-root img').length
+    })
+    await printPdf(doc, undefined, { send })
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(imgsAtSend).toBe(2)
+    expect(window.print).not.toHaveBeenCalled()
+    expect(document.querySelector('.pdf-print-root')).toBeNull()
+
+    // a printer error surfaces and still releases the pages
+    await expect(
+      printPdf(doc, undefined, { send: () => Promise.reject(new Error('Printer is offline')) }),
+    ).rejects.toThrow('Printer is offline')
+    expect(document.querySelector('.pdf-print-root')).toBeNull()
+  })
+
   it('removes the print root after the dialog closes', async () => {
     const { doc } = fakeDoc(2)
     await printPdf(doc)

@@ -1376,6 +1376,9 @@ export const pt = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint:
+    'Ainda não há regras. Selecione as células e escolha Adicionar regra para formatá-las por condição.',
+  appCfAddRule: 'Adicionar regra',
   appSheetBarAll: 'All sheets',
   appSheetBarPrev: 'Previous sheets',
   appCloseSidebar: 'Close pane',

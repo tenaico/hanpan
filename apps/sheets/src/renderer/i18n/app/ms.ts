@@ -1337,6 +1337,9 @@ export const ms = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint:
+    'Belum ada peraturan. Pilih sel, kemudian pilih Tambah Peraturan untuk memformatnya mengikut syarat.',
+  appCfAddRule: 'Tambah Peraturan',
   appSheetBarAdd: 'New sheet',
   appSheetBarAll: 'All sheets',
   appCloseSidebar: 'Close pane',

@@ -1402,6 +1402,9 @@ export const fr = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint:
+    "Aucune règle pour l'instant. Sélectionnez les cellules, puis choisissez Ajouter une règle pour les mettre en forme selon une condition.",
+  appCfAddRule: 'Ajouter une règle',
   appSheetBarAdd: 'New sheet',
   appSheetBarPrev: 'Previous sheets',
   appCloseSidebar: 'Close pane',

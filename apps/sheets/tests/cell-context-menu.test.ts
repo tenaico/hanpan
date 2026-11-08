@@ -11,9 +11,10 @@ import {
   SHELL_COMMAND_ID,
   cellContextMenuLayout,
   headerContextMenuLayout,
+  shellCommandOf,
 } from '../src/renderer/cell-context-menu'
 import { numberFormatCategories } from '../src/renderer/number-format'
-import { getLang } from '../src/renderer/i18n/locale'
+import { getLang, setModuleLang } from '../src/renderer/i18n/locale'
 
 describe('cellContextMenuLayout', () => {
   const nodes = cellContextMenuLayout()
@@ -62,16 +63,35 @@ describe('cellContextMenuLayout', () => {
     }
   })
 
-  it('Number Format ▸ lists every ribbon category plus More…, each as a format: command', () => {
+  it('Number Format ▸ lists every ribbon category plus More…, each resolved when clicked', () => {
     const children = byId(NUMBER_FORMAT_MENU_ID)?.children ?? []
-    // Currency/Accounting follow the UI language the menu was built in
     const categories = numberFormatCategories(getLang())
     expect(children).toHaveLength(categories.length + 1)
     categories.forEach((category, index) => {
       expect(children[index]?.commandId).toBe(SHELL_COMMAND_ID)
-      expect(children[index]?.params?.command).toBe(`format:${category.pattern}`)
+      expect(shellCommandOf(children[index]?.params, getLang())).toBe(`format:${category.pattern}`)
     })
     expect(children.at(-1)?.params?.command).toBe('format-cells')
+  })
+
+  it('Currency and Accounting take the symbol of the language at click time, not at build time', () => {
+    const previous = getLang()
+    setModuleLang('ko')
+    try {
+      const children =
+        cellContextMenuLayout().find((n) => n.id === NUMBER_FORMAT_MENU_ID)?.children ?? []
+      const currency = children.find((c) => c.id.endsWith('.Currency'))
+      const accounting = children.find((c) => c.id.endsWith('.Accounting'))
+      // the menu was built in Korean, then the UI switched to Vietnamese
+      const pattern = (lang: 'ko' | 'vi', label: string) =>
+        `format:${numberFormatCategories(lang).find((c) => c.label === label)?.pattern}`
+      expect(shellCommandOf(currency?.params, 'vi')).toBe(pattern('vi', 'Currency'))
+      expect(shellCommandOf(currency?.params, 'vi')).toContain('₫')
+      expect(shellCommandOf(accounting?.params, 'vi')).toBe(pattern('vi', 'Accounting'))
+      expect(shellCommandOf(currency?.params, 'ko')).toContain('₩')
+    } finally {
+      setModuleLang(previous)
+    }
   })
 
   it('dialog entries route ribbon commands through the shell sink', () => {

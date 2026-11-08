@@ -79,6 +79,33 @@ const ko: Record<keyof typeof en, string> = {
   ribbonCellMargins: '기본 셀 여백',
 }
 
+// Vietnamese: the Table Layout tab is read at 1366 px (Hanpan 0.17.1 docs #34)
+const vi: Record<keyof typeof en, string> = {
+  ribbonTableStyleOptions: 'Tùy chọn kiểu bảng',
+  ribbonTableFirstRow: 'Hàng tiêu đề',
+  ribbonTableLastRow: 'Hàng tổng',
+  ribbonTableBandedRows: 'Hàng xen kẽ',
+  ribbonTableFirstColumn: 'Cột đầu tiên',
+  ribbonTableLastColumn: 'Cột cuối cùng',
+  ribbonTableBandedColumns: 'Cột xen kẽ',
+  ribbonTablePresetGrid: 'Lưới đơn giản',
+  ribbonTablePresetBlueHeader: 'Tiêu đề xanh dương',
+  ribbonTablePresetBlueBanded: 'Sọc xanh dương',
+  ribbonTablePresetGrayBanded: 'Sọc xám',
+  ribbonTablePresetGreenHeader: 'Tiêu đề xanh lá',
+  ribbonAutoFit: 'Tự khớp',
+  ribbonAutoFitContents: 'Tự khớp theo nội dung',
+  ribbonAutoFitWindow: 'Tự khớp theo cửa sổ',
+  ribbonFixedColumnWidth: 'Độ rộng cột cố định',
+  ribbonRepeatHeaderRows: 'Lặp lại hàng tiêu đề',
+  ribbonTableProperties: 'Thuộc tính bảng',
+  ribbonTableData: 'Bảng',
+  ribbonHorizontalPosition: 'Vị trí ngang',
+  ribbonVerticalPosition: 'Vị trí dọc',
+  ribbonDistanceFromText: 'Khoảng cách tới văn bản',
+  ribbonCellMargins: 'Lề ô mặc định',
+}
+
 /**
  * New table controls deliberately fall back to English until each locale has
  * reviewed terminology. Keeping one complete key set prevents partially
@@ -105,5 +132,5 @@ export const tableStrings = defineStrings({
   he: en,
   hi: en,
   'zh-TW': en,
-  vi: en,
+  vi,
 })

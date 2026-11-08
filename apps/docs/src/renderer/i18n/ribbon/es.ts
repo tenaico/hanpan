@@ -558,7 +558,7 @@ export const es = {
   ribbonMarginOutside: 'Exterior',
   ribbonMarginLastCustom: 'Última configuración personalizada',
   ribbonMarginCustom: 'Márgenes personalizados…',
-  ribbonMarginDialogTitle: 'Márgenes de página personalizados',
+  ribbonMarginDialogTitle: 'Configurar página',
   ribbonMarginTop: 'Superior',
   ribbonMarginBottom: 'Inferior',
   ribbonMarginLeft: 'Izquierdo',

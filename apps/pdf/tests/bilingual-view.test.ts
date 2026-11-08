@@ -40,6 +40,7 @@ import {
   pendingUnits,
   regionCssBox,
   shouldAskToCollapse,
+  collapseAskStillFits,
   toggleBilingual,
   toggleSpread,
 } from '../src/renderer/bilingual/model'
@@ -383,6 +384,15 @@ describe('bilingual view rules', () => {
         collapsed: false,
       }),
     ).toBe(false)
+  })
+
+  // P5: opening the view on a narrow window folds the AI panel right after
+  // the first measure, so the page area widens again; the question asked a
+  // moment earlier then no longer applies
+  it('takes the fold question back once the page area is wide again', () => {
+    expect(collapseAskStillFits(BILINGUAL_NARROW_PAGE_PX - 1)).toBe(true)
+    expect(collapseAskStillFits(BILINGUAL_NARROW_PAGE_PX)).toBe(false)
+    expect(collapseAskStillFits(900)).toBe(false)
   })
 })
 

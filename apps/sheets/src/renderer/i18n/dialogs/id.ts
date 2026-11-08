@@ -641,6 +641,12 @@ export const id = {
   dlgPrintNextPage: 'Halaman berikutnya',
   dlgPrintZoomFit: 'Paskan halaman',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Paskan lebar',
+  dlgPrintColumnsSplit:
+    'Kolom "{sheets}" tidak muat dalam lebar satu halaman; kolom di sebelah kanan dicetak di halaman berikutnya.',
+  dlgPrintPastEdge: 'Beberapa kolom melewati tepi kanan halaman dan akan terpotong.',
+  dlgPrintClippedText:
+    'Sebagian teks di kolom paling kanan melewati area cetak dan akan terpotong. Lebarkan kolom itu atau aktifkan Bungkus Teks.',
   dlgPrintButton: 'Cetak',
   dlgPrintToPdf: 'Cetak ke PDF',
   dlgPrintPageSetup: 'Penyetelan Halaman…',

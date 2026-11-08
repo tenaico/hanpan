@@ -1689,6 +1689,18 @@ export function IconSave(props: IconProps) {
   )
 }
 
+/** Save As: the Save disk with a pen over its lower right corner */
+export function IconSaveAs(props: IconProps) {
+  return (
+    <SvgRatio {...props}>
+      <path d="M11 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v3" />
+      <path d="M7 21v-8h5" />
+      <path d="M7 3v5h8V3" />
+      <path d="M19.5 13.5l2 2L15 22h-2v-2z" />
+    </SvgRatio>
+  )
+}
+
 export function IconUndo(props: IconProps) {
   return (
     <SvgRatio {...props}>

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { type SectionSettings, type TextboxDisplay } from '@genoffice/docx-engine'
 import { WRAP_OPTIONS } from './ContextMenu'
-import { MarginDialog, marginsFitPage, type PageMargins } from './MarginDialog'
+import { MarginDialog, marginsFitPage, type PageMargins, type PageSetup } from './MarginDialog'
 import { LengthInput } from './LengthInput'
 import { PaperSizeDialog } from './PaperSizeDialog'
 import { insertColumnBreak, insertTextWrappingBreak } from '../editor/page-break'
@@ -190,11 +190,19 @@ export function LayoutTab({
   const marginCaption = (m: PageMargins & { mirror?: true }) =>
     `${t('ribbonMarginTop')} ${format(m.top)} · ${t('ribbonMarginBottom')} ${format(m.bottom)} · ${t(m.mirror ? 'ribbonMarginInside' : 'ribbonMarginLeft')} ${format(m.left)} · ${t(m.mirror ? 'ribbonMarginOutside' : 'ribbonMarginRight')} ${format(m.right)}`
 
-  const applyMargins = (m: PageMargins, mirror?: boolean) => {
-    if (!section || !marginsFitPage(m, section.pageWidth, section.pageHeight)) return
+  const applyMargins = (m: PageMargins, mirror?: boolean, page?: PageSetup) => {
+    const target = page ?? section
+    if (!section || !target || !marginsFitPage(m, target.pageWidth, target.pageHeight)) return
     // a user-set value is an ordinary margin, not the file's header-proof fixed one
     onSection({
       ...section,
+      ...(page
+        ? {
+            pageWidth: page.pageWidth,
+            pageHeight: page.pageHeight,
+            orientation: page.orientation,
+          }
+        : {}),
       marginTop: m.top,
       marginRight: m.right,
       marginBottom: m.bottom,
@@ -720,8 +728,9 @@ export function LayoutTab({
           mirrorOff={odtOff}
           pageWidth={section.pageWidth}
           pageHeight={section.pageHeight}
-          onApply={(m, mirror) => {
-            applyMargins(m, mirror)
+          orientation={section.orientation}
+          onApply={(m, mirror, page) => {
+            applyMargins(m, mirror, page)
             localStorage.setItem(LAST_CUSTOM_MARGINS_KEY, JSON.stringify(m))
           }}
           onClose={() => setMarginDialog(false)}

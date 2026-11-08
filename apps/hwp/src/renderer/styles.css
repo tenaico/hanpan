@@ -524,4 +524,7 @@ body {
   --hwp-preview-paper-shadow: 0 2px 8px rgb(0 0 0 / 35%);
   background: var(--hwp-preview-paper);
   box-shadow: var(--hwp-preview-paper-shadow);
+  /* its own layer: on the opaque desk Windows smooths the page's black text with LCD
+     subpixels, and a stem like 계's shows as a red line beside it (0.17 review #30) */
+  will-change: transform;
 }

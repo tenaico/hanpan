@@ -138,6 +138,8 @@ export const APP_CHANNELS = {
   languageChanged: 'app:language-changed',
   getTheme: 'app:get-theme',
   themeChanged: 'app:theme-changed',
+  getDocumentTheme: 'app:get-document-theme',
+  documentThemeChanged: 'app:document-theme-changed',
   getAutoSaveDefault: 'app:get-auto-save-default',
   autoSaveDefaultChanged: 'app:auto-save-default-changed',
   getAiPanelPrefs: 'app:get-ai-panel-prefs',
@@ -171,6 +173,9 @@ export const AI_CHANNELS = {
 } as const
 
 export type UiTheme = 'light' | 'dark' | 'system'
+
+/** Settings › Document page theme: a light or dark page, or the app's theme */
+export type DocTheme = 'follow' | 'light' | 'dark'
 
 /** shell-wide AutoSave default; updatedAt is 0 until the user has ever set it */
 export interface AutoSaveDefault {
@@ -437,6 +442,8 @@ export interface MindmapCoreApi {
   onLanguageChanged(handler: (lang: Lang) => void): () => void
   getTheme(): Promise<UiTheme>
   onThemeChanged(handler: (theme: UiTheme) => void): () => void
+  getDocumentTheme(): Promise<DocTheme>
+  onDocumentThemeChanged(handler: (theme: DocTheme) => void): () => void
   getAutoSaveDefault(): Promise<AutoSaveDefault>
   onAutoSaveDefaultChanged(handler: (value: AutoSaveDefault) => void): () => void
   /** press on the shell chrome (the tab strip is another view): dismiss open popovers */

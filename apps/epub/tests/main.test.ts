@@ -8,7 +8,7 @@
  */
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 type Handler = (event: unknown, ...args: unknown[]) => unknown
@@ -319,6 +319,15 @@ describe('editing and saving', () => {
     expect(contents.sent.at(-1)).toEqual([EPUB_CHANNELS.saveRequest, 'save'])
     await save(contents, { mode: 'save' })
     expect(await pending).toBe(true)
+  })
+
+  it('the close prompt names the book (closing the window walks several dirty tabs)', async () => {
+    const { contents } = await openBook()
+    call(EPUB_CHANNELS.dirtyChanged, contents, true)
+    showMessageBox.mockResolvedValueOnce({ response: 2 })
+    expect(await requestEpubClose(contents as never)).toBe(false)
+    const options = showMessageBox.mock.calls[0]!.at(-1) as { message: string }
+    expect(options.message).toContain(basename(epubFilePath(contents.id)!))
   })
 
   it("the renderer's unsent edits count for the close prompt", async () => {

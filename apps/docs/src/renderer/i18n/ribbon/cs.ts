@@ -554,7 +554,7 @@ export const cs = {
   ribbonMarginOutside: 'Vnější',
   ribbonMarginLastCustom: 'Poslední vlastní nastavení',
   ribbonMarginCustom: 'Vlastní okraje…',
-  ribbonMarginDialogTitle: 'Vlastní okraje stránky',
+  ribbonMarginDialogTitle: 'Vzhled stránky',
   ribbonMarginTop: 'Nahoře',
   ribbonMarginBottom: 'Dole',
   ribbonMarginLeft: 'Vlevo',

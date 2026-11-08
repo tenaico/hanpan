@@ -83,6 +83,9 @@ const PASTE_OFFSET_PTS = 12
 const DETECT_FIELD_CAP = 300
 /** Raster width (CSS px) of the page drawn in the print dialog's preview */
 const PRINT_PREVIEW_W = 120
+/** Print dialog printer choices besides a named printer: the default one, or the system dialog */
+const DEFAULT_PRINTER = ''
+const SYSTEM_PRINT_DIALOG = '\u0000system-dialog'
 
 /** Field names still taken once pending widget removals are applied (a fully removed field frees its name) */
 function liveFieldNames(
@@ -289,6 +292,7 @@ import type {
   PageImageRef,
   PdfConvertFormat,
   PdfConvertOutputRequest,
+  PdfPrinterInfo,
   PdfReflowFormat,
   PdfSignatureInfo,
   StaticFormFillRecord,
@@ -1243,6 +1247,11 @@ export default function App() {
   const [printInput, setPrintInput] = useState('')
   const [printInvalid, setPrintInvalid] = useState(false)
   const [printAnnots, setPrintAnnots] = useState(true)
+  // Printer and copies, as in the Excel print dialog (P4): '' = default printer
+  const [printers, setPrinters] = useState<PdfPrinterInfo[]>([])
+  const [printDevice, setPrintDevice] = useState(DEFAULT_PRINTER)
+  const [printCopies, setPrintCopies] = useState(1)
+  const [printCollate, setPrintCollate] = useState(true)
   /** Save As flow: the shell picked the target, the reader still chooses what happens to annotations */
   const [saveCopyDlg, setSaveCopyDlg] = useState<{ targetPath: string } | null>(null)
   const [saveCopyMode, setSaveCopyMode] = useState<'keep' | 'flatten' | 'strip'>('keep')
@@ -7109,6 +7118,10 @@ export default function App() {
     setPrintInput(String(printCurrentPage))
     setPrintInvalid(false)
     setPrintDlg(true)
+    void window.pdfApi
+      .listPrinters()
+      .then(setPrinters)
+      .catch(() => setPrinters([]))
   }
 
   /** Print: save first (markups/forms/page ops all into the file), then reload from the file to render, avoiding a destroyed old doc */
@@ -7118,6 +7131,19 @@ export default function App() {
   // `pages` are 1-based file pages; the flush compacts the file to the visible
   // order first, so visible page v prints as file page v.
   const printDoc = async (pages?: number[], includeAnnotations = printAnnots) => {
+    // a printer picked in the dialog prints without the system dialog
+    const device = printDevice === SYSTEM_PRINT_DIALOG ? null : printDevice
+    const send =
+      device === null
+        ? undefined
+        : async () => {
+            const result = await window.pdfApi.printToDevice({
+              deviceName: device,
+              copies: printCopies,
+              collate: printCollate,
+            })
+            if (!result.ok && !('canceled' in result)) throw new Error(result.error)
+          }
     if (printBusyRef.current) return
     printBusyRef.current = true
     try {
@@ -7127,7 +7153,7 @@ export default function App() {
           const data = await window.pdfApi.readFile(filePath)
           const pdoc = await getDocument({ data: new Uint8Array(data), ...DOC_OPTS }).promise
           try {
-            await printPdf(pdoc, pages, { includeAnnotations })
+            await printPdf(pdoc, pages, { includeAnnotations, ...(send ? { send } : {}) })
           } finally {
             void pdoc.loadingTask.destroy()
           }
@@ -12306,11 +12332,54 @@ export default function App() {
                       </div>
                       <div className="pdf-print-preview-text">
                         {target && <strong>{t('printSummary', { pages: target.count })}</strong>}
-                        <span>{t('printNextStepHint')}</span>
+                        {printDevice === SYSTEM_PRINT_DIALOG && (
+                          <span>{t('printNextStepHint')}</span>
+                        )}
                       </div>
                     </div>
                   )
                 })()}
+                <div className="pdf-print-device">
+                  <label className="pdf-print-field">
+                    <span>{t('printPrinter')}</span>
+                    <select
+                      className="pdf-modal-input"
+                      value={printDevice}
+                      onChange={(e) => setPrintDevice(e.target.value)}
+                    >
+                      <option value={DEFAULT_PRINTER}>{t('printDefaultPrinter')}</option>
+                      {printers.map((printer) => (
+                        <option key={printer.name} value={printer.name}>
+                          {printer.displayName}
+                        </option>
+                      ))}
+                      <option value={SYSTEM_PRINT_DIALOG}>{t('printSystemDialog')}</option>
+                    </select>
+                  </label>
+                  <label className="pdf-print-field pdf-print-copies">
+                    <span>{t('printCopies')}</span>
+                    <input
+                      className="pdf-modal-input"
+                      type="number"
+                      min={1}
+                      max={999}
+                      value={printCopies}
+                      disabled={printDevice === SYSTEM_PRINT_DIALOG}
+                      onChange={(e) =>
+                        setPrintCopies(Math.min(999, Math.max(1, Number(e.target.value) || 1)))
+                      }
+                    />
+                  </label>
+                  <label className="pdf-modal-row pdf-print-collate">
+                    <input
+                      type="checkbox"
+                      checked={printCollate}
+                      disabled={printDevice === SYSTEM_PRINT_DIALOG}
+                      onChange={(e) => setPrintCollate(e.target.checked)}
+                    />
+                    <span>{t('printCollate')}</span>
+                  </label>
+                </div>
                 <label className="pdf-modal-row">
                   <input
                     type="radio"

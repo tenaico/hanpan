@@ -13,6 +13,7 @@ export const id = {
   fileExportDocx: 'Ekspor sebagai Dokumen Word…',
   fileExportPng: 'Ekspor sebagai Gambar (Semua Halaman)…',
   fileExportPngPage: 'Ekspor Halaman Ini sebagai Gambar…',
+  pictureFromPc: 'Dari PC ini…',
   previewTitle: 'Pratinjau Cetak',
   previewPages: '{count} halaman',
   previewPrint: 'Cetak',

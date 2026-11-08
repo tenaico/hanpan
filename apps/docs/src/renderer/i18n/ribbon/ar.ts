@@ -554,7 +554,7 @@ export const ar = {
   ribbonMarginOutside: 'خارجي',
   ribbonMarginLastCustom: 'آخر إعداد مخصص',
   ribbonMarginCustom: 'هوامش مخصصة…',
-  ribbonMarginDialogTitle: 'هوامش الصفحة المخصصة',
+  ribbonMarginDialogTitle: 'إعداد الصفحة',
   ribbonMarginTop: 'أعلى',
   ribbonMarginBottom: 'أسفل',
   ribbonMarginLeft: 'يسار',

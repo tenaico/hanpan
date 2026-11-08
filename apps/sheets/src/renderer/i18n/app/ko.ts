@@ -1358,6 +1358,9 @@ export const ko = {
   appCfMenuClearSelection: '선택한 셀의 규칙 지우기',
   appCfMenuClearSheet: '시트 전체의 규칙 지우기',
   appCfMenuManage: '규칙 관리…',
+  appCfEmptyHint:
+    "아직 규칙이 없습니다. 셀을 고른 뒤 '규칙 추가'를 누르면 조건에 맞는 셀에 서식을 입힙니다.",
+  appCfAddRule: '규칙 추가',
   appSheetBarAdd: '시트 추가',
   appSheetBarAll: '모든 시트',
   appSheetBarPrev: '이전 시트',

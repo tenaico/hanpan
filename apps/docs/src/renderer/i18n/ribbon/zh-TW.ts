@@ -548,7 +548,7 @@ export const zhTW = {
   ribbonMarginOutside: '外側',
   ribbonMarginLastCustom: '上次的自訂設定',
   ribbonMarginCustom: '自訂邊界…',
-  ribbonMarginDialogTitle: '自訂頁面邊界',
+  ribbonMarginDialogTitle: '版面設定',
   ribbonMarginTop: '上',
   ribbonMarginBottom: '下',
   ribbonMarginLeft: '左',

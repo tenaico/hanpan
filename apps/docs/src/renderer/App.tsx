@@ -147,6 +147,7 @@ import { HeaderFooterArea } from './components/HeaderFooterArea'
 import { PageFootnotes, PageEndnotes } from './components/PageNoteAreas'
 import { noteMarkText, type NoteKind } from './note-format'
 import { PaginationPreview } from './components/PaginationPreview'
+import { QuickSaveButtons } from './components/quick-save-buttons'
 import { paraPaginationMeta, tableWidowOff } from './editor/para-flags'
 import { PrintDialog } from './components/PrintDialog'
 import {
@@ -298,7 +299,6 @@ import {
   IconPrintLayout,
   IconReadMode,
   IconRedo,
-  IconSave,
   IconUndo,
   IconWebLayout,
 } from './components/icons'
@@ -7119,15 +7119,12 @@ export function App() {
   const quickActions = useMemo(
     () => (
       <>
-        <button
-          className="qa-btn"
-          data-tip={t('appSaveShortcutTip')}
-          aria-label={t('appSaveShortcutTip')}
-          disabled={!hasDoc || !hasUnsavedChanges}
-          onClick={() => void save(false)}
-        >
-          <IconSave size={16} />
-        </button>
+        <QuickSaveButtons
+          hasDoc={hasDoc}
+          dirty={hasUnsavedChanges}
+          onSave={() => void save(false)}
+          onSaveAs={() => void save(true)}
+        />
         <button
           className="qa-btn"
           data-tip={t('appUndo')}

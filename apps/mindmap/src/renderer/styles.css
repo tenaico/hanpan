@@ -3,6 +3,7 @@
  * Every colour here is a token from @genoffice/ui (tokens.css) and follows the
  * app's light or dark setting. The map inside the card is document content
  * and has its own colours (map/look.ts, map.css); it does not follow the app.
+ * Only its view on screen may be darkened (the dark view, further down).
  */
 
 :root {
@@ -795,6 +796,69 @@ html.genoffice-popover-open .ribbon-tabs {
   color: var(--text-primary);
   background: var(--surface);
   border: 1px solid var(--border);
+}
+
+/*
+ * ---- the dark view of a light map (0.17 review v2 slides-mindmap #37) ----
+ *
+ * Settings › Document page theme dark, or "follow" in a dark app: a map on a
+ * light ground is shown through an inverting filter, as the PDF editor's
+ * night reading shows its pages. Only the screen changes. The map's colours
+ * stay what the file says (map.css and map/ are untouched), and the picture,
+ * the PDF, the print and the preview picture are made from a copy
+ * (`.mm-export`) that this does not reach. A map whose theme is already dark
+ * is shown as it is.
+ *
+ * The filter undoes itself, so what must keep its own colours inside the map
+ * (pictures, the app's menu and tips, the fold handles) gets it once more.
+ * The selection is an outline of the topic and cannot be turned back: it is
+ * drawn in the light accent, which the filter turns into the dark one.
+ */
+:root[data-doc-theme='dark']
+  .mm-card:not(.mm-export)
+  > .mm-sheet-host
+  > .map-container:not([data-mm-variant='dark']),
+:root[data-theme='dark']:not([data-doc-theme='light'])
+  .mm-card:not(.mm-export)
+  > .mm-sheet-host
+  > .map-container:not([data-mm-variant='dark']) {
+  --accent: #6b4fbb;
+  --accent-soft: rgba(107, 79, 187, 0.12);
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-doc-theme='light'])
+    .mm-card:not(.mm-export)
+    > .mm-sheet-host
+    > .map-container:not([data-mm-variant='dark']) {
+    --accent: #6b4fbb;
+    --accent-soft: rgba(107, 79, 187, 0.12);
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+:root[data-doc-theme='dark']
+  .mm-card:not(.mm-export)
+  > .mm-sheet-host
+  > .map-container:not([data-mm-variant='dark'])
+  :is(img, .context-menu, .tips, me-epd),
+:root[data-theme='dark']:not([data-doc-theme='light'])
+  .mm-card:not(.mm-export)
+  > .mm-sheet-host
+  > .map-container:not([data-mm-variant='dark'])
+  :is(img, .context-menu, .tips, me-epd) {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-doc-theme='light'])
+    .mm-card:not(.mm-export)
+    > .mm-sheet-host
+    > .map-container:not([data-mm-variant='dark'])
+    :is(img, .context-menu, .tips, me-epd) {
+    filter: invert(1) hue-rotate(180deg);
+  }
 }
 
 /* ---- the theme panel beside the map ---- */

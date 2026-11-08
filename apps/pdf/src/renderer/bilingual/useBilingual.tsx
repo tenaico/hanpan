@@ -38,6 +38,7 @@ import {
   pagePointToTree,
   regionCssBox,
   shouldAskToCollapse,
+  collapseAskStillFits,
   type BilingualCounts,
 } from './model'
 import {
@@ -134,6 +135,9 @@ export function useBilingual(o: UseBilingualOptions): BilingualView {
       if (shouldAskToCollapse({ pageAreaWidth, asked: askedRef.current, collapsed })) {
         askedRef.current = true
         setAskCollapse(true)
+      } else if (!collapseAskStillFits(pageAreaWidth)) {
+        // the AI panel folded (or the window grew): the question no longer applies
+        setAskCollapse(false)
       }
     }
     check()
