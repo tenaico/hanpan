@@ -1326,6 +1326,9 @@ export const vi = {
   appCfMenuClearSelection: 'Xóa quy tắc khỏi ô đã chọn',
   appCfMenuClearSheet: 'Xóa quy tắc khỏi toàn bộ trang tính',
   appCfMenuManage: 'Quản lý quy tắc…',
+  appCfEmptyHint:
+    "Chưa có quy tắc. Chọn ô rồi bấm 'Thêm quy tắc' để định dạng các ô thỏa điều kiện.",
+  appCfAddRule: 'Thêm quy tắc',
   appSheetBarAdd: 'Thêm trang tính',
   appCloseSidebar: 'Đóng ngăn',
   appSheetBarNext: 'Trang tính sau',

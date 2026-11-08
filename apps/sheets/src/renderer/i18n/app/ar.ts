@@ -1302,6 +1302,8 @@ export const ar = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint: 'لا توجد قواعد بعد. حدّد الخلايا ثم اختر «إضافة قاعدة» لتنسيقها وفق شرط.',
+  appCfAddRule: 'إضافة قاعدة',
   appSheetBarAdd: 'New sheet',
   appSheetBarAll: 'All sheets',
   appSheetBarPrev: 'Previous sheets',

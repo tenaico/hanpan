@@ -1372,6 +1372,9 @@ export const nl = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint:
+    'Nog geen regels. Selecteer de cellen en kies Regel toevoegen om ze op voorwaarde op te maken.',
+  appCfAddRule: 'Regel toevoegen',
   appSheetBarAdd: 'New sheet',
   appSheetBarAll: 'All sheets',
   appCloseSidebar: 'Close pane',

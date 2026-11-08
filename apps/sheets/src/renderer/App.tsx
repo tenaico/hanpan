@@ -115,7 +115,7 @@ import {
 } from '@univerjs/core'
 import { FormulaExecutedStateType } from '@univerjs/engine-formula'
 import { FindReplaceController, IFindReplaceService } from '@univerjs/find-replace'
-import { ILayoutService, ISidebarService } from '@univerjs/ui'
+import { ILayoutService, IMenuManagerService, ISidebarService } from '@univerjs/ui'
 import { UniverSheetsConditionalFormattingPreset } from '@univerjs/preset-sheets-conditional-formatting'
 import UniverPresetSheetsConditionalFormattingEnUS from '@univerjs/preset-sheets-conditional-formatting/locales/en-US'
 import '@univerjs/preset-sheets-conditional-formatting/lib/index.css'
@@ -385,6 +385,8 @@ import { installCtrlDragFill } from './ctrl-drag-fill'
 import { installContextSubmenuReopenFix } from './context-submenu-reopen-fix'
 import { installMenuInputEnter } from './menu-input-enter'
 import { installCellContextMenu } from './cell-context-menu'
+import { hideUniverSheetTabMenu } from './univer-sheet-tab-menu'
+import { installCfPanelAssist } from './cf-panel-assist'
 import { installClipboardAnchorTile } from './clipboard-anchor-tile'
 import { installSelectionWrapGuard } from './selection-wrap-fix'
 import { sharedFormulaResolverFor } from './shared-formula-journal'
@@ -2300,6 +2302,11 @@ export function App({
     // width) runs the row's action instead of only committing the number.
     installMenuInputEnter(runtime)
     const cellContextMenuDisposable = installCellContextMenu(runtime)
+    // Our sheet tab menu is the only one (X12): empty Univer's hidden copy.
+    hideUniverSheetTabMenu(runtime.univer.__getInjector().get(IMenuManagerService))
+    // Numeric selections start a new conditional format at Greater than, and
+    // an empty rule list says how to add one (X7).
+    const cfPanelAssist = installCfPanelAssist(runtime, document, (key) => t(key))
     // Pasting into an anchor-shaped target (rows a multiple, columns
     // narrower than the copy — or vice versa) repeats like Excel.
     installClipboardAnchorTile(runtime)
@@ -3675,6 +3682,7 @@ export function App({
       contextSubmenuReopenDisposable.dispose()
       multiRowAutofitDisposable.dispose()
       cellContextMenuDisposable.dispose()
+      cfPanelAssist.dispose()
       formatPainterDisposable.dispose()
       cfFormulaFoldDisposable.dispose()
       cfDisplayKeyDisposable.dispose()

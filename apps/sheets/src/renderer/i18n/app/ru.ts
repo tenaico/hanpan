@@ -1356,6 +1356,9 @@ export const ru = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint:
+    'Правил пока нет. Выделите ячейки и нажмите «Добавить правило», чтобы форматировать их по условию.',
+  appCfAddRule: 'Добавить правило',
   appSheetBarPrev: 'Previous sheets',
   appCloseSidebar: 'Close pane',
   appSheetBarNext: 'Next sheets',

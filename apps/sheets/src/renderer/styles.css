@@ -7530,3 +7530,33 @@ body:has(.note-pictures-pane) .threaded-comments-pane {
 [data-range-selector] > div:has(> .univer-gap-x-2 .univer-truncate.univer-cursor-pointer) {
   display: none !important;
 }
+
+/* Conditional formatting: what to do on an empty rule list (X7). */
+.cf-empty-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cf-empty-hint p {
+  margin: 0;
+}
+
+.cf-empty-hint button {
+  min-height: 30px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-medium);
+  padding: 4px 12px;
+  color: var(--sheets-on-accent);
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.cf-empty-hint button:hover {
+  background: var(--accent-dark);
+}
