@@ -128,6 +128,7 @@ import {
   csvToXlsxBufferForOpen,
   decodeCsvBuffer,
   sheetCsvToXlsxBuffer,
+  sheetNameFromFileStem,
 } from '@genoffice/xlsx-gateway/gateway/csv-import'
 import {
   abortMediaCalls,
@@ -5445,7 +5446,8 @@ async function prepareWorkbookForOpen(
         }
         const converted = await csvToXlsxBufferForOpen(
           decodeCsvBuffer(await readFile(path), legacyCsvCharset()),
-          undefined,
+          // Excel names a CSV's sheet after the file (X19)
+          sheetNameFromFileStem(basename(path).replace(/\.[^.]+$/, '')),
           copyExtension === 'tsv' ? '\t' : undefined,
           getUiLang(),
         )
@@ -5490,7 +5492,8 @@ async function prepareWorkbookForOpen(
       if (csvStat.size > MAX_DELIMITED_IMPORT_BYTES) throw new Error(tm('errFileTooLarge'))
       const converted = await csvToXlsxBufferForOpen(
         decodeCsvBuffer(await readFile(path), legacyCsvCharset()),
-        undefined,
+        // Excel names a CSV's sheet after the file (X19)
+        sheetNameFromFileStem(stem),
         // A .tsv's delimiter is declared by its extension, and sniffing by
         // frequency can get it wrong: annotation-heavy exports (gene
         // descriptions, database cross-references) hold comma-separated
