@@ -39,8 +39,29 @@ const FONT_RULES: Array<[RegExp, string]> = [
   [/.*/, 'Arial'],
 ]
 
+/** Windows' own Korean faces, which keep their English names as before. */
+const WINDOWS_KOREAN_FACE = /^(맑은 고딕|바탕|바탕체)$/
+
+/**
+ * The first family of a CSS font-family list when it is named in Hangul (함초롬바탕,
+ * 함초롬돋움, HY헤드라인M, 나눔명조…): a Hangul (HWP) document's font goes to Word under its
+ * own name. Mapping it to Batang/Malgun put Times New Roman or Arial on its digits and Latin
+ * text, and that is the name Word then shows.
+ */
+function hangulFace(fontFamily = ''): string | null {
+  const first = String(fontFamily)
+    .split(',')[0]
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .trim()
+  if (!first || !HANGUL_RE.test(first) || WINDOWS_KOREAN_FACE.test(first)) return null
+  return first
+}
+
 function mapFont(fontFamily = '', mono = false, text = '') {
   if (mono) return 'Consolas'
+  const kept = hangulFace(fontFamily)
+  if (kept) return kept
   let font = 'Arial'
   for (const [pattern, name] of FONT_RULES) {
     if (pattern.test(fontFamily)) {
@@ -68,6 +89,9 @@ const CJK_SERIF = new Set(['SimSun', 'Batang', 'Yu Mincho'])
  *  Latin with a CJK font's half-width glyphs (the SimSun monospace look). */
 function runFont(fontFamily = '', mono = false, text = '') {
   const font = mapFont(fontFamily, mono, text)
+  // a Hangul face carries its own Latin and digits (the way Hangul draws them): every slot
+  if (!mono && font === hangulFace(fontFamily))
+    return { ascii: font, hAnsi: font, eastAsia: font, cs: font }
   if (CJK_SANS.has(font)) return { ascii: 'Arial', hAnsi: 'Arial', cs: 'Arial', eastAsia: font }
   if (CJK_SERIF.has(font))
     return {
@@ -79,4 +103,4 @@ function runFont(fontFamily = '', mono = false, text = '') {
   return font
 }
 
-export { CJK_RE, HANGUL_RE, KANA_RE, FONT_RULES, mapFont, runFont }
+export { CJK_RE, HANGUL_RE, KANA_RE, FONT_RULES, hangulFace, mapFont, runFont }

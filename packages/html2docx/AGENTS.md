@@ -28,6 +28,7 @@ HTML 문서를 Word 문서로 바꾼다. 실제 Chromium에 페이지를 띄워 
 - 표는 고정 레이아웃으로 쓰고 그리드 열 폭과 셀 폭을 둘 다 적는다. Word의 자동 맞춤이 글자 길이로 열을 다시 나누지 못하게 하려는 것이다. 같은 이유로 브라우저에서 잰 값을 그대로 써서 Word의 기본 문단 여백과 자동 조정을 누른다.
 - 페이지 여백은 고정값이 아니라 `body`의 실제 여백에서 온다(`docsettings` 노드).
 - 생성 계층(`src/generate/`)은 타입 없는 CommonJS에서 옮겨 온 코드라 `strict: false`다. 타입은 로직을 바꾸지 않고 파일 단위로 조인다.
+- 글꼴은 `src/generate/fonts.ts`의 표로 Word 글꼴에 맞춘다. 예외는 이름이 한글인 글꼴(함초롬바탕·함초롬돋움·HY헤드라인M 등, 한글 문서를 Word로 내보낼 때 온다)이다. 그 이름 그대로 네 칸(ascii·hAnsi·eastAsia·cs)에 모두 쓰고, 기호(○ □ → 등) 조각도 Arial Unicode MS로 바꾸지 않는다. 영문 칸을 Times New Roman·Arial로 바꾸면 숫자와 영문이 원본과 다른 글꼴로 나오고 Word 글꼴 칸에도 그 이름이 보였다(0.17 점검 #9). 그 글꼴이 없는 PC에서는 Word가 대체한다. Windows 기본 글꼴인 맑은 고딕·바탕은 전처럼 영문 이름으로 바꾼다. 한중일 문서는 문서 기본 문단에 `w:autoSpaceDN`을 끈다: 브라우저와 한글에는 없는, 숫자와 한글 사이 간격("2 학기")을 Word가 넣기 때문이다.
 - `.js?raw` import는 Vite가 풀어 준다. `tools/cli.ts`가 Vite의 SSR 로더를 거쳐 실행되는 이유다.
 
 ## 테스트
