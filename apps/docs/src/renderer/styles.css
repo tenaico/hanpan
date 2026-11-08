@@ -1956,7 +1956,13 @@ html.genoffice-popover-open .ribbon-tabs {
   font-family: 'Cambria Math', 'STIX Two Math', serif;
   font-size: 15px;
   max-width: 100%;
-  overflow-x: hidden;
+  /* overflow-x alone made each thumbnail a vertical scroll box (▲▼ arrows on
+     Windows); a wide formula is zoomed to fit by EquationGallery instead */
+  overflow: hidden;
+}
+
+.equation-gallery-formula {
+  display: inline-block;
 }
 
 .equation-gallery-custom {
@@ -9904,6 +9910,8 @@ body.docs-crop-active
 }
 
 /* Modal footer buttons: secondary = bg-subtle, primary = black (#232425) */
+/* .modal-btn: the same button inside a dialog's body (chart type, + series) */
+.modal-btn,
 .modal-actions button {
   display: inline-flex;
   align-items: center;
@@ -9920,26 +9928,31 @@ body.docs-crop-active
   transition: all var(--transition-fast);
 }
 
+.modal-btn:hover:not(:disabled),
 .modal-actions button:hover:not(:disabled) {
   background: var(--color-bg-subtle);
   color: var(--color-text-primary);
 }
 
+.modal-btn:active:not(:disabled),
 .modal-actions button:active:not(:disabled) {
   filter: brightness(0.88);
   transform: scale(0.98);
 }
 
+.modal-btn:focus-visible,
 .modal-actions button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--docs-focus-ring);
 }
 
+.modal-btn:disabled,
 .modal-actions button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
+.modal-btn[aria-pressed='true'],
 .modal-actions button.primary,
 .modal-actions .btn-primary {
   border-color: var(--color-btn-primary);
@@ -9947,6 +9960,7 @@ body.docs-crop-active
   color: var(--color-btn-primary-text);
 }
 
+.modal-btn[aria-pressed='true']:hover:not(:disabled),
 .modal-actions button.primary:hover:not(:disabled),
 .modal-actions .btn-primary:hover:not(:disabled) {
   border-color: var(--color-btn-primary-hover);
