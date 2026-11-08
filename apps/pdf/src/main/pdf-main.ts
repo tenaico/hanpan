@@ -150,6 +150,7 @@ const tDlg = createI18n({
     filterCertificate: '证书文件 (.p12, .pfx)',
     filterPdf: 'PDF 文档',
     closeUnsavedMsg: '此 PDF 有未保存的更改。',
+    closeUnsavedNamedMsg: '“{name}”有未保存的更改。',
     closeUnsavedDetail: '关闭前是否保存？',
     btnSave: '保存',
     btnDontSave: '不保存',
@@ -171,6 +172,7 @@ const tDlg = createI18n({
     filterCertificate: 'Certificate Files (.p12, .pfx)',
     filterPdf: 'PDF Documents',
     closeUnsavedMsg: 'This PDF has unsaved changes.',
+    closeUnsavedNamedMsg: '“{name}” has unsaved changes.',
     closeUnsavedDetail: 'Do you want to save them before closing?',
     btnSave: 'Save',
     btnDontSave: "Don't Save",
@@ -192,6 +194,7 @@ const tDlg = createI18n({
     filterCertificate: 'Tệp chứng chỉ (.p12, .pfx)',
     filterPdf: 'Tài liệu PDF',
     closeUnsavedMsg: 'Tệp PDF này có những thay đổi chưa được lưu.',
+    closeUnsavedNamedMsg: '“{name}” có những thay đổi chưa được lưu.',
     closeUnsavedDetail: 'Bạn có muốn lưu các thay đổi trước khi đóng không?',
     btnSave: 'Lưu',
     btnDontSave: 'Không lưu',
@@ -213,6 +216,7 @@ const tDlg = createI18n({
     filterCertificate: '証明書ファイル (.p12, .pfx)',
     filterPdf: 'PDF ドキュメント',
     closeUnsavedMsg: 'この PDF に未保存の変更があります。',
+    closeUnsavedNamedMsg: '「{name}」に未保存の変更があります。',
     closeUnsavedDetail: '閉じる前に保存しますか？',
     btnSave: '保存',
     btnDontSave: '保存しない',
@@ -234,6 +238,7 @@ const tDlg = createI18n({
     filterCertificate: '인증서 파일 (.p12, .pfx)',
     filterPdf: 'PDF 문서',
     closeUnsavedMsg: '이 PDF에 저장하지 않은 변경 사항이 있습니다.',
+    closeUnsavedNamedMsg: '‘{name}’에 저장하지 않은 변경 사항이 있습니다.',
     closeUnsavedDetail: '닫기 전에 저장하시겠습니까?',
     btnSave: '저장',
     btnDontSave: '저장 안 함',
@@ -255,6 +260,7 @@ const tDlg = createI18n({
     filterCertificate: 'Fichiers de certificat (.p12, .pfx)',
     filterPdf: 'Documents PDF',
     closeUnsavedMsg: 'Ce PDF contient des modifications non enregistrées.',
+    closeUnsavedNamedMsg: '« {name} » contient des modifications non enregistrées.',
     closeUnsavedDetail: 'Voulez-vous les enregistrer avant de fermer ?',
     btnSave: 'Enregistrer',
     btnDontSave: 'Ne pas enregistrer',
@@ -276,6 +282,7 @@ const tDlg = createI18n({
     filterCertificate: 'Zertifikatdateien (.p12, .pfx)',
     filterPdf: 'PDF-Dokumente',
     closeUnsavedMsg: 'Dieses PDF enthält ungespeicherte Änderungen.',
+    closeUnsavedNamedMsg: '„{name}“ enthält ungespeicherte Änderungen.',
     closeUnsavedDetail: 'Vor dem Schließen speichern?',
     btnSave: 'Speichern',
     btnDontSave: 'Nicht speichern',
@@ -297,6 +304,7 @@ const tDlg = createI18n({
     filterCertificate: 'Archivos de certificado (.p12, .pfx)',
     filterPdf: 'Documentos PDF',
     closeUnsavedMsg: 'Este PDF tiene cambios sin guardar.',
+    closeUnsavedNamedMsg: '«{name}» tiene cambios sin guardar.',
     closeUnsavedDetail: '¿Quieres guardarlos antes de cerrar?',
     btnSave: 'Guardar',
     btnDontSave: 'No guardar',
@@ -318,6 +326,7 @@ const tDlg = createI18n({
     filterCertificate: 'ไฟล์ใบรับรอง (.p12, .pfx)',
     filterPdf: 'เอกสาร PDF',
     closeUnsavedMsg: 'PDF นี้มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
+    closeUnsavedNamedMsg: '“{name}” มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
     closeUnsavedDetail: 'ต้องการบันทึกก่อนปิดหรือไม่?',
     btnSave: 'บันทึก',
     btnDontSave: 'ไม่บันทึก',
@@ -339,6 +348,7 @@ const tDlg = createI18n({
     filterCertificate: 'Berkas Sertifikat (.p12, .pfx)',
     filterPdf: 'Dokumen PDF',
     closeUnsavedMsg: 'PDF ini memiliki perubahan yang belum disimpan.',
+    closeUnsavedNamedMsg: '“{name}” memiliki perubahan yang belum disimpan.',
     closeUnsavedDetail: 'Simpan sebelum menutup?',
     btnSave: 'Simpan',
     btnDontSave: 'Jangan Simpan',
@@ -360,6 +370,7 @@ const tDlg = createI18n({
     filterCertificate: 'Файлы сертификатов (.p12, .pfx)',
     filterPdf: 'Документы PDF',
     closeUnsavedMsg: 'В этом PDF есть несохранённые изменения.',
+    closeUnsavedNamedMsg: 'В «{name}» есть несохранённые изменения.',
     closeUnsavedDetail: 'Сохранить их перед закрытием?',
     btnSave: 'Сохранить',
     btnDontSave: 'Не сохранять',
@@ -381,6 +392,7 @@ const tDlg = createI18n({
     filterCertificate: 'ملفات الشهادات (.p12, .pfx)',
     filterPdf: 'مستندات PDF',
     closeUnsavedMsg: 'يحتوي هذا الـ PDF على تغييرات غير محفوظة.',
+    closeUnsavedNamedMsg: 'يحتوي ”{name}“ على تغييرات غير محفوظة.',
     closeUnsavedDetail: 'هل تريد حفظها قبل الإغلاق؟',
     btnSave: 'حفظ',
     btnDontSave: 'عدم الحفظ',
@@ -402,6 +414,7 @@ const tDlg = createI18n({
     filterCertificate: 'Arquivos de certificado (.p12, .pfx)',
     filterPdf: 'Documentos PDF',
     closeUnsavedMsg: 'Este PDF tem alterações não salvas.',
+    closeUnsavedNamedMsg: '“{name}” tem alterações não salvas.',
     closeUnsavedDetail: 'Deseja salvá-las antes de fechar?',
     btnSave: 'Salvar',
     btnDontSave: 'Não Salvar',
@@ -423,6 +436,7 @@ const tDlg = createI18n({
     filterCertificate: 'File di certificato (.p12, .pfx)',
     filterPdf: 'Documenti PDF',
     closeUnsavedMsg: 'Questo PDF contiene modifiche non salvate.',
+    closeUnsavedNamedMsg: '“{name}” contiene modifiche non salvate.',
     closeUnsavedDetail: 'Vuoi salvarle prima di chiudere?',
     btnSave: 'Salva',
     btnDontSave: 'Non salvare',
@@ -444,6 +458,7 @@ const tDlg = createI18n({
     filterCertificate: 'Pliki certyfikatów (.p12, .pfx)',
     filterPdf: 'Dokumenty PDF',
     closeUnsavedMsg: 'Ten PDF ma niezapisane zmiany.',
+    closeUnsavedNamedMsg: '„{name}” zawiera niezapisane zmiany.',
     closeUnsavedDetail: 'Czy zapisać je przed zamknięciem?',
     btnSave: 'Zapisz',
     btnDontSave: 'Nie zapisuj',
@@ -465,6 +480,7 @@ const tDlg = createI18n({
     filterCertificate: 'Soubory certifikátů (.p12, .pfx)',
     filterPdf: 'Dokumenty PDF',
     closeUnsavedMsg: 'Tento PDF obsahuje neuložené změny.',
+    closeUnsavedNamedMsg: '„{name}“ obsahuje neuložené změny.',
     closeUnsavedDetail: 'Chcete je před zavřením uložit?',
     btnSave: 'Uložit',
     btnDontSave: 'Neukládat',
@@ -486,6 +502,7 @@ const tDlg = createI18n({
     filterCertificate: 'Certificaatbestanden (.p12, .pfx)',
     filterPdf: 'PDF-documenten',
     closeUnsavedMsg: 'Deze PDF bevat niet-opgeslagen wijzigingen.',
+    closeUnsavedNamedMsg: '“{name}” bevat niet-opgeslagen wijzigingen.',
     closeUnsavedDetail: 'Wilt u ze opslaan voordat u sluit?',
     btnSave: 'Opslaan',
     btnDontSave: 'Niet opslaan',
@@ -507,6 +524,7 @@ const tDlg = createI18n({
     filterCertificate: 'Fail Sijil (.p12, .pfx)',
     filterPdf: 'Dokumen PDF',
     closeUnsavedMsg: 'PDF ini mempunyai perubahan yang belum disimpan.',
+    closeUnsavedNamedMsg: '“{name}” mempunyai perubahan yang belum disimpan.',
     closeUnsavedDetail: 'Simpan sebelum menutup?',
     btnSave: 'Simpan',
     btnDontSave: 'Jangan Simpan',
@@ -528,6 +546,7 @@ const tDlg = createI18n({
     filterCertificate: 'קובצי אישורים (.p12, .pfx)',
     filterPdf: 'מסמכי PDF',
     closeUnsavedMsg: 'ב-PDF הזה יש שינויים שלא נשמרו.',
+    closeUnsavedNamedMsg: 'ב„{name}” יש שינויים שלא נשמרו.',
     closeUnsavedDetail: 'האם לשמור אותם לפני הסגירה?',
     btnSave: 'שמירה',
     btnDontSave: 'אל תשמור',
@@ -549,6 +568,7 @@ const tDlg = createI18n({
     filterCertificate: 'प्रमाणपत्र फ़ाइलें (.p12, .pfx)',
     filterPdf: 'PDF दस्तावेज़',
     closeUnsavedMsg: 'इस PDF में सहेजे नहीं गए परिवर्तन हैं।',
+    closeUnsavedNamedMsg: '“{name}” में सहेजे नहीं गए परिवर्तन हैं।',
     closeUnsavedDetail: 'क्या बंद करने से पहले उन्हें सहेजना चाहते हैं?',
     btnSave: 'सहेजें',
     btnDontSave: 'न सहेजें',
@@ -570,6 +590,7 @@ const tDlg = createI18n({
     filterCertificate: '憑證檔案 (.p12, .pfx)',
     filterPdf: 'PDF 文件',
     closeUnsavedMsg: '此 PDF 有未儲存的變更。',
+    closeUnsavedNamedMsg: '「{name}」有未儲存的變更。',
     closeUnsavedDetail: '關閉前是否儲存？',
     btnSave: '儲存',
     btnDontSave: '不儲存',
@@ -614,11 +635,12 @@ type DlgKey =
   | 'filterCertificate'
   | 'filterPdf'
   | 'closeUnsavedMsg'
+  | 'closeUnsavedNamedMsg'
   | 'closeUnsavedDetail'
   | 'btnSave'
   | 'btnDontSave'
   | 'btnCancel'
-const tm = (key: DlgKey) => tDlg(getUiLang(), key)
+const tm = (key: DlgKey, params?: Record<string, string | number>) => tDlg(getUiLang(), key, params)
 
 interface RuntimePaths {
   preloadPath: string
@@ -1230,9 +1252,12 @@ export async function requestPdfClose(
   parent?: BrowserWindow | null,
 ): Promise<boolean> {
   if (!dirtyByWc.has(contents.id) || contents.isDestroyed()) return true
+  // name the document: closing the window asks once per dirty tab, and "this
+  // document" alone does not say which one is asking
+  const fileName = basename(openPathByWc.get(contents.id) ?? '')
   const options = {
     type: 'warning' as const,
-    message: tm('closeUnsavedMsg'),
+    message: fileName ? tm('closeUnsavedNamedMsg', { name: fileName }) : tm('closeUnsavedMsg'),
     detail: tm('closeUnsavedDetail'),
     buttons: [tm('btnSave'), tm('btnDontSave'), tm('btnCancel')],
     defaultId: 0,
