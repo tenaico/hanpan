@@ -25,7 +25,29 @@ function createRenderContext(docSettings: any = {}, options: any = {}) {
     Math.round(pageDim(docSettings.pageSizePx?.height, DEFAULT_PAGE_HEIGHT_PX) * 15),
   )
   const viewportW = finiteOr(docSettings.viewportWidthPx, 0)
-  const baseScale = viewportW > 0 ? Math.min(1, pageWidthDxa / 15 / viewportW) : 1
+  // Optional paper margin floor for flowed pages (a composed page keeps its
+  // exact geometry): the body then shrinks into the narrower column instead
+  // of the caller widening the page.
+  const floorPx =
+    !docSettings.composed && Number.isFinite(options.minPageMarginPx) && options.minPageMarginPx > 0
+      ? options.minPageMarginPx
+      : 0
+  const floorScale = (scale: number): number => {
+    if (!floorPx) return scale
+    const paperW = pageWidthDxa / 15
+    const left = marginPx(marginsPx.left)
+    const right = marginPx(marginsPx.right)
+    const bodyW = (viewportW > 0 ? viewportW : paperW) - left - right
+    if (!(bodyW > 0)) return scale
+    // each floored side is a fixed paper width, the rest scales with the body
+    let s = scale
+    for (let i = 0; i < 4; i += 1) {
+      const room = paperW - Math.max(left * s, floorPx) - Math.max(right * s, floorPx)
+      s = Math.min(scale, Math.max(0.05, room / bodyW))
+    }
+    return s
+  }
+  const baseScale = floorScale(viewportW > 0 ? Math.min(1, pageWidthDxa / 15 / viewportW) : 1)
   // Extractor-provided whole-document squeeze for flow docs slightly taller
   // than one page: shrinks geometry and fonts together a few percent so a
   // two-line tail does not strand on its own page.
@@ -37,11 +59,12 @@ function createRenderContext(docSettings: any = {}, options: any = {}) {
   // part of the original font size while still fitting the page.
   const fontScale = Math.min(1, baseScale * 1.04) * squeeze
   const pxToTwips = (px) => Math.round(finiteOr(px, 0) * 15 * measurementScale)
+  const floorTwips = (twips: number): number => Math.max(twips, Math.round(floorPx * 15))
   const pageMargins = {
-    top: pxToTwips(marginPx(marginsPx.top)),
-    bottom: pxToTwips(marginPx(marginsPx.bottom)),
-    left: pxToTwips(marginPx(marginsPx.left)),
-    right: pxToTwips(marginPx(marginsPx.right)),
+    top: floorTwips(pxToTwips(marginPx(marginsPx.top))),
+    bottom: floorTwips(pxToTwips(marginPx(marginsPx.bottom))),
+    left: floorTwips(pxToTwips(marginPx(marginsPx.left))),
+    right: floorTwips(pxToTwips(marginPx(marginsPx.right))),
     header: docSettings.composed ? 0 : undefined,
     footer: docSettings.composed ? 0 : undefined,
   }
