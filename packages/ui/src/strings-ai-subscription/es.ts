@@ -32,6 +32,8 @@ export const es = {
   actionDismiss: 'Cerrar',
   actionSwitchAccount: 'Iniciar sesión con otra cuenta',
   actionLogout: 'Cerrar sesión',
+  desktopAppNote:
+    'Este PC tiene la aplicación de escritorio de {provider}, pero esta aplicación se conecta mediante el programa de terminal {provider} (CLI). Instala también ese programa; la aplicación de escritorio no basta.',
   installNote:
     'El comando de instalación oficial de {vendor} se ejecuta en una nueva ventana de terminal.',
   loginNote: 'La página de inicio de sesión que se abre es la de {vendor}.',

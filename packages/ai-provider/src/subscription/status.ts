@@ -30,6 +30,7 @@ import {
   type SubscriptionStatusErrorKind,
 } from './contract'
 import {
+  claudeDesktopAppInstalled,
   locateSubscriptionProgram,
   subscriptionProviderLabel,
   type SubscriptionLocator,
@@ -78,6 +79,8 @@ export interface SubscriptionDetection {
   loginKind?: string
   /** the e-mail address of the signed-in account, for display only; never stored */
   account?: string
+  /** Claude Code `not-installed` only: the Claude desktop app is installed, whose own copy this app does not use */
+  desktopApp?: boolean
 }
 
 /**
@@ -98,6 +101,8 @@ export interface SubscriptionDetectOptions {
   run?: SubscriptionRunner | undefined
   /** overrides the source set with `setCodexAccountSource`; null turns it off */
   codexAccount?: CodexAccountSource | null | undefined
+  /** overrides `claudeDesktopAppInstalled`, for tests */
+  desktopApp?: (() => Promise<boolean>) | undefined
 }
 
 export type SubscriptionDetector = (
@@ -411,7 +416,15 @@ async function inspect(
   } catch (error) {
     return errorDetection(provider, 'failed', `Could not look for ${name}${errorCodeSuffix(error)}`)
   }
-  if (!program) return { provider, state: 'not-installed' }
+  if (!program) {
+    if (provider === 'claude-code') {
+      const desktopApp = await (options.desktopApp ?? claudeDesktopAppInstalled)().catch(
+        () => false,
+      )
+      if (desktopApp) return { provider, state: 'not-installed', desktopApp: true }
+    }
+    return { provider, state: 'not-installed' }
+  }
 
   const run = options.run ?? runSubscriptionProgram
   const ask = (args: string[]): Promise<SubscriptionCommandResult> =>

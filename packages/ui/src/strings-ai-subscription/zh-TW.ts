@@ -31,6 +31,8 @@ export const zhTW = {
   actionDismiss: '關閉',
   actionSwitchAccount: '使用其他帳戶登入',
   actionLogout: '登出',
+  desktopAppNote:
+    '這台電腦上有 {provider} 桌面應用程式，但本應用程式透過終端機中使用的 {provider} 程式（CLI）連線。除了桌面應用程式，還需要另外安裝該程式。',
   installNote: '將在新的終端機視窗中執行 {vendor} 的官方安裝指令。',
   loginNote: '開啟的登入頁面由 {vendor} 提供。',
   signingInBrowserNote: '請在開啟的瀏覽器中登入你的 {vendor} 帳戶並允許存取。完成後會自動連線。',

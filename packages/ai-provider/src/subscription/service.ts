@@ -159,6 +159,11 @@ function toStatus(
     meteredAccepted: accepted,
     ...(detection.state === 'error' && detection.error ? { error: detection.error } : {}),
     ...(programPath ? { programPath } : {}),
+    ...(detection.provider === 'claude-code' &&
+    detection.state === 'not-installed' &&
+    detection.desktopApp === true
+      ? { desktopApp: true }
+      : {}),
   }
 }
 

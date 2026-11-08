@@ -643,6 +643,43 @@ export async function locateSubscriptionProgram(
   return null
 }
 
+/** The Claude desktop app's Microsoft Store package family name. */
+const CLAUDE_STORE_PACKAGE = 'Claude_pzs8sxrjxfjjc'
+
+/**
+ * Whether the Claude desktop app is installed. The app carries its own copy of
+ * Claude Code, which this app does not start (it is the desktop app's private
+ * copy, not an install of the CLI), so a PC with only the desktop app reads as
+ * `not-installed` and the card says why. Only directory names are looked at:
+ * nothing inside the app's folders is opened, and its data folders (sign-in
+ * included) are never read.
+ */
+export async function claudeDesktopAppInstalled(
+  options: Pick<SubscriptionLocateOptions, 'env' | 'platform' | 'applicationDirs'> = {},
+): Promise<boolean> {
+  const platform = options.platform ?? process.platform
+  const env = options.env ?? process.env
+  if (platform === 'win32') {
+    const localAppData = env.LOCALAPPDATA ?? env.LocalAppData
+    if (!localAppData) return false
+    // the Squirrel installer's folder
+    if (await isDirectory(join(localAppData, 'AnthropicClaude'))) return true
+    // the Microsoft Store (MSIX) package's per-user folder: its name is fixed by the
+    // package identity, so it is checked by name rather than by listing the folder
+    return isDirectory(join(localAppData, 'Packages', CLAUDE_STORE_PACKAGE))
+  }
+  if (platform === 'darwin') {
+    const dirs = options.applicationDirs ?? [
+      '/Applications',
+      join(homeOf(env, platform), 'Applications'),
+    ]
+    for (const dir of dirs) {
+      if (await isDirectory(join(dir, 'Claude.app'))) return true
+    }
+  }
+  return false
+}
+
 const PROVIDER_LABELS: Record<AiSubscriptionProviderId, string> = {
   'claude-code': 'Claude Code',
   codex: 'Codex',

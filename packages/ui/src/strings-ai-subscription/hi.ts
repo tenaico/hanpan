@@ -32,6 +32,8 @@ export const hi = {
   actionDismiss: 'बंद करें',
   actionSwitchAccount: 'किसी दूसरे खाते से साइन इन करें',
   actionLogout: 'साइन आउट करें',
+  desktopAppNote:
+    'इस पीसी में {provider} डेस्कटॉप ऐप है, लेकिन यह ऐप टर्मिनल में चलने वाले {provider} प्रोग्राम (CLI) से कनेक्ट होता है। वह प्रोग्राम भी इंस्टॉल करें; डेस्कटॉप ऐप काफ़ी नहीं है।',
   installNote: '{vendor} का आधिकारिक इंस्टॉल कमांड एक नई टर्मिनल विंडो में चलेगा।',
   loginNote: 'जो साइन-इन पेज खुलेगा वह {vendor} का अपना है।',
   signingInBrowserNote:

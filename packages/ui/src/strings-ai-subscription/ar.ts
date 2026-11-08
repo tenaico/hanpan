@@ -31,6 +31,8 @@ export const ar = {
   actionDismiss: 'إغلاق',
   actionSwitchAccount: 'تسجيل الدخول بحساب آخر',
   actionLogout: 'تسجيل الخروج',
+  desktopAppNote:
+    'يوجد تطبيق {provider} لسطح المكتب على هذا الكمبيوتر، لكن هذا التطبيق يتصل عبر برنامج {provider} الذي يعمل في الطرفية (CLI). ثبّت ذلك البرنامج أيضًا، فتطبيق سطح المكتب لا يكفي.',
   installNote: 'سيُنفَّذ أمر التثبيت الرسمي من {vendor} في نافذة طرفية جديدة.',
   loginNote: 'صفحة تسجيل الدخول التي ستُفتح تابعة لشركة {vendor}.',
   signingInBrowserNote:

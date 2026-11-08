@@ -29,6 +29,8 @@ export const zh = {
   actionDismiss: '关闭',
   actionSwitchAccount: '使用其他账户登录',
   actionLogout: '退出登录',
+  desktopAppNote:
+    '这台电脑上有 {provider} 桌面应用，但本应用通过终端中使用的 {provider} 程序（CLI）连接。除桌面应用外，还需要另外安装该程序。',
   installNote: '将在新的终端窗口中运行 {vendor} 的官方安装命令。',
   loginNote: '打开的登录页面由 {vendor} 提供。',
   signingInBrowserNote: '请在打开的浏览器中登录你的 {vendor} 账户并允许访问。完成后会自动连接。',

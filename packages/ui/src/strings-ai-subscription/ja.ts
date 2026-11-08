@@ -33,6 +33,8 @@ export const ja = {
   actionDismiss: '閉じる',
   actionSwitchAccount: '別のアカウントでログイン',
   actionLogout: 'ログアウト',
+  desktopAppNote:
+    'この PC には {provider} のデスクトップアプリがありますが、このアプリはターミナルで使う {provider} のプログラム（CLI）で接続します。デスクトップアプリとは別に、そのプログラムをインストールしてください。',
   installNote: '{vendor} の公式インストールコマンドが新しいターミナルウィンドウで実行されます。',
   loginNote: '開くログイン画面は {vendor} のものです。',
   signingInBrowserNote:

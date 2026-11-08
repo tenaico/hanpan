@@ -31,6 +31,8 @@ export const ko = {
   actionDismiss: '닫기',
   actionSwitchAccount: '다른 계정으로 로그인',
   actionLogout: '로그아웃',
+  desktopAppNote:
+    '이 PC에는 {provider} 데스크톱 앱이 있지만, 이 앱은 터미널에서 쓰는 {provider} 프로그램(CLI)으로 연결합니다. 데스크톱 앱과 따로, 그 프로그램을 설치해야 합니다.',
   installNote: '{vendor}의 공식 설치 명령이 새 터미널 창에서 실행됩니다.',
   loginNote: '열리는 로그인 화면은 {vendor}의 것입니다.',
   signingInBrowserNote:

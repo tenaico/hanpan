@@ -31,6 +31,8 @@ export const en = {
   actionDismiss: 'Dismiss',
   actionSwitchAccount: 'Sign in with another account',
   actionLogout: 'Sign out',
+  desktopAppNote:
+    'This PC has the {provider} desktop app, but this app connects through the {provider} terminal program (CLI). Install that program as well; the desktop app does not count.',
   installNote: "{vendor}'s official install command runs in a new terminal window.",
   loginNote: "The sign-in page that opens is {vendor}'s own.",
   signingInBrowserNote:

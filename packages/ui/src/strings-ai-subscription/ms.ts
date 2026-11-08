@@ -33,6 +33,8 @@ export const ms = {
   actionDismiss: 'Tutup',
   actionSwitchAccount: 'Log masuk dengan akaun lain',
   actionLogout: 'Log keluar',
+  desktopAppNote:
+    'PC ini mempunyai aplikasi desktop {provider}, tetapi aplikasi ini menyambung melalui program terminal {provider} (CLI). Pasang juga program itu; aplikasi desktop sahaja tidak mencukupi.',
   installNote: 'Arahan pemasangan rasmi {vendor} dijalankan dalam tetingkap terminal baharu.',
   loginNote: 'Halaman log masuk yang dibuka ialah milik {vendor}.',
   signingInBrowserNote:

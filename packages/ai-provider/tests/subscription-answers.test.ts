@@ -4,6 +4,8 @@
  * or as a plain failure, never as a connection.
  */
 import { describe, expect, it } from 'vitest'
+import { defaultAiSettings } from '../src/providers'
+import { createSubscriptionStatusService } from '../src/subscription'
 import * as browser from '../src/browser'
 import * as root from '../src/index'
 import {
@@ -98,6 +100,43 @@ describe('subscriptionStatusMapOf', () => {
     }
     expect(read({ state: 'error', error: 'failed: spawn', programPath: windows })).toBeUndefined()
     expect(read({ state: 'ready', programPath: windows })).toBeUndefined()
+  })
+
+  it('passes the desktop-app flag on a Claude not-installed status alone, as a literal true', () => {
+    const read = (provider: 'claude-code' | 'codex', fields: Record<string, unknown>): unknown =>
+      subscriptionStatusMapOf({ [provider]: { provider, meteredAccepted: false, ...fields } })[
+        provider
+      ].desktopApp
+    expect(read('claude-code', { state: 'not-installed', desktopApp: true })).toBe(true)
+    for (const desktopApp of ['true', 1, {}, null, false]) {
+      expect(read('claude-code', { state: 'not-installed', desktopApp })).toBeUndefined()
+    }
+    expect(read('claude-code', { state: 'signed-out', desktopApp: true })).toBeUndefined()
+    expect(read('codex', { state: 'not-installed', desktopApp: true })).toBeUndefined()
+  })
+
+  it('the status service keeps the desktop-app flag for Claude not-installed alone', async () => {
+    const service = createSubscriptionStatusService({
+      getSettings: () => defaultAiSettings(),
+      setMeteredAccepted: () => undefined,
+      acceptanceStore: { read: async () => ({}), write: async () => undefined },
+      detect: async (provider) =>
+        provider === 'chatgpt'
+          ? { provider, state: 'signed-out' }
+          : { provider, state: 'not-installed', desktopApp: true },
+    })
+    const checked = await service.check()
+    expect(checked['claude-code']).toEqual({
+      provider: 'claude-code',
+      state: 'not-installed',
+      meteredAccepted: false,
+      desktopApp: true,
+    })
+    expect(checked.codex).toEqual({
+      provider: 'codex',
+      state: 'not-installed',
+      meteredAccepted: false,
+    })
   })
 
   it('reads an entry with an unknown or missing state as checking', () => {

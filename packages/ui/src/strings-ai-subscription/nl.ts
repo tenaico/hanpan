@@ -33,6 +33,8 @@ export const nl = {
   actionDismiss: 'Sluiten',
   actionSwitchAccount: 'Aanmelden met een ander account',
   actionLogout: 'Afmelden',
+  desktopAppNote:
+    'Op deze pc staat de desktop-app van {provider}, maar deze app maakt verbinding via het terminalprogramma {provider} (CLI). Installeer ook dat programma; de desktop-app is niet genoeg.',
   installNote:
     'De officiële installatieopdracht van {vendor} wordt uitgevoerd in een nieuw terminalvenster.',
   loginNote: 'De aanmeldpagina die wordt geopend is van {vendor} zelf.',

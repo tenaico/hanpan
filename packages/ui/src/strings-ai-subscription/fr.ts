@@ -34,6 +34,8 @@ export const fr = {
   actionDismiss: 'Fermer',
   actionSwitchAccount: 'Se connecter avec un autre compte',
   actionLogout: 'Se déconnecter',
+  desktopAppNote:
+    "Ce PC dispose de l'application de bureau {provider}, mais cette application se connecte via le programme en ligne de commande {provider} (CLI). Installez aussi ce programme ; l'application de bureau ne suffit pas.",
   installNote:
     'La commande d’installation officielle de {vendor} s’exécute dans une nouvelle fenêtre de terminal.',
   loginNote: 'La page de connexion qui s’ouvre est celle de {vendor}.',

@@ -32,6 +32,8 @@ export const pt = {
   actionDismiss: 'Fechar',
   actionSwitchAccount: 'Entrar com outra conta',
   actionLogout: 'Sair',
+  desktopAppNote:
+    'Este PC tem o aplicativo de desktop do {provider}, mas este aplicativo se conecta pelo programa de terminal {provider} (CLI). Instale também esse programa; o aplicativo de desktop não basta.',
   installNote:
     'O comando oficial de instalação da {vendor} é executado em uma nova janela de terminal.',
   loginNote: 'A página de login que se abre é da própria {vendor}.',

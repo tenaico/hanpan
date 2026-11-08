@@ -136,6 +136,14 @@ describe('aiSubscriptionCardView', () => {
     })
   })
 
+  it('not-installed with only the Claude desktop app: says its copy is not used, then the install', () => {
+    const view = aiSubscriptionCardView(
+      status('claude-code', 'not-installed', { desktopApp: true }),
+    )
+    expect(view.noteKeys).toEqual(['desktopAppNote', 'installNote', 'installReturnNote'])
+    expect(view.actions).toEqual(['install', 'install-help'])
+  })
+
   it('signed-out: login button, and the way to the window for a code', () => {
     const view = aiSubscriptionCardView(status('claude-code', 'signed-out'))
     expect(view.statusKey).toBe('cardSignedOut')
@@ -467,6 +475,15 @@ describe('aiSubscriptionCardView', () => {
         actions: ['install-help'],
         links: ['install-help'],
       })
+    })
+
+    it('not-installed with only the Claude desktop app: the note, and the official instructions', () => {
+      const view = aiSubscriptionCardView(
+        status('claude-code', 'not-installed', { desktopApp: true }),
+        noWindows,
+      )
+      expect(view.noteKeys).toEqual(['desktopAppNote'])
+      expect(view.actions).toEqual(['install-help'])
     })
 
     it('a browser sign-in under way: where to sign in, with no window to open', () => {

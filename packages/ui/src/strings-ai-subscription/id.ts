@@ -31,6 +31,8 @@ export const id = {
   actionDismiss: 'Tutup',
   actionSwitchAccount: 'Masuk dengan akun lain',
   actionLogout: 'Keluar',
+  desktopAppNote:
+    'PC ini memiliki aplikasi desktop {provider}, tetapi aplikasi ini terhubung melalui program terminal {provider} (CLI). Pasang juga program itu; aplikasi desktop saja tidak cukup.',
   installNote: 'Perintah pemasangan resmi dari {vendor} dijalankan di jendela terminal baru.',
   loginNote: 'Halaman masuk yang terbuka adalah milik {vendor}.',
   signingInBrowserNote:

@@ -220,7 +220,12 @@ export function aiSubscriptionCardView(
   if (status.signingIn) return signingInCardView(status, terminalWindows, options)
   const view = connectionCardView(status, terminalWindows)
   if (status.state === 'not-installed' && !terminalWindows) {
-    return { ...view, noteKeys: [], actions: ['install-help'], links: ['install-help'] }
+    return {
+      ...view,
+      noteKeys: status.desktopApp === true ? ['desktopAppNote'] : [],
+      actions: ['install-help'],
+      links: ['install-help'],
+    }
   }
   if (view.detailKey && subscriptionStatusErrorKind(status) === 'needs-update') {
     // the copy a Linux terminal under WSL updates is not the one Windows runs;
@@ -385,7 +390,11 @@ function connectionCardParts(
         ...base,
         tone: 'neutral',
         statusKey: 'cardNotInstalled',
-        noteKeys: ['installNote', 'installReturnNote'],
+        // the Claude desktop app's own copy is not used: say so before the install note
+        noteKeys:
+          status.desktopApp === true
+            ? ['desktopAppNote', 'installNote', 'installReturnNote']
+            : ['installNote', 'installReturnNote'],
         actions: ['install', 'install-help'],
       }
     case 'signed-out': {

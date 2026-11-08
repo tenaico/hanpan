@@ -99,8 +99,41 @@ describe('the six states (spec 4.1)', () => {
     const detection = await detectSubscriptionLogin('claude-code', {
       locate: missing,
       run: fakeCli({}).run,
+      desktopApp: async () => false,
     })
     expect(detection).toEqual({ provider: 'claude-code', state: 'not-installed' })
+  })
+
+  it('not-installed: the Claude desktop app alone is still not-installed, and says so', async () => {
+    const { run, calls } = fakeCli({})
+    const detection = await detectSubscriptionLogin('claude-code', {
+      locate: missing,
+      run,
+      desktopApp: async () => true,
+    })
+    expect(detection).toEqual({ provider: 'claude-code', state: 'not-installed', desktopApp: true })
+    // nothing was started: the desktop app's own copy is never run
+    expect(calls).toEqual([])
+  })
+
+  it('not-installed: a failed desktop-app check reads as no app', async () => {
+    const detection = await detectSubscriptionLogin('claude-code', {
+      locate: missing,
+      run: fakeCli({}).run,
+      desktopApp: async () => {
+        throw new Error('EACCES')
+      },
+    })
+    expect(detection).toEqual({ provider: 'claude-code', state: 'not-installed' })
+  })
+
+  it('not-installed: Codex never carries the desktop-app note', async () => {
+    const detection = await detectSubscriptionLogin('codex', {
+      locate: missing,
+      run: fakeCli({}).run,
+      desktopApp: async () => true,
+    })
+    expect(detection).toEqual({ provider: 'codex', state: 'not-installed' })
   })
 
   it('signed-out: installed, no login', async () => {

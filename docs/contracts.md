@@ -384,9 +384,11 @@ metadata:
 | `meteredAccepted` | 참/거짓                                                                              |
 | `error`           | 오류 내용(`error`일 때)                                                              |
 | `programPath`     | 확인에 쓴 프로그램 파일의 절대 경로(버전이 낮은 `error`일 때만, 표시용)              |
+| `desktopApp`      | `true`(Claude의 `not-installed`에서 Claude 데스크톱 앱이 깔려 있을 때만)             |
 
 - `account`와 `models`는 `ready`·`metered`일 때만 있다. `account`는 이메일 주소 모양이 아니면 빠진다.
 - `programPath`는 버전이 낮은 `error`(`needs-update`)일 때만 있다. 한 줄짜리 절대 경로(드라이브, `\\` 공유, `/`로 시작)가 아니면 빠진다.
+- `desktopApp`은 `claude-code`의 `not-installed`에서 값이 정확히 `true`일 때만 있다. 데스크톱 앱 안의 Claude Code는 앱이 실행하지 않으므로, 카드는 프로그램을 따로 설치하라고 알린다.
 - `models`의 `id`는 프로그램이 받는 값이자 저장되는 선택값이다. 빈 `id`는 프로그램의 기본 모델을 뜻하고, 그것이 가리키는 모델이 `resolved`에 온다. 목록은 50개까지다.
 - 창구 이름은 `ai:subscription-statuses`, `-recheck`, `-login`, `-logout`, `-install`, `-metered`, `-codex-image`와 변경 알림 `ai:subscription-changed`다. `-logout`은 껍데기 앱의 화면에서만 부른다.
 - `chatgpt`의 `state`는 `checking`, `signed-out`, `ready`, `error`뿐이다. `-login`은 앱 자신의 브라우저 로그인을 시작하고, `-logout`은 이 앱의 연결만 끊는다. `-install`·`-update`는 `invalid`로 답한다. 답에 `chatgpt` 항목이 없으면(예전 앱) `signed-out`으로 읽는다.

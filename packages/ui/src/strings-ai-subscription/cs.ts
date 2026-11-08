@@ -32,6 +32,8 @@ export const cs = {
   actionDismiss: 'Zavřít',
   actionSwitchAccount: 'Přihlásit se jiným účtem',
   actionLogout: 'Odhlásit se',
+  desktopAppNote:
+    'Na tomto počítači je desktopová aplikace {provider}, ale tato aplikace se připojuje přes terminálový program {provider} (CLI). Nainstalujte i ten program; desktopová aplikace nestačí.',
   installNote: 'Oficiální instalační příkaz společnosti {vendor} se spustí v novém okně terminálu.',
   loginNote: 'Přihlašovací stránka, která se otevře, patří společnosti {vendor}.',
   signingInBrowserNote:

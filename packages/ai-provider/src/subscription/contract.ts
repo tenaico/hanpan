@@ -422,6 +422,14 @@ export function subscriptionStatusMapOf(result: unknown): SubscriptionStatusMap 
     delete read.signingIn
     delete read.loginUnfinished
     delete read.programPath
+    delete read.desktopApp
+    if (
+      provider === 'claude-code' &&
+      read.state === 'not-installed' &&
+      status.desktopApp === true
+    ) {
+      read.desktopApp = true
+    }
     if (account) read.account = account
     if (models) read.models = models
     if (programPath) read.programPath = programPath

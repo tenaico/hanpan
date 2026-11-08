@@ -34,6 +34,8 @@ export const de = {
   actionDismiss: 'Schließen',
   actionSwitchAccount: 'Mit anderem Konto anmelden',
   actionLogout: 'Abmelden',
+  desktopAppNote:
+    'Auf diesem PC ist die Desktop-App von {provider} installiert, aber diese App verbindet sich über das Terminalprogramm {provider} (CLI). Installieren Sie auch dieses Programm; die Desktop-App reicht nicht.',
   installNote:
     'Der offizielle Installationsbefehl von {vendor} wird in einem neuen Terminalfenster ausgeführt.',
   loginNote: 'Die Anmeldeseite, die sich öffnet, stammt von {vendor}.',

@@ -31,6 +31,8 @@ export const th = {
   actionDismiss: 'ปิด',
   actionSwitchAccount: 'เข้าสู่ระบบด้วยบัญชีอื่น',
   actionLogout: 'ออกจากระบบ',
+  desktopAppNote:
+    'พีซีเครื่องนี้มีแอปเดสก์ท็อป {provider} แต่แอปนี้เชื่อมต่อผ่านโปรแกรม {provider} ที่ใช้ในเทอร์มินัล (CLI) โปรดติดตั้งโปรแกรมนั้นด้วย แอปเดสก์ท็อปอย่างเดียวไม่พอ',
   installNote: 'คำสั่งติดตั้งอย่างเป็นทางการของ {vendor} จะทำงานในหน้าต่างเทอร์มินัลใหม่',
   loginNote: 'หน้าเข้าสู่ระบบที่เปิดขึ้นเป็นของ {vendor}',
   signingInBrowserNote:

@@ -31,6 +31,8 @@ export const he = {
   actionDismiss: 'סגירה',
   actionSwitchAccount: 'כניסה עם חשבון אחר',
   actionLogout: 'יציאה מהחשבון',
+  desktopAppNote:
+    'במחשב הזה יש את אפליקציית שולחן העבודה של {provider}, אבל האפליקציה הזו מתחברת דרך תוכנת הטרמינל {provider} ‏(CLI). התקינו גם את התוכנה הזו; אפליקציית שולחן העבודה לא מספיקה.',
   installNote: 'פקודת ההתקנה הרשמית של {vendor} תופעל בחלון מסוף חדש.',
   loginNote: 'דף הכניסה שייפתח הוא של {vendor}.',
   signingInBrowserNote:

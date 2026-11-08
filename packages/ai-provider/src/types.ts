@@ -108,6 +108,11 @@ export interface AiSubscriptionStatus {
    * updating another one leaves this one as it is.
    */
   programPath?: string | undefined
+  /**
+   * Claude Code `not-installed` only: the Claude desktop app is on this PC. Its
+   * own copy of Claude Code is not used, so the card says the CLI is still needed.
+   */
+  desktopApp?: boolean | undefined
   /** a login the app started is under way; absent otherwise */
   signingIn?: AiSubscriptionSigningIn | undefined
   /**

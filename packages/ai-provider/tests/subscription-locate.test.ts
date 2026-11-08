@@ -8,7 +8,11 @@ import { tmpdir } from 'node:os'
 import { delimiter, join, sep } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { AiRunError } from '../src/run-error'
-import { locateSubscriptionProgram, resolveSubscriptionProgram } from '../src/subscription'
+import {
+  claudeDesktopAppInstalled,
+  locateSubscriptionProgram,
+  resolveSubscriptionProgram,
+} from '../src/subscription'
 
 let root: string
 
@@ -542,5 +546,49 @@ describe('resolveSubscriptionProgram', () => {
     const attempt = resolveSubscriptionProgram('codex', { env: windowsEnv(), platform: 'win32' })
     await expect(attempt).rejects.toBeInstanceOf(AiRunError)
     await expect(attempt).rejects.toMatchObject({ kind: 'not-installed', provider: 'codex' })
+  })
+})
+
+describe('the Claude desktop app, by its folders alone', () => {
+  const local = (): string => join(root, 'AppData', 'Local')
+
+  it('Windows: nothing installed', async () => {
+    expect(await claudeDesktopAppInstalled({ env: windowsEnv(), platform: 'win32' })).toBe(false)
+  })
+
+  it('Windows: the Microsoft Store package folder', async () => {
+    await mkdir(join(local(), 'Packages', 'Claude_pzs8sxrjxfjjc'), { recursive: true })
+    expect(await claudeDesktopAppInstalled({ env: windowsEnv(), platform: 'win32' })).toBe(true)
+  })
+
+  it('Windows: the installer folder', async () => {
+    await mkdir(join(local(), 'AnthropicClaude'), { recursive: true })
+    expect(await claudeDesktopAppInstalled({ env: windowsEnv(), platform: 'win32' })).toBe(true)
+  })
+
+  it('Windows: another package, or a file of that name, is not the app', async () => {
+    await mkdir(join(local(), 'Packages', 'ClaudeHelper.Other_abc'), { recursive: true })
+    await mkdir(join(local(), 'Packages', 'Claude_otherpublisher'), { recursive: true })
+    await touch(join(local(), 'Packages', 'Claude_pzs8sxrjxfjjc'))
+    expect(await claudeDesktopAppInstalled({ env: windowsEnv(), platform: 'win32' })).toBe(false)
+  })
+
+  it('Windows: no LOCALAPPDATA', async () => {
+    expect(await claudeDesktopAppInstalled({ env: { PATH: '' }, platform: 'win32' })).toBe(false)
+  })
+
+  it('macOS: Claude.app in an application folder', async () => {
+    const apps = join(root, 'Applications')
+    expect(await claudeDesktopAppInstalled({ platform: 'darwin', applicationDirs: [apps] })).toBe(
+      false,
+    )
+    await mkdir(join(apps, 'Claude.app', 'Contents'), { recursive: true })
+    expect(await claudeDesktopAppInstalled({ platform: 'darwin', applicationDirs: [apps] })).toBe(
+      true,
+    )
+  })
+
+  it('Linux: there is no desktop app to find', async () => {
+    expect(await claudeDesktopAppInstalled({ env: { HOME: root }, platform: 'linux' })).toBe(false)
   })
 })

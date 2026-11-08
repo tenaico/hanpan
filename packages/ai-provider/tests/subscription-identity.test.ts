@@ -338,6 +338,8 @@ describe('accepting a metered login of an unrecognised kind', () => {
         detectSubscriptionLogin(provider, {
           ...options,
           locate: async (id) => (id === 'codex' ? program(id) : null),
+          // never look for the real desktop app on this PC
+          desktopApp: async () => false,
           run: cli({ code: 0, stdout: '', stderr: UNRECOGNISED_CODEX_LINE }, 'codex-cli 0.159.2\n'),
         }),
     })

@@ -32,6 +32,8 @@ export const vi = {
   actionDismiss: 'Đóng',
   actionSwitchAccount: 'Đăng nhập bằng tài khoản khác',
   actionLogout: 'Đăng xuất',
+  desktopAppNote:
+    'Máy tính này có ứng dụng {provider} cho máy tính, nhưng ứng dụng này kết nối qua chương trình dòng lệnh {provider} (CLI). Hãy cài thêm chương trình đó; chỉ có ứng dụng cho máy tính là chưa đủ.',
   installNote: 'Lệnh cài đặt chính thức của {vendor} sẽ chạy trong một cửa sổ terminal mới.',
   loginNote: 'Trang đăng nhập được mở ra là của {vendor}.',
   signingInBrowserNote:

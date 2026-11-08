@@ -32,6 +32,8 @@ export const pl = {
   actionDismiss: 'Zamknij',
   actionSwitchAccount: 'Zaloguj się na inne konto',
   actionLogout: 'Wyloguj się',
+  desktopAppNote:
+    'Na tym komputerze jest aplikacja komputerowa {provider}, ale ta aplikacja łączy się przez program terminalowy {provider} (CLI). Zainstaluj też ten program; sama aplikacja komputerowa nie wystarczy.',
   installNote:
     'Oficjalne polecenie instalacji firmy {vendor} zostanie uruchomione w nowym oknie terminala.',
   loginNote: 'Strona logowania, która się otworzy, należy do firmy {vendor}.',

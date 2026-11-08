@@ -34,6 +34,8 @@ export const it = {
   actionDismiss: 'Chiudi',
   actionSwitchAccount: 'Accedi con un altro account',
   actionLogout: 'Esci',
+  desktopAppNote:
+    "Su questo PC c'è l'app desktop di {provider}, ma questa app si connette tramite il programma da terminale {provider} (CLI). Installa anche quel programma; l'app desktop non basta.",
   installNote:
     'Il comando di installazione ufficiale di {vendor} viene eseguito in una nuova finestra del terminale.',
   loginNote: 'La pagina di accesso che si apre è quella di {vendor}.',
