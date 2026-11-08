@@ -63,7 +63,7 @@ import { normalizeReleaseNotes } from './update-notes'
 
 const tUpd = createI18n({
   zh: {
-    updTitle: '软件更新',
+    updTitle: 'GenOffice 更新',
     updHeadline: '发现新版本',
     updDesc: '新版本包含性能改进与问题修复，建议立即更新。',
     updDownload: '立即更新',
@@ -142,7 +142,7 @@ const tUpd = createI18n({
       'Sau khi khởi động lại, một cửa sổ sẽ hiển thị tiến trình cài đặt. Khi hoàn tất, ứng dụng và các tài liệu bạn đang mở sẽ được mở lại.',
   },
   ja: {
-    updTitle: 'ソフトウェアアップデート',
+    updTitle: 'GenOffice のアップデート',
     updHeadline: '新しいバージョンがあります',
     updDesc:
       'このアップデートにはパフォーマンス改善とバグ修正が含まれます。今すぐの更新をおすすめします。',
@@ -198,7 +198,7 @@ const tUpd = createI18n({
       '다시 시작하면 설치 진행 창이 뜹니다. 설치가 끝나면 앱과 열려 있던 문서가 다시 열립니다.',
   },
   fr: {
-    updTitle: 'Mise à jour logicielle',
+    updTitle: 'Mise à jour de GenOffice',
     updHeadline: 'Une nouvelle version est disponible',
     updDesc:
       'Cette mise à jour apporte des améliorations de performances et des corrections de bogues. Nous vous recommandons de mettre à jour maintenant.',
@@ -227,7 +227,7 @@ const tUpd = createI18n({
       "Après le redémarrage, une fenêtre affiche la progression de l'installation. Une fois l'installation terminée, l'application et les documents ouverts reviennent.",
   },
   de: {
-    updTitle: 'Softwareaktualisierung',
+    updTitle: 'GenOffice-Aktualisierung',
     updHeadline: 'Eine neue Version ist verfügbar',
     updDesc:
       'Dieses Update enthält Leistungsverbesserungen und Fehlerbehebungen. Wir empfehlen, jetzt zu aktualisieren.',
@@ -257,7 +257,7 @@ const tUpd = createI18n({
       'Nach dem Neustart zeigt ein Fenster den Installationsfortschritt. Danach öffnen sich die App und Ihre geöffneten Dokumente wieder.',
   },
   es: {
-    updTitle: 'Actualización de software',
+    updTitle: 'Actualización de GenOffice',
     updHeadline: 'Hay una nueva versión disponible',
     updDesc:
       'Esta actualización incluye mejoras de rendimiento y correcciones de errores. Recomendamos actualizar ahora.',
@@ -285,7 +285,7 @@ const tUpd = createI18n({
       'Tras el reinicio, una ventana muestra el progreso de la instalación. Al terminar, la aplicación y los documentos que tenía abiertos vuelven a abrirse.',
   },
   th: {
-    updTitle: 'อัปเดตซอฟต์แวร์',
+    updTitle: 'อัปเดต GenOffice',
     updHeadline: 'มีเวอร์ชันใหม่พร้อมใช้งาน',
     updDesc: 'การอัปเดตนี้มีการปรับปรุงประสิทธิภาพและแก้ไขข้อบกพร่อง แนะนำให้อัปเดตทันที',
     updDownload: 'อัปเดตเลย',
@@ -312,7 +312,7 @@ const tUpd = createI18n({
       'หลังรีสตาร์ท จะมีหน้าต่างแสดงความคืบหน้าการติดตั้ง เมื่อติดตั้งเสร็จ แอปและเอกสารที่เปิดไว้จะเปิดขึ้นอีกครั้ง',
   },
   id: {
-    updTitle: 'Pembaruan Perangkat Lunak',
+    updTitle: 'Pembaruan GenOffice',
     updHeadline: 'Versi baru tersedia',
     updDesc:
       'Pembaruan ini mencakup peningkatan kinerja dan perbaikan bug. Kami menyarankan untuk memperbarui sekarang.',
@@ -340,7 +340,7 @@ const tUpd = createI18n({
       'Setelah dimulai ulang, sebuah jendela menampilkan kemajuan pemasangan. Setelah selesai, aplikasi dan dokumen yang tadi terbuka akan dibuka kembali.',
   },
   ru: {
-    updTitle: 'Обновление программы',
+    updTitle: 'Обновление GenOffice',
     updHeadline: 'Доступна новая версия',
     updDesc:
       'Это обновление содержит улучшения производительности и исправления ошибок. Рекомендуем обновиться сейчас.',
@@ -368,7 +368,7 @@ const tUpd = createI18n({
       'После перезапуска откроется окно с ходом установки. По завершении приложение и открытые документы откроются снова.',
   },
   ar: {
-    updTitle: 'تحديث البرنامج',
+    updTitle: 'تحديث GenOffice',
     updHeadline: 'يتوفر إصدار جديد',
     updDesc: 'يتضمن هذا التحديث تحسينات في الأداء وإصلاحات للأخطاء. نوصي بالتحديث الآن.',
     updDownload: 'التحديث الآن',
@@ -393,7 +393,7 @@ const tUpd = createI18n({
       'بعد إعادة التشغيل تظهر نافذة تعرض تقدم التثبيت. عند الانتهاء يُعاد فتح التطبيق والمستندات التي كانت مفتوحة.',
   },
   pt: {
-    updTitle: 'Atualização de Software',
+    updTitle: 'Atualização do GenOffice',
     updHeadline: 'Uma nova versão está disponível',
     updDesc:
       'Esta atualização inclui melhorias de desempenho e correções de erros. Recomendamos atualizar agora.',
@@ -421,7 +421,7 @@ const tUpd = createI18n({
       'Após reiniciar, uma janela mostra o progresso da instalação. Ao terminar, o aplicativo e os documentos que estavam abertos são reabertos.',
   },
   it: {
-    updTitle: 'Aggiornamento software',
+    updTitle: 'Aggiornamento di GenOffice',
     updHeadline: 'È disponibile una nuova versione',
     updDesc:
       'Questo aggiornamento include miglioramenti delle prestazioni e correzioni di bug. Consigliamo di aggiornare subito.',
@@ -449,7 +449,7 @@ const tUpd = createI18n({
       "Dopo il riavvio una finestra mostra l'avanzamento dell'installazione. Al termine l'app e i documenti aperti si riaprono.",
   },
   pl: {
-    updTitle: 'Aktualizacja oprogramowania',
+    updTitle: 'Aktualizacja GenOffice',
     updHeadline: 'Dostępna jest nowa wersja',
     updDesc:
       'Ta aktualizacja zawiera ulepszenia wydajności i poprawki błędów. Zalecamy aktualizację teraz.',
@@ -477,7 +477,7 @@ const tUpd = createI18n({
       'Po ponownym uruchomieniu okno pokaże postęp instalacji. Po zakończeniu aplikacja i otwarte dokumenty otworzą się ponownie.',
   },
   cs: {
-    updTitle: 'Aktualizace softwaru',
+    updTitle: 'Aktualizace GenOffice',
     updHeadline: 'Je k dispozici nová verze',
     updDesc:
       'Tato aktualizace obsahuje vylepšení výkonu a opravy chyb. Doporučujeme aktualizovat hned.',
@@ -505,7 +505,7 @@ const tUpd = createI18n({
       'Po restartu se zobrazí okno s průběhem instalace. Po dokončení se aplikace a otevřené dokumenty znovu otevřou.',
   },
   nl: {
-    updTitle: 'Software-update',
+    updTitle: 'GenOffice-update',
     updHeadline: 'Er is een nieuwe versie beschikbaar',
     updDesc:
       'Deze update bevat prestatieverbeteringen en foutoplossingen. We raden aan nu bij te werken.',
@@ -534,7 +534,7 @@ const tUpd = createI18n({
       'Na het herstarten toont een venster de voortgang van de installatie. Daarna worden de app en uw geopende documenten weer geopend.',
   },
   ms: {
-    updTitle: 'Kemas Kini Perisian',
+    updTitle: 'Kemas Kini GenOffice',
     updHeadline: 'Versi baharu tersedia',
     updDesc:
       'Kemas kini ini merangkumi penambahbaikan prestasi dan pembetulan pepijat. Kami syorkan kemas kini sekarang.',
@@ -562,7 +562,7 @@ const tUpd = createI18n({
       'Selepas dimulakan semula, satu tetingkap menunjukkan kemajuan pemasangan. Apabila selesai, aplikasi dan dokumen yang dibuka tadi akan dibuka semula.',
   },
   he: {
-    updTitle: 'עדכון תוכנה',
+    updTitle: 'עדכון GenOffice',
     updHeadline: 'גרסה חדשה זמינה',
     updDesc: 'עדכון זה כולל שיפורי ביצועים ותיקוני באגים. מומלץ לעדכן עכשיו.',
     updDownload: 'עדכן עכשיו',
@@ -587,7 +587,7 @@ const tUpd = createI18n({
       'לאחר ההפעלה מחדש יופיע חלון שמציג את התקדמות ההתקנה. בסיום, האפליקציה והמסמכים שהיו פתוחים ייפתחו שוב.',
   },
   hi: {
-    updTitle: 'सॉफ़्टवेयर अपडेट',
+    updTitle: 'GenOffice अपडेट',
     updHeadline: 'नया संस्करण उपलब्ध है',
     updDesc:
       'इस अपडेट में प्रदर्शन सुधार और बग फ़िक्स शामिल हैं। हम अभी अपडेट करने की सलाह देते हैं।',
@@ -615,7 +615,7 @@ const tUpd = createI18n({
       'पुनरारंभ के बाद एक विंडो इंस्टॉलेशन की प्रगति दिखाएगी। पूरा होने पर ऐप और खुले हुए दस्तावेज़ फिर से खुल जाएँगे।',
   },
   'zh-TW': {
-    updTitle: '軟體更新',
+    updTitle: 'GenOffice 更新',
     updHeadline: '發現新版本',
     updDesc: '新版本包含效能改進與問題修復，建議立即更新。',
     updDownload: '立即更新',

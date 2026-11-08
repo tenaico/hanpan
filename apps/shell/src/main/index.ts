@@ -120,6 +120,7 @@ import {
   aboutMenuItem,
   appMenuPopupTemplate,
   helpCheckUpdatesItems,
+  setAboutReleaseIsBeta,
   setUpdateCheckInvoker,
   installRendererProtocol,
   AUTHOR_NAME_KEY,
@@ -402,6 +403,7 @@ import type {
   FileSearchSettings,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
+import { RELEASE_IS_BETA } from '../shared/release-stage'
 import {
   normalizeAiPanelPrefs,
   sameAiPanelPrefs,
@@ -10508,6 +10510,8 @@ app.whenReady().then(async () => {
   installDocumentLinkMenuItems()
   installDockMenu()
   setUpdateCheckInvoker(() => void checkForUpdatesNow())
+  // About says "beta" after the version, as Settings › About does
+  setAboutReleaseIsBeta(RELEASE_IS_BETA)
   initAutoUpdater(() => shellWindow, currentUpdateChannel(), autoUpdateCheckEnabled)
   // crash record on this PC (crash-log.jsonl in userData) and, outside
   // headless runs, a prompt when the renderer of an open document dies

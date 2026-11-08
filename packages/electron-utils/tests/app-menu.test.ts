@@ -30,6 +30,7 @@ import {
   editMenuTemplate,
   helpCheckUpdatesItems,
   helpMenuTemplate,
+  setAboutReleaseIsBeta,
   setUpdateCheckInvoker,
   viewMenuTemplate,
   windowMenuTemplate,
@@ -244,13 +245,16 @@ describe('checkUpdatesMenuItem / manual update check wiring', () => {
     const about = aboutMenuItem(en) as { click: () => Promise<void> }
 
     await about.click()
-    expect(electronMock.showMessageBox.mock.calls.at(-1)![0].buttons).toEqual(['OK', en.copy])
+    expect(electronMock.showMessageBox.mock.calls.at(-1)![0].buttons).toEqual([
+      'OK',
+      en.copyVersion,
+    ])
 
     setUpdateCheckInvoker(() => {})
     await about.click()
     expect(electronMock.showMessageBox.mock.calls.at(-1)![0].buttons).toEqual([
       'OK',
-      en.copy,
+      en.copyVersion,
       en.checkUpdates,
     ])
   })
@@ -268,6 +272,27 @@ describe('checkUpdatesMenuItem / manual update check wiring', () => {
     electronMock.showMessageBox.mockResolvedValue({ response: 1 })
     await (aboutMenuItem(en) as { click: () => Promise<void> }).click()
     expect(electronMock.writeText).toHaveBeenCalledWith('Hanpan 1.2.3')
+  })
+
+  it('About dialog says what its copy button copies and that the release is a beta (0.17 review v2 shell #33)', async () => {
+    electronMock.showMessageBox.mockResolvedValue({ response: 0 })
+    const ko = appMenuLabels('ko')
+    expect(ko.copyVersion).toBe('버전 정보 복사')
+    expect(appMenuLabels('vi').copyVersion).not.toBe(appMenuLabels('vi').copy)
+    for (const lang of [...LANGS, 'vi']) {
+      expect(appMenuLabels(lang).copyVersion, lang).toBeTruthy()
+      expect(appMenuLabels(lang).beta, lang).toBeTruthy()
+    }
+    try {
+      setAboutReleaseIsBeta(true)
+      await (aboutMenuItem(ko) as { click: () => Promise<void> }).click()
+      expect(electronMock.showMessageBox.mock.calls.at(-1)![0].detail).toBe('버전 1.2.3 · 베타')
+      setAboutReleaseIsBeta(false)
+      await (aboutMenuItem(ko) as { click: () => Promise<void> }).click()
+      expect(electronMock.showMessageBox.mock.calls.at(-1)![0].detail).toBe('버전 1.2.3')
+    } finally {
+      setAboutReleaseIsBeta(false)
+    }
   })
 
   it('names the product in the About entry of every language', () => {

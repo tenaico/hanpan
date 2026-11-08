@@ -23,6 +23,7 @@ export {
   editMenuTemplate,
   helpCheckUpdatesItems,
   helpMenuTemplate,
+  setAboutReleaseIsBeta,
   setUpdateCheckInvoker,
   toggleDevToolsItem,
   viewMenuTemplate,
