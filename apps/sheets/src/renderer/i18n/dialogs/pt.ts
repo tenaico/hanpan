@@ -643,6 +643,12 @@ export const pt = {
   dlgPrintNextPage: 'Próxima página',
   dlgPrintZoomFit: 'Ajustar página',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Ajustar à largura',
+  dlgPrintColumnsSplit:
+    'As colunas de "{sheets}" não cabem na largura de uma página; as da direita são impressas nas páginas seguintes.',
+  dlgPrintPastEdge: 'Algumas colunas ultrapassam a borda direita da página e serão cortadas.',
+  dlgPrintClippedText:
+    'Parte do texto da última coluna ultrapassa a área de impressão e será cortada. Alargue essa coluna ou ative Quebrar texto.',
   dlgPrintButton: 'Imprimir',
   dlgPrintToPdf: 'Imprimir em PDF',
   dlgPrintPageSetup: 'Configurar página…',

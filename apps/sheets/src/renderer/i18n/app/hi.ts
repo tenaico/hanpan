@@ -1336,6 +1336,9 @@ export const hi = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint:
+    "अभी कोई नियम नहीं है। सेल चुनें, फिर शर्त के अनुसार फ़ॉर्मेट करने के लिए 'नियम जोड़ें' चुनें।",
+  appCfAddRule: 'नियम जोड़ें',
   appSheetBarAdd: 'New sheet',
   appSheetBarPrev: 'Previous sheets',
   appCloseSidebar: 'Close pane',

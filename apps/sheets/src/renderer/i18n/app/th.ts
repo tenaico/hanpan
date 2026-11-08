@@ -1302,6 +1302,8 @@ export const th = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint: "ยังไม่มีกฎ เลือกเซลล์ แล้วกด 'เพิ่มกฎ' เพื่อจัดรูปแบบเซลล์ตามเงื่อนไข",
+  appCfAddRule: 'เพิ่มกฎ',
   appSheetBarAdd: 'New sheet',
   appCloseSidebar: 'Close pane',
   appSheetBarNext: 'Next sheets',

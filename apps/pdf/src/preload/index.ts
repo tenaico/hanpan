@@ -221,6 +221,8 @@ const api: PdfApi = {
   removeSavedSignature: (id) => ipcRenderer.invoke(PDF_CHANNELS.removeSignature, id),
   getUsername: () => ipcRenderer.invoke(PDF_CHANNELS.getUsername),
   annotSubjects: (path) => ipcRenderer.invoke(PDF_CHANNELS.annotSubjects, path),
+  listPrinters: () => ipcRenderer.invoke(PDF_CHANNELS.listPrinters),
+  printToDevice: (request) => ipcRenderer.invoke(PDF_CHANNELS.printToDevice, request),
   // no path crosses: the main process uses the view's own PDF and its linked note
   noteOpen: (request) =>
     (

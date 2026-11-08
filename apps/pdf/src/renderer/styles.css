@@ -6682,3 +6682,28 @@ button.ai-overview-term-page:hover {
   color: var(--text);
   font-weight: 600;
 }
+
+/* Print dialog: printer and copies (P4), the Excel print dialog's fields */
+.pdf-print-device {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 6px 10px;
+  margin-bottom: 8px;
+}
+
+.pdf-print-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pdf-print-field .pdf-modal-input {
+  width: 100%;
+  margin: 0;
+}
+
+.pdf-print-collate {
+  grid-column: 1 / -1;
+}

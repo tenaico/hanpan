@@ -641,6 +641,12 @@ export const cs = {
   dlgPrintNextPage: 'Další stránka',
   dlgPrintZoomFit: 'Přizpůsobit stránku',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Přizpůsobit šířce',
+  dlgPrintColumnsSplit:
+    'Sloupce listu „{sheets}“ se nevejdou na šířku jedné stránky; sloupce vpravo se vytisknou na dalších stránkách.',
+  dlgPrintPastEdge: 'Některé sloupce přesahují pravý okraj stránky a budou oříznuty.',
+  dlgPrintClippedText:
+    'Část textu v posledním sloupci přesahuje oblast tisku a bude oříznuta. Rozšiřte sloupec nebo zapněte zalamování textu.',
   dlgPrintButton: 'Tisk',
   dlgPrintToPdf: 'Tisk do PDF',
   dlgPrintPageSetup: 'Vzhled stránky…',

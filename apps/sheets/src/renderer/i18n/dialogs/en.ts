@@ -640,6 +640,12 @@ export const en = {
   dlgPrintNextPage: 'Next page',
   dlgPrintZoomFit: 'Fit page',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Fit width',
+  dlgPrintColumnsSplit:
+    'The columns of "{sheets}" don\'t fit across one page; the columns on the right print on later pages.',
+  dlgPrintPastEdge: 'Some columns run past the right edge of the page and will be cut off.',
+  dlgPrintClippedText:
+    'Some text in the rightmost column runs past the printed area and will be cut off. Widen that column or turn on Wrap Text.',
   dlgPrintButton: 'Print',
   dlgPrintToPdf: 'Print to PDF',
   dlgPrintPageSetup: 'Page Setup…',

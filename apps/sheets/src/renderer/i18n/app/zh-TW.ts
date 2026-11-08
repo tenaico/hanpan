@@ -1248,6 +1248,8 @@ export const zhTW = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint: '尚無規則。選取儲存格後按一下「新增規則」，為其設定條件式格式。',
+  appCfAddRule: '新增規則',
   appSheetBarAdd: 'New sheet',
   appSheetBarAll: 'All sheets',
   appSheetBarNext: 'Next sheets',

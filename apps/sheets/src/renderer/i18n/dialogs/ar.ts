@@ -635,6 +635,12 @@ export const ar = {
   dlgPrintNextPage: 'الصفحة التالية',
   dlgPrintZoomFit: 'ملاءمة الصفحة',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'ملاءمة العرض',
+  dlgPrintColumnsSplit:
+    'أعمدة «{sheets}» لا تتسع في عرض صفحة واحدة؛ تُطبع الأعمدة اليمنى في صفحات لاحقة.',
+  dlgPrintPastEdge: 'بعض الأعمدة تتجاوز الحافة اليمنى للصفحة وستُقتطع عند الطباعة.',
+  dlgPrintClippedText:
+    'بعض النص في العمود الأخير يتجاوز منطقة الطباعة وسيُقتطع. وسّع هذا العمود أو فعّل التفاف النص.',
   dlgPrintButton: 'طباعة',
   dlgPrintToPdf: 'طباعة إلى PDF',
   dlgPrintPageSetup: 'إعداد الصفحة…',

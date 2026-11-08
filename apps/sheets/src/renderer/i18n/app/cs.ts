@@ -1338,6 +1338,9 @@ export const cs = {
   appCfMenuClearSelection: 'Clear Rules from Selected Cells',
   appCfMenuClearSheet: 'Clear Rules from Entire Sheet',
   appCfMenuManage: 'Manage Rules…',
+  appCfEmptyHint:
+    'Zatím žádná pravidla. Vyberte buňky a zvolte Přidat pravidlo, aby se formátovaly podle podmínky.',
+  appCfAddRule: 'Přidat pravidlo',
   appSheetBarAdd: 'New sheet',
   appSheetBarAll: 'All sheets',
   appSheetBarPrev: 'Previous sheets',

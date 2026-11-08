@@ -635,6 +635,11 @@ export const th = {
   dlgPrintNextPage: 'หน้าถัดไป',
   dlgPrintZoomFit: 'พอดีหน้า',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'พอดีความกว้าง',
+  dlgPrintColumnsSplit: 'คอลัมน์ของ "{sheets}" กว้างเกินหนึ่งหน้า คอลัมน์ทางขวาจะพิมพ์ในหน้าถัดไป',
+  dlgPrintPastEdge: 'บางคอลัมน์เกินขอบขวาของหน้าและจะถูกตัดเมื่อพิมพ์',
+  dlgPrintClippedText:
+    'ข้อความบางส่วนในคอลัมน์ขวาสุดเกินพื้นที่พิมพ์และจะถูกตัด ขยายคอลัมน์นั้นหรือเปิดการตัดข้อความ',
   dlgPrintButton: 'พิมพ์',
   dlgPrintToPdf: 'พิมพ์เป็น PDF',
   dlgPrintPageSetup: 'ตั้งค่าหน้ากระดาษ…',

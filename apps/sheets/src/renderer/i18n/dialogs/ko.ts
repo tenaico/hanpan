@@ -633,6 +633,12 @@ export const ko = {
   dlgPrintNextPage: '다음 페이지',
   dlgPrintZoomFit: '페이지 맞춤',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: '폭 맞춤',
+  dlgPrintColumnsSplit:
+    "'{sheets}'의 열이 한 쪽 폭에 다 들어가지 않아, 오른쪽 열은 다음 쪽에 인쇄됩니다.",
+  dlgPrintPastEdge: '일부 열이 쪽의 오른쪽 끝을 넘어 잘린 채 인쇄됩니다.',
+  dlgPrintClippedText:
+    "맨 오른쪽 열의 글자 일부가 인쇄 영역을 넘어 잘립니다. 그 열을 넓히거나 '텍스트 줄 바꿈'을 켜세요.",
   dlgPrintButton: '인쇄',
   dlgPrintToPdf: 'PDF로 인쇄',
   dlgPrintPageSetup: '페이지 설정…',

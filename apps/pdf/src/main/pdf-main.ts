@@ -44,6 +44,8 @@ import { brandText, createI18n, getUiLang } from '@genoffice/i18n'
 import { generateImageTool, documentMediaRoots, withMediaCallSignal } from '@genoffice/ai-search'
 import { sharedSubscriptionStatuses } from '@genoffice/ai-provider/subscription'
 import { PDF_CHANNELS, PDF_TOOLS_HANDOFF, type PdfToolsHandoffTool } from '../shared/ipc'
+import type { PdfPrinterInfo, PdfPrintResult } from '../shared/ipc'
+import { parsePrintToDevice, printOptionsForDevice } from './print-device'
 import { buildExportImagePaths, hasValidExportPageNumbers } from './export-images'
 import type {
   ExportImagesRequest,
@@ -1830,6 +1832,30 @@ function registerPdfIpc(): void {
     const parsed = parseNoteInsertRequest(request)
     if (!parsed) return Promise.resolve({ ok: false, reason: 'failed', message: 'invalid request' })
     return noteLinks.insert(e.sender.id, openPathByWc.get(e.sender.id) ?? null, parsed)
+  })
+
+  // P4: the printers this view knows, and printing its print pages to one of them
+  ipcMain.handle(PDF_CHANNELS.listPrinters, async (e): Promise<PdfPrinterInfo[]> => {
+    if (!allowedByWc.has(e.sender.id)) return []
+    const printers = await e.sender.getPrintersAsync()
+    return printers.map((printer) => ({
+      name: printer.name,
+      displayName: printer.displayName || printer.name,
+    }))
+  })
+  ipcMain.handle(PDF_CHANNELS.printToDevice, (e, input: unknown): Promise<PdfPrintResult> => {
+    if (!allowedByWc.has(e.sender.id)) {
+      return Promise.resolve({ ok: false, error: 'not a PDF view' })
+    }
+    const request = parsePrintToDevice(input)
+    if (!request) return Promise.resolve({ ok: false, error: 'invalid request' })
+    return new Promise((resolve) => {
+      e.sender.print(printOptionsForDevice(request), (success, failureReason) => {
+        if (success) resolve({ ok: true })
+        else if (failureReason === 'Print job canceled') resolve({ ok: false, canceled: true })
+        else resolve({ ok: false, error: failureReason || 'print failed' })
+      })
+    })
   })
 
   // only the view's own files: the categories of accepted AI highlights (reading-assist 4.3)
