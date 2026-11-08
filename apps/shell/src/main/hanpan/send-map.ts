@@ -31,7 +31,11 @@ export type CopyEditor = 'hwp' | 'slides' | 'docs' | 'mindmap' | 'mindmap'
 
 export interface SendMapDeps {
   loadHwpEngine(): Promise<HwpEngine>
-  buildDeck(slides: SlidePlan[], style?: SlideStyleId, options?: StyledDeckOptions): Promise<Uint8Array>
+  buildDeck(
+    slides: SlidePlan[],
+    style?: SlideStyleId,
+    options?: StyledDeckOptions,
+  ): Promise<Uint8Array>
   makeCopyDir(): Promise<string>
   writeFile(path: string, bytes: Uint8Array): Promise<void>
   removeDir(dir: string): Promise<void>

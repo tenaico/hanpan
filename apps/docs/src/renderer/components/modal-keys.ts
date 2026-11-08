@@ -42,6 +42,11 @@ export function useModalKeys(onClose: () => void) {
   return { ref, onKeyDown }
 }
 
+/** A modal dialog is open: document shortcuts (find, go to, ...) must not open panels behind it. */
+export function isModalOpen(): boolean {
+  return document.querySelector('.modal-backdrop') !== null
+}
+
 export function focusOutsideModal(container: HTMLElement | null): boolean {
   const active = document.activeElement
   return !active || active === document.body || !container?.contains(active)

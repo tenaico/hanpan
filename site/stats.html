@@ -285,7 +285,7 @@
       async function loadGithub() {
         try {
           const res = await fetch(
-            'https://api.github.com/repos/SamulChung/hanpan/releases?per_page=30',
+            'https://api.github.com/repos/tenaico/hanpan/releases?per_page=30',
           )
           const releases = await res.json()
           const rows = releases.map((r) => {

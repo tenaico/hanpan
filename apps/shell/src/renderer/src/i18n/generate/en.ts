@@ -4,7 +4,7 @@ export const en = {
   windowTitle: 'Make a new document',
   kindLabel: 'What to make',
   kindSlides: 'Presentation (PPT)',
-  kindHtml: 'Web page (HTML)',
+  kindHtml: 'Web document',
   kindMindmap: 'Mind map',
   materialsLabel: 'Sources',
   addMaterials: 'Add files…',

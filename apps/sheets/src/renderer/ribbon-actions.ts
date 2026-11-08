@@ -129,6 +129,19 @@ import {
 import type { ChartDialogKind, ChartEditData, ShapeEditChanges } from './WorkbookVisuals'
 import { clampZoomPercent, clampZoomRatio, stepZoomPercent } from './zoom-range'
 
+/// 조건부 서식 빠른 메뉴 → Univer `open.conditional.formatting.panel`의 value
+/// (1 강조 규칙, 4 상위/하위, 5 수식, 6 색조, 7 데이터 막대, 8 아이콘, 9 선택 지우기, 10 시트 지우기)
+const CF_MENU_VALUE: Record<string, number> = {
+  'cf-open:highlight': 1,
+  'cf-open:top-bottom': 4,
+  'cf-open:formula': 5,
+  'cf-open:color-scale': 6,
+  'cf-open:data-bar': 7,
+  'cf-open:icon-set': 8,
+  'cf-open:clear-selection': 9,
+  'cf-open:clear-sheet': 10,
+}
+
 /** The App refs/state the ribbon dispatcher needs; built fresh per call. */
 export interface RibbonCommandContext {
   univerRef: { readonly current: UniverRuntime | null }
@@ -432,6 +445,19 @@ export function handleRibbonCommand(ctx: RibbonCommandContext, command: string):
       else if (action === 'lock') ctx.setMessage(t('appFormatPainterLocked'))
       return
     }
+    case 'cf-open:highlight':
+    case 'cf-open:top-bottom':
+    case 'cf-open:data-bar':
+    case 'cf-open:color-scale':
+    case 'cf-open:icon-set':
+    case 'cf-open:formula':
+    case 'cf-open:clear-selection':
+    case 'cf-open:clear-sheet':
+      // 빠른 메뉴(X7): Univer 패널 연산의 값으로 규칙 종류를 미리 고른다
+      void runtime.univerAPI.executeCommand('sheet.operation.open.conditional.formatting.panel', {
+        value: CF_MENU_VALUE[command],
+      })
+      return
     case 'cf-open':
       // value 2 = the manage-rules list; other values preseed a new rule.
       void runtime.univerAPI.executeCommand('sheet.operation.open.conditional.formatting.panel', {

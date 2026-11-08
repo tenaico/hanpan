@@ -20,7 +20,7 @@ import {
   installDropOpenBridge,
 } from '@genoffice/electron-utils/drop-open'
 import { AI_CHANNELS, HWP_CHANNELS } from '../shared/ipc'
-import type { HwpApi, PrintMode, SaveMode, UiTheme } from '../shared/ipc'
+import type { ExportCommand, HwpApi, SaveMode, UiTheme } from '../shared/ipc'
 import type { SubscriptionApi } from '../shared/subscription-api'
 import {
   SUBSCRIPTION_CONNECT_HELP_CHANNEL,
@@ -101,6 +101,16 @@ const api: HwpApi = {
   requestFileCommand: (command) => ipcRenderer.send(HWP_CHANNELS.fileCommand, command),
   setDirty: (dirty) => ipcRenderer.send(HWP_CHANNELS.dirtyChanged, dirty),
   hanpanTool: (request) => ipcRenderer.invoke(HWP_CHANNELS.hanpanTool, request),
+  getKoreanDocFeatures: () =>
+    ipcRenderer
+      .invoke(HWP_CHANNELS.getKoreanDocFeatures)
+      .then((stored: unknown) => (typeof stored === 'boolean' ? stored : null)),
+  onKoreanDocFeaturesChanged: (handler) => {
+    const listener = (_e: Electron.IpcRendererEvent, stored: unknown) =>
+      handler(typeof stored === 'boolean' ? stored : null)
+    ipcRenderer.on(HWP_CHANNELS.koreanDocFeaturesChanged, listener)
+    return () => ipcRenderer.removeListener(HWP_CHANNELS.koreanDocFeaturesChanged, listener)
+  },
   onHanpanReplace: (handler) => {
     const listener = (_e: Electron.IpcRendererEvent, bytes: unknown) => {
       if (bytes instanceof Uint8Array) handler(bytes)
@@ -114,11 +124,15 @@ const api: HwpApi = {
     return () => ipcRenderer.removeListener(HWP_CHANNELS.saveRequest, listener)
   },
   onPrintRequest: (handler) => {
-    const listener = (_e: Electron.IpcRendererEvent, mode: PrintMode) => handler(mode)
+    const listener = (_e: Electron.IpcRendererEvent, mode: ExportCommand) => handler(mode)
     ipcRenderer.on(HWP_CHANNELS.printRequest, listener)
     return () => ipcRenderer.removeListener(HWP_CHANNELS.printRequest, listener)
   },
   printPages: (job) => ipcRenderer.invoke(HWP_CHANNELS.printPages, job),
+  exportDocx: (html) => ipcRenderer.invoke(HWP_CHANNELS.exportDocx, html),
+  savePngs: (request) => ipcRenderer.invoke(HWP_CHANNELS.savePngs, request),
+  revealOutput: (path, how) => ipcRenderer.invoke(HWP_CHANNELS.revealOutput, path, how),
+  openLicenses: () => ipcRenderer.send(HWP_CHANNELS.openLicenses),
   onCloseSaveRequest: (handler) => {
     const listener = () => handler()
     ipcRenderer.on(HWP_CHANNELS.closeSaveRequest, listener)
@@ -234,6 +248,16 @@ const api: HwpApi = {
   gonguImageSearch: (query, maxResults) =>
     ipcRenderer
       .invoke(AI_CHANNELS.gonguImageSearch, query, maxResults)
+      .catch(() => ({ ok: false, error: 'service' })),
+  // Hanpan: the Gongu picker of the Picture choice (0.17.1 #15), registered by the shell main
+  // (apps/shell/src/main/hanpan/gongu-pictures.ts); on its own the editor reads a service error
+  gonguSearch: (query, page) =>
+    ipcRenderer
+      .invoke('hanpan:gongu-pictures-search', query, page)
+      .catch(() => ({ ok: false, error: 'service' })),
+  gonguPicture: (workId) =>
+    ipcRenderer
+      .invoke('hanpan:gongu-pictures-picture', workId)
       .catch(() => ({ ok: false, error: 'service' })),
   generateImage: (op) => ipcRenderer.invoke(HWP_CHANNELS.aiGenerateImage, op),
   fetchImage: (url) => ipcRenderer.invoke(HWP_CHANNELS.fetchImage, url),

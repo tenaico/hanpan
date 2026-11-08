@@ -99,6 +99,65 @@ const THEME_FONT_PRESETS: Array<{ nameKey: StringKey; fonts: ThemeFonts }> = [
   { nameKey: 'ribbonThemeFontArial', fonts: { major: 'Arial', minor: 'Arial', eastAsia: '黑体' } },
 ]
 
+/** Korean pairs a Korean UI offers first (Windows faces plus the bundled Pretendard / Noto) */
+const KO_THEME_FONT_PRESETS: Array<{ nameKey: StringKey; fonts: ThemeFonts }> = [
+  {
+    nameKey: 'ribbonThemeFontOfficeKo',
+    fonts: { major: 'Calibri Light', minor: 'Calibri', eastAsia: '맑은 고딕' },
+  },
+  {
+    nameKey: 'ribbonThemeFontMalgun',
+    fonts: { major: 'Malgun Gothic', minor: 'Malgun Gothic', eastAsia: '맑은 고딕' },
+  },
+  {
+    nameKey: 'ribbonThemeFontPretendard',
+    fonts: { major: 'Pretendard', minor: 'Pretendard', eastAsia: 'Pretendard' },
+  },
+  {
+    nameKey: 'ribbonThemeFontNoto',
+    fonts: { major: 'Noto Sans KR', minor: 'Noto Serif KR', eastAsia: 'Noto Sans KR' },
+  },
+  {
+    nameKey: 'ribbonThemeFontDotumBatang',
+    fonts: { major: 'Dotum', minor: 'Batang', eastAsia: '바탕' },
+  },
+]
+
+const CHINESE_EA = /[一-鿿]/
+
+/**
+ * Theme font pairs for the Fonts menu: a Korean UI leads with Korean pairs and
+ * keeps the Chinese-only pairs (SimSun, YaHei, KaiTi, DengXian) at the end.
+ */
+export function themeFontPresets(lang: string): Array<{ nameKey: StringKey; fonts: ThemeFonts }> {
+  if (lang !== 'ko') return THEME_FONT_PRESETS
+  const latin = THEME_FONT_PRESETS.filter((p) => !CHINESE_EA.test(p.fonts.major)).map((p) =>
+    CHINESE_EA.test(p.fonts.eastAsia ?? '')
+      ? { ...p, fonts: { ...p.fonts, eastAsia: '맑은 고딕' } }
+      : p,
+  )
+  const chinese = THEME_FONT_PRESETS.filter((p) => CHINESE_EA.test(p.fonts.major))
+  // Office (DengXian) is the Chinese Office pair: it goes with the Chinese ones
+  const office = latin.filter((p) => p.nameKey === 'ribbonThemeFontOffice')
+  return [
+    ...KO_THEME_FONT_PRESETS,
+    ...latin.filter((p) => p.nameKey !== 'ribbonThemeFontOffice'),
+    ...office.map((p) => ({ ...p, fonts: THEME_FONT_PRESETS[0]!.fonts })),
+    ...chinese,
+  ]
+}
+
+/** English watermark words offered beside the translated ones (Korean offices use the Korean words) */
+export function watermarkPresetTextsFor(lang: string): string[] {
+  return lang === 'en' || lang === 'ko' ? [] : ['CONFIDENTIAL', 'DRAFT']
+}
+
+/** Themes: a Korean UI swaps the Chinese East Asian face for 맑은 고딕 (Korean Office does the same) */
+export function themePresets(lang: string): typeof THEME_PRESETS {
+  if (lang !== 'ko') return THEME_PRESETS
+  return THEME_PRESETS.map((p) => ({ ...p, fonts: { ...p.fonts, eastAsia: '맑은 고딕' } }))
+}
+
 const THEME_COLOR_PRESETS: Array<{ nameKey: StringKey; colors: ThemeColors }> = [
   {
     nameKey: 'ribbonThemeOffice',
@@ -224,7 +283,7 @@ export function DesignTab({
   const odtOff = useOdtSession()
   const watermarkPresets = [
     ...WATERMARK_KEYS.map((key) => t(key)),
-    ...(lang !== 'en' ? ['CONFIDENTIAL', 'DRAFT'] : []),
+    ...watermarkPresetTextsFor(lang),
   ]
   const [watermarkPromptOpen, setWatermarkPromptOpen] = useState(false)
   const applyTheme = (preset: (typeof THEME_PRESETS)[number]) => {
@@ -256,7 +315,7 @@ export function DesignTab({
             </button>
             {dropdown === 'theme' && (
               <div data-rb-panel="" className="layout-menu">
-                {THEME_PRESETS.map((p) => (
+                {themePresets(lang).map((p) => (
                   <button key={p.nameKey} onClick={() => applyTheme(p)}>
                     <span className="theme-accent-row">
                       {['accent1', 'accent2', 'accent3', 'accent4'].map((k) => (
@@ -289,7 +348,7 @@ export function DesignTab({
             </button>
             {dropdown === 'themefonts' && (
               <div data-rb-panel="" className="layout-menu">
-                {THEME_FONT_PRESETS.map((p) => (
+                {themeFontPresets(lang).map((p) => (
                   <button
                     key={p.nameKey}
                     className={

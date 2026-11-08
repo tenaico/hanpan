@@ -243,6 +243,8 @@ export function createDefaultAppService(deps: DefaultAppDeps): DefaultAppService
   }
 
   async function windowsProgIdName(progId: string): Promise<string> {
+    const office = officeAppOfProgId(progId)
+    if (office) return office
     try {
       return parseRegValue(await deps.run('reg', ['query', `HKCR\\${progId}`, '/ve'])) ?? progId
     } catch {
@@ -267,4 +269,15 @@ export function createDefaultAppService(deps: DefaultAppDeps): DefaultAppService
   }
 
   return { status, set }
+}
+
+/**
+ * Microsoft Office's ProgIDs by the app's short name (0.17 리뷰 v2 shell #22):
+ * the registry's own names read "Microsoft Excel 97-2003 Worksheet".
+ */
+export function officeAppOfProgId(progId: string): string | undefined {
+  if (/^Word\./i.test(progId)) return 'Word'
+  if (/^Excel\./i.test(progId)) return 'Excel'
+  if (/^PowerPoint\./i.test(progId)) return 'PowerPoint'
+  return undefined
 }

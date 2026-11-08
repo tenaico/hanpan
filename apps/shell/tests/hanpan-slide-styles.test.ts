@@ -45,7 +45,8 @@ async function build(ops: Op[]): Promise<Uint8Array> {
   const opened = await openPptx(await createBlankPptx())
   for (const op of ops) {
     const result = runTxn(opened, { ops: [op], isolation: 'atomic' })
-    if (!result.applied) throw new Error(`${op.op}: ${result.failures?.[0]?.error ?? 'not applied'}`)
+    if (!result.applied)
+      throw new Error(`${op.op}: ${result.failures?.[0]?.error ?? 'not applied'}`)
   }
   return savePptx(opened)
 }
@@ -61,7 +62,9 @@ describe('Hanpan slide styles', () => {
         writeFileSync(join(PREVIEW_DIR, `${style.id}.pptx`), bytes)
       }
       const zip = await JSZip.loadAsync(bytes)
-      const slideFiles = Object.keys(zip.files).filter((f) => /^ppt\/slides\/slide\d+\.xml$/.test(f))
+      const slideFiles = Object.keys(zip.files).filter((f) =>
+        /^ppt\/slides\/slide\d+\.xml$/.test(f),
+      )
       // cover, contents (where the style has one), one slide per branch, closing
       expect(slideFiles.length).toBeGreaterThanOrEqual(slides.length + 1)
       expect(slideFiles.length).toBeLessThanOrEqual(slides.length + 2)
@@ -151,16 +154,21 @@ describe('Hanpan slide styles', () => {
     it(`lays out AI-written slides in the ${style.name.en} style`, async () => {
       const jobs = slideWriterJobs(mapOutline, style.id)
       const writing = emptySlideWriting()
-      jobs.forEach((job, k) => parseSlideWriting(ANSWERS[k]!.join('\n'), job, topicTitles(mapOutline), writing))
+      jobs.forEach((job, k) =>
+        parseSlideWriting(ANSWERS[k]!.join('\n'), job, topicTitles(mapOutline), writing),
+      )
       const written = applySlideWriting(outlineToSlides(mapOutline), writing)
-      const bytes = await build(styledDeckOps(written, style.id, { closing: writing.closing }) as Op[])
+      const bytes = await build(
+        styledDeckOps(written, style.id, { closing: writing.closing }) as Op[],
+      )
       if (PREVIEW_DIR) writeFileSync(join(PREVIEW_DIR, `${style.id}-ai.pptx`), bytes)
       const zip = await JSZip.loadAsync(bytes)
       const files = Object.keys(zip.files).filter((f) => /^ppt\/slides\/slide\d+\.xml$/.test(f))
       const all = (await Promise.all(files.map((f) => zip.file(f)!.async('string')))).join('')
       const title = '수업 준비 시간을 40% 줄이고 만족도 4.5점을 목표로 함'
       // a title past the style's cap is not taken, and the branch keeps its own words
-      if (title.length <= Math.ceil(SLIDE_GUIDES[style.id].titleMax * 1.3)) expect(all).toContain(title)
+      if (title.length <= Math.ceil(SLIDE_GUIDES[style.id].titleMax * 1.3))
+        expect(all).toContain(title)
       else expect(all).toContain('기대 효과')
       expect(all).toContain('학생마다 맞춤 피드백을 더 자주 받음')
       expect(all).toContain('줄어든 준비 시간 40%를 학생에게 돌려줌')

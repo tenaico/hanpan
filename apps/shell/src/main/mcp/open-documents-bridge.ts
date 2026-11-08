@@ -200,6 +200,12 @@ export function createOpenDocumentsControl(deps: OpenDocumentsBridgeDeps): OpenD
           'an HWP document cannot be saved through this tool: it is saved by the user in its ' +
             'editor. Pass unsaved:"discard" to close it without its changes, or leave it open',
         )
+      case 'photo':
+      case 'illust':
+        throw new Error(
+          'a picture cannot be saved through this tool: it is saved by the user in its tab. ' +
+            'Pass unsaved:"discard" to close it without its changes, or leave it open',
+        )
       default:
         throw new Error(`cannot save a ${tab.kind} tab`)
     }

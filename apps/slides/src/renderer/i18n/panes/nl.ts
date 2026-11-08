@@ -296,6 +296,11 @@ export const nl = {
   paneShowMenuScreen: 'Scherm',
   paneShowMenuBlack: 'Zwart scherm',
   paneShowMenuWhite: 'Wit scherm',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'Voorstelling beëindigen',
   panePresenterWhiteOn: 'Wit scherm (W om terug te keren)',
 } satisfies Record<keyof typeof zh, string>

@@ -8,17 +8,16 @@
 import type { ReactNode } from 'react'
 import {
   IMAGE_FILTERS,
-  FONTS,
   PALETTE,
   SHAPES,
   type DesignElement,
   type DesignPage,
   type ShadowKind,
 } from './model'
-import { REWRITE_MODES, type RewriteMode } from './ai'
-import { BUNDLED_FONTS, GONGU_FONTS, SYSTEM_FONTS } from './fonts'
+import { REWRITE_MODES, translateTarget, type RewriteMode } from './ai'
+import { BUNDLED_FONTS, GONGU_FONTS, SYSTEM_FONTS, type FontChoice } from './fonts'
 import type { AlignMode } from './geometry'
-import type { Words } from './words'
+import { LANG_NATIVE_NAMES, fontLabel, type Words } from './words'
 
 export type Arrange = 'toFront' | 'front' | 'back' | 'toBack'
 
@@ -27,6 +26,8 @@ const ADD_FONT = '\u0000add-font'
 
 export interface InspectorProps {
   w: Words
+  /** the UI language: font names and the default translation target follow it */
+  lang: string
   page: DesignPage
   selection: DesignElement[]
   docColors: string[]
@@ -44,6 +45,10 @@ export interface InspectorProps {
   /** fonts the person added to this design (font files kept in it) */
   fonts: string[]
   addFont(): void
+  /** the fonts installed on this PC, empty until read (then the fixed list shows) */
+  pcFonts: readonly FontChoice[]
+  /** reads them; called from the font list's click, which the reading needs */
+  loadPcFonts(): void
   group(): void
   ungroup(): void
   /** a picture in crop mode: dragging it picks what shows */
@@ -55,6 +60,9 @@ export interface InspectorProps {
     error: string | null
     rewrite(id: string, mode: RewriteMode): void
     stop(): void
+    /** the language a translation goes to; null for the default */
+    translateTo: string | null
+    setTranslateTo(lang: string | null): void
   }
 }
 
@@ -82,7 +90,8 @@ export function ColorRow(p: {
       type="button"
       className={`dz-swatch${p.value?.toUpperCase() === c.toUpperCase() ? ' on' : ''}`}
       style={{ background: c }}
-      title={c}
+      title={p.w.colorNames[c.toUpperCase()] ?? c}
+      aria-label={p.w.colorNames[c.toUpperCase()] ?? c}
       onClick={() => p.onPick(c)}
     />
   )
@@ -330,6 +339,8 @@ export function Inspector(p: InspectorProps) {
   }
 
   const e = p.selection[0]!
+  const pcList = p.pcFonts.length ? p.pcFonts : SYSTEM_FONTS
+  const listed = new Set([...BUNDLED_FONTS, ...GONGU_FONTS, ...pcList].map((f) => f.family))
   const set = (patch: Partial<DesignElement>, merge?: string) =>
     p.change(e.id, patch, merge && `${e.id}:${merge}`)
   const shadowOptions: { id: ShadowKind | undefined; label: string }[] = [
@@ -388,6 +399,28 @@ export function Inspector(p: InspectorProps) {
                   </button>
                 ))}
               </div>
+              <label className="dz-row">
+                <span>{w.translateTo}</span>
+                <select
+                  value={p.ai.translateTo ?? ''}
+                  onChange={(ev) => p.ai!.setTranslateTo(ev.target.value || null)}
+                  data-hanpan="design-translate-to"
+                >
+                  <option value="">
+                    {/* the language it really goes to: English for a Korean text (점검 v2 #32) */}
+                    {w.translateAuto(
+                      ((target) => LANG_NATIVE_NAMES[target] ?? target)(
+                        translateTarget(p.lang, e.text ?? ''),
+                      ),
+                    )}
+                  </option>
+                  {Object.entries(LANG_NATIVE_NAMES).map(([code, name]) => (
+                    <option key={code} value={code}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
               {p.ai.busy && (
                 <div className="dz-row" role="status">
                   <span className="dz-muted">{w.aiRewriting}</span>
@@ -406,26 +439,28 @@ export function Inspector(p: InspectorProps) {
               onChange={(ev) =>
                 ev.target.value === ADD_FONT ? p.addFont() : set({ fontFamily: ev.target.value })
               }
+              onMouseDown={p.loadPcFonts}
+              onKeyDown={p.loadPcFonts}
               data-hanpan="font-select"
             >
               <optgroup label={w.bundledFonts}>
                 {BUNDLED_FONTS.map((f) => (
                   <option key={f.family} value={f.family}>
-                    {f.label}
+                    {fontLabel(f, p.lang)}
                   </option>
                 ))}
               </optgroup>
               <optgroup label={w.gonguFonts}>
                 {GONGU_FONTS.map((f) => (
                   <option key={f.family} value={f.family}>
-                    {f.label}
+                    {fontLabel(f, p.lang)}
                   </option>
                 ))}
               </optgroup>
               <optgroup label={w.systemFonts}>
-                {SYSTEM_FONTS.map((f) => (
+                {pcList.map((f) => (
                   <option key={f.family} value={f.family}>
-                    {f.label}
+                    {fontLabel(f, p.lang)}
                   </option>
                 ))}
               </optgroup>
@@ -436,7 +471,7 @@ export function Inspector(p: InspectorProps) {
                   ))}
                 </optgroup>
               )}
-              {e.fontFamily && !FONTS.includes(e.fontFamily) && !p.fonts.includes(e.fontFamily) && (
+              {e.fontFamily && !listed.has(e.fontFamily) && !p.fonts.includes(e.fontFamily) && (
                 <option>{e.fontFamily}</option>
               )}
               <option value={ADD_FONT}>{w.addFont}</option>
@@ -485,7 +520,8 @@ export function Inspector(p: InspectorProps) {
                 type="button"
                 className={e.align === a ? 'on' : ''}
                 onClick={() => set({ align: a })}
-                title={w.align}
+                title={w.textAligns[a]}
+                aria-label={w.textAligns[a]}
               >
                 {a === 'left' ? '⇤' : a === 'center' ? '↔' : '⇥'}
               </button>

@@ -157,7 +157,8 @@ export const fr = {
   dlgPivotAddValue: '+ Ajouter un champ de valeurs',
   dlgPivotAddCalc: '+ Ajouter un champ calculé',
   dlgPivotTargetCell: 'Cellule de destination',
-  dlgPivotTargetPlaceholder: 'p. ex. F1',
+  dlgPivotTargetPlaceholder: 'p. ex. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked:
     'La cellule supérieure gauche de la zone de sortie ne change pas pendant la modification',
   dlgPivotNote:
@@ -646,6 +647,12 @@ export const fr = {
   dlgPrintNextPage: 'Page suivante',
   dlgPrintZoomFit: 'Ajuster la page',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Ajuster à la largeur',
+  dlgPrintColumnsSplit:
+    "Les colonnes de « {sheets} » ne tiennent pas sur la largeur d'une page ; celles de droite s'impriment sur les pages suivantes.",
+  dlgPrintPastEdge: 'Certaines colonnes dépassent le bord droit de la page et seront coupées.',
+  dlgPrintClippedText:
+    'Du texte de la dernière colonne dépasse la zone imprimée et sera coupé. Élargissez cette colonne ou activez Renvoyer à la ligne.',
   dlgPrintButton: 'Imprimer',
   dlgPrintToPdf: 'Imprimer en PDF',
   dlgPrintPageSetup: 'Mise en page…',

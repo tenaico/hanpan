@@ -1,5 +1,5 @@
 #!/bin/sh
-# IeumOffice command line, installed without the desktop app.
+# Hanpan command line, installed without the desktop app.
 #
 #   curl -fsSL https://ieumoffice.com/cli/install.sh | sh
 #
@@ -38,7 +38,7 @@ die() {
 
 usage() {
   cat <<'TEXT'
-IeumOffice command line, installed without the desktop app.
+Hanpan command line, installed without the desktop app.
 
   sh install.sh [--version <v>] [--prefix <dir>] [--bin <dir>] [--node <path>] [--uninstall]
 
@@ -151,7 +151,7 @@ fi
 
 # --- the command line ---------------------------------------------------------
 
-say "installing IeumOffice command line $VERSION"
+say "installing Hanpan command line $VERSION"
 asset="ieumoffice-cli_${VERSION}_${os}-${arch}.tar.gz"
 base="https://github.com/$REPO/releases/download/v$VERSION"
 download "$base/$asset" "$tmp/$asset"

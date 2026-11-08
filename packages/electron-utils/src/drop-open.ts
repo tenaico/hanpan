@@ -17,7 +17,7 @@ export const DROP_OPEN_CHANNEL = 'app:open-dropped-files'
 /** Extensions routed by apps/shell routeDocumentPath — keep in sync there and
  *  with OPEN_DIALOG_EXTENSIONS / OPEN_LOCAL_EXTENSIONS on the home screen. */
 export const OPENABLE_DOC_RE =
-  /\.(docx|odt|xlsx|xlsm|xls|csv|tsv|pptx|pdf|md|markdown|html|htm|xmind|hwp|hwpx|epub)$/i
+  /\.(docx|odt|xlsx|xlsm|xls|csv|tsv|pptx|pdf|md|markdown|html|htm|xmind|hwp|hwpx|epub|psd|psb|png|jpg|jpeg|webp|gif|bmp|tif|tiff|heic|heif|svg|svgz|ai|vectorcraft)$/i
 
 /** Recognized-but-unsupported formats: kept in the sent payload so the shell
  *  can show its "not supported" dialog instead of dropping them silently.

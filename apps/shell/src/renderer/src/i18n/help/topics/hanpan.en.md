@@ -4,7 +4,7 @@ Hanpan sends what you sorted out in a mind map to a Hangul (HWP) report, a slide
 
 ## Send a mind map to a document
 
-1. In the mind map toolbar, press **Send to a document** and pick a HWP report, PowerPoint or a Word report. For PowerPoint, **Slide style** offers ten designs, from Steve Jobs and McKinsey to a startup pitch deck.
+1. In the mind map toolbar, press **Send to a document** and pick a HWP report, PowerPoint or a Word report. For PowerPoint, **Slide style** offers ten designs, from "One big line" and "Answer-first report" to "Investor pitch deck".
 2. Choose the layout (point-form report, report with chapters, official letter numbering), the date and department, and whether to send **exactly what the map says** or **let the AI write the sentences**. For PowerPoint, **Let the AI write the slides in this style** writes the titles, slide lines, supporting lines and speaker notes in the chosen style; fill in **Audience** to aim them at the people you will present to. Figures and names the map does not hold are never made up, and what needs checking goes to the speaker notes.
 3. Press **Send**: the document opens in a new tab of the same window. Its first save asks where to keep it.
 
@@ -24,7 +24,7 @@ Hanpan sends what you sorted out in a mind map to a Hangul (HWP) report, a slide
 
 ## Hanpan templates
 
-- The **Hanpan templates** card on Home opens 22 templates (official letters, reports, proposals, minutes, plans) as HWP or Word.
+- The **Hanpan templates** card on Home opens templates for official letters, reports, proposals, minutes and plans, and statutory forms, as HWP or Word.
 - In the **Markdown converter** card on Home, paste Markdown or open a .md file and press **Convert all**: every format you ticked (HWP, HWPX, Word, ODT, PDF, HTML) is made side by side in one folder.
 - The **교육** (education) group has a lesson plan for looking at old Korean paintings, an exhibition notice and a reading lesson on 「운수 좋은 날」. The pictures come from Gongu (gongu.copyright.or.kr) and are out of copyright or under CC BY, so anyone may adapt them; each one goes into the document with its credit line under it. Leave that line in. **Open as mind map** on a template card opens its headings and lists as branches of a mind map. In the slide editor, **Insert › Sound Effects** puts one of six Korean traditional-music sound effects (주식회사 아이티앤, CC BY) on the slide, with the credit in the sound’s name.
 - The **서식** (official forms) group has forms attached to Korean statutes (a freedom-of-information request, an administrative appeal, a power of attorney for civil petitions and an objection to a refused petition), exactly as the National Law Information Center (law.go.kr) publishes them. **Open as HWP** opens a copy in a HWP tab; fill in the boxes, then save or print it. Statutory forms are not protected by copyright, so anyone may use them. Forms change when the law does, so check on law.go.kr that yours is the current version before you hand it in.

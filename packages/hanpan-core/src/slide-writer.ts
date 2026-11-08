@@ -1,7 +1,7 @@
 /**
  * "Let the AI write the slides": each main branch's slide gets its text written
  * in the chosen slide style — a title in the style's voice (an action title for
- * McKinsey, a plain question for Toss), the topics as slide lines, supporting
+ * the answer-first report, a plain question for the plain-word cards), the topics as slide lines, supporting
  * lines under the topics that have none where the style takes them, a takeaway
  * and speaker notes; the last job also writes the closing message.
  *
@@ -20,7 +20,7 @@
  * prompts and reads the answers; the call goes through the person's AI.
  */
 import type { PanNode, PanOutline } from './outline'
-import type { SlideStyleId } from './slide-styles'
+import { SLIDE_STYLES, type SlideStyleId } from './slide-styles'
 import type { SlidePlan, SlidePlanParagraph } from './slides'
 
 export type SlideWritingStyle = SlideStyleId | 'plain'
@@ -166,7 +166,10 @@ export const SLIDE_GUIDES: Readonly<Record<SlideWritingStyle, SlideGuide>> = {
   },
   plain: {
     voice: '명확한 발표 문체.',
-    rules: ['제목은 이 슬라이드의 핵심 메시지를 담은 문장이다.', '화면 문장은 짧고 분명하게 다듬는다.'],
+    rules: [
+      '제목은 이 슬라이드의 핵심 메시지를 담은 문장이다.',
+      '화면 문장은 짧고 분명하게 다듬는다.',
+    ],
     titleMax: 36,
     maxLine: 32,
     details: 1,
@@ -214,22 +217,11 @@ export interface SlideWriterOptions {
   includeNotes?: boolean | undefined
 }
 
-const STYLE_NAMES: Record<SlideStyleId, string> = {
-  jobs: '스티브 잡스',
-  mckinsey: '맥킨지',
-  toss: '토스',
-  bcg: 'BCG',
-  ted: 'TED',
-  material: '구글 머티리얼',
-  notion: '노션',
-  airbnb: '에어비앤비',
-  canva: '캔바 모던',
-  pitch: '스타트업 피치덱',
-}
-
 function systemPrompt(style: SlideWritingStyle, closing: boolean, details: boolean): string {
   const g = SLIDE_GUIDES[style]
-  const name = style === 'plain' ? '발표 자료' : `「${STYLE_NAMES[style]} 스타일」 발표 자료`
+  // the style's own look-based name: no person's or company's name goes into the prompt either
+  const styleName = SLIDE_STYLES.find((s) => s.id === style)?.name.ko
+  const name = styleName ? `「${styleName}」 스타일의 발표 자료` : '발표 자료'
   return [
     `너는 ${name}의 내용을 쓰는 프레젠테이션 기획자다.`,
     '마인드맵 개요의 한 가지를 슬라이드 한 장의 글로 쓴다.',
@@ -245,7 +237,9 @@ function systemPrompt(style: SlideWritingStyle, closing: boolean, details: boole
     '{제목} 슬라이드 제목',
     '{#번호} 그 항목의 화면 문장 (개요의 모든 번호에 하나씩)',
     ...(details
-      ? [`{#번호+} 근거나 설명 한 줄 (근거 줄을 붙일 수 있다고 적힌 번호에만, 번호마다 ${g.details}줄까지, 쓸 것이 없으면 생략)`]
+      ? [
+          `{#번호+} 근거나 설명 한 줄 (근거 줄을 붙일 수 있다고 적힌 번호에만, 번호마다 ${g.details}줄까지, 쓸 것이 없으면 생략)`,
+        ]
       : []),
     `{핵심} 이 슬라이드에서 청중이 가져갈 시사점 한 문장 (${TAKEAWAY_MAX - 20}자 이내)`,
     '{노트} 발표자가 말할 2~3문장',
@@ -353,7 +347,9 @@ export function slideWriterJobs(
       `이번 슬라이드의 가지: ${oneLine(branch.title, 200)}${memo(branch)}`,
       '개요:',
       ...lines,
-      ...(detailable.size ? ['', `근거 줄을 붙일 수 있는 번호: ${[...detailable].join(', ')}`] : []),
+      ...(detailable.size
+        ? ['', `근거 줄을 붙일 수 있는 번호: ${[...detailable].join(', ')}`]
+        : []),
     ]
       .filter((l, i, all) => l !== '' || (i > 0 && all[i - 1] !== ''))
       .join('\n')
@@ -499,7 +495,10 @@ const CONTINUED = ' (계속)'
  * continuation of it) and first in the notes, before the person's own notes.
  * Slides and topics the AI did not write keep what they had.
  */
-export function applySlideWriting(slides: readonly SlidePlan[], writing: SlideWriting): SlidePlan[] {
+export function applySlideWriting(
+  slides: readonly SlidePlan[],
+  writing: SlideWriting,
+): SlidePlan[] {
   const has = (o: Record<string, unknown>, key: string | undefined): key is string =>
     key !== undefined && Object.hasOwn(o, key)
   return slides.map((slide, index) => {

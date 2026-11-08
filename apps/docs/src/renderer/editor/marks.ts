@@ -1,4 +1,5 @@
 import { Extension, Mark, combineTransactionSteps, getChangedRanges } from '@tiptap/core'
+import { revisionDateLabel } from './revision-date'
 import type { Mark as PmMark } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
@@ -196,7 +197,7 @@ export const InsMark = Mark.create({
       {
         'data-ins-author': mark.attrs.author,
         class: 'doc-ins',
-        title: `${t('editorInsertedBy', { author: String(mark.attrs.author) })}${mark.attrs.date ? ` · ${String(mark.attrs.date).slice(0, 10)}` : ''}`,
+        title: `${t('editorInsertedBy', { author: String(mark.attrs.author) })}${mark.attrs.date ? ` · ${revisionDateLabel(mark.attrs.date)}` : ''}`,
       },
       0,
     ]
@@ -224,7 +225,7 @@ export const DelMark = Mark.create({
       {
         'data-del-author': mark.attrs.author,
         class: 'doc-del',
-        title: `${t('editorDeletedBy', { author: String(mark.attrs.author) })}${mark.attrs.date ? ` · ${String(mark.attrs.date).slice(0, 10)}` : ''}`,
+        title: `${t('editorDeletedBy', { author: String(mark.attrs.author) })}${mark.attrs.date ? ` · ${revisionDateLabel(mark.attrs.date)}` : ''}`,
       },
       0,
     ]

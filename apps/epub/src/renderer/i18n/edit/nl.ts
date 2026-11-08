@@ -6,6 +6,7 @@ export const nl = {
   editBold: 'Vet',
   editItalic: 'Cursief',
   editReplace: 'Vervangen',
+  editFindReplaceTitle: 'Zoeken en vervangen',
   editReplaceWith: 'Vervangen door',
   editReplaceOne: 'Vervangen',
   editReplaceAll: 'Alles vervangen',

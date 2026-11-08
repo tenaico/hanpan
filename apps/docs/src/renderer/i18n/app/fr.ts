@@ -53,11 +53,12 @@ export const fr = {
   appFontsMissing: 'Polices du document manquantes : {names} (polices de substitution affichées)',
   appVerticalTextNotice:
     "Ce document contient du texte vertical (affiché horizontalement pour l'instant ; l'enregistrement n'est pas affecté)",
-  appNewDocCreated: 'Document vierge créé. Décrivez le contenu à générer dans le volet IA à gauche',
+  appNewDocCreated: 'Document vierge créé. Décrivez le contenu à générer dans le volet IA',
   appNewFailed: 'Échec de la création du document : {error}',
   appSaveFailed: "Échec de l'enregistrement : {error}",
   appAutoSavedAt: 'Enregistrement automatique ({time})',
   appSaved: 'Enregistré',
+  appUnsaved: 'Non enregistré',
   appSectionBreakInserted: 'Saut de section inséré ({type})',
   appSectionBreakPending:
     "Saut de section inséré ; la nouvelle section prendra effet après l'enregistrement",
@@ -125,6 +126,8 @@ export const fr = {
   appExportingImages: 'Exportation des images…',
   appExportImagesProgress: 'Exportation de {count} images…',
   appExportImagesDone: '{count} images exportées vers {dir}',
+  appOpenExported: 'Ouvrir',
+  appRevealExported: 'Ouvrir le dossier',
   appExportImagesFailed: 'Échec de l’exportation des images : {error}',
   appMixedExportOpening:
     "Formats de papier mixtes : ouverture de l'aperçu de pagination pour exporter les pages fusionnées…",
@@ -497,6 +500,7 @@ export const fr = {
   appMatchCase: 'Respecter la casse',
   appWholeWord: 'Mot entier',
   appNoResults: 'Aucun résultat',
+  appReplacedCount: '{count} remplacé(s)',
   appPrevMatch: 'Précédent (Maj+Entrée)',
   appNextMatch: 'Suivant (Entrée)',
   appCloseEsc: 'Fermer (Échap)',

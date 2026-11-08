@@ -1,6 +1,7 @@
 import { readFile, stat } from 'node:fs/promises'
 import { extname } from 'node:path'
 import { parseFileToText, redactHtmlSource } from '@genoffice/file-parse'
+import { graphicsKindForPath } from '../../../../graphics/src/shared/kinds'
 
 /** larger files are indexed by name and folder only */
 export const MAX_EXTRACT_BYTES = 64 * 1024 * 1024
@@ -29,6 +30,8 @@ export async function extractText(path: string): Promise<Extracted> {
     const st = await stat(path)
     if (st.size > MAX_EXTRACT_BYTES) return { kind: 'name-only' }
     const ext = extname(path).slice(1).toLowerCase()
+    // pictures and vector art are listed by name: their bytes carry no text to search
+    if (graphicsKindForPath(path)) return { kind: 'name-only' }
     if (MARKUP_EXTS.has(ext)) {
       // what the page withholds from a model goes before the tags do: the index
       // feeds excerpts to the knowledge base and the reranker. A mark that cannot

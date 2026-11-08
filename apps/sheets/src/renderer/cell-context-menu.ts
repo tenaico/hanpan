@@ -170,14 +170,17 @@ export function cellContextMenuLayout(): readonly ContextMenuNode[] {
       group: ContextMenuGroup.OTHERS,
       order: 1,
       children: [
-        ...numberFormatCategories().map((category): ContextMenuLeaf => {
+        ...numberFormatCategories(getLang()).map((category): ContextMenuLeaf => {
           const titleKey = NUMBER_FORMAT_LABEL[category.label] ?? 'dlgFcNumGeneral'
           return {
             id: `${NUMBER_FORMAT_MENU_ID}.${category.label}`,
             title: t(titleKey),
             titleKey,
             commandId: SHELL_COMMAND_ID,
-            params: { command: `format:${category.pattern}` },
+            // The pattern is resolved on click (shellCommandOf): Currency and
+            // Accounting carry the UI language's symbol, and the menu is
+            // registered once while the language can change at runtime.
+            params: { numberFormat: category.label },
           }
         }),
         {
@@ -348,6 +351,20 @@ function pickFromList(accessor: IAccessor, runtime: UniverRuntime): boolean {
   return true
 }
 
+/**
+ * The ribbon command a shell-sink entry runs. Number Format entries name
+ * their category and take its pattern in `lang` (the language at click time).
+ */
+export function shellCommandOf(
+  params: Record<string, unknown> | undefined,
+  lang: Lang,
+): string | null {
+  if (typeof params?.command === 'string') return params.command
+  if (typeof params?.numberFormat !== 'string') return null
+  const category = numberFormatCategories(lang).find((c) => c.label === params.numberFormat)
+  return category ? `format:${category.pattern}` : null
+}
+
 const LOCALE_NAMESPACE = 'genofficeCtx'
 const localeKey = (key: StringKey): string => `${LOCALE_NAMESPACE}.${key}`
 
@@ -409,9 +426,10 @@ export function installCellContextMenu(runtime: UniverRuntime): IDisposable {
     {
       id: SHELL_COMMAND_ID,
       type: CommandType.COMMAND,
-      handler: (_accessor, params?: { command?: string }) => {
-        if (!params?.command || !commandSink) return false
-        commandSink(params.command)
+      handler: (_accessor, params?: Record<string, unknown>) => {
+        const command = shellCommandOf(params, getLang())
+        if (!command || !commandSink) return false
+        commandSink(command)
         return true
       },
     },

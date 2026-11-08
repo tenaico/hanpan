@@ -609,8 +609,15 @@ export function FormFieldProps({
     if (!onPatch({ options: next })) setOptionsText((input?.options ?? []).join('\n'))
   }
   const stop = (e: { stopPropagation(): void }) => e.stopPropagation()
+  // The card hangs under the field: for a field near the page bottom it opened
+  // below the visible area, so bring it into view once it is placed
+  const cardRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    cardRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+  }, [field.id])
   return (
     <div
+      ref={cardRef}
       className="pdf-formdesign-props"
       style={style}
       onPointerDown={stop}

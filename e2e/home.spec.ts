@@ -8,13 +8,30 @@ test.describe('home screen', () => {
     try {
       // Hanpan: the start board, then the mind map and the documents it feeds, then the rest
       await expect(page.locator('[data-hanpan="start-board"]')).toBeVisible()
-      const order = await page.locator('.quick-card').evaluateAll((cards) => cards.map((c) => c.getAttribute('data-new')))
-      expect(order).toEqual(['xmind', 'hwp', 'pptx', 'templates', 'docx', 'xlsx', 'design', 'md', 'md-convert', 'html', 'pdf', 'pdf-tools', 'open'])
+      const order = await page
+        .locator('.quick-card')
+        .evaluateAll((cards) => cards.map((c) => c.getAttribute('data-new')))
+      expect(order).toEqual([
+        'xmind',
+        'hwp',
+        'pptx',
+        'templates',
+        'docx',
+        'xlsx',
+        'design',
+        'md',
+        'html',
+        'pdf',
+        'photo',
+        'illust',
+        'open',
+      ])
       await expect(page.locator('.quick-card[data-new="xmind"]')).toContainText('Mind Map')
       await expect(page.locator('.quick-card[data-new="docx"]')).toContainText('AI Docs')
-      // the agent is not a document to make: it sits in the sidebar, under Ask AI
+      // the agent is not a document to make: it sits in the sidebar, under Ask AI,
+      // named "AI folder work" like its window (c887855d)
       const nav = page.locator('.sidebar-nav .nav-label')
-      await expect(nav).toHaveText(['Recent', 'Starred', 'Ask AI', 'Agent'])
+      await expect(nav).toHaveText(['Recent', 'Starred', 'Ask AI', 'AI folder work'])
       await expect(page.locator('.sidebar-nav .nav-item').nth(3)).toHaveAttribute(
         'title',
         'Work in a folder with Claude Code or Codex',

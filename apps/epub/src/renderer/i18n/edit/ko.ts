@@ -6,6 +6,7 @@ export const ko = {
   editBold: '굵게',
   editItalic: '기울임',
   editReplace: '바꾸기',
+  editFindReplaceTitle: '찾기 및 바꾸기',
   editReplaceWith: '바꿀 글',
   editReplaceOne: '바꾸기',
   editReplaceAll: '모두 바꾸기',

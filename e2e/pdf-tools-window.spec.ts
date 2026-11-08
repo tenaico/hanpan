@@ -176,7 +176,7 @@ test.describe('PDF tools window', () => {
 
       // split: one file per page, into a folder the dialog picks
       await tools.getByRole('button', { name: 'All tools' }).click()
-      await tools.getByRole('button', { name: /Split PDF/ }).click()
+      await tools.getByRole('button', { name: /Split into files/ }).click()
       await queueDialogs(app, { open: [[a], [parts]] })
       await tools.getByRole('button', { name: 'Choose PDF', exact: true }).click()
       await expect(tools.getByText('3 pages', { exact: false })).toBeVisible()

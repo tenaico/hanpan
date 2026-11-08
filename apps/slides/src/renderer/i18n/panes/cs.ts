@@ -292,6 +292,11 @@ export const cs = {
   paneShowMenuScreen: 'Obrazovka',
   paneShowMenuBlack: 'Černá obrazovka',
   paneShowMenuWhite: 'Bílá obrazovka',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'Ukončit prezentaci',
   panePresenterWhiteOn: 'Bílá obrazovka (W pro návrat)',
 } satisfies Record<keyof typeof zh, string>

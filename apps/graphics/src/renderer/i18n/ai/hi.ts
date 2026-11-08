@@ -1,0 +1,52 @@
+import type { zh } from './zh'
+
+export const hi = {
+  aiOpenAssistant: 'AI सहायक खोलें',
+  aiCollapsePanel: 'पैनल संक्षिप्त करें',
+  aiNewChat: 'नई चैट',
+  aiHintIdle: 'भेजने के लिए Enter, नई पंक्ति के लिए Shift+Enter',
+  aiHintBusy: 'उत्तर दिया जा रहा है…',
+  aiSend: 'भेजें',
+  aiStop: 'रोकें',
+  aiThinking: 'सोच रहा है',
+  aiWorking: 'कार्य कर रहा है',
+  aiGroupWorking: 'कार्य जारी…',
+  aiWorkedSteps: 'पूर्ण · {n} चरण',
+  aiStopped: 'रोका गया',
+  aiNoReply: '(कोई उत्तर नहीं)',
+  aiTurnLimit: 'प्रति रन चरण सीमा पूरी हुई — जारी रखने के लिए एक और निर्देश भेजें।',
+  aiTruncatedNote: '(उत्तर लंबाई सीमा के कारण कट गया और अधूरा हो सकता है।)',
+  aiUndelivered: 'भेजा नहीं गया',
+  aiRetry: 'पुनः प्रयास',
+  aiCopyReplyTitle: 'जवाब कॉपी करें',
+  aiRegenerateTitle: 'फिर से जनरेट करें',
+  aiUnknownError: 'AI अनुरोध विफल, पुनः प्रयास करें',
+  aiTimeoutError: 'AI प्रतिक्रिया समय समाप्त',
+  aiCreditsExhausted: 'क्रेडिट समाप्त — अपने AI प्रदाता के पास रिचार्ज करें',
+  aiNetworkError:
+    'नेटवर्क समस्या: AI सेवा से कनेक्ट नहीं हो सका। कनेक्शन जांचें और फिर से प्रयास करें',
+  aiOverloadedError: 'AI सेवा अभी व्यस्त है — कृपया थोड़ी देर बाद फिर से प्रयास करें',
+  aiEmptyTitle: 'AI से संपादित करें',
+  aiEmptyBody:
+    'AI को बताएँ कि इस चित्र में क्या बदलना है। यह ऐप के अपने कमांड से काम करता है, और एक बार पूर्ववत करने से एक अनुरोध के सारे बदलाव वापस हो जाते हैं।',
+  aiComposerPlaceholder: 'AI को बताएँ कि क्या बदलना है…',
+  aiEmptyPhoto: 'उदाहरण: "पृष्ठभूमि हटाओ", "थोड़ा उजला करो"',
+  aiEmptyIllust: 'उदाहरण: "बीच में गोल कोनों वाला आयत बनाओ", "लोगो को PNG में निर्यात करो"',
+  aiUndoAll: 'पूर्ववत करें',
+  aiUndoTitle: 'इस अनुरोध के सारे बदलाव पूर्ववत करें',
+  aiUndone: 'पूर्ववत किया गया: दस्तावेज़ इस अनुरोध से पहले जैसा हो गया है।',
+  aiUndoChangedSince:
+    'इसके बाद दस्तावेज़ बदल गया, इसलिए इसे एक बार में पूर्ववत नहीं किया जा सकता। ऐप का पूर्ववत (Ctrl+Z) इस्तेमाल करें।',
+  aiUndoOverflow:
+    'इस अनुरोध ने ऐप के इतिहास में रखे जा सकने से ज़्यादा बदलाव किए, इसलिए इसे एक बार में पूर्ववत नहीं किया जा सकता।',
+  aiUndoFailed:
+    'सब कुछ पूर्ववत नहीं हो सका। और पीछे जाने के लिए ऐप का पूर्ववत (Ctrl+Z) इस्तेमाल करें।',
+  aiBusyNotice: 'AI के काम करते समय आप दस्तावेज़ संपादित नहीं कर सकते।',
+  aiToolFind: 'कमांड खोजे',
+  aiToolDescribe: 'कमांड पढ़ा',
+  aiToolRun: 'कमांड चलाया',
+  aiToolRunMany: 'कई कमांड चलाए',
+  aiToolInspect: 'दस्तावेज़ पढ़ा',
+  aiToolExport: 'प्रति निर्यात की',
+  aiToolGuide: 'गाइड पढ़ी',
+} satisfies Record<keyof typeof zh, string>

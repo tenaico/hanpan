@@ -4,7 +4,7 @@ export const vi = {
   loading: 'Đang tải…',
   noBook: 'Chưa mở cuốn sách nào',
   tabFile: 'Tệp',
-  tabHome: 'Trang đầu',
+  tabHome: 'Trang chủ',
   tabView: 'Xem',
   save: 'Lưu',
   saveAs: 'Lưu thành…',

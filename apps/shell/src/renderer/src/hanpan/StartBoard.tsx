@@ -10,12 +10,39 @@ import { useState, type FormEvent } from 'react'
 /** the help topic that walks through Hanpan (i18n/help/help-registry.ts) */
 const HANPAN_HELP_TOPIC = 'hanpan'
 
-export function StartBoard({ greeting, t }: { greeting: string; t: (key: string) => string }) {
+/** one branch chip plus the gap below it (hanpan.css .hp-flow-branches: 32px chips, 11px gap) */
+const FLOW_STEP = 43
+
+/** the connector drawing for `count` branches: four give the original 166px drawing */
+export function flowGeometry(count: number): { height: number; rootY: number; ends: number[] } {
+  const height = FLOW_STEP * count - 6
+  return {
+    height,
+    rootY: height / 2,
+    ends: Array.from({ length: count }, (_, k) => 19 + FLOW_STEP * k),
+  }
+}
+
+export function StartBoard({
+  greeting,
+  t,
+  korean,
+}: {
+  greeting: string
+  t: (key: string) => string
+  /** Hanpan's Korean document features (decision 0091): off drops the HWP and card news branches */
+  korean: boolean
+}) {
   const [topic, setTopic] = useState('')
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
+  /** "start" pressed on an empty box: say what is missing (0.17 리뷰 v2 shell #38) */
+  const [empty, setEmpty] = useState(false)
   const examples = [t('hpExample1'), t('hpExample2'), t('hpExample3')]
-  const branches = [t('hpFlowHwp'), t('hpFlowPpt'), t('hpFlowDocx'), t('hpFlowCard')]
+  const branches = korean
+    ? [t('hpFlowHwp'), t('hpFlowPpt'), t('hpFlowDocx'), t('hpFlowCard')]
+    : [t('hpFlowPpt'), t('hpFlowDocx')]
+  const flow = flowGeometry(branches.length)
 
   const start = async (value: string) => {
     const text = value.trim()
@@ -36,8 +63,10 @@ export function StartBoard({ greeting, t }: { greeting: string; t: (key: string)
   const submit = (event: FormEvent) => {
     event.preventDefault()
     // an empty box: the button points at it rather than doing nothing
-    if (!topic.trim()) (event.currentTarget as HTMLFormElement).querySelector('input')?.focus()
-    else void start(topic)
+    if (!topic.trim()) {
+      setEmpty(true)
+      ;(event.currentTarget as HTMLFormElement).querySelector('input')?.focus()
+    } else void start(topic)
   }
 
   return (
@@ -67,7 +96,11 @@ export function StartBoard({ greeting, t }: { greeting: string; t: (key: string)
             maxLength={120}
             placeholder={t('hpStartPlaceholder')}
             aria-label={t('hpStartHint')}
-            onChange={(e) => setTopic(e.target.value)}
+            aria-invalid={empty || undefined}
+            onChange={(e) => {
+              setTopic(e.target.value)
+              setEmpty(false)
+            }}
           />
           <button type="submit" className="hp-start-go" data-hanpan="start-go" disabled={busy}>
             {t('hpStartButton')}
@@ -75,20 +108,36 @@ export function StartBoard({ greeting, t }: { greeting: string; t: (key: string)
         </form>
         <div className="hp-start-examples">
           {examples.map((example) => (
-            <button key={example} type="button" className="hp-example" onClick={() => void start(example)} disabled={busy}>
+            <button
+              key={example}
+              type="button"
+              className="hp-example"
+              onClick={() => void start(example)}
+              disabled={busy}
+            >
               {example}
             </button>
           ))}
         </div>
-        <p className={failed ? 'hp-start-note hp-start-failed' : 'hp-start-note'} role={failed ? 'alert' : undefined}>
-          {failed ? t('hpStartFailed') : t('hpStartHint')}
+        <p
+          className={failed || empty ? 'hp-start-note hp-start-failed' : 'hp-start-note'}
+          role={failed || empty ? 'alert' : undefined}
+          data-hanpan="start-note"
+        >
+          {failed ? t('hpStartFailed') : empty ? t('hpStartNeedTopic') : t('hpStartHint')}
         </p>
       </div>
       <figure className="hp-flow" aria-label={t('hpFlowLabel')}>
         <span className="hp-flow-root">{t('hpFlowMap')}</span>
-        <svg className="hp-flow-lines" viewBox="0 0 64 166" preserveAspectRatio="none" aria-hidden="true">
-          {branches.map((_, k) => (
-            <path key={k} d={`M0 83 C 32 83, 32 ${19 + k * 43}, 64 ${19 + k * 43}`} />
+        <svg
+          className="hp-flow-lines"
+          viewBox={`0 0 64 ${flow.height}`}
+          style={{ height: flow.height }}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {flow.ends.map((end, k) => (
+            <path key={k} d={`M0 ${flow.rootY} C 32 ${flow.rootY}, 32 ${end}, 64 ${end}`} />
           ))}
         </svg>
         <ul className="hp-flow-branches">

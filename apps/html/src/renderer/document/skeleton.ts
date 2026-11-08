@@ -26,3 +26,18 @@ export function documentSkeleton(lang: Lang): string {
 </html>
 `
 }
+
+const escapeText = (s: string): string =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/**
+ * The skeleton with a heading and a paragraph in it: the empty-page hint's
+ * "start with a heading and a paragraph". Unlike the bare skeleton it shows
+ * something to click and edit, so the page is no longer blank.
+ */
+export function starterDocument(lang: Lang, heading: string, paragraph: string): string {
+  return documentSkeleton(lang).replace(
+    '<body></body>',
+    `<body>\n    <h1>${escapeText(heading)}</h1>\n    <p>${escapeText(paragraph)}</p>\n  </body>`,
+  )
+}

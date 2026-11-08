@@ -260,3 +260,36 @@ describe('keys that are Hangul table keys where the caret is', () => {
     expect(goHome).toHaveBeenCalledTimes(1)
   })
 })
+
+describe("the editor's File menu", () => {
+  it('asks the shell to open a file when Open is picked', async () => {
+    createHwpView()
+    const { ipcMain } = await import('electron')
+    const on = ipcMain.on as unknown as {
+      mock: { calls: [string, (...args: unknown[]) => void][] }
+    }
+    const handler = on.mock.calls.find(([channel]) => channel === 'hwp:file-command')?.[1]
+    expect(handler).toBeDefined()
+    handler?.({ sender: createHwpView().webContents }, 'open')
+    expect(openFileDialog).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("the editor's File menu exports (0.17)", () => {
+  it('asks the tab for Word, all pages as pictures or the current page as a picture', async () => {
+    const view = createHwpView()
+    const { ipcMain } = await import('electron')
+    const on = ipcMain.on as unknown as {
+      mock: { calls: [string, (...args: unknown[]) => void][] }
+    }
+    const handler = on.mock.calls.find(([channel]) => channel === 'hwp:file-command')?.[1]
+    const contents = view.webContents as unknown as { send: ReturnType<typeof vi.fn> }
+    contents.send.mockClear()
+    for (const command of ['docx', 'png', 'pngPage']) handler?.({ sender: contents }, command)
+    expect(contents.send.mock.calls).toEqual([
+      ['hwp:print-request', 'docx'],
+      ['hwp:print-request', 'png'],
+      ['hwp:print-request', 'pngPage'],
+    ])
+  })
+})

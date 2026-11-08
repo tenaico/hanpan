@@ -72,6 +72,52 @@ export function rememberMemoPanelOpen(open: boolean, storage: FlagStorage = loca
   }
 }
 
+/**
+ * The narrowest the editor beside the panels may get: under 768px the editor turns to its
+ * phone layout (status bar run together, toolbar on two rows), and its scroll bar and the
+ * page's edge need a little more.
+ */
+export const EDITOR_MIN_WIDTH = 800
+
+/** Which side panel was opened last: it stays out when the window has room for one only. */
+export type SidePanel = 'ai' | 'memo'
+
+export interface SidesInput {
+  readonly windowWidth: number
+  /** the AI panel's width while out */
+  readonly aiWidth: number
+  readonly memoWidth: number
+  /** what the user left out (remembered) */
+  readonly aiOpen: boolean
+  readonly memoOpen: boolean
+  readonly last: SidePanel
+}
+
+/**
+ * Which panels are out on screen. Both stay out while the editor keeps EDITOR_MIN_WIDTH;
+ * below that only the one opened last is, and the other folds (the AI panel to its rail, the
+ * memo column away) without forgetting it was open. Neither ever covers the document
+ * (0.17.1 #21: a column floated over the page hid the start of every line).
+ */
+export function sidesShown(input: SidesInput): { ai: boolean; memo: boolean } {
+  const { windowWidth, aiWidth, memoWidth, aiOpen, memoOpen, last } = input
+  if (!aiOpen || !memoOpen) return { ai: aiOpen, memo: memoOpen }
+  if (windowWidth - aiWidth - memoWidth >= EDITOR_MIN_WIDTH) return { ai: true, memo: true }
+  return last === 'memo' ? { ai: false, memo: true } : { ai: true, memo: false }
+}
+
+/**
+ * The top-bar button: a column that is open but folded for the AI panel comes out (and the
+ * AI panel folds); an open one on screen closes; a closed one opens.
+ */
+export function memoToggleNext(state: {
+  memoOpen: boolean
+  memoShown: boolean
+}): { open: true; last: 'memo' } | { open: false } {
+  if (state.memoOpen && state.memoShown) return { open: false }
+  return { open: true, last: 'memo' }
+}
+
 /** The top bar's button: the editor has no ribbon, so this is the memo column's way in. */
 export function MemoToggle({ open, onToggle }: { open: boolean; onToggle(): void }): ReactElement {
   const { t } = useI18n()
@@ -161,7 +207,7 @@ export function MemoSide(props: MemoPanelProps): ReactElement {
   return (
     <div
       className={`memo-side${open ? '' : ' collapsed'}${resizing ? ' memo-side-resizing' : ''}`}
-      style={{ width }}
+      style={{ width, ['--memo-width' as string]: `${width}px` }}
     >
       <MemoPanel {...props} />
       {open && <div className="memo-side-resizer" onPointerDown={startResize} />}

@@ -154,7 +154,8 @@ export const hi = {
   dlgPivotAddValue: '+ मान फ़ील्ड जोड़ें',
   dlgPivotAddCalc: '+ परिकलित फ़ील्ड जोड़ें',
   dlgPivotTargetCell: 'लक्ष्य सेल',
-  dlgPivotTargetPlaceholder: 'जैसे F1',
+  dlgPivotTargetPlaceholder: 'जैसे {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'संपादन करते समय आउटपुट श्रेणी का ऊपरी-बायां सेल अपरिवर्तित रहता है',
   dlgPivotNote:
     'एक वास्तविक OOXML पिवट तालिका बनाता है जिसे सहेजने के बाद Excel/WPS पहचान और रीफ़्रेश कर सकते हैं।',
@@ -637,6 +638,12 @@ export const hi = {
   dlgPrintNextPage: 'अगला पृष्ठ',
   dlgPrintZoomFit: 'पृष्ठ फ़िट करें',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'चौड़ाई फ़िट करें',
+  dlgPrintColumnsSplit:
+    '"{sheets}" के स्तंभ एक पृष्ठ की चौड़ाई में नहीं आते; दाईं ओर के स्तंभ अगले पृष्ठों पर छपेंगे।',
+  dlgPrintPastEdge: 'कुछ स्तंभ पृष्ठ के दाएँ किनारे से बाहर जाते हैं और कट जाएँगे।',
+  dlgPrintClippedText:
+    'सबसे दाएँ स्तंभ का कुछ पाठ मुद्रण क्षेत्र से बाहर जाता है और कट जाएगा। उस स्तंभ को चौड़ा करें या टेक्स्ट रैप चालू करें।',
   dlgPrintButton: 'प्रिंट करें',
   dlgPrintToPdf: 'PDF में प्रिंट करें',
   dlgPrintPageSetup: 'पृष्ठ सेटअप…',

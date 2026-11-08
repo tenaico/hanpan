@@ -56,7 +56,12 @@ function deps(over: Partial<ConvertDeps> = {}): ConvertDeps {
 
 describe('checkConvertRequest', () => {
   it('keeps known formats in a fixed order and drops the rest', () => {
-    const request = checkConvertRequest({ markdown: '# a', name: 'x', formats: ['pdf', 'exe', 'hwp'], theme: 'nope' })
+    const request = checkConvertRequest({
+      markdown: '# a',
+      name: 'x',
+      formats: ['pdf', 'exe', 'hwp'],
+      theme: 'nope',
+    })
     expect(request.formats).toEqual(['hwp', 'pdf'])
     expect(request.theme).toBe('report')
   })
@@ -75,9 +80,13 @@ describe('checkConvertRequest', () => {
 
 describe('the converted document', () => {
   it('takes the file name as its title when the text has no # heading', () => {
-    const blocks = convertBlocks(checkConvertRequest({ markdown: MARKDOWN, name: 'ACP215 수정 내역', formats: ['hwp'] }))
+    const blocks = convertBlocks(
+      checkConvertRequest({ markdown: MARKDOWN, name: 'ACP215 수정 내역', formats: ['hwp'] }),
+    )
     expect(blocks[0]).toEqual({ kind: 'title', text: 'ACP215 수정 내역' })
-    expect(blocks.find((b) => b.kind === 'table')).toMatchObject({ rows: [['요청', '반영'], expect.any(Array), expect.any(Array)] })
+    expect(blocks.find((b) => b.kind === 'table')).toMatchObject({
+      rows: [['요청', '반영'], expect.any(Array), expect.any(Array)],
+    })
   })
 
   it('reads the title from the first # heading', () => {
@@ -96,10 +105,16 @@ describe('the converted document', () => {
 describe('convertMarkdown', () => {
   it('writes every ticked format side by side in one folder', async () => {
     const dir = folder()
-    const request = checkConvertRequest({ markdown: MARKDOWN, name: '수정 내역', formats: ['hwp', 'hwpx', 'docx', 'odt', 'pdf', 'html'] })
+    const request = checkConvertRequest({
+      markdown: MARKDOWN,
+      name: '수정 내역',
+      formats: ['hwp', 'hwpx', 'docx', 'odt', 'pdf', 'html'],
+    })
     const result = await convertMarkdown(request, dir, deps())
     expect(result.failed).toEqual([])
-    expect(result.written.map((w) => w.path)).toEqual(['hwp', 'hwpx', 'docx', 'odt', 'pdf', 'html'].map((ext) => join(dir, `수정 내역.${ext}`)))
+    expect(result.written.map((w) => w.path)).toEqual(
+      ['hwp', 'hwpx', 'docx', 'odt', 'pdf', 'html'].map((ext) => join(dir, `수정 내역.${ext}`)),
+    )
     const html = readFileSync(join(dir, '수정 내역.html'), 'utf8')
     expect(html).toContain('<title>수정 내역</title>')
     expect(html).toContain('<th>요청</th>')
@@ -107,14 +122,16 @@ describe('convertMarkdown', () => {
     const bytes = (ext: string) => readFileSync(join(dir, `수정 내역.${ext}`))
     // HWP is an OLE compound file; HWPX, Word and ODT are zips
     expect([...bytes('hwp').subarray(0, 4)]).toEqual([0xd0, 0xcf, 0x11, 0xe0])
-    for (const ext of ['hwpx', 'docx', 'odt']) expect(bytes(ext).subarray(0, 2).toString()).toBe('PK')
+    for (const ext of ['hwpx', 'docx', 'odt'])
+      expect(bytes(ext).subarray(0, 2).toString()).toBe('PK')
 
     // the HWP reads back with the table cells and the list lines in it
     const engine = await loadEngine()
     const doc = new engine.HwpDocument(new Uint8Array(bytes('hwp')))
     try {
       const text: string[] = []
-      for (let i = 0; i < doc.getParagraphCount(0); i++) text.push(doc.getTextRange(0, i, 0, doc.getParagraphLength(0, i)))
+      for (let i = 0; i < doc.getParagraphCount(0); i++)
+        text.push(doc.getTextRange(0, i, 0, doc.getParagraphLength(0, i)))
       expect(text[0]).toBe('수정 내역')
       expect(text.join('\n')).toContain('설명선 구간을 모두 뺐습니다')
     } finally {
@@ -125,7 +142,11 @@ describe('convertMarkdown', () => {
   it('makes only what was ticked and keeps going when one format fails', async () => {
     const dir = folder()
     const request = checkConvertRequest({ markdown: MARKDOWN, name: 'a', formats: ['docx', 'pdf'] })
-    const result = await convertMarkdown(request, dir, deps({ htmlToPdf: async () => Promise.reject(new Error('printer gone')) }))
+    const result = await convertMarkdown(
+      request,
+      dir,
+      deps({ htmlToPdf: async () => Promise.reject(new Error('printer gone')) }),
+    )
     expect(result.written).toEqual([{ format: 'docx', path: join(dir, 'a.docx') }])
     expect(result.failed).toEqual([{ format: 'pdf', error: 'printer gone' }])
     expect(existsSync(join(dir, 'a.hwp'))).toBe(false)

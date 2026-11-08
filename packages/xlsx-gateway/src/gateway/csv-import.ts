@@ -7,6 +7,7 @@ import JSZip from 'jszip'
 import { encodeXlsxEscapes } from './xlsx-escapes'
 import { DEFAULT_THEME_XML } from './xlsx-default-theme'
 import { MINIMAL_STYLESHEET_XML } from './xlsx-default-styles'
+import { firstSheetNameFor, newWorkbookStylesheetXml } from './new-workbook-lang'
 import { validateSheetName } from './xlsx-sheets'
 
 const DELIMITERS = [',', ';', '\t'] as const
@@ -298,16 +299,27 @@ function columnLabel(column: number): string {
 export function buildWorksheetXml(
   rows: readonly (readonly string[])[],
   merges: readonly string[] = [],
+  options: { readonly dates?: boolean } = {},
 ): string {
   const lines: string[] = []
   let maxColumns = 1
   let maxRows = Math.max(rows.length, 1)
+  // widest date text per column, for the <cols> widths
+  const dateChars = new Map<number, number>()
   rows.forEach((row, rowIndex) => {
     const cells: string[] = []
     row.forEach((value, columnIndex) => {
       if (value === '') return
       maxColumns = Math.max(maxColumns, columnIndex + 1)
       const reference = `${columnLabel(columnIndex)}${rowIndex + 1}`
+      const date = options.dates ? csvDateCell(value) : null
+      if (date) {
+        dateChars.set(columnIndex, Math.max(dateChars.get(columnIndex) ?? 0, date.format.length))
+        cells.push(
+          `<c r="${reference}" s="${DATE_STYLE_INDEX[date.format]}"><v>${date.serial}</v></c>`,
+        )
+        return
+      }
       cells.push(
         isNumericCell(value)
           ? `<c r="${reference}"><v>${Number(value)}</v></c>`
@@ -330,11 +342,93 @@ export function buildWorksheetXml(
     merges.length > 0
       ? `<mergeCells count="${merges.length}">${merges.map((ref) => `<mergeCell ref="${ref}"/>`).join('')}</mergeCells>`
       : ''
+  const cols = [...dateChars.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(
+      ([column, chars]) =>
+        `<col min="${column + 1}" max="${column + 1}" width="${excelColumnWidth(chars)}" customWidth="1"/>`,
+    )
+  const colsXml = cols.length > 0 ? `<cols>${cols.join('')}</cols>` : ''
   return (
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
     '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-    `<dimension ref="${dimension}"/><sheetData>${lines.join('')}</sheetData>${mergeXml}</worksheet>`
+    `<dimension ref="${dimension}"/>${colsXml}<sheetData>${lines.join('')}</sheetData>${mergeXml}</worksheet>`
   )
+}
+
+/// Date formats the CSV open path writes, by the separator the text used.
+type CsvDateFormat = 'yyyy-mm-dd' | 'yyyy/mm/dd'
+
+/// cellXfs index of each date format in csvDateStylesheet (0 is Normal).
+const DATE_STYLE_INDEX: Record<CsvDateFormat, number> = { 'yyyy-mm-dd': 1, 'yyyy/mm/dd': 2 }
+
+const YEAR_FIRST_DATE = /^(\d{4})([-/])(\d{1,2})\2(\d{1,2})$/
+const MS_PER_DAY = 86_400_000
+/// Excel's day 0 (1899-12-30): serials count from there.
+const EXCEL_EPOCH_UTC = Date.UTC(1899, 11, 30)
+/// Excel's serials before 1900-03-01 are off by one (its 1900-02-29); those
+/// dates stay text rather than land a day wrong.
+const FIRST_SAFE_SERIAL = 61
+
+/// A year-first date as Excel reads one from a CSV ("2020-03-02",
+/// "2019/7/15"): the serial and the format that shows it the same way.
+/// Anything else, an impossible date included, is null and stays text.
+export function csvDateCell(value: string): { serial: number; format: CsvDateFormat } | null {
+  const match = YEAR_FIRST_DATE.exec(value)
+  if (!match) return null
+  const year = Number(match[1])
+  const month = Number(match[3])
+  const day = Number(match[4])
+  const time = Date.UTC(year, month - 1, day)
+  const check = new Date(time)
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day
+  ) {
+    return null
+  }
+  const serial = Math.round((time - EXCEL_EPOCH_UTC) / MS_PER_DAY)
+  if (serial < FIRST_SAFE_SERIAL) return null
+  return { serial, format: match[2] === '/' ? 'yyyy/mm/dd' : 'yyyy-mm-dd' }
+}
+
+/// Excel's stored width for `chars` digits of the Normal font (Calibri 11,
+/// 7px digits, 5px of cell padding), truncated to 1/256 of a character.
+function excelColumnWidth(chars: number): number {
+  const digitPx = 7
+  const paddingPx = 5
+  return Math.trunc(((chars * digitPx + paddingPx) / digitPx) * 256) / 256
+}
+
+/// The minimal stylesheet plus the two date formats of the CSV open path.
+function csvDateStylesheet(): string {
+  return MINIMAL_STYLESHEET_XML.replace(
+    '<fonts ',
+    '<numFmts count="2"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/>' +
+      '<numFmt numFmtId="165" formatCode="yyyy/mm/dd"/></numFmts><fonts ',
+  ).replace(
+    '<cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>',
+    '<cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+      '<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
+      '<xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>',
+  )
+}
+
+const FORBIDDEN_SHEET_CHARACTERS = /[\\/?*[\]:]/g
+/// Excel keeps "History" for its change tracking.
+const RESERVED_SHEET_NAMES = new Set(['history'])
+
+/// The sheet name Excel gives a CSV it opens: the file name, with the
+/// characters a sheet name cannot hold replaced and cut to 31 characters.
+/// Undefined when nothing usable is left (the caller's default name then).
+export function sheetNameFromFileStem(stem: string): string | undefined {
+  const name = stem
+    .replace(FORBIDDEN_SHEET_CHARACTERS, '_')
+    .slice(0, 31)
+    .replace(/^'+|'+$/g, '')
+  if (name.length === 0 || RESERVED_SHEET_NAMES.has(name.toLowerCase())) return undefined
+  return name
 }
 
 function columnIndexFromLabel(label: string): number {
@@ -343,10 +437,23 @@ function columnIndexFromLabel(label: string): number {
   return index - 1
 }
 
-export async function csvToXlsxBuffer(csvText: string, sheetName = 'Sheet1'): Promise<Buffer> {
+/**
+ * The first sheet of a workbook this package makes from nothing (a blank workbook, a CSV
+ * opened or imported, the AI's create_document) follows the UI language the caller passes
+ * (firstSheetNameFor, new-workbook-lang.ts); without one it is Korean, as Hanpan 0.17
+ * starts new workbooks. A sheet of an existing file keeps its own name; only new ones
+ * take this.
+ */
+export const NEW_WORKBOOK_SHEET_NAME = firstSheetNameFor('ko')
+
+export async function csvToXlsxBuffer(
+  csvText: string,
+  sheetName?: string,
+  lang = 'ko',
+): Promise<Buffer> {
   const rows = parseCsv(csvText, resolveImportDelimiter(csvText))
   if (rows.length === 0) throw new Error('The CSV file has no data rows.')
-  return xlsxBufferFromRows(rows, sheetName)
+  return xlsxBufferFromRows(rows, sheetName ?? firstSheetNameFor(lang))
 }
 
 /**
@@ -357,11 +464,20 @@ export async function csvToXlsxBuffer(csvText: string, sheetName = 'Sheet1'): Pr
  */
 export async function csvToXlsxBufferForOpen(
   csvText: string,
-  sheetName = 'Sheet1',
+  sheetName?: string,
   delimiter?: string,
+  lang = 'ko',
 ): Promise<{ buffer: Buffer; empty: boolean }> {
   const rows = parseCsv(csvText, delimiter ?? resolveImportDelimiter(csvText))
-  return { buffer: await xlsxBufferFromRows(rows, sheetName), empty: rows.length === 0 }
+  // Year-first dates open as dates (X19); a file without any keeps the plain stylesheet.
+  const dates = rows.some((row) => row.some((value) => csvDateCell(value) !== null))
+  const sheet = { name: sheetName ?? firstSheetNameFor(lang), rows, dates }
+  return {
+    buffer: await (dates
+      ? xlsxBufferFromSheets([sheet], csvDateStylesheet())
+      : xlsxBufferFromSheets([sheet])),
+    empty: rows.length === 0,
+  }
 }
 
 /**
@@ -406,13 +522,24 @@ function bodyRowsAgreeOnWidth(rows: readonly (readonly string[])[]): boolean {
  * neither), and sniffing would then split the wrong columns — and an
  * all-empty grid becomes a valid blank workbook instead of an import error.
  */
-export async function sheetCsvToXlsxBuffer(csvText: string, sheetName = 'Sheet1'): Promise<Buffer> {
-  return xlsxBufferFromRows(parseCsv(csvText, ','), sheetName)
+export async function sheetCsvToXlsxBuffer(
+  csvText: string,
+  sheetName?: string,
+  lang = 'ko',
+): Promise<Buffer> {
+  return xlsxBufferFromRows(parseCsv(csvText, ','), sheetName ?? firstSheetNameFor(lang))
 }
 
-/** minimal empty workbook: the backing file for a "new blank spreadsheet" tab */
-export async function blankXlsxBuffer(sheetName = 'Sheet1'): Promise<Buffer> {
-  return xlsxBufferFromRows([], sheetName)
+/**
+ * minimal empty workbook: the backing file for a "new blank spreadsheet" tab. The first
+ * sheet's name (unless the caller gives one) and the Normal font follow the UI language
+ * (Hanpan 0.17, new-workbook-lang.ts); without a language it starts in Korean: 시트1, 맑은 고딕.
+ */
+export async function blankXlsxBuffer(sheetName?: string, lang = 'ko'): Promise<Buffer> {
+  return xlsxBufferFromSheets(
+    [{ name: sheetName ?? firstSheetNameFor(lang), rows: [] }],
+    newWorkbookStylesheetXml(lang),
+  )
 }
 
 export interface MinimalWorksheet {
@@ -420,6 +547,9 @@ export interface MinimalWorksheet {
   readonly rows: readonly (readonly string[])[]
   /// A1 ranges to merge, e.g. "A1:B2".
   readonly merges?: readonly string[]
+  /// Store year-first date text as dates (csvDateCell); the stylesheet must
+  /// carry the date formats at the DATE_STYLE_INDEX positions.
+  readonly dates?: boolean
 }
 
 async function xlsxBufferFromRows(
@@ -432,6 +562,7 @@ async function xlsxBufferFromRows(
 /** A minimal workbook from plain cell text, shared by CSV and HTML imports. */
 export async function xlsxBufferFromSheets(
   worksheets: readonly MinimalWorksheet[],
+  stylesheet: string = MINIMAL_STYLESHEET_XML,
 ): Promise<Buffer> {
   if (worksheets.length === 0) throw new Error('A workbook needs at least one worksheet.')
   for (const worksheet of worksheets) validateSheetName(worksheet.name)
@@ -489,11 +620,13 @@ export async function xlsxBufferFromSheets(
       '</Relationships>',
   )
   zip.file('xl/theme/theme1.xml', DEFAULT_THEME_XML)
-  zip.file('xl/styles.xml', MINIMAL_STYLESHEET_XML)
+  zip.file('xl/styles.xml', stylesheet)
   worksheets.forEach((worksheet, index) => {
     zip.file(
       `xl/worksheets/sheet${index + 1}.xml`,
-      buildWorksheetXml(worksheet.rows, worksheet.merges ?? []),
+      buildWorksheetXml(worksheet.rows, worksheet.merges ?? [], {
+        dates: worksheet.dates === true,
+      }),
     )
   })
   return zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })

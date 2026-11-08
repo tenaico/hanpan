@@ -59,7 +59,8 @@ export const id = {
     'Penyalin Format (klik untuk menyalin dan menerapkan format; ⌘⇧C salin format / ⌘⇧V tempel format)',
   ribbonGroupSlides: 'Slide',
   ribbonNewSlide: 'Slide Baru',
-  ribbonNewSlideTip: 'Slide kosong baru (mempertahankan latar belakang tata letak slide saat ini)',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'Pilih Tata Letak',
   ribbonChooseLayoutNew: 'Slide Baru dengan Tata Letak',
   ribbonChooseLayoutChange: 'Ubah Tata Letak Slide Saat Ini',
@@ -788,4 +789,8 @@ export const id = {
   ribbonZoomSectionItem: 'Slide {n} Bagian {k}: {name}',
   ribbonZoomSelectedSlides: '{n} slide dipilih',
   ribbonZoomSelectedSections: '{n} bagian dipilih',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

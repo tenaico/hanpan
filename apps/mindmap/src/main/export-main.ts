@@ -31,16 +31,17 @@ import {
   showSaveDialogWithMemory,
   type PrintDialogWindow,
 } from '@genoffice/electron-utils'
+import { printJobOptions } from '@genoffice/electron-utils/print-job'
 import { atomicWriteFile } from './atomic-write'
 import { tm } from './i18n-main'
 import { MINDMAP_CHANNELS } from '../shared/ipc'
-import type { ExportResult, PrintResult } from '../shared/ipc'
+import type { ExportResult, PrinterInfo, PrintResult } from '../shared/ipc'
 
 /** What each kind of export is saved as. The format names are the formats' own and are not translated. */
 export const EXPORT_KINDS = {
-  png: { extension: '.png', filter: 'PNG' },
-  pdf: { extension: '.pdf', filter: 'PDF' },
-  markdown: { extension: '.md', filter: 'Markdown' },
+  png: { extension: '.png', filter: 'PNG', title: 'exportTitlePng' },
+  pdf: { extension: '.pdf', filter: 'PDF', title: 'exportTitlePdf' },
+  markdown: { extension: '.md', filter: 'Markdown', title: 'exportTitleMarkdown' },
 } as const
 
 export type ExportKind = keyof typeof EXPORT_KINDS
@@ -110,13 +111,14 @@ async function pickTarget(
   suggestedName: unknown,
   options: ExportIpcOptions,
 ): Promise<string | null> {
-  const { extension, filter } = EXPORT_KINDS[kind]
+  const { extension, filter, title } = EXPORT_KINDS[kind]
   const win =
     BrowserWindow.fromWebContents(e.sender) ?? BrowserWindow.getFocusedWindow() ?? undefined
   const picked = await showSaveDialogWithMemory(
     dialog,
     win,
     {
+      title: tm(title),
       defaultPath: saveAsSuggestion(
         options.filePathOf(e.sender.id),
         `${exportFileBase(suggestedName)}${extension}`,
@@ -175,9 +177,10 @@ function exportSession(): Electron.Session {
 }
 
 /** A hidden window for the page. Scripts stay on only where the print readiness probe needs them. */
-function pageWindow(javascript: boolean): BrowserWindow {
+function pageWindow(javascript: boolean, parent?: BrowserWindow): BrowserWindow {
   return new BrowserWindow({
     show: false,
+    ...(parent ? { parent } : {}),
     width: 1123,
     height: 794,
     autoHideMenuBar: true,
@@ -210,11 +213,36 @@ export async function pageToPdf(html: string): Promise<Buffer> {
 }
 
 /**
- * The window `printHtmlDocument` prints from, with the page size said to the
- * system dialog as well: landscape A4, as the page itself asks for.
+ * What the print window hands the printer: the job the in-app dialog chose
+ * (a named printer prints silently, without the system dialog that would hold
+ * the whole app while it is open), on one landscape A4 page with no margin of
+ * its own, as the page asks for.
  */
-function printWindow(): PrintDialogWindow {
-  const win = pageWindow(true)
+export function mindmapPrintOptions(
+  base: { silent: boolean; printBackground: boolean },
+  job: unknown,
+): ReturnType<typeof printJobOptions> & {
+  printBackground: boolean
+  landscape: true
+  pageSize: 'A4'
+  margins: { marginType: 'none' }
+} {
+  return {
+    ...base,
+    ...printJobOptions(job),
+    landscape: true,
+    pageSize: 'A4',
+    margins: { marginType: 'none' },
+  }
+}
+
+/**
+ * The window `printHtmlDocument` prints from. A silent job never shows it; the
+ * system dialog is opened over the editor's own window.
+ */
+function printWindow(parent: BrowserWindow | undefined, job: unknown): PrintDialogWindow {
+  const win = pageWindow(true, parent)
+  const silent = printJobOptions(job).silent
   let release = (): void => {}
   return {
     loadFile: (path) => {
@@ -226,13 +254,14 @@ function printWindow(): PrintDialogWindow {
       executeJavaScript: (script, userGesture) =>
         win.webContents.executeJavaScript(script, userGesture),
       print: (options, callback) =>
-        win.webContents.print(
-          { ...options, landscape: true, pageSize: 'A4', margins: { marginType: 'none' } },
-          callback,
-        ),
+        win.webContents.print(mindmapPrintOptions(options, job), callback),
     },
-    show: () => win.show(),
-    focus: () => win.focus(),
+    show: () => {
+      if (!silent) win.show()
+    },
+    focus: () => {
+      if (!silent) win.focus()
+    },
     isDestroyed: () => win.isDestroyed(),
     destroy: () => {
       release()
@@ -296,14 +325,20 @@ export function registerMindmapExportIpc(options: ExportIpcOptions): void {
     },
   )
 
-  ipcMain.handle(MINDMAP_CHANNELS.print, async (_e, request: unknown): Promise<PrintResult> => {
+  ipcMain.handle(MINDMAP_CHANNELS.printers, async (e): Promise<PrinterInfo[]> => {
+    const printers = await e.sender.getPrintersAsync()
+    return printers.map((p) => ({ name: p.name, displayName: p.displayName || p.name }))
+  })
+
+  ipcMain.handle(MINDMAP_CHANNELS.print, async (e, request: unknown): Promise<PrintResult> => {
     const html = fieldOf(request, 'html')
     if (typeof html !== 'string' || html === '' || html.length > MAX_PAGE_CHARS) {
       return { ok: false, error: 'mindmap: bad print request' }
     }
+    const parent = BrowserWindow.fromWebContents(e.sender) ?? undefined
     return printHtmlDocument({
       html,
-      window: printWindow(),
+      window: printWindow(parent, fieldOf(request, 'job')),
       fileName: 'map.html',
       dirPrefix: 'genoffice-mindmap-print-',
     })

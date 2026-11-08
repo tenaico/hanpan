@@ -1,25 +1,28 @@
-// The Redis store the Vercel project is connected to, through its REST interface.
-// Vercel's Upstash integration names the variables KV_* or UPSTASH_REDIS_*.
+// The tenai.kr Supabase project, reached from the server only with its secret key
+// (SUPABASE_URL, SUPABASE_SECRET_KEY in the Vercel project). The tables and the two
+// functions it calls are in site/supabase/hanpan-site-stats.sql.
 
 function settings() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) throw new Error('no Redis store is connected to this project')
-  return { url: url.replace(/\/$/, ''), token }
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SECRET_KEY
+  if (!url || !key) throw new Error('no Supabase project is configured for this site')
+  return { url: url.replace(/\/$/, ''), key }
 }
 
-// runs the commands in one round trip and returns each one's result
-async function redis(commands) {
-  if (commands.length === 0) return []
-  const { url, token } = settings()
-  const res = await fetch(`${url}/pipeline`, {
+// calls a database function through the REST interface and returns its JSON answer
+async function rpc(name, args) {
+  const { url, key } = settings()
+  const headers = { apikey: key, 'Content-Type': 'application/json' }
+  // a legacy service_role key is a JWT and also goes in Authorization; new sb_secret_ keys do not
+  if (key.startsWith('eyJ')) headers.Authorization = `Bearer ${key}`
+  const res = await fetch(`${url}/rest/v1/rpc/${name}`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(commands),
+    headers,
+    body: JSON.stringify(args),
   })
-  if (!res.ok) throw new Error(`Redis answered ${res.status}`)
-  const results = await res.json()
-  return results.map((r) => (r && 'result' in r ? r.result : null))
+  if (!res.ok) throw new Error(`Supabase answered ${res.status}`)
+  const text = await res.text()
+  return text ? JSON.parse(text) : null
 }
 
 // the day in Korea, as 2026-11-03
@@ -27,4 +30,4 @@ function seoulDate(date) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(date)
 }
 
-module.exports = { redis, seoulDate }
+module.exports = { rpc, seoulDate }

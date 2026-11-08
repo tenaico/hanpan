@@ -72,7 +72,12 @@ describe('empty packaged inputs', () => {
   it('does not refuse a zero-byte file for open, which lets the editor start a new document', async () => {
     const input = empty('docx')
     const r = await run(['open', input, '--json'], {
-      env: { GENOFFICE_APP_BIN: join(dirs.at(-1)!, 'missing-app') },
+      env: {
+        GENOFFICE_APP_BIN: join(dirs.at(-1)!, 'missing-app'),
+        // its own app data folder: with the real one, a running app took this scratch file
+        // as an open request, listed it in recents and restored it as an "empty.docx" tab
+        GENOFFICE_USER_DATA: dirs.at(-1)!,
+      },
     })
     // it got as far as launching the (missing) app instead of refusing the input
     expect(r.code).toBe(4)

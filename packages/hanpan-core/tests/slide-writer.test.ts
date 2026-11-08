@@ -42,7 +42,7 @@ describe('slide writer prompts', () => {
     expect(jobs.map((j) => j.branchKey)).toEqual([market.key, solution.key, goals.key])
     expect(jobs.map((j) => j.branchKey)).not.toContain(appendix.key)
     const [first] = jobs
-    expect(first!.system).toContain('맥킨지')
+    expect(first!.system).toContain('「결론 먼저 보고서」 스타일')
     expect(first!.system).toContain('액션 타이틀')
     expect(first!.system).toContain('지어내지 않는다')
     expect(first!.user).toContain('청중: 투자 심사위원')
@@ -96,7 +96,19 @@ describe('slide writer prompts', () => {
   })
 
   it('every style and the plain deck have a guide', () => {
-    for (const style of ['jobs', 'mckinsey', 'toss', 'bcg', 'ted', 'material', 'notion', 'airbnb', 'canva', 'pitch', 'plain'] as const) {
+    for (const style of [
+      'jobs',
+      'mckinsey',
+      'toss',
+      'bcg',
+      'ted',
+      'material',
+      'notion',
+      'airbnb',
+      'canva',
+      'pitch',
+      'plain',
+    ] as const) {
       expect(SLIDE_GUIDES[style].rules.length, style).toBeGreaterThan(0)
       expect(slideWriterJobs(outline, style)[0]!.system, style).toContain('{제목}')
     }
@@ -154,7 +166,11 @@ describe('reading the answer', () => {
   })
 
   it('a note that runs over several lines is read whole', () => {
-    const w = parseSlideWriting('{노트} 첫 문장입니다.\n이어지는 문장입니다.\n{핵심} 요점', job, titles)
+    const w = parseSlideWriting(
+      '{노트} 첫 문장입니다.\n이어지는 문장입니다.\n{핵심} 요점',
+      job,
+      titles,
+    )
     expect(w.notes[market.key]).toBe('첫 문장입니다. 이어지는 문장입니다.')
   })
 
@@ -182,7 +198,9 @@ describe('reading the answer', () => {
     expect(w.takeaways[market.key]).toBeUndefined()
     // the map's own figure, and small counts with no unit, are fine
     expect(w.notes[market.key]).toBe('이유는 두 가지이고, 3주 대기가 첫째입니다.')
-    expect(parseSlideWriting('{핵심} 2단계로 나눠 봄', job, titles).takeaways[market.key]).toBe('2단계로 나눠 봄')
+    expect(parseSlideWriting('{핵심} 2단계로 나눠 봄', job, titles).takeaways[market.key]).toBe(
+      '2단계로 나눠 봄',
+    )
   })
 
   it('a figure followed by a particle still counts as that figure', () => {
@@ -204,13 +222,20 @@ describe('reading the answer', () => {
     expect(w.titles[market.key]).toBeUndefined()
     expect(w.lines[costKey]).toBeUndefined()
     expect(w.takeaways[market.key]).toBeUndefined()
-    expect(parseSlideWriting(`{제목} ${'가'.repeat(limit)}`, job, titles).titles[market.key]).toHaveLength(limit)
+    expect(
+      parseSlideWriting(`{제목} ${'가'.repeat(limit)}`, job, titles).titles[market.key],
+    ).toHaveLength(limit)
   })
 
   it('adds each branch to the same writing, and the last job brings the closing', () => {
     const w = emptySlideWriting()
     parseSlideWriting('{제목} 첫 장', jobs[0]!, titles, w)
-    parseSlideWriting(`{#1} 첫 해 고객 500명을 목표로 함\n{마무리} ${'라'.repeat(61)}`, jobs[2]!, titles, w)
+    parseSlideWriting(
+      `{#1} 첫 해 고객 500명을 목표로 함\n{마무리} ${'라'.repeat(61)}`,
+      jobs[2]!,
+      titles,
+      w,
+    )
     expect(w.closing).toBeUndefined()
     parseSlideWriting('{마무리} 다음 단계는 시범 운영임', jobs[2]!, titles, w)
     expect(Object.keys(w.titles)).toEqual([market.key])
@@ -229,7 +254,12 @@ describe('putting it on the slides', () => {
       titles,
       w,
     )
-    parseSlideWriting('{#1} 첫 해 고객 500명을 목표로 함\n{마무리} 시범 운영을 시작함', jobs[2]!, titles, w)
+    parseSlideWriting(
+      '{#1} 첫 해 고객 500명을 목표로 함\n{마무리} 시범 운영을 시작함',
+      jobs[2]!,
+      titles,
+      w,
+    )
     return w
   })()
 
@@ -258,9 +288,15 @@ describe('putting it on the slides', () => {
   })
 
   it('a slide continued over several pages keeps its title and takeaway on each', () => {
-    const many = outlineFromIndentedText(`덱\n  긴 가지\n${Array.from({ length: 11 }, (_, i) => `    항목 ${i + 1}`).join('\n')}\n`)
+    const many = outlineFromIndentedText(
+      `덱\n  긴 가지\n${Array.from({ length: 11 }, (_, i) => `    항목 ${i + 1}`).join('\n')}\n`,
+    )
     const [job] = slideWriterJobs(many, 'mckinsey')
-    const w = parseSlideWriting('{제목} 항목이 많은 가지\n{핵심} 요점\n{노트} 설명', job!, topicTitles(many))
+    const w = parseSlideWriting(
+      '{제목} 항목이 많은 가지\n{핵심} 요점\n{노트} 설명',
+      job!,
+      topicTitles(many),
+    )
     const [, first, second] = applySlideWriting(outlineToSlides(many), w)
     expect(first!.title).toBe('항목이 많은 가지')
     expect(second!.title).toBe('항목이 많은 가지 (계속)')
@@ -282,8 +318,16 @@ describe('putting it on the slides', () => {
     const slides = applySlideWriting(outlineToSlides(outline), writing)
     const texts = (ops: ReturnType<typeof styledDeckOps>, slide: number): string[] =>
       ops
-        .filter((o) => (o.target as { slide?: number } | undefined)?.slide === slide && Array.isArray(o.paragraphs))
-        .flatMap((o) => (o.paragraphs as { runs: { text: string }[] }[]).flatMap((p) => p.runs.map((r) => r.text)))
+        .filter(
+          (o) =>
+            (o.target as { slide?: number } | undefined)?.slide === slide &&
+            Array.isArray(o.paragraphs),
+        )
+        .flatMap((o) =>
+          (o.paragraphs as { runs: { text: string }[] }[]).flatMap((p) =>
+            p.runs.map((r) => r.text),
+          ),
+        )
     const ops = styledDeckOps(slides, 'mckinsey', { closing: writing.closing })
     const all = (n: number) => texts(ops, n).join(' ')
     // cover, contents, four slides, closing
@@ -298,7 +342,14 @@ describe('putting it on the slides', () => {
 })
 
 describe('the send request', () => {
-  const base = { target: 'slides', style: 'report', includeNotes: true, mapPath: null, sheetId: 's', outline }
+  const base = {
+    target: 'slides',
+    style: 'report',
+    includeNotes: true,
+    mapPath: null,
+    sheetId: 's',
+    outline,
+  }
 
   it('keeps well-formed writing and drops what is not text', () => {
     const request = checkSendRequest({
@@ -324,11 +375,16 @@ describe('the send request', () => {
   })
 
   it('a closing on several lines is left out', () => {
-    expect(checkSendRequest({ ...base, slideWriting: { closing: '하나\n둘' } }).slideWriting?.closing).toBeUndefined()
+    expect(
+      checkSendRequest({ ...base, slideWriting: { closing: '하나\n둘' } }).slideWriting?.closing,
+    ).toBeUndefined()
   })
 
   it('takes no slide writing for a document, and refuses a malformed one', () => {
-    expect(checkSendRequest({ ...base, target: 'hwp', slideWriting: { titles: { a: 'x' } } }).slideWriting).toBeUndefined()
+    expect(
+      checkSendRequest({ ...base, target: 'hwp', slideWriting: { titles: { a: 'x' } } })
+        .slideWriting,
+    ).toBeUndefined()
     expect(checkSendRequest(base).slideWriting).toBeUndefined()
     expect(() => checkSendRequest({ ...base, slideWriting: 'text' })).toThrow()
     expect(() => checkSendRequest({ ...base, slideWriting: { lines: ['x'] } })).toThrow()

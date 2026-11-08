@@ -493,6 +493,11 @@
   color: var(--danger);
 }
 
+/* nothing to clear: no red that promises an action (0.17 리뷰 v2 shell #22) */
+.set-btn.danger:disabled {
+  color: var(--text-tertiary);
+}
+
 .set-pane-footer {
   margin-top: auto;
   padding-top: 20px;
@@ -717,6 +722,24 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Integrations: the coding-assistant setup (commands, JSON) behind one closed line */
+.set-intg-dev {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.set-intg-dev > summary {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.set-intg-dev[open] > summary {
+  margin-bottom: 8px;
 }
 
 .set-intg-details {
@@ -1270,4 +1293,35 @@
 
 .set-local-actions {
   justify-content: space-between;
+}
+
+/* the first-connection notice, owed and shown inside the AI section (not over the shell) */
+.set-ai-notice-due {
+  margin: 8px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-subtle, var(--surface));
+}
+
+.set-quicklook-head {
+  margin: 18px 0 4px;
+}
+
+.set-quicklook-head .set-pane-subtitle {
+  margin: 0 0 4px;
+}
+
+/* Settings → About (0.17 리뷰 v2 shell #19): the notices read as one column,
+ * and the contact address never breaks inside itself */
+.set-about-notices {
+  flex: 1;
+  gap: 8px;
+}
+
+.set-field-value.set-field-email {
+  text-align: left;
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: nowrap;
 }

@@ -176,6 +176,8 @@ const api: PdfApi = {
   cropPages: (request) => ipcRenderer.invoke(PDF_CHANNELS.cropPages, request),
   exportImages: (request) => ipcRenderer.invoke(PDF_CHANNELS.exportImages, request),
   convertOffice: (format) => ipcRenderer.invoke(PDF_CHANNELS.convertOffice, format),
+  openFileDialog: () => ipcRenderer.invoke('app:open-file-dialog'),
+  saveAsDialog: () => ipcRenderer.invoke(PDF_CHANNELS.saveAsDialog),
   onConvertDialogRequest: (handler) => {
     const listener = (_e: Electron.IpcRendererEvent, format: unknown) => {
       if (format === 'md' || format === 'epub') handler(format)
@@ -219,6 +221,8 @@ const api: PdfApi = {
   removeSavedSignature: (id) => ipcRenderer.invoke(PDF_CHANNELS.removeSignature, id),
   getUsername: () => ipcRenderer.invoke(PDF_CHANNELS.getUsername),
   annotSubjects: (path) => ipcRenderer.invoke(PDF_CHANNELS.annotSubjects, path),
+  listPrinters: () => ipcRenderer.invoke(PDF_CHANNELS.listPrinters),
+  printToDevice: (request) => ipcRenderer.invoke(PDF_CHANNELS.printToDevice, request),
   // no path crosses: the main process uses the view's own PDF and its linked note
   noteOpen: (request) =>
     (

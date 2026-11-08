@@ -324,7 +324,7 @@ describe('production recently closed tabs lifecycle tracker', () => {
 
     const reopened = tracker.reopenNext(openDocumentMock, fileExistsMock)
     expect(reopened).toBe(true)
-    expect(openDocumentMock).toHaveBeenCalledWith('/path/file23.docx')
+    expect(openDocumentMock).toHaveBeenCalledWith('/path/file23.docx', expect.anything())
 
     // Remaining stack popped files up to file23
     expect(tracker.getEntries().some((e) => e.filePath === '/path/file23.docx')).toBe(false)
@@ -346,5 +346,53 @@ describe('production recently closed tabs lifecycle tracker', () => {
     expect(tracker.reopenNext(openMock, fileExists)).toBe(false)
     expect(openMock).not.toHaveBeenCalled()
     expect(tracker.getEntries()).toHaveLength(0)
+  })
+})
+
+describe('unsaved tab tooltip (0.17 review #1)', () => {
+  it('says the tab has unsaved changes', () => {
+    const tab: TabSummary = {
+      id: 'doc-9',
+      kind: 'docs',
+      title: '보고서',
+      filePath: '/home/me/문서/보고서.docx',
+      active: true,
+      closable: true,
+      dirty: true,
+    }
+    expect(formatTabTooltip(tab, '저장 안 됨')).toBe(
+      '보고서 — 저장 안 됨\n/home/me/문서/보고서.docx',
+    )
+    expect(formatTabTooltip({ ...tab, dirty: undefined }, '저장 안 됨')).toBe(
+      '보고서\n/home/me/문서/보고서.docx',
+    )
+  })
+})
+
+describe('reopening a closed tab where it was (0.17 review v2 shell #39)', () => {
+  it('hands the place the tab had to the opener', async () => {
+    const { createRecentlyClosedTracker } = await import('../src/main/tab-lifecycle')
+    const tracker = createRecentlyClosedTracker()
+    tracker.push({ kind: 'pdf', filePath: 'C:/a.pdf', index: 2 })
+    const opened: Array<[string, number | undefined]> = []
+    tracker.reopenNext((path, entry) => {
+      opened.push([path, entry?.index])
+      return true
+    })
+    expect(opened).toEqual([['C:/a.pdf', 2]])
+  })
+})
+
+describe('detached window size (0.17 review v2 shell #12)', () => {
+  it('fits the screen it opens on', async () => {
+    const { fitWindowSize } = await import('../src/main/window-bounds')
+    expect(fitWindowSize({ width: 1440, height: 900 }, { width: 1366, height: 728 })).toEqual({
+      width: 1366,
+      height: 728,
+    })
+    expect(fitWindowSize({ width: 1200, height: 850 }, { width: 1920, height: 1040 })).toEqual({
+      width: 1200,
+      height: 850,
+    })
   })
 })

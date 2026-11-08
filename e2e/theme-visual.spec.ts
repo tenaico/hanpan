@@ -99,6 +99,8 @@ test.describe('theme visual adoption', () => {
       onboardingSeen: true,
       videoDir: 'theme-visual-md',
       openFile: mdPath,
+      // pages follow the app only when chosen: the default is paper-white (23ac3a7c)
+      settings: { documentTheme: 'follow' },
     })
     try {
       const shellPage = await findShellPage(launched.app)
@@ -122,7 +124,12 @@ test.describe('theme visual adoption', () => {
   })
 
   test('docs renders a dark page in dark theme; View ▸ Dark Mode switches back to white paper', async () => {
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'theme-visual-docs' })
+    const launched = await launchShell({
+      onboardingSeen: true,
+      videoDir: 'theme-visual-docs',
+      // pages follow the app only when chosen: the default is paper-white (23ac3a7c)
+      settings: { documentTheme: 'follow' },
+    })
     try {
       const shellPage = await findShellPage(launched.app)
       await shellPage.locator('.quick-card', { hasText: 'AI Docs' }).click()
@@ -172,8 +179,45 @@ test.describe('theme visual adoption', () => {
     }
   })
 
+  test('docs keeps paper-white pages under a dark app until pages are set to follow it', async () => {
+    const launched = await launchShell({
+      onboardingSeen: true,
+      videoDir: 'theme-visual-docs-paper',
+    })
+    try {
+      const shellPage = await findShellPage(launched.app)
+      await shellPage.locator('.quick-card', { hasText: 'AI Docs' }).click()
+      const editorPage = await waitForPageWithUrl(launched.app, '://docs/')
+      const page = editorPage.locator('.doc-page').first()
+      await expect(page).toBeVisible()
+      const pageBg = () => page.evaluate((el) => getComputedStyle(el).backgroundColor)
+
+      await setTheme(shellPage, 'dark')
+      // the chrome goes dark, the paper stays as printed (23ac3a7c)
+      await expect
+        .poll(async () =>
+          luminance(
+            await editorPage
+              .locator('.ribbon')
+              .first()
+              .evaluate((el) => getComputedStyle(el).backgroundColor),
+          ),
+        )
+        .toBeLessThan(80)
+      expect(luminance(await pageBg())).toBeGreaterThan(180)
+      expect(luminance(await page.evaluate((el) => getComputedStyle(el).color))).toBeLessThan(60)
+    } finally {
+      await closeAndSaveVideo(launched, 'theme-visual-docs-paper')
+    }
+  })
+
   test('sheets chrome and Univer grid follow dark theme', async () => {
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'theme-visual-sheets' })
+    const launched = await launchShell({
+      onboardingSeen: true,
+      videoDir: 'theme-visual-sheets',
+      // pages follow the app only when chosen: the default is paper-white (23ac3a7c)
+      settings: { documentTheme: 'follow' },
+    })
     try {
       const shellPage = await findShellPage(launched.app)
       await shellPage.locator('.quick-card', { hasText: 'AI Sheets' }).click()

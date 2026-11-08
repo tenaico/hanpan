@@ -6,6 +6,7 @@ export const cs = {
   editBold: 'Tučné',
   editItalic: 'Kurzíva',
   editReplace: 'Nahradit',
+  editFindReplaceTitle: 'Najít a nahradit',
   editReplaceWith: 'Nahradit čím',
   editReplaceOne: 'Nahradit',
   editReplaceAll: 'Nahradit vše',

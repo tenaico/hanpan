@@ -151,6 +151,36 @@ export const MULTILEVEL_LIBRARY: CustomNumberingLevel[][] = [
   }),
 ]
 
+/** Korean official-document hierarchy (행정업무규정): 1. / 가. / 1) / 가) / (1) / (가) / ① / ㉮ */
+const KO_OFFICIAL_LEVELS: CustomNumberingLevel[] = nine((i) => {
+  const spec: Array<[string, string]> = [
+    ['decimal', '%1.'],
+    ['ganada', '%2.'],
+    ['decimal', '%3)'],
+    ['ganada', '%4)'],
+    ['decimal', '(%5)'],
+    ['ganada', '(%6)'],
+    ['decimalEnclosedCircle', '%7'],
+    ['decimal', '%8.'],
+    ['ganada', '%9.'],
+  ]
+  const [numFmt, lvlText] = spec[i]!
+  return { numFmt, lvlText, indentLeft: 400 * (i + 1), hanging: 400 }
+})
+
+/**
+ * The multilevel gallery for the UI language: a Korean UI drops the English
+ * legal styles (Article I. / Section 1.01, Chapter 1) and offers the Korean
+ * official-document hierarchy instead.
+ */
+export function multilevelLibraryFor(lang: string): CustomNumberingLevel[][] {
+  if (lang !== 'ko') return MULTILEVEL_LIBRARY
+  const english = (levels: CustomNumberingLevel[]) =>
+    /Article|Chapter/.test(levels[0]?.lvlText ?? '')
+  const kept = MULTILEVEL_LIBRARY.filter((levels) => !english(levels))
+  return [...kept.slice(0, 2), KO_OFFICIAL_LEVELS, ...kept.slice(2)]
+}
+
 /** Number styles offered by the define dialogs (Word's list, CJK formats included) */
 export const LIST_NUM_FMTS = [
   'decimal',

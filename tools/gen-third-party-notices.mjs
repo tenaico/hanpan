@@ -24,6 +24,8 @@ import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { builtinModules, createRequire } from 'node:module'
 import { licenseText } from './license-text.mjs'
+import { readGraphicsPins } from './fetch-graphics-web.mjs'
+import { graphicsNoticeSection } from './graphics-notices.mjs'
 
 const require = createRequire(import.meta.url)
 
@@ -776,6 +778,15 @@ for (const dir of ['apps/shell/src/main/hanpan/pictures', 'apps/slides/src/main/
   out += sub(dir)
   out += readFileSync(join(ROOT, dir, 'CREDITS.md'), 'utf8').trim() + '\n'
 }
+
+// Hanpan: the AI Photo and AI Illustration web builds (decision 0093), in every
+// installer, as tools/fetch-graphics-web.mjs unpacked them for the build
+out += graphicsNoticeSection({
+  webRoot: join(ROOT, 'apps/graphics/public/web'),
+  pins: readGraphicsPins(),
+  read: (path) => readFileSync(path, 'utf8'),
+  gap,
+})
 
 for (const term of ['@embedpdf/pdfium', 'Copyright 2014 PDFium Authors', 'Apache License']) {
   if (!out.includes(term)) {

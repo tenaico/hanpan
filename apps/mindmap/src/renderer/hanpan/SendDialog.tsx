@@ -2,7 +2,9 @@
  * Hanpan: the "send this map to a document" dialog. The person picks the layout,
  * the fonts, and whether the map's words go as they are or the AI writes
  * sentences for them; the shell makes the document and opens it in a new tab,
- * linked to this map.
+ * linked to this map. With the Korean document features off (decision 0091) a
+ * Word report skips the Korean report settings and goes out as a numbered
+ * outline in a basic look.
  *
  * For slides, the AI writes each slide in the chosen style (slide-writer.ts):
  * its title, its lines, supporting lines, a takeaway and the speaker notes.
@@ -32,17 +34,26 @@ import {
   type SlideWritingStyle,
 } from '@genoffice/hanpan-core/renderer'
 import type { AiSettings } from '@genoffice/ai-provider'
+import { useKoreanDocFeatures } from '@genoffice/ui'
 import { Modal } from '../components/dialogs'
 import type { DocumentSession } from '../document/session'
 import { createElectronTransport } from '../ai/transport'
 import { useI18n, type StringKey } from '../i18n/locale'
 import { sheetOutline } from './map-outline'
 
-const TITLE: Record<SendTarget, StringKey> = { hwp: 'sendHwp', slides: 'sendSlides', docx: 'sendDocx' }
+const TITLE: Record<SendTarget, StringKey> = {
+  hwp: 'sendHwp',
+  slides: 'sendSlides',
+  docx: 'sendDocx',
+}
 /** Longest answer taken for one branch (a branch of 200 topics at 2 sentences each fits). */
 const MAX_ANSWER_CHARS = 60_000
 
-type Phase = { kind: 'idle' } | { kind: 'ai'; done: number; total: number } | { kind: 'sending' } | { kind: 'error'; text: string }
+type Phase =
+  | { kind: 'idle' }
+  | { kind: 'ai'; done: number; total: number }
+  | { kind: 'sending' }
+  | { kind: 'error'; text: string }
 
 async function fleshOut(
   outline: PanOutline,
@@ -60,7 +71,7 @@ async function fleshOut(
     onSubscriptionUsage: () => {},
     onInputTruncated: () => {},
   })
-  const jobs = fleshOutJobs(outline)
+  const jobs = fleshOutJobs(outline, lang())
   const bodies = new Map<string, string>()
   for (let i = 0; i < jobs.length; i++) {
     progress(i, jobs.length)
@@ -80,7 +91,10 @@ async function fleshOut(
     if (signal.aborted) break
   }
   progress(jobs.length, jobs.length)
-  return { outline: applyBodies(outline, bodies), error: bodies.size ? null : (lastError ?? 'no sentences') }
+  return {
+    outline: applyBodies(outline, bodies),
+    error: bodies.size ? null : (lastError ?? 'no sentences'),
+  }
 }
 
 interface SlidesOutcome {
@@ -117,7 +131,12 @@ async function writeSlides(
   const done = () => jobs.filter((job) => wroteSlide(writing, job.branchKey)).length
   const result = (error: string | null): SlidesOutcome => {
     const n = done()
-    return { writing: n ? writing : undefined, error: n ? error : (error ?? lastError ?? 'no slide text'), done: n, total: jobs.length }
+    return {
+      writing: n ? writing : undefined,
+      error: n ? error : (error ?? lastError ?? 'no slide text'),
+      done: n,
+      total: jobs.length,
+    }
   }
   for (let i = 0; i < jobs.length; i++) {
     progress(i, jobs.length)
@@ -163,6 +182,9 @@ export function SendDialog(p: {
   const abort = useRef<AbortController | null>(null)
   const busy = phase.kind === 'ai' || phase.kind === 'sending'
   const isDocument = p.target !== 'slides'
+  const korean = useKoreanDocFeatures(lang)
+  /** the Korean report settings (layout, look, date, department) */
+  const reportSettings = isDocument && korean
 
   const close = () => {
     abort.current?.abort()
@@ -211,8 +233,12 @@ export function SendDialog(p: {
       if (!settings) {
         warning = t('sendAiFallback', { error: 'AI settings' })
       } else {
-        const result = await fleshOut(outline, settings, () => lang, controller.signal, (done, total) =>
-          setPhase({ kind: 'ai', done, total }),
+        const result = await fleshOut(
+          outline,
+          settings,
+          () => lang,
+          controller.signal,
+          (done, total) => setPhase({ kind: 'ai', done, total }),
         )
         if (controller.signal.aborted) return
         outline = result.outline
@@ -223,10 +249,10 @@ export function SendDialog(p: {
     const result = await window.mindmapApi.sendToDocument?.({
       target: p.target,
       outline,
-      style: isDocument ? style : 'report',
-      theme: theme === 'plain' ? 'plain' : undefined,
-      date: isDocument && date.trim() ? date.trim() : undefined,
-      department: isDocument && department.trim() ? department.trim() : undefined,
+      style: reportSettings ? style : isDocument ? 'outline' : 'report',
+      theme: isDocument && !reportSettings ? 'basic' : theme === 'plain' ? 'plain' : undefined,
+      date: reportSettings && date.trim() ? date.trim() : undefined,
+      department: reportSettings && department.trim() ? department.trim() : undefined,
       includeNotes: notes,
       slideStyle: !isDocument && slideStyle !== 'plain' ? slideStyle : undefined,
       slideWriting,
@@ -236,7 +262,10 @@ export function SendDialog(p: {
     if (!result) {
       setPhase({ kind: 'error', text: t('sendFailed', { error: 'not available' }) })
     } else if (!result.ok) {
-      setPhase({ kind: 'error', text: result.error === 'empty' ? t('sendEmpty') : t('sendFailed', { error: result.error }) })
+      setPhase({
+        kind: 'error',
+        text: result.error === 'empty' ? t('sendEmpty') : t('sendFailed', { error: result.error }),
+      })
     } else {
       p.onSent(warning)
     }
@@ -245,11 +274,15 @@ export function SendDialog(p: {
   return (
     <Modal title={t(TITLE[p.target])} kind="hanpan-send" onCancel={close}>
       <div className="hp-send-form">
-        {isDocument && (
+        {reportSettings && (
           <>
             <label className="hp-send-row">
               <span>{t('sendStyle')}</span>
-              <select value={style} disabled={busy} onChange={(e) => setStyle(e.target.value as MarkerStyle)}>
+              <select
+                value={style}
+                disabled={busy}
+                onChange={(e) => setStyle(e.target.value as MarkerStyle)}
+              >
                 <option value="report">{t('sendStyleReport')}</option>
                 <option value="chapter-report">{t('sendStyleChapter')}</option>
                 <option value="gongmun">{t('sendStyleGongmun')}</option>
@@ -257,14 +290,24 @@ export function SendDialog(p: {
             </label>
             <label className="hp-send-row">
               <span>{t('sendLook')}</span>
-              <select value={theme} disabled={busy} onChange={(e) => setTheme(e.target.value as 'auto' | 'plain')}>
+              <select
+                value={theme}
+                disabled={busy}
+                onChange={(e) => setTheme(e.target.value as 'auto' | 'plain')}
+              >
                 <option value="auto">{t('sendLookHancom')}</option>
                 <option value="plain">{t('sendLookPlain')}</option>
               </select>
             </label>
             <label className="hp-send-row">
               <span>{t('sendDate')}</span>
-              <input className="mm-field" type="text" value={date} disabled={busy} onChange={(e) => setDate(e.target.value)} />
+              <input
+                className="mm-field"
+                type="text"
+                value={date}
+                disabled={busy}
+                onChange={(e) => setDate(e.target.value)}
+              />
             </label>
             <label className="hp-send-row">
               <span>{t('sendDepartment')}</span>
@@ -282,7 +325,12 @@ export function SendDialog(p: {
           <>
             <label className="hp-send-row">
               <span>{t('sendSlideStyle')}</span>
-              <select value={slideStyle} disabled={busy} data-field="slide-style" onChange={(e) => setSlideStyle(e.target.value as SlideStyleId | 'plain')}>
+              <select
+                value={slideStyle}
+                disabled={busy}
+                data-field="slide-style"
+                onChange={(e) => setSlideStyle(e.target.value as SlideStyleId | 'plain')}
+              >
                 {SLIDE_STYLES.map((st, k) => (
                   <option key={st.id} value={st.id}>
                     {k + 1}. {ko ? st.name.ko : st.name.en}
@@ -291,7 +339,11 @@ export function SendDialog(p: {
                 <option value="plain">{t('sendSlidePlain')}</option>
               </select>
             </label>
-            {styleInfo && <p className="hp-send-hint">{ko ? styleInfo.description.ko : styleInfo.description.en}</p>}
+            {styleInfo && (
+              <p className="hp-send-hint">
+                {ko ? styleInfo.description.ko : styleInfo.description.en}
+              </p>
+            )}
           </>
         )}
         <span className="hp-send-label" id="hp-content-label">
@@ -299,10 +351,23 @@ export function SendDialog(p: {
         </span>
         <div className="hp-send-choice" role="radiogroup" aria-labelledby="hp-content-label">
           <label>
-            <input type="radio" name="hp-content" checked={!ai} disabled={busy} onChange={() => setAi(false)} /> {t('sendAsIs')}
+            <input
+              type="radio"
+              name="hp-content"
+              checked={!ai}
+              disabled={busy}
+              onChange={() => setAi(false)}
+            />{' '}
+            {t('sendAsIs')}
           </label>
           <label>
-            <input type="radio" name="hp-content" checked={ai} disabled={busy} onChange={() => setAi(true)} />{' '}
+            <input
+              type="radio"
+              name="hp-content"
+              checked={ai}
+              disabled={busy}
+              onChange={() => setAi(true)}
+            />{' '}
             {isDocument ? t('sendFleshOut') : t('sendSlideWrite')}
           </label>
         </div>
@@ -322,11 +387,20 @@ export function SendDialog(p: {
           </label>
         )}
         <label className="hp-send-check">
-          <input type="checkbox" checked={notes} disabled={busy} onChange={(e) => setNotes(e.target.checked)} /> {t('sendNotes')}
+          <input
+            type="checkbox"
+            checked={notes}
+            disabled={busy}
+            onChange={(e) => setNotes(e.target.checked)}
+          />{' '}
+          {t('sendNotes')}
         </label>
       </div>
       {phase.kind !== 'idle' && (
-        <p className={`mm-modal-hint${phase.kind === 'error' ? ' error' : ''}`} role={phase.kind === 'error' ? 'alert' : 'status'}>
+        <p
+          className={`mm-modal-hint${phase.kind === 'error' ? ' error' : ''}`}
+          role={phase.kind === 'error' ? 'alert' : 'status'}
+        >
           {phase.kind === 'ai'
             ? t('sendAiWorking', { done: phase.done, total: phase.total })
             : phase.kind === 'sending'
@@ -345,7 +419,12 @@ export function SendDialog(p: {
           disabled={busy}
           onClick={() => {
             send().catch((error: unknown) =>
-              setPhase({ kind: 'error', text: t('sendFailed', { error: error instanceof Error ? error.message : String(error) }) }),
+              setPhase({
+                kind: 'error',
+                text: t('sendFailed', {
+                  error: error instanceof Error ? error.message : String(error),
+                }),
+              }),
             )
           }}
         >

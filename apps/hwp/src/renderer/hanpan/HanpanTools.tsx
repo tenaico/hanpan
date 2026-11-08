@@ -7,6 +7,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { composePrompt, type TaskType } from '@genoffice/hanpan-core/renderer'
+import { useKoreanDocFeatures } from '@genoffice/ui'
 import type { HanpanToolRequest, HanpanToolResult } from '../../shared/ipc'
 import { useI18n, type StringKey } from '../i18n/locale'
 import type { AgentBridge } from '../ai/agent-bridge'
@@ -23,19 +24,50 @@ const FINDING_KEY: Record<string, StringKey> = {
   'mixed-endings': 'hpFMixedEndings',
 }
 
-const TASKS: [TaskType, string][] = [
-  ['summarize', '요약'],
-  ['organize', '정리'],
-  ['analyze', '분석'],
-  ['generate', '생성'],
-  ['explain', '설명'],
+const TASKS: [TaskType, StringKey][] = [
+  ['summarize', 'hpTaskSummarize'],
+  ['organize', 'hpTaskOrganize'],
+  ['analyze', 'hpTaskAnalyze'],
+  ['generate', 'hpTaskGenerate'],
+  ['explain', 'hpTaskExplain'],
 ]
 
+/** A tool's name with the one line that says what it does (0.17 review #13). */
+function ToolLabel(p: { name: string; desc: string }) {
+  return (
+    <>
+      <span className="hp-tools-name">{p.name}</span>
+      <small className="hp-tools-desc">{p.desc}</small>
+    </>
+  )
+}
+
+/**
+ * A tool's result, right under the tool, titled with its name (0.17 UI/UX review v2 #22: the
+ * 공문 점검 result landed at the bottom of the menu without a title).
+ */
+function ToolResult(p: { title: string; lines: string[] }) {
+  return (
+    <div className="hp-tools-result" role="status">
+      <strong className="hp-tools-result-title">{p.title}</strong>
+      <ul>
+        {p.lines.map((line, i) => (
+          <li key={i}>{line}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export function HanpanTools(p: { bridge?: AgentBridge }) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
+  const korean = useKoreanDocFeatures(lang)
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [result, setResult] = useState<string[] | null>(null)
+  /** the last tool's result; one at a time, so two results never mix */
+  const [result, setResult] = useState<{ tool: string; lines: string[] } | null>(null)
+  /** bumped when a tool here runs: the picture-credit check drops its own result */
+  const [creditClear, setCreditClear] = useState(0)
   const [promptOpen, setPromptOpen] = useState(false)
   const [axes, setAxes] = useState<{
     role: string
@@ -55,31 +87,50 @@ export function HanpanTools(p: { bridge?: AgentBridge }) {
     body: '',
   })
   const wrap = useRef<HTMLDivElement>(null)
+  const toggle = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!open) return
     const onDown = (e: MouseEvent) => {
       if (wrap.current && !wrap.current.contains(e.target as Node)) setOpen(false)
     }
+    // Esc closes the menu and hands focus back to the button that opened it
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      e.stopPropagation()
+      setOpen(false)
+      toggle.current?.focus()
+    }
     window.addEventListener('mousedown', onDown)
-    return () => window.removeEventListener('mousedown', onDown)
+    window.addEventListener('keydown', onKey, true)
+    // keyboard users land on the first tool
+    wrap.current?.querySelector<HTMLButtonElement>('.hp-tools-pop button:not(:disabled)')?.focus()
+    return () => {
+      window.removeEventListener('mousedown', onDown)
+      window.removeEventListener('keydown', onKey, true)
+    }
   }, [open])
 
-  if (!window.hwpApi.hanpanTool) return null
+  // a Korean document feature (decision 0091): off, the editor opens without the tools
+  if (!korean || !window.hwpApi.hanpanTool) return null
 
   const run = async (request: HanpanToolRequest) => {
+    const tool = request.tool
+    const show = (lines: string[]) => setResult({ tool, lines })
     setBusy(true)
     setResult(null)
+    setCreditClear((n) => n + 1)
     const answer: HanpanToolResult = await window.hwpApi.hanpanTool!(request).catch(
       (e: unknown) => ({ ok: false as const, error: String(e) }),
     )
     setBusy(false)
     if (!answer.ok) {
-      setResult([t('hpFailed', { error: answer.error })])
+      show([t('hpFailed', { error: answer.error })])
       return
     }
     if (answer.findings) {
-      setResult(
+      show(
         answer.findings.length
           ? answer.findings.map(
               (f) =>
@@ -88,20 +139,35 @@ export function HanpanTools(p: { bridge?: AgentBridge }) {
           : [t('hpCheckOk')],
       )
     } else if (answer.counts) {
-      setResult([t('hpReviewDone', answer.counts)])
+      show([t('hpReviewDone', answer.counts)])
     } else {
-      setResult([answer.changed ? t('hpChanged', { n: answer.changed }) : t('hpNoChange')])
+      show([answer.changed ? t('hpChanged', { n: answer.changed }) : t('hpNoChange')])
     }
   }
 
   const prompt = composePrompt({ ...axes, task: axes.task || undefined })
+
+  const NAMES: Record<string, StringKey> = {
+    tidy: 'hpTidy',
+    check: 'hpCheck',
+    tone: 'hpTone',
+    review: 'hpReview',
+    prompt: 'hpPrompt',
+  }
+  /** the result of `tool`, where it belongs: right under that tool */
+  const resultOf = (tool: string) =>
+    result?.tool === tool && (
+      <ToolResult title={t('hpResultOf', { tool: t(NAMES[tool]!) })} lines={result.lines} />
+    )
 
   return (
     <div className="hp-tools" ref={wrap}>
       <button
         type="button"
         className={`hp-tools-btn${open ? ' on' : ''}`}
+        ref={toggle}
         aria-expanded={open}
+        aria-haspopup="menu"
         data-action="hanpan-tools"
         onClick={() => setOpen((o) => !o)}
       >
@@ -113,20 +179,26 @@ export function HanpanTools(p: { bridge?: AgentBridge }) {
             type="button"
             disabled={busy}
             data-tool="tidy"
+            title={t('hpTidyDesc')}
             onClick={() => void run({ tool: 'tidy' })}
           >
-            {t('hpTidy')}
+            <ToolLabel name={t('hpTidy')} desc={t('hpTidyDesc')} />
           </button>
+          {resultOf('tidy')}
           <button
             type="button"
             disabled={busy}
             data-tool="check"
+            title={t('hpCheckDesc')}
             onClick={() => void run({ tool: 'check' })}
           >
-            {t('hpCheck')}
+            <ToolLabel name={t('hpCheck')} desc={t('hpCheckDesc')} />
           </button>
+          {resultOf('check')}
           <div className="hp-tools-row">
-            <span>{t('hpTone')}</span>
+            <span title={t('hpToneDesc')}>
+              <ToolLabel name={t('hpTone')} desc={t('hpToneDesc')} />
+            </span>
             {(['60대', '40대', 'MZ'] as const).map((target) => (
               <button
                 key={target}
@@ -139,17 +211,33 @@ export function HanpanTools(p: { bridge?: AgentBridge }) {
               </button>
             ))}
           </div>
+          {resultOf('tone')}
           <button
             type="button"
             disabled={busy}
             data-tool="review"
+            title={t('hpReviewDesc')}
             onClick={() => void run({ tool: 'review' })}
           >
-            {t('hpReview')}
+            <ToolLabel name={t('hpReview')} desc={t('hpReviewDesc')} />
           </button>
-          {p.bridge && <CreditCheck bridge={p.bridge} disabled={busy} />}
-          <button type="button" data-tool="prompt" onClick={() => setPromptOpen((o) => !o)}>
-            {t('hpPrompt')}
+          {resultOf('review')}
+          {p.bridge && (
+            <CreditCheck
+              bridge={p.bridge}
+              disabled={busy}
+              clear={creditClear}
+              onRun={() => setResult(null)}
+            />
+          )}
+          <button
+            type="button"
+            data-tool="prompt"
+            title={t('hpPromptDesc')}
+            aria-expanded={promptOpen}
+            onClick={() => setPromptOpen((o) => !o)}
+          >
+            <ToolLabel name={t('hpPrompt')} desc={t('hpPromptDesc')} />
           </button>
           {promptOpen && (
             <div className="hp-prompt">
@@ -160,9 +248,9 @@ export function HanpanTools(p: { bridge?: AgentBridge }) {
                   onChange={(e) => setAxes({ ...axes, task: e.target.value as TaskType | '' })}
                 >
                   <option value="">—</option>
-                  {TASKS.map(([id, ko]) => (
+                  {TASKS.map(([id, key]) => (
                     <option key={id} value={id}>
-                      {ko}
+                      {t(key)}
                     </option>
                   ))}
                 </select>
@@ -201,20 +289,16 @@ export function HanpanTools(p: { bridge?: AgentBridge }) {
                 type="button"
                 disabled={!prompt}
                 onClick={() =>
-                  void navigator.clipboard.writeText(prompt).then(() => setResult([t('hpCopied')]))
+                  void navigator.clipboard
+                    .writeText(prompt)
+                    .then(() => setResult({ tool: 'prompt', lines: [t('hpCopied')] }))
                 }
               >
                 {t('hpCopy')}
               </button>
             </div>
           )}
-          {result && (
-            <ul className="hp-tools-result" role="status">
-              {result.map((line, i) => (
-                <li key={i}>{line}</li>
-              ))}
-            </ul>
-          )}
+          {resultOf('prompt')}
         </div>
       )}
     </div>

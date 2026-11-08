@@ -292,6 +292,11 @@ export const ru = {
   paneShowMenuScreen: 'Экран',
   paneShowMenuBlack: 'Чёрный экран',
   paneShowMenuWhite: 'Белый экран',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'Завершить показ',
   panePresenterWhiteOn: 'Белый экран (W — вернуться)',
 } satisfies Record<keyof typeof zh, string>

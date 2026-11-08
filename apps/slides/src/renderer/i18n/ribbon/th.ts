@@ -58,7 +58,8 @@ export const th = {
     'ตัวคัดวางรูปแบบ (คลิกเพื่อคัดลอกและนำรูปแบบไปใช้; ⌘⇧C คัดลอกรูปแบบ / ⌘⇧V วางรูปแบบ)',
   ribbonGroupSlides: 'สไลด์',
   ribbonNewSlide: 'สไลด์ใหม่',
-  ribbonNewSlideTip: 'สไลด์เปล่าใหม่ (ใช้พื้นหลังเค้าโครงของสไลด์ปัจจุบันต่อ)',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'เลือกเค้าโครง',
   ribbonChooseLayoutNew: 'สร้างภาพนิ่งใหม่ด้วยเค้าโครง',
   ribbonChooseLayoutChange: 'เปลี่ยนเค้าโครงภาพนิ่งปัจจุบัน',
@@ -772,4 +773,8 @@ export const th = {
   ribbonZoomSectionItem: 'สไลด์ {n} ส่วน {k}: {name}',
   ribbonZoomSelectedSlides: 'เลือกแล้ว {n} สไลด์',
   ribbonZoomSelectedSections: 'เลือกแล้ว {n} ส่วน',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

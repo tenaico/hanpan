@@ -17,6 +17,9 @@ import {
   deleteAllComments,
   deleteCommentAtCaret,
   gotoComment,
+  selectComment,
+  startNewComment,
+  submitNewComment,
   type ReviewContext,
 } from '../src/renderer/review-actions'
 
@@ -210,5 +213,48 @@ describe('Delete ▾', () => {
     expect(state.comments).toEqual([])
     expect(commentAnchors(editor.state.doc)).toEqual([])
     expect(ctx.dirtyRef.current).toBe(true)
+  })
+})
+
+// 0.17 v2 #5: a card click shows where the comment is: its range gets selected
+describe('selectComment', () => {
+  it('selects the whole anchored range of the thread and focuses the editor', () => {
+    const editor = makeEditor()
+    const { ctx } = makeCtx(editor, [info('1'), info('2'), info('3')])
+    expect(selectComment(ctx, '2')).toBe(true)
+    expect(editor.state.selection.from).toBe(18)
+    expect(editor.state.selection.to).toBe(23)
+    expect(selectComment(ctx, '3')).toBe(true)
+    expect(
+      editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to),
+    ).toBe('zeta')
+  })
+
+  it('is false for a thread with no anchor left in the document', () => {
+    const editor = makeEditor()
+    const { ctx } = makeCtx(editor, [info('9')])
+    expect(selectComment(ctx, '9')).toBe(false)
+  })
+})
+
+// 0.17 v2 #5: the reviewer's comment landed with no anchor at all — the range
+// picked when New Comment was pressed is the one that gets the mark, even when
+// the live selection moved while the composer was open
+describe('submitNewComment', () => {
+  it('anchors on the range picked at New Comment, not the selection at submit', () => {
+    const editor = makeEditor()
+    const { ctx, state } = makeCtx(editor, [info('1'), info('2'), info('3'), info('4')])
+    Object.assign(ctx, { setCommentComposing: vi.fn() })
+    editor.commands.setTextSelection({ from: 25, to: 28 }) // "eps"
+    startNewComment(ctx)
+    editor.commands.setTextSelection(3) // the caret moved before Post
+    submitNewComment(ctx, 'check')
+    expect(state.comments).toHaveLength(5)
+    const id = state.comments[4]!.id
+    expect(commentAnchors(editor.state.doc).find((a) => a.id === id)).toEqual({
+      id,
+      from: 25,
+      to: 28,
+    })
   })
 })

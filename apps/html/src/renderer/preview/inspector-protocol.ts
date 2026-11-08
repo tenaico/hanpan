@@ -137,6 +137,8 @@ export type FromInspectorBody =
         | 'bold'
         | 'italic'
         | 'escape'
+        /** Esc that ended an inline text edit: only closes the host's open menus */
+        | 'dismiss'
         | 'undo'
         | 'redo'
         | 'zoomIn'

@@ -7,7 +7,8 @@
  * the same on every PC. Full-page frames and backdrops are locked so a click on
  * the page still reaches what sits on it.
  */
-import { estimateLines } from './ai'
+import { applyFill, estimateLines, type FillSlot } from './ai'
+import { TEMPLATE_WORDS } from './template-words'
 import {
   FORMATS,
   iconElement,
@@ -1200,3 +1201,56 @@ export const DESIGN_TEMPLATES: readonly DesignTemplate[] = [
     },
   },
 ]
+
+/** Faces that lack letters only Vietnamese uses, and the shipped face that stands in for each */
+const VIETNAMESE_STAND_IN: Readonly<Record<string, string>> = {
+  [F.bebas]: F.grotesk,
+  [F.archivo]: F.sans,
+  [F.black]: F.sans,
+  [F.dohyeon]: F.dodum,
+}
+const VIETNAMESE_LETTERS = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i
+
+/**
+ * A template's design with its words in the UI language: Korean as written, Vietnamese
+ * or English (for every other language) from TEMPLATE_WORDS. Each box keeps its place and
+ * width and shrinks its type the way an AI fill does when the new words run longer; a box
+ * whose Vietnamese its face cannot draw takes a shipped face that can.
+ */
+function localizeDoc(doc: DesignDoc, lang: string): DesignDoc {
+  const pick = (text: string): string | undefined => {
+    const words = TEMPLATE_WORDS[text]
+    return words && (lang === 'vi' ? words.vi : words.en)
+  }
+  const slots: FillSlot[] = []
+  const words = new Map<number, string>()
+  doc.pages.forEach((pg, page) =>
+    pg.elements.forEach((e) => {
+      const text = e.kind === 'text' && e.text ? pick(e.text) : undefined
+      if (text === undefined) return
+      words.set(slots.length, text)
+      slots.push({ id: e.id, page, text: e.text! })
+    }),
+  )
+  const filled = applyFill(doc, slots, words).doc
+  const pages = filled.pages.map((pg) => ({
+    ...pg,
+    elements: pg.elements.map((e) => {
+      const standIn = e.fontFamily && VIETNAMESE_STAND_IN[e.fontFamily]
+      return standIn && e.text && VIETNAMESE_LETTERS.test(e.text)
+        ? { ...e, fontFamily: standIn }
+        : e
+    }),
+  }))
+  return { ...filled, name: pick(doc.name) ?? doc.name, pages }
+}
+
+/** The templates as the UI language shows them. */
+export function templatesFor(lang: string): readonly DesignTemplate[] {
+  if (lang === 'ko') return DESIGN_TEMPLATES
+  return DESIGN_TEMPLATES.map((t) => ({
+    ...t,
+    name: TEMPLATE_WORDS[t.name]?.[lang === 'vi' ? 'vi' : 'en'] ?? t.name,
+    make: () => localizeDoc(t.make(), lang),
+  }))
+}

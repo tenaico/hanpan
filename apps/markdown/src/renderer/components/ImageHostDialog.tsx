@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import type { ImageHostConfig, ImageHostKind } from '../../shared/ipc'
 import { t, type StringKey } from '../i18n/locale'
 import { setImageHostConfigCache } from '../imageHostCache'
+import { useEscapeClose } from './use-escape-close'
 
 /**
  * Configure the bring-your-own image host for pasted/dropped pictures
@@ -21,6 +22,8 @@ export function ImageHostDialog({
   const [fields, setFields] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useEscapeClose(onClose, dialogRef)
 
   useEffect(() => {
     let alive = true
@@ -112,6 +115,8 @@ export function ImageHostDialog({
     <div className="image-host-backdrop" onClick={onClose}>
       <div
         className="image-host-dialog"
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label={t('imageHostTitle')}

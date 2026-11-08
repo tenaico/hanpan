@@ -14,6 +14,7 @@ import {
   type TargetResolver,
 } from './tools/session-tools'
 import { createOpenDocumentTools, type OpenDocumentsControl } from './tools/open-documents-tools'
+import { createSendToAppTools, type SendToAppControl } from './tools/send-to-app-tools'
 
 /**
  * Main-process wiring for the MCP server.
@@ -51,6 +52,11 @@ export interface McpRuntimeDeps {
    * the argument from the tool schemas
    */
   resolveTarget?: TargetResolver
+  /**
+   * 다른 앱으로 보내기(send_to_app): an open document as a new document of
+   * another editor; absent in headless runs, which leaves the tool out
+   */
+  sendToAppControl?: SendToAppControl
   /** where the MCP log file lives (userData); logging is unavailable without it */
   logFilePath?: string
 }
@@ -191,6 +197,7 @@ function buildTools(): McpToolDefinition[] {
       defaultSaveDir: deps.defaultSaveDir,
       ...(deps.openDocumentsControl ? { control: deps.openDocumentsControl } : {}),
     }),
+    ...(deps.sendToAppControl ? createSendToAppTools(deps.sendToAppControl) : []),
   ]
 }
 

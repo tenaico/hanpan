@@ -3,6 +3,7 @@
  * Every colour here is a token from @genoffice/ui (tokens.css) and follows the
  * app's light or dark setting. The map inside the card is document content
  * and has its own colours (map/look.ts, map.css); it does not follow the app.
+ * Only its view on screen may be darkened (the dark view, further down).
  */
 
 :root {
@@ -287,6 +288,11 @@ html.genoffice-popover-open .ribbon-tabs {
   color: var(--text-tertiary);
 }
 
+.mm-layout-label {
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
 .mm-layout-pick {
   min-width: 96px;
   font-size: 12.5px;
@@ -296,6 +302,69 @@ html.genoffice-popover-open .ribbon-tabs {
   display: flex;
   align-items: center;
   margin-inline-start: auto;
+  /* the toolbar scrolls sideways when the window is narrow; the send button and the AI entry
+     are the map's way out, so they stay pinned at the end */
+  position: sticky;
+  inset-inline-end: 0;
+  flex-shrink: 0;
+  z-index: 1;
+  padding-inline-start: 6px;
+  background: var(--surface);
+}
+
+/* the on-screen File menu (components/FileMenu.tsx), first in the tab row */
+.mm-file-menu {
+  display: inline-flex;
+  align-self: stretch;
+  -webkit-app-region: no-drag;
+}
+
+.mm-file-pop {
+  min-width: 200px;
+}
+
+.mm-file-item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.mm-file-label {
+  flex: 1;
+  text-align: start;
+}
+
+.mm-file-kbd {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.mm-file-item:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.mm-file-sep {
+  height: 1px;
+  margin: 3px 4px;
+  background: var(--border);
+}
+
+/* Hanpan: "send to a document" is the map's main action, so it carries its name */
+.hp-send-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+
+.hp-send-button-label {
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /* ---- ribbon tabs and big buttons ---- */
@@ -727,6 +796,69 @@ html.genoffice-popover-open .ribbon-tabs {
   color: var(--text-primary);
   background: var(--surface);
   border: 1px solid var(--border);
+}
+
+/*
+ * ---- the dark view of a light map (0.17 review v2 slides-mindmap #37) ----
+ *
+ * Settings › Document page theme dark, or "follow" in a dark app: a map on a
+ * light ground is shown through an inverting filter, as the PDF editor's
+ * night reading shows its pages. Only the screen changes. The map's colours
+ * stay what the file says (map.css and map/ are untouched), and the picture,
+ * the PDF, the print and the preview picture are made from a copy
+ * (`.mm-export`) that this does not reach. A map whose theme is already dark
+ * is shown as it is.
+ *
+ * The filter undoes itself, so what must keep its own colours inside the map
+ * (pictures, the app's menu and tips, the fold handles) gets it once more.
+ * The selection is an outline of the topic and cannot be turned back: it is
+ * drawn in the light accent, which the filter turns into the dark one.
+ */
+:root[data-doc-theme='dark']
+  .mm-card:not(.mm-export)
+  > .mm-sheet-host
+  > .map-container:not([data-mm-variant='dark']),
+:root[data-theme='dark']:not([data-doc-theme='light'])
+  .mm-card:not(.mm-export)
+  > .mm-sheet-host
+  > .map-container:not([data-mm-variant='dark']) {
+  --accent: #6b4fbb;
+  --accent-soft: rgba(107, 79, 187, 0.12);
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-doc-theme='light'])
+    .mm-card:not(.mm-export)
+    > .mm-sheet-host
+    > .map-container:not([data-mm-variant='dark']) {
+    --accent: #6b4fbb;
+    --accent-soft: rgba(107, 79, 187, 0.12);
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+:root[data-doc-theme='dark']
+  .mm-card:not(.mm-export)
+  > .mm-sheet-host
+  > .map-container:not([data-mm-variant='dark'])
+  :is(img, .context-menu, .tips, me-epd),
+:root[data-theme='dark']:not([data-doc-theme='light'])
+  .mm-card:not(.mm-export)
+  > .mm-sheet-host
+  > .map-container:not([data-mm-variant='dark'])
+  :is(img, .context-menu, .tips, me-epd) {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-doc-theme='light'])
+    .mm-card:not(.mm-export)
+    > .mm-sheet-host
+    > .map-container:not([data-mm-variant='dark'])
+    :is(img, .context-menu, .tips, me-epd) {
+    filter: invert(1) hue-rotate(180deg);
+  }
 }
 
 /* ---- the theme panel beside the map ---- */
@@ -1589,4 +1721,110 @@ textarea.mm-field {
   width: 36px;
   background: currentColor;
   border-radius: 1px;
+}
+
+/* ---- the print dialog: the page on the left, the printer and copies on the right ---- */
+
+.mm-modal.mm-print {
+  width: min(880px, calc(100vw - 48px));
+}
+
+.mm-print-body {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.mm-print-preview {
+  flex: none;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  /* paper stays white in both themes */
+  --mm-print-paper: #fff;
+  background: var(--mm-print-paper);
+  box-shadow: var(--shadow-modal-strong);
+}
+
+.mm-print-preview iframe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.mm-print-options {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mm-print-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 900px) {
+  .mm-print-body {
+    flex-direction: column;
+  }
+}
+
+/* "make another document from this one": the icon with its name beside it */
+.mm-tool.mm-make-from {
+  width: auto;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.mm-tool.mm-make-from[aria-disabled='true'] {
+  opacity: 0.55;
+}
+
+.mm-make-from-label {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* a new, empty map: how to add topics, at the foot of the map until it is first changed */
+.mm-start-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  z-index: 5;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow-modal-strong);
+}
+
+/* the presentation: how to step through it, quietly at the foot of the screen */
+.mm-present-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  z-index: 5;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--color-bg-overlay);
+  color: var(--text-primary);
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0.85;
 }

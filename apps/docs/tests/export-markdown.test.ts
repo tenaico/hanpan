@@ -66,6 +66,40 @@ describe('restrictedHtmlToMarkdown', () => {
 })
 
 describe('documentToMarkdown', () => {
+  it('writes table-of-contents lines without their page numbers', () => {
+    const editor = new Editor({
+      element: document.createElement('div'),
+      extensions: editorExtensions,
+      content: '<p></p>',
+    })
+    try {
+      editor.commands.setContent({
+        type: 'doc',
+        content: [
+          {
+            type: 'docProtected',
+            attrs: {
+              blockType: 'field',
+              previewText: '개요를 시험합니다.1',
+              fieldDisplay: { kind: 'tocLine', left: '개요를 시험합니다.', right: '1', level: 1 },
+            },
+          },
+          {
+            type: 'docProtected',
+            attrs: {
+              blockType: 'field',
+              previewText: '1.1. 세부2',
+              fieldDisplay: { kind: 'tocLine', left: '세부', right: '2', level: 2, num: '1.1.' },
+            },
+          },
+        ],
+      })
+      expect(documentToMarkdown(editor).markdown).toBe('개요를 시험합니다.\n\n1.1. 세부\n')
+    } finally {
+      editor.destroy()
+    }
+  })
+
   it('serializes a real editor document', () => {
     const editor = new Editor({
       element: document.createElement('div'),

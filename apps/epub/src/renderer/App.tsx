@@ -996,6 +996,7 @@ export default function App(): React.JSX.Element {
             view={search}
             active={activeHit}
             focusSignal={searchFocus}
+            title={replaceOpen ? t('editFindReplaceTitle') : undefined}
             chapterName={(i) => chapterNames.get(i) ?? t('chapterLabel', { n: i + 1 })}
             onSearch={(query) => void runSearch(query)}
             onPick={pickHit}

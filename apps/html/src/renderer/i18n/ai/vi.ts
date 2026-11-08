@@ -148,10 +148,10 @@ export const vi = {
   aiChipRecolor: 'Điều chỉnh phối màu',
   aiChipUnify: 'Thống nhất phong cách',
   aiAskCancel: 'Hủy',
-  aiRestyleBtn: 'Tối ưu kiểu dáng',
+  aiRestyleBtn: 'AI tinh chỉnh',
   aiRestylePrompt:
     'Tinh chỉnh toàn bộ trang: đọc tất cả thẻ <style> trước, sau đó thống nhất khoảng cách, căn lề, tỷ lệ cỡ chữ, màu sắc và các điểm ngắt thích ứng (breakpoints) trong một đợt apply_ops. Không thay đổi bất kỳ nội dung văn bản nào hoặc thêm/bớt phần tử; nếu cần thay đổi cấu trúc trang, hãy đề xuất bằng plan_page trước.',
-  aiThemeBtn: 'Chủ đề',
+  aiThemeBtn: 'AI chủ đề',
   aiThemePrompt:
     'Mang lại cho toàn bộ trang giao diện phong cách "{direction}": đề xuất phong cách mới bằng plan_page trước (giữ nguyên các phần hiện có); sau khi xác nhận, chỉ cập nhật các biến --brief-* và các quy tắc CSS liên quan, giữ nguyên nội dung và thứ tự các phần.',
   aiThemeMinimal: 'Tối giản',

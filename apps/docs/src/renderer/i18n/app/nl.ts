@@ -54,11 +54,12 @@ export const nl = {
   appVerticalTextNotice:
     'Dit document bevat verticale tekst (voorlopig horizontaal weergegeven; opslaan wordt niet beïnvloed)',
   appNewDocCreated:
-    'Leeg document gemaakt. Beschrijf in het AI-paneel links wat er gegenereerd moet worden.',
+    'Leeg document gemaakt. Beschrijf in het AI-paneel wat er gegenereerd moet worden.',
   appNewFailed: 'Document maken mislukt: {error}',
   appSaveFailed: 'Opslaan mislukt: {error}',
   appAutoSavedAt: 'Automatisch opgeslagen ({time})',
   appSaved: 'Opgeslagen',
+  appUnsaved: 'Niet opgeslagen',
   appSectionBreakInserted: 'Sectie-einde ingevoegd ({type})',
   appSectionBreakPending:
     'Sectie-einde ingevoegd; de nieuwe sectie wordt van kracht na het opslaan',
@@ -125,6 +126,8 @@ export const nl = {
   appExportingImages: 'Afbeeldingen exporteren…',
   appExportImagesProgress: '{count} afbeeldingen exporteren…',
   appExportImagesDone: '{count} afbeeldingen geëxporteerd naar {dir}',
+  appOpenExported: 'Openen',
+  appRevealExported: 'Map openen',
   appExportImagesFailed: 'Exporteren van afbeeldingen mislukt: {error}',
   appMixedExportOpening:
     'Gemengde papierformaten: pagineringsvoorbeeld wordt geopend om per pagina samengevoegd te exporteren…',
@@ -497,6 +500,7 @@ export const nl = {
   appMatchCase: 'Identieke hoofdletters/kleine letters',
   appWholeWord: 'Alleen hele woorden',
   appNoResults: 'Geen resultaten',
+  appReplacedCount: '{count} vervangen',
   appPrevMatch: 'Vorige (Shift+Enter)',
   appNextMatch: 'Volgende (Enter)',
   appCloseEsc: 'Sluiten (Esc)',

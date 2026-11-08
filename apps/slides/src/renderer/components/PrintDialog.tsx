@@ -203,7 +203,11 @@ export function PrintDialog({
               />
             ) : (
               <div className="print-preview-empty">
-                {pngs ? t('appPrintNoPages') : t('appPrintRendering')}
+                {!pngs
+                  ? t('appPrintRendering')
+                  : rangeMode === 'custom' && slides.length > 0
+                    ? t('appPrintRangeOutOfDeck', { n: slides.length })
+                    : t('appPrintNoPages')}
               </div>
             )}
           </div>
@@ -246,6 +250,11 @@ export function PrintDialog({
                 onFocus={() => setRangeMode('custom')}
                 onChange={(e) => setCustomRange(e.target.value)}
               />
+              {rangeInvalid && customRange.trim() !== '' && (
+                <div className="print-range-error" role="alert">
+                  {t('appPrintRangeOutOfDeck', { n: slides.length })}
+                </div>
+              )}
             </fieldset>
             <fieldset>
               <legend>{t('appPrintLayoutGroup')}</legend>

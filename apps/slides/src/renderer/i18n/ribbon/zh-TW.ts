@@ -53,7 +53,8 @@ export const zhTW = {
   ribbonBrushTipDefault: '複製格式（按一下複製並套用格式；⌘⇧C 複製格式 / ⌘⇧V 貼上格式）',
   ribbonGroupSlides: '投影片',
   ribbonNewSlide: '新增投影片',
-  ribbonNewSlideTip: '新增空白投影片（沿用目前頁版面配置背景）',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: '選擇版面配置',
   ribbonChooseLayoutNew: '選擇版面配置新增投影片',
   ribbonChooseLayoutChange: '變更目前投影片版面配置',
@@ -756,4 +757,8 @@ export const zhTW = {
   ribbonZoomSectionItem: '第 {n} 頁　第 {k} 節：{name}',
   ribbonZoomSelectedSlides: '已選取 {n} 張投影片',
   ribbonZoomSelectedSections: '已選取 {n} 個節',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

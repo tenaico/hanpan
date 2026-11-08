@@ -9,7 +9,7 @@ import type { ActionCtx } from './action-context'
 import { applySelectionLink, saveEditSelection, selectionLink } from './TextEditOverlay'
 import { FIT_WIDTH } from './app-constants'
 import { fileExt } from '../shared/media-kinds'
-import type { WordArtPreset } from '@genoffice/ui'
+import type { GonguPicked, WordArtPreset } from '@genoffice/ui'
 import {
   chartSampleData,
   iconSvg,
@@ -120,6 +120,104 @@ export async function insertImage(ctx: ActionCtx): Promise<void> {
   }
   ctx.applySlide(ctx.current, r.slide)
   ctx.setSelectedIds([r.sourceId])
+}
+
+/** Hanpan: the credit line's size under a Gongu picture (pt). */
+export const GONGU_CREDIT_PT = 10
+
+/**
+ * Where a Gongu picture and its credit line go on a slide (slide pixels at the
+ * fit width): the picture centred, at most 60% of the slide each way, and the
+ * credit box right under it, as wide as the picture (at least half the slide)
+ * and tall enough for its lines, the pair kept on the slide.
+ */
+export function gonguPictureLayout(
+  slide: { widthPx: number; heightPx: number },
+  natural: { width: number; height: number },
+  line: string,
+) {
+  const W = slide.widthPx
+  const H = slide.heightPx
+  const k = Math.min(1, (W * 0.6) / natural.width, (H * 0.6) / natural.height)
+  const pw = Math.max(1, Math.round(natural.width * k))
+  const ph = Math.max(1, Math.round(natural.height * k))
+  // the credit's size in slide pixels on a 13.33-inch (16:9) slide; narrower decks
+  // draw it larger, and the box grows to its text (autofit resize)
+  const size = ((GONGU_CREDIT_PT * 96) / 72) * (W / 1280)
+  const bw = Math.min(Math.round(W * 0.9), Math.max(pw, Math.round(W / 2)))
+  // Hangul is about one em a letter; the box's own insets add about 0.1 inch
+  const perLine = Math.max(8, Math.floor((bw - 20) / (size * 0.95)))
+  const lines = Math.max(1, Math.ceil(line.length / perLine))
+  const bh = Math.ceil(lines * size * 1.25 + 12)
+  const gap = Math.round(size * 0.4)
+  const top = Math.max(0, Math.round((H - (ph + gap + bh)) / 2))
+  const picture = { x: Math.round((W - pw) / 2), y: top, w: pw, h: ph }
+  const box = {
+    x: Math.max(0, Math.round(W / 2 - bw / 2)),
+    y: Math.min(H - bh, top + ph + gap),
+    w: bw,
+    h: bh,
+  }
+  return { picture, box }
+}
+
+/**
+ * Hanpan: Insert ▸ Gongu pictures (docs/plans/gongu-images.md 4.4, as the design
+ * board does it): the picture on the current slide with its credit line in a
+ * small text box right under it, the two grouped so they move together, one
+ * undo step. The picture's name carries the credit line too (the selection
+ * pane shows it). False when nothing went in.
+ */
+export async function insertGonguPicture(ctx: ActionCtx, picked: GonguPicked): Promise<boolean> {
+  const { slide, current } = ctx
+  if (!slide) return false
+  const m = /^data:image\/([a-z0-9.+-]+);base64,(.+)$/is.exec(picked.dataUrl)
+  if (!m) return false
+  const ext = m[1]!.toLowerCase() === 'jpeg' ? 'jpg' : m[1]!.toLowerCase()
+  const at = gonguPictureLayout(slide, picked, picked.creditLine)
+  return batched(async () => {
+    const pic = await window.slidesApi.addImageBytes({
+      slideIndex: current,
+      base64: m[2]!,
+      ext,
+      xPx: at.picture.x,
+      yPx: at.picture.y,
+      wPx: at.picture.w,
+      hPx: at.picture.h,
+      fitWidthPx: FIT_WIDTH,
+      name: picked.creditLine,
+    })
+    if (!pic || 'error' in pic) return false
+    let updated = pic.slide
+    let selected = pic.sourceId
+    const credit = await window.slidesApi.addElement({
+      slideIndex: current,
+      kind: 'textbox',
+      xPx: at.box.x,
+      yPx: at.box.y,
+      wPx: at.box.w,
+      hPx: at.box.h,
+      fitWidthPx: FIT_WIDTH,
+      paragraphs: [
+        { align: 'center', runs: [{ text: picked.creditLine, fontSize: GONGU_CREDIT_PT }] },
+      ],
+      bodyPr: { wrap: 'square', autoFit: 'resize' },
+    })
+    if (credit) {
+      updated = credit.slide
+      const group = await window.slidesApi.groupElements({
+        slideIndex: current,
+        sourceIds: [pic.sourceId, credit.sourceId],
+      })
+      if (group) {
+        updated = group.slide
+        selected = group.groupId
+      }
+    }
+    ctx.applySlide(current, updated)
+    ctx.setSelectedIds([selected])
+    return true
+  })
 }
 
 export async function insertTable(ctx: ActionCtx, rows: number, cols: number): Promise<void> {

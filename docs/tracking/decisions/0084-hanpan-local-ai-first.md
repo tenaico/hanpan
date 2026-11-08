@@ -28,3 +28,11 @@
 
 - `apps/shell/src/main/index.ts`의 `app.whenReady()`가 `hanpan.adoptLocalAi()`를 부른다.
 - 테스트: `apps/shell/tests/hanpan-local-ai-first.test.ts`(등록, 사람의 선택 지키기, 서버가 없을 때), `packages/local-ai/tests/local-ai.test.ts`(루프백만, 모델 고르기, 생각 태그 걷어내기).
+
+## 0.17 고침 (2026-11-06): 로그인한 계정이 먼저
+
+0.16 점검에서 Claude에 로그인한 PC인데도 첫 시작의 등록이 `auto`를 로컬 서버로 바꿔, 그 전에 연 워드는 Claude로, 뒤에 연 한글·엑셀·마인드맵은 PC 모델(exaone)로 도는 일이 있었다. 앱마다 고르는 규칙이 다른 것이 아니라, 모든 앱이 같은 `ai-settings.json`을 읽는데 시작 때 그 값이 계정과 상관없이 바뀐 것이 원인이다.
+
+- 기본값은 설정 하나로 모든 앱이 같다. 사람이 고르지 않았으면 **로그인한 계정**(구독 로그인이면 `auto`, API 키만 넣었으면 그 키 제공자)을 쓰고, 없을 때만 PC 모델을 등록해 고른다(`accountDefaultProvider`, `settleDefaultAi`).
+- 시작할 때마다 다시 정한다. 다만 `hanpan-local-ai.json`에 남긴 "마지막으로 써 둔 값"과 지금 값이 다르면 사람이 고른 것으로 보고 다시는 건드리지 않는다(`kept`).
+- 0.16이 등록한(`adopted`) 설치는 계정이 있으면 `auto`로 옮긴다. 0.16에서 그 로컬 서버를 일부러 다시 고른 사람도 한 번 옮겨질 수 있다.

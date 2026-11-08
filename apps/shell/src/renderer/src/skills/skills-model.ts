@@ -43,6 +43,45 @@ export function skillDisplayTitle(view: UserSkillView): string {
   return skillDisplayName(view.source === 'builtin' ? { name: view.name } : view)
 }
 
+/**
+ * The builtins' names in the UI language (0.17 리뷰 v2 shell #8): a person
+ * reads "회의록 정리", the coding-agent name stays as the second line.
+ * Languages without an entry show the skill's own name.
+ */
+const BUILTIN_TITLES: Partial<Record<Lang, Record<string, string>>> = {
+  ko: {
+    'meeting-minutes': '회의록 정리',
+    'internal-comms': '사내 공지·보고 글',
+    humanizer: '사람이 쓴 듯 다듬기',
+    'copy-editing': '영어 글 교정',
+    'find-skills': '스킬 찾기',
+  },
+  vi: {
+    'meeting-minutes': 'Biên bản cuộc họp',
+    'internal-comms': 'Thông báo nội bộ',
+    humanizer: 'Viết tự nhiên hơn',
+    'copy-editing': 'Biên tập văn bản tiếng Anh',
+    'find-skills': 'Tìm kỹ năng',
+  },
+}
+
+/** What a row's title says: a builtin's name in the UI language, else the display title */
+export function skillRowTitle(view: UserSkillView, lang: Lang): string {
+  if (view.source === 'builtin') {
+    const title = BUILTIN_TITLES[lang]?.[view.name]
+    if (title) return title
+  }
+  return skillDisplayTitle(view)
+}
+
+/** Groups of other programs' skill folders: folded away until opened */
+export const EXTERNAL_SKILL_GROUPS: ReadonlySet<SkillGroupId> = new Set(['user', 'plugin', 'codex'])
+
+/** A new skill's name typed in Korean (or any non-ID text) becomes its shown title */
+export function isSkillIdName(name: string): boolean {
+  return /^[a-z0-9-]+$/.test(name.trim())
+}
+
 export function skillDisplayDesc(view: UserSkillView, lang: Lang): string {
   if (view.source === 'builtin' && isBuiltinSkillName(view.name)) {
     return builtinSkillDesc(lang, view.name)

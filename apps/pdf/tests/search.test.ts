@@ -123,6 +123,31 @@ describe('searchInIndex', () => {
     expect(y2).toBe(712)
   })
 
+  it('places a Korean hit in mixed Korean and Latin text where it is drawn (UI/UX review P8)', () => {
+    // Malgun Gothic-like advances at 12pt: hangul a full em, digits and Latin about
+    // half, spaces and dots narrower. Counting characters evenly put the box for
+    // "매출" half a glyph to the right.
+    const advance = (ch: string) =>
+      /[가-힣]/.test(ch)
+        ? 12
+        : ch === ' '
+          ? 3.3
+          : /[.:-]/.test(ch)
+            ? 3.5
+            : /[A-Z]/.test(ch)
+              ? 7.6
+              : 6.6
+    const text = '1-1. 한판 PDF 뷰어 점검용 본문 줄입니다. 검색어: 매출 증가'
+    const width = [...text].reduce((sum, ch) => sum + advance(ch), 0)
+    const index = [entry(text, [{ start: 0, end: text.length, x: 100, y: 700, w: width, h: 12 }])]
+    const [hit] = searchInIndex(index, '매출')
+    const s = text.indexOf('매출')
+    const trueX1 = 100 + [...text.slice(0, s)].reduce((sum, ch) => sum + advance(ch), 0)
+    const [x1, , x2] = hit!.rects[0]!
+    expect(Math.abs(x1 - trueX1)).toBeLessThan(2)
+    expect(Math.abs(x2 - (trueX1 + 24))).toBeLessThan(2)
+  })
+
   it('spans multiple items with one rect per item', () => {
     const index = [
       entry('abcdef', [

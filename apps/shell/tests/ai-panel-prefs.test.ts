@@ -57,10 +57,13 @@ describe('aiPanelZoom', () => {
 })
 
 describe('AI panel side', () => {
-  it('keeps existing users on the left and accepts the right side', () => {
-    expect(normalizeAiPanelPrefs({}).side).toBe('left')
-    expect(normalizeAiPanelPrefs({ side: 'bottom' }).side).toBe('left')
+  // Hanpan 0.17: the right unless the person chose the left
+  it('defaults to the right and keeps a chosen left', () => {
+    expect(normalizeAiPanelPrefs({}).side).toBe('right')
+    expect(normalizeAiPanelPrefs({ side: 'bottom' }).side).toBe('right')
+    expect(normalizeAiPanelPrefs({ side: 'left' }).side).toBe('left')
     expect(normalizeAiPanelPrefs({ side: 'right' }).side).toBe('right')
+    expect(normalizeAiPanelPrefs({ side: 'left' }).side).toBe('left')
   })
 
   it('does not discard a side-only preference change', () => {

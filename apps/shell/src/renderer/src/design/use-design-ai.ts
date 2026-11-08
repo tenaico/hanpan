@@ -50,7 +50,13 @@ export type DesignAiMode = 'make' | 'fill'
 export type DesignAiRequest =
   | { mode: 'make'; text: string; format: string; mood: DesignMood | 'auto' }
   | { mode: 'fill'; text: string }
-  | { mode: 'rewrite'; id: string; rewrite: RewriteMode }
+  | {
+      mode: 'rewrite'
+      id: string
+      rewrite: RewriteMode
+      /** where a translation goes; null or absent for the default */
+      target?: string | null
+    }
 
 export interface DesignAiTurn {
   id: number
@@ -155,7 +161,7 @@ export function useDesignAi(args: {
       if (!target?.text?.trim()) return
       const shown = target.text.replace(/\s+/g, ' ')
       label = `${w.rewrites[request.rewrite]}: “${shown.length > 40 ? `${shown.slice(0, 40)}…` : shown}”`
-      prompt = rewriteRequest(target.text, request.rewrite, lang)
+      prompt = rewriteRequest(target.text, request.rewrite, lang, request.target ?? undefined)
       maxChars = Math.max(2_000, target.text.length * 6)
     }
 

@@ -173,6 +173,7 @@ describe('XLSX Rust sidecar', () => {
     }
   })
 
+  // the new workbook as the shell writes it (0.17: 시트1, Normal font 맑은 고딕)
   it('opens a blankXlsxBuffer workbook and saves a first edit into it', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'xlsx-sidecar-blank-'))
     const sourcePath = join(directory, 'blank.xlsx')
@@ -183,7 +184,7 @@ describe('XLSX Rust sidecar', () => {
     try {
       const opened = openResultSchema.parse(await client.open(sourcePath))
       sessionId = opened.sessionId
-      expect(opened.sheets.map((sheet) => sheet.name)).toEqual(['Sheet1'])
+      expect(opened.sheets.map((sheet) => sheet.name)).toEqual(['시트1'])
 
       await saveWorkbookViaSidecar({
         client,
@@ -191,7 +192,7 @@ describe('XLSX Rust sidecar', () => {
         targetPath,
         edits: [
           {
-            sheetName: 'Sheet1',
+            sheetName: '시트1',
             row: 0,
             column: 0,
             writeValue: true,

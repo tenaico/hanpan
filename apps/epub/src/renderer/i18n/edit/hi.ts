@@ -6,6 +6,7 @@ export const hi = {
   editBold: 'बोल्ड',
   editItalic: 'इटैलिक',
   editReplace: 'बदलें',
+  editFindReplaceTitle: 'ढूँढें और बदलें',
   editReplaceWith: 'इससे बदलें',
   editReplaceOne: 'बदलें',
   editReplaceAll: 'सभी बदलें',

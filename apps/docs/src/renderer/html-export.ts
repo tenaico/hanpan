@@ -19,6 +19,8 @@ const SKIP_CLASSES = new Set([
   'doc-sectbreak-label',
   'doc-protected-sectbreak',
   'doc-move-handle',
+  // editor-only type chip on degraded blocks ("Protected content")
+  'doc-protected-label',
   'box-resize-handle',
 ])
 
@@ -226,6 +228,8 @@ interface StyleOpts {
   authoredWidth: boolean
   authoredHeight: boolean
   skipBorders: boolean
+  /** editor chrome fill (the protected-block chip plate) */
+  skipBackground?: boolean
   positioned: boolean
 }
 
@@ -259,7 +263,8 @@ function styleDecls(cs: CSSStyleDeclaration, o: StyleOpts): string[] {
     const radius = cs.borderRadius
     if (radius && !isZero(radius)) out.push(`border-radius:${radius}`)
   }
-  if (!isTransparent(cs.backgroundColor)) out.push(`background-color:${cs.backgroundColor}`)
+  if (!o.skipBackground && !isTransparent(cs.backgroundColor))
+    out.push(`background-color:${cs.backgroundColor}`)
   if (cs.backgroundImage && cs.backgroundImage !== 'none') {
     out.push(`background-image:${cs.backgroundImage}`)
     out.push(`background-size:${cs.backgroundSize}`)
@@ -406,7 +411,9 @@ function serializeNode(
     tag,
     authoredWidth: !!el.style.width,
     authoredHeight: !!el.style.height,
-    skipBorders: el.classList.contains('has-ppr-change'),
+    // the dashed box and gray plate of a protected block are editing chrome
+    skipBorders: el.classList.contains('has-ppr-change') || el.classList.contains('doc-protected'),
+    skipBackground: el.classList.contains('doc-protected'),
     positioned,
   })
   if (positioned) {

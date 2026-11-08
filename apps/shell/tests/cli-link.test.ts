@@ -6,7 +6,12 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('electron', () => ({ app: { isPackaged: false, getVersion: () => '0.0.0' } }))
 
-import { isEphemeralInstall, launcherFilePath, writeLauncherFile } from '../src/main/cli-link'
+import {
+  cliLinkSkipReason,
+  isEphemeralInstall,
+  launcherFilePath,
+  writeLauncherFile,
+} from '../src/main/cli-link'
 
 describe('genoffice launcher file', () => {
   it('lives in the genoffice auth directory, overridable like auth.json', () => {
@@ -37,5 +42,88 @@ describe('genoffice launcher file', () => {
       true,
     )
     expect(isEphemeralInstall('/Applications/GenOffice.app/Contents/Resources', {})).toBe(false)
+  })
+})
+
+describe('which build may claim the launcher file and PATH', () => {
+  const installedExe = 'C:\\Users\\u\\AppData\\Local\\Programs\\Hanpan\\Hanpan.exe'
+  const installed = {
+    platform: 'win32' as NodeJS.Platform,
+    isPackaged: true,
+    execPath: installedExe,
+    resourcesPath: 'C:\\Users\\u\\AppData\\Local\\Programs\\Hanpan\\resources',
+    argv: [installedExe],
+    env: {},
+    exists: (p: string) =>
+      p === 'C:\\Users\\u\\AppData\\Local\\Programs\\Hanpan\\Uninstall Hanpan.exe',
+  }
+
+  it('lets the NSIS-installed copy claim it', () => {
+    expect(cliLinkSkipReason(installed)).toBeUndefined()
+  })
+
+  it('skips an unpackaged (dev) run', () => {
+    expect(cliLinkSkipReason({ ...installed, isPackaged: false })).toMatch(/not packaged/)
+  })
+
+  it('skips a win-unpacked build even if an uninstaller happens to sit next to it', () => {
+    const exe =
+      'C:\\src\\hanpan\\.claude\\worktrees\\rel\\apps\\shell\\release\\win-unpacked\\Hanpan.exe'
+    expect(
+      cliLinkSkipReason({
+        ...installed,
+        execPath: exe,
+        resourcesPath:
+          'C:\\src\\hanpan\\.claude\\worktrees\\rel\\apps\\shell\\release\\win-unpacked\\resources',
+        argv: [exe],
+        exists: () => true,
+      }),
+    ).toMatch(/unpacked/)
+  })
+
+  it("skips a Windows copy without the installer's uninstaller next to the exe", () => {
+    expect(cliLinkSkipReason({ ...installed, exists: () => false })).toMatch(/not installed/)
+  })
+
+  it('skips runs on a custom profile (--user-data-dir or GENOFFICE_USER_DATA)', () => {
+    expect(
+      cliLinkSkipReason({ ...installed, argv: [installedExe, '--user-data-dir=C:\\tmp\\p'] }),
+    ).toMatch(/custom profile/)
+    expect(
+      cliLinkSkipReason({ ...installed, argv: [installedExe, '--user-data-dir', 'C:\\tmp\\p'] }),
+    ).toMatch(/custom profile/)
+    expect(cliLinkSkipReason({ ...installed, env: { GENOFFICE_USER_DATA: 'C:\\tmp\\p' } })).toMatch(
+      /custom profile/,
+    )
+  })
+
+  it('keeps the mac/linux temporary-mount rule and needs no uninstaller there', () => {
+    const mac = {
+      ...installed,
+      platform: 'darwin' as NodeJS.Platform,
+      execPath: '/Applications/Hanpan.app/Contents/MacOS/Hanpan',
+      resourcesPath: '/Applications/Hanpan.app/Contents/Resources',
+      argv: ['/Applications/Hanpan.app/Contents/MacOS/Hanpan'],
+      exists: () => false,
+    }
+    expect(cliLinkSkipReason(mac)).toBeUndefined()
+    expect(
+      cliLinkSkipReason({ ...mac, resourcesPath: '/Volumes/Hanpan/Hanpan.app/Contents/Resources' }),
+    ).toMatch(/temporary mount/)
+    expect(
+      cliLinkSkipReason({
+        ...mac,
+        platform: 'linux',
+        resourcesPath: '/opt/Hanpan/resources',
+        env: { APPIMAGE: '/home/u/H.AppImage' },
+      }),
+    ).toMatch(/temporary mount/)
+    expect(
+      cliLinkSkipReason({
+        ...mac,
+        platform: 'linux',
+        resourcesPath: '/home/u/hanpan/release/linux-unpacked/resources',
+      }),
+    ).toMatch(/unpacked/)
   })
 })

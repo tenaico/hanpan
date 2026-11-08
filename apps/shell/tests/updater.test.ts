@@ -973,9 +973,7 @@ describe('manual download fallback', () => {
     actions.onOpenDownload()
     expect(openExternal).toHaveBeenCalledTimes(1)
     expect(openExternal).toHaveBeenCalledWith(GITHUB_LATEST_RELEASE_URL)
-    expect(GITHUB_LATEST_RELEASE_URL).toBe(
-      'https://github.com/SamulChung/hanpan/releases/latest',
-    )
+    expect(GITHUB_LATEST_RELEASE_URL).toBe('https://github.com/SamulChung/hanpan/releases/latest')
   })
 
   it('never follows a download URL supplied by the update metadata', async () => {
@@ -1395,6 +1393,24 @@ describe('checkForUpdatesNow (r148 manual check)', () => {
     expect(lastDialogOpts().type).toBe('info')
     expect(lastDialogOpts().message).toContain('0.1.0')
     expect(showUpdateWindow).not.toHaveBeenCalled()
+  })
+
+  it('titles the result with the product name in every UI language (0.17 review v2 shell #33)', async () => {
+    const { LANGS, getUiLang, productName, setUiLang } = await import('@genoffice/i18n')
+    const { initAutoUpdater, checkForUpdatesNow } = await loadUpdater()
+    initAutoUpdater(() => null)
+    checkForUpdates.mockImplementation(() => Promise.resolve({ isUpdateAvailable: false } as never))
+    const before = getUiLang()
+    try {
+      for (const lang of LANGS) {
+        setUiLang(lang)
+        await checkForUpdatesNow()
+        const title = (showMessageBox.mock.calls.at(-1)![0] as { title: string }).title
+        expect(title, lang).toContain(productName(lang))
+      }
+    } finally {
+      setUiLang(before)
+    }
   })
 
   it('does not report up-to-date when the updater skips the check', async () => {

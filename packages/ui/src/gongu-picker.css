@@ -1,0 +1,186 @@
+/* Hanpan: the Gongu picture picker of the Word and PowerPoint editors (chrome only) */
+
+.gs-gongu-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: var(--color-bg-overlay);
+  backdrop-filter: blur(4px);
+}
+
+.gs-gongu {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 96px);
+  margin-top: 72px;
+  padding: 14px 16px;
+  overflow-y: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-modal-strong);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.gs-gongu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gs-gongu-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.gs-gongu-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.gs-gongu-close:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.gs-gongu-form {
+  display: flex;
+  gap: 6px;
+}
+
+.gs-gongu-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.gs-gongu button:not(.gs-gongu-close):not(.gs-gongu-grid button) {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.gs-gongu button.primary {
+  border-color: var(--color-btn-primary);
+  background: var(--color-btn-primary);
+  color: var(--color-btn-primary-text);
+}
+
+.gs-gongu button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.gs-gongu p {
+  margin: 0;
+}
+
+.gs-gongu-dim {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.gs-gongu-error {
+  color: var(--color-error);
+}
+
+/* no key yet: what to do, shown as soon as the dialog opens */
+.gs-gongu-nokey {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.gs-gongu-nokey p {
+  margin: 0;
+}
+
+.gs-gongu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+}
+
+.gs-gongu-grid button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 2px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: var(--surface-subtle);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.gs-gongu-grid button:hover {
+  border-color: var(--border-hover);
+}
+
+.gs-gongu-grid button.on {
+  border-color: var(--color-border-brand);
+}
+
+.gs-gongu-grid img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.gs-gongu-more {
+  align-self: center;
+}
+
+.gs-gongu-pick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+
+.gs-gongu-pick-text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  min-width: 0;
+}
+
+.gs-gongu-foot {
+  padding-top: 2px;
+}

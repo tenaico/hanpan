@@ -90,6 +90,22 @@ async function mount(partial: Partial<Props>) {
 }
 
 describe('ProtectDialog', () => {
+  // 0.17 v2 #7: Esc closes it like the other dialogs, also with focus on the body
+  it('Esc cancels the dialog from inside and after focus fell to the body', async () => {
+    const d = await mount({})
+    const first = d.passwordInputs()[0]!
+    await act(async () => {
+      first.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    })
+    expect(d.onCancel).toHaveBeenCalledTimes(1)
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    })
+    expect(d.onCancel).toHaveBeenCalledTimes(2)
+    await d.cleanup()
+  })
+
   it('submitting untouched state yields an all-undefined diff (even when passwords exist)', async () => {
     const wp = await hashProtectionPassword('modify-pw', 1000)
     const d = await mount({ encrypted: true, writeProtection: wp })

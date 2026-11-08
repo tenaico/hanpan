@@ -156,7 +156,8 @@ export const it = {
   dlgPivotAddValue: '+ Aggiungi campo valore',
   dlgPivotAddCalc: '+ Aggiungi campo calcolato',
   dlgPivotTargetCell: 'Cella di destinazione',
-  dlgPivotTargetPlaceholder: 'es. F1',
+  dlgPivotTargetPlaceholder: 'es. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked:
     "Durante la modifica l'intervallo di output mantiene la cella superiore sinistra",
   dlgPivotNote:
@@ -643,6 +644,12 @@ export const it = {
   dlgPrintNextPage: 'Pagina successiva',
   dlgPrintZoomFit: 'Adatta pagina',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Adatta larghezza',
+  dlgPrintColumnsSplit:
+    'Le colonne di "{sheets}" non stanno nella larghezza di una pagina; quelle a destra vengono stampate nelle pagine successive.',
+  dlgPrintPastEdge: 'Alcune colonne superano il bordo destro della pagina e verranno tagliate.',
+  dlgPrintClippedText:
+    "Parte del testo dell'ultima colonna supera l'area di stampa e verrà tagliata. Allarga la colonna o attiva Testo a capo.",
   dlgPrintButton: 'Stampa',
   dlgPrintToPdf: 'Stampa in PDF',
   dlgPrintPageSetup: 'Imposta pagina…',

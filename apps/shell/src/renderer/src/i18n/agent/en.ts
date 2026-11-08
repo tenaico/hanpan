@@ -1,7 +1,7 @@
 import type { zh } from './zh'
 
 export const en = {
-  windowTitle: 'Agent',
+  windowTitle: 'AI folder work',
   homeCardSub: 'Work in a folder with Claude Code or Codex',
   intro:
     'The agent runs your Claude Code or Codex in a folder you choose. It can read the files there, create new ones, use your skills, run scripts and change documents open in GenOffice.',

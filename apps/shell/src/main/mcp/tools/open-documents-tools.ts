@@ -29,6 +29,8 @@ const FAMILY_BY_KIND: Record<Exclude<TabKind, 'home' | 'help'>, EditorFamily> = 
   mindmap: 'xmind',
   hwp: 'hwp',
   epub: 'epub',
+  photo: 'photo',
+  illust: 'illust',
 }
 
 /** families whose live content can be read back over MCP */
@@ -42,6 +44,17 @@ const READABLE_KINDS: ReadonlySet<TabKind> = new Set<TabKind>([
   'hwp',
   'epub',
 ])
+
+/** AI Photo and AI Illustration tabs: listed only; the person saves a picture in its tab */
+const PICTURE_KINDS: ReadonlySet<TabKind> = new Set<TabKind>(['photo', 'illust'])
+
+function pictureRefusal(title: string): Error {
+  return new Error(
+    `"${title}" is a picture in an AI Photo or AI Illustration tab: it is not read or saved ` +
+      'through this tool, it is saved by the user in its tab. Pass unsaved:"discard" to close ' +
+      'it without its changes, or leave it open',
+  )
+}
 
 export interface OpenDocumentsControl {
   /** every editor tab the user can see (Home and chrome-free Present tabs excluded) */
@@ -209,7 +222,9 @@ export function createOpenDocumentTools(deps: OpenDocumentsDeps): McpToolDefinit
         '(paragraphs as lines, tables as " | " rows) but not edited or saved here: "close" on ' +
         'an HWP tab with unsaved changes fails unless unsaved:"discard" is passed. ' +
         'A book (kind "epub") reads as its text in reading order, headings as "#" lines; ' +
-        'there is no tool that edits one.',
+        'there is no tool that edits one. ' +
+        'Pictures (kinds "photo" and "illust") are listed only: they cannot be read or saved ' +
+        'here, and "close" on one with unsaved changes fails unless unsaved:"discard" is passed.',
       inputSchema: {
         action: z.enum(['list', 'read', 'save', 'close']).describe('what to do'),
         target: z
@@ -237,6 +252,10 @@ export function createOpenDocumentTools(deps: OpenDocumentsDeps): McpToolDefinit
         const documents = await control.list()
         const doc = resolveOpenDocument(documents, target)
         if (!doc) throw noMatch(target, documents)
+
+        if ((action === 'read' || action === 'save') && PICTURE_KINDS.has(doc.kind)) {
+          throw pictureRefusal(doc.title)
+        }
 
         if (action === 'read') {
           if (!READABLE_KINDS.has(doc.kind)) {

@@ -50,7 +50,8 @@ openoffice/
 │   ├── html/AGENTS.md             ← HTML 편집기
 │   ├── mindmap/AGENTS.md          ← 마인드맵 편집기(`.xmind`)
 │   ├── hwp/AGENTS.md              ← 한글(HWP·HWPX) 편집기, 편집 화면은 rhwp
-│   └── epub/AGENTS.md             ← 전자책(EPUB) 편집기: 읽기, 책 화면에서 고치기, 책 번역
+│   ├── epub/AGENTS.md             ← 전자책(EPUB) 편집기: 읽기, 책 화면에서 고치기, 책 번역
+│   └── graphics/AGENTS.md         ← AI 포토·AI 일러스트(PhotoCraft·VectorCraft 웹판) 탭과 AI 도우미
 ├── packages/
 │   ├── ai-provider/AGENTS.md      ← 제공자 목록·선택 규칙, 구독 프로그램 실행부
 │   ├── ai-search/AGENTS.md        ← 검색·이미지 생성·미디어 분석 도구, 자동 호출 제한

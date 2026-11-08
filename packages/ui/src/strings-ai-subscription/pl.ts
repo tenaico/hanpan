@@ -78,6 +78,8 @@ export const pl = {
   usageWindowFiveHour: 'Limit 5-godzinny',
   usageWindowSevenDay: 'Limit 7-dniowy',
   noticeTitle: 'Zanim użyjesz AI w ramach subskrypcji',
+  noticeSummary: 'Dokumenty i rozmowy trafiają do Anthropic lub OpenAI z Twojego konta.',
+  noticeMore: 'Szczegóły',
   noticeSend:
     'Treść dokumentu i rozmowa są wysyłane do Anthropic lub OpenAI z Twojego własnego konta. Każde żądanie zawiera też nazwę, tytuł i opis każdej umiejętności ustawionej na „Decyduje AI”; wysyłane są też używane umiejętności i pliki umiejętności odczytane przez AI.',
   noticeTraining:

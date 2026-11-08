@@ -136,9 +136,9 @@ body { counter-reset: pg; background: transparent; padding: 18px 0 6px; }
 .page::after {
   content: counter(pg) ' / ${total}';
   position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%);
-  padding: 3px 12px; border-radius: 999px;
-  background: rgba(32, 33, 36, 0.65); color: #fff;
-  font-size: 10px; white-space: nowrap;
+  padding: 6px 18px; border-radius: 999px;
+  background: rgba(32, 33, 36, 0.85); color: #fff;
+  font-size: 18px; font-weight: 600; white-space: nowrap;
 }
 `
     : ''

@@ -337,17 +337,19 @@ const eq = (key: StringKey, text: string): EquationDef => ({
   },
 })
 
+// 예시는 글자 상자에 그대로 들어가므로 유니코드 위·아래 첨자로 쓸 수 있는 것만 둔다.
+// "e^(iπ)"처럼 선형 표기(^, _)가 남는 식은 깨진 것처럼 보여 넣지 않는다.
 export const EQUATION_GALLERY: EquationDef[] = [
   eq('ribbonEqQuadratic', 'x = (−b ± √(b² − 4ac)) / 2a'),
   eq('ribbonEqPythagorean', 'a² + b² = c²'),
-  eq('ribbonEqEuler', 'e^(iπ) + 1 = 0'),
   eq('ribbonEqMassEnergy', 'E = mc²'),
   eq('ribbonEqCircleArea', 'A = πr²'),
-  eq('ribbonEqArithSum', '∑ₖ₌₁ⁿ k = n(n+1)/2'),
-  eq('ribbonEqGaussian', '∫₋∞^∞ e^(−x²) dx = √π'),
-  eq('ribbonEqNaturalLog', 'lim(x→∞) (1 + 1/x)ˣ = e'),
-  eq('ribbonEqMean', 'x̄ = (1/n) ∑ᵢ xᵢ'),
-  eq('ribbonEqStdDev', 'σ = √( ∑(xᵢ − μ)² / n )'),
-  eq('ribbonEqFourier', 'F(ω) = ∫₋∞^∞ f(t) e^(−iωt) dt'),
-  eq('ribbonEqNormalDist', 'f(x) = (1/(σ√(2π))) e^(−(x−μ)²/2σ²)'),
+  eq('appEqTriangleArea', 'A = ½ × b × h'),
+  eq('appEqSlope', 'm = (y₂ − y₁) / (x₂ − x₁)'),
+  eq('appEqDistance', 'd = √((x₂ − x₁)² + (y₂ − y₁)²)'),
+  eq('appEqCompound', 'A = P(1 + r)ⁿ'),
+  eq('ribbonEqArithSum', '1 + 2 + ⋯ + n = n(n + 1) / 2'),
+  eq('ribbonEqNaturalLog', 'lim (1 + 1/n)ⁿ = e  (n → ∞)'),
+  eq('ribbonEqMean', 'x̄ = (x₁ + x₂ + ⋯ + xₙ) / n'),
+  eq('ribbonEqStdDev', 'σ = √(∑(xᵢ − μ)² / n)'),
 ]

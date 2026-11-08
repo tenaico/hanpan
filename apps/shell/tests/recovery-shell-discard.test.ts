@@ -11,6 +11,9 @@ const discardDocsRecovery = vi.fn()
 const discardSheetsRecovery = vi.fn()
 const discardMindmapRecovery = vi.fn()
 const hwpDiscardRecoveryCopy = vi.fn()
+const discardGraphicsRecovery = vi.fn()
+const graphicsRecoveryIdentity = vi.fn((_id: number): unknown => null)
+const setGraphicsRecoveryTitleSource = vi.fn()
 
 vi.mock('electron', () => ({ app: { getPath: () => '' } }))
 
@@ -61,9 +64,16 @@ vi.mock('../../hwp/src/main/hwp-main', () => ({
   setHwpRecoveryTitle: () => {},
 }))
 
+vi.mock('../../graphics/src/main/graphics-main', () => ({
+  discardGraphicsRecovery: (...args: unknown[]) => discardGraphicsRecovery(...args),
+  graphicsRecoveryIdentity: (id: number) => graphicsRecoveryIdentity(id),
+  setGraphicsRecoveryTitleSource: (...args: unknown[]) => setGraphicsRecoveryTitleSource(...args),
+}))
+
 vi.mock('../src/main/tab-manager', () => ({ createPlainEditorView: () => ({}) }))
 
-const { discardEditorRecovery } = await import('../src/main/recovery-shell')
+const { discardEditorRecovery, editorRecoveryIdentity, installRecoveryTitleSources } =
+  await import('../src/main/recovery-shell')
 
 function contents(destroyed = false): { id: number; isDestroyed(): boolean } {
   return { id: 7, isDestroyed: () => destroyed }
@@ -99,5 +109,31 @@ describe('discardEditorRecovery', () => {
     expect(discardMindmapRecovery).toHaveBeenCalledTimes(1)
     expect(hwpDiscardRecoveryCopy).toHaveBeenCalledTimes(1)
     expect(discardSheetsRecovery).not.toHaveBeenCalled()
+  })
+})
+
+describe('AI Photo and AI Illustration tabs', () => {
+  it("run the graphics editor's own Don't Save", () => {
+    const photo = contents()
+    discardEditorRecovery('photo', photo as never)
+    discardEditorRecovery('illust', contents() as never)
+
+    expect(discardGraphicsRecovery).toHaveBeenCalledTimes(2)
+    expect(discardGraphicsRecovery).toHaveBeenCalledWith(photo)
+  })
+
+  it('answer which copy the tab writes', () => {
+    const copy = { kind: 'photo', untitledId: 'u1', ext: '.psd' }
+    graphicsRecoveryIdentity.mockReturnValueOnce(copy)
+
+    expect(editorRecoveryIdentity('photo', contents() as never)).toBe(copy)
+    expect(graphicsRecoveryIdentity).toHaveBeenCalledWith(7)
+  })
+
+  it('list an untitled copy under the tab title', () => {
+    const titleOf = vi.fn()
+    installRecoveryTitleSources(titleOf)
+
+    expect(setGraphicsRecoveryTitleSource).toHaveBeenCalledWith(titleOf)
   })
 })

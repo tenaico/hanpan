@@ -74,7 +74,8 @@ export const ko = {
   fieldDescriptionHint: 'AI는 이 설명을 보고 스킬을 쓸지 정합니다',
   fieldBody: '본문',
   fieldName: '이름',
-  nameHint: '스킬 목록에 보이는 이름입니다. 영문 소문자, 숫자, 하이픈(-)으로 64자까지',
+  nameHint:
+    '스킬 목록에 보이는 이름입니다. 한국어로 쓰면 그대로 보이고 내부 이름은 자동으로 정합니다. 영문 소문자, 숫자, 하이픈(-)으로 쓰면 그대로 내부 이름이 됩니다(64자까지)',
   files: '딸린 파일',
   filesNone: '딸린 파일이 없습니다',
   filesHint: '딸린 파일은 폴더를 열어 고칩니다',

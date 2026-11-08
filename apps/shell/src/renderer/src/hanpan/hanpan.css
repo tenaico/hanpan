@@ -86,10 +86,13 @@
 }
 .hp-tpl-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
+/* a label stays on one line ("한글로 열기"); a narrow card moves buttons to the next row */
 .hp-tpl-actions button {
-  flex: 1;
+  flex: 1 1 auto;
+  white-space: nowrap;
   padding: 5px 8px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -104,6 +107,66 @@
 }
 .hp-design-badge {
   font-size: 18px;
+}
+/* 내 양식: the user's own forms, above the built-in ones */
+.hp-my-forms {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.hp-my-forms-head,
+.hp-my-forms-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.hp-my-forms-head {
+  justify-content: space-between;
+}
+.hp-my-forms-save {
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.hp-my-forms-save label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hp-my-forms-save .hp-tpl-note {
+  margin: 0;
+}
+.hp-my-forms-head button,
+.hp-my-forms-save button,
+.hp-my-forms-save select,
+.hp-my-forms-save input {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+.hp-my-forms-head button,
+.hp-my-forms-save button {
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hp-my-forms-save input {
+  width: 180px;
+}
+.hp-my-forms .hp-tpl-error {
+  margin: 0 0 8px;
+}
+.hp-my-form-type {
+  margin-inline-start: 4px;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
 }
 
 /* ── Hanpan Home: the start board and the card order (mind map first) ── */
@@ -295,7 +358,6 @@
 
 .hp-flow-lines {
   width: 64px;
-  height: 166px;
   fill: none;
   stroke: var(--hp-board-line);
   stroke-width: 2;
@@ -393,7 +455,7 @@
 }
 
 .hp-cards .quick-cards.hp-secondary {
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
   gap: 8px;
 }
 
@@ -416,6 +478,38 @@
 
 .hp-secondary .hp-compact .ai-chip {
   margin-left: auto;
+}
+
+/* 0.17 #12: one card for a pair of features (AI PDF + PDF 도구, AI 마크다운 + 변환기):
+   the card makes the document, the button on its right edge opens the tool */
+.hp-secondary .hp-pair {
+  display: flex;
+  min-width: 0;
+  /* 0.17 리뷰 #2: a pair holds two buttons, so it takes two columns; in one column
+     the name was cut to "A." or "." */
+  grid-column: span 2;
+}
+.hp-secondary .hp-pair > .quick-card.hp-compact {
+  flex: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.hp-pair-alt {
+  flex: none;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hp-pair-alt:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -849,4 +943,26 @@
 .hp-guide:focus-visible {
   outline: 2px solid var(--hp-chalk);
   outline-offset: 2px;
+}
+
+/* Hanpan Home: a compact card with a second line (the app a card is built on) */
+.hp-compact-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.hp-compact-sub {
+  overflow: hidden;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* "start" on an empty box marks the box (0.17 리뷰 v2 shell #38) */
+.hp-start-input[aria-invalid='true'] {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 25%, transparent);
 }

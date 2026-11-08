@@ -655,6 +655,43 @@ button {
   height: 22px;
 }
 
+/* The denser layouts of the full band (ribbon-fit.ts sets data-fit when the band runs past
+ * the window edge; the compact density has its own). A 1366 window in Korean needs the
+ * first; longer labels (English, Vietnamese) the second. A label is never removed.
+ *
+ * First layout: the buttons, groups and separators give up side padding. */
+.ribbon:not(.ribbon-compact) .ribbon-body[data-fit] .rb-big {
+  padding: 4px 4px 6px;
+}
+
+.ribbon:not(.ribbon-compact) .ribbon-body[data-fit] .ribbon-group {
+  padding: 2px 2px;
+}
+
+.ribbon:not(.ribbon-compact) .ribbon-body[data-fit] .ribbon-sep {
+  margin: 8px 3px;
+}
+
+/* Second layout: a label of more than one word takes two lines, broken between words
+ * (keep-all), under a shorter icon plate, so the button is as wide as its longest word. */
+.ribbon:not(.ribbon-compact) .ribbon-body[data-fit='2'] .rb-big {
+  gap: 2px;
+  padding: 2px 3px 3px;
+  white-space: normal;
+}
+
+.ribbon:not(.ribbon-compact) .ribbon-body[data-fit='2'] .rb-big > span:not(.rb-big-icon) {
+  max-width: 64px;
+  line-height: 1.15;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.ribbon:not(.ribbon-compact) .ribbon-body[data-fit='2'] .rb-big-icon {
+  min-height: 24px;
+  padding: 2px 4px;
+}
+
 .rb-icon {
   min-width: 27px;
   height: 26px;
@@ -6476,4 +6513,197 @@ button.ai-overview-term-page:hover {
   min-width: 0;
   color: var(--text-muted);
   font-size: 11px;
+}
+
+/* ---- File menu (Hanpan 0.17 #6): the tab bar menu's file commands on screen,
+   styled like the docs/slides File tab ---- */
+
+.file-tab-wrap {
+  position: relative;
+  margin-right: 6px;
+  -webkit-app-region: no-drag;
+}
+
+.ribbon-tab-file {
+  border: none;
+  border-radius: 4px;
+  padding: 5px 14px;
+  background: var(--accent);
+  color: var(--pdf-on-accent);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ribbon-tab-file:hover,
+.ribbon-tab-file.open {
+  background: var(--accent-dark);
+}
+
+.pdf-file-menu {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  z-index: 60;
+  min-width: 230px;
+  padding: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  box-shadow: var(--pdf-shadow-menu);
+  -webkit-app-region: no-drag;
+}
+
+.pdf-file-menu button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pdf-file-menu button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.pdf-file-menu button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pdf-file-menu-key {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.pdf-file-menu-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
+}
+
+/* 파일 나누기 창: 숫자 칸 옆에 단위를 붙인다 */
+.pdf-split-row .pdf-split-input {
+  width: 72px;
+  flex: none;
+}
+
+/* 양식 PDF를 열었을 때의 알림 줄(서명 알림 줄과 같은 모양) */
+.pdf-form-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  color: var(--text);
+  background: var(--pdf-prop-bg);
+  border-bottom: 1px solid var(--border);
+  border-inline-start: 3px solid var(--accent);
+}
+
+.pdf-form-banner > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pdf-form-banner-close {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pdf-form-banner-close:hover {
+  background: var(--hover);
+}
+
+/* 인증서 서명: 시스템 저장소가 비었을 때 다음에 할 일 */
+.pdf-cert-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.pdf-cert-npki {
+  color: var(--text-muted);
+}
+
+/* 인쇄 창: 첫 쪽 미리 보기와 다음 단계 안내 */
+.pdf-print-preview {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.pdf-print-preview-page {
+  flex: none;
+  width: 120px;
+  min-height: 90px;
+  background: var(--pdf-prop-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pdf-print-preview-page canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pdf-print-preview-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 220px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.pdf-print-preview-text strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Print dialog: printer and copies (P4), the Excel print dialog's fields */
+.pdf-print-device {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 6px 10px;
+  margin-bottom: 8px;
+}
+
+.pdf-print-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pdf-print-field .pdf-modal-input {
+  width: 100%;
+  margin: 0;
+}
+
+.pdf-print-collate {
+  grid-column: 1 / -1;
 }

@@ -6,6 +6,7 @@ export const ms = {
   editBold: 'Tebal',
   editItalic: 'Condong',
   editReplace: 'Ganti',
+  editFindReplaceTitle: 'Cari dan ganti',
   editReplaceWith: 'Ganti dengan',
   editReplaceOne: 'Ganti',
   editReplaceAll: 'Ganti semua',

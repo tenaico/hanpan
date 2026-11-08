@@ -41,7 +41,10 @@ function notesOf(node: { note?: string | undefined; body?: string | undefined })
   return [node.body, node.note].filter((s): s is string => !!s && s.trim() !== '').join('\n\n')
 }
 
-export function outlineToSlides(outline: PanOutline, options: { includeNotes?: boolean } = {}): SlidePlan[] {
+export function outlineToSlides(
+  outline: PanOutline,
+  options: { includeNotes?: boolean } = {},
+): SlidePlan[] {
   const includeNotes = options.includeNotes ?? true
   const cover: SlidePlan = {
     title: outline.title,
@@ -60,13 +63,20 @@ export function outlineToSlides(outline: PanOutline, options: { includeNotes?: b
     }
     visit(branch.children, 0)
     const notes = includeNotes
-      ? [notesOf(branch), ...branch.children.map((c) => (notesOf(c) ? `${c.title}: ${notesOf(c)}` : ''))]
+      ? [
+          notesOf(branch),
+          ...branch.children.map((c) => (notesOf(c) ? `${c.title}: ${notesOf(c)}` : '')),
+        ]
           .filter(Boolean)
           .join('\n')
       : ''
     // when the AI wrote a body for a branch with no sub-topics, it becomes the slide's text
     if (!lines.length && branch.body) lines.push({ text: branch.body, key: branch.key })
-    for (let start = 0, part = 0; start < Math.max(lines.length, 1); start += MAX_BULLETS_PER_SLIDE, part++) {
+    for (
+      let start = 0, part = 0;
+      start < Math.max(lines.length, 1);
+      start += MAX_BULLETS_PER_SLIDE, part++
+    ) {
       slides.push({
         title: part === 0 ? branch.title : `${branch.title} (계속)`,
         key: branch.key,

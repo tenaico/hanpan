@@ -83,12 +83,32 @@ const MASTER1 =
   '<p:txStyles><p:titleStyle/><p:bodyStyle/><p:otherStyle/></p:txStyles>' +
   '</p:sldMaster>'
 
+// Title-slide decks get PowerPoint's master text styles (title 44pt in the major
+// theme font, body 24pt in the minor one), so typed titles look like titles
+const TITLE_TX_STYLES =
+  '<p:txStyles>' +
+  '<p:titleStyle><a:lvl1pPr algn="l"><a:defRPr sz="4400" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill>' +
+  '<a:latin typeface="+mj-lt"/><a:ea typeface="+mj-ea"/><a:cs typeface="+mj-cs"/></a:defRPr></a:lvl1pPr></p:titleStyle>' +
+  '<p:bodyStyle><a:lvl1pPr marL="0" indent="0"><a:buNone/><a:defRPr sz="2400" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill>' +
+  '<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/></a:defRPr></a:lvl1pPr></p:bodyStyle>' +
+  '<p:otherStyle/></p:txStyles>'
+
+const MASTER1_TITLE = MASTER1.replace(
+  '</p:sldLayoutIdLst>',
+  '<p:sldLayoutId id="2147483650" r:id="rId3"/></p:sldLayoutIdLst>',
+).replace('<p:txStyles><p:titleStyle/><p:bodyStyle/><p:otherStyle/></p:txStyles>', TITLE_TX_STYLES)
+
 const MASTER1_RELS =
   XMLDECL +
   '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
   '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>' +
   '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="../theme/theme1.xml"/>' +
   '</Relationships>'
+
+const MASTER1_RELS_TITLE = MASTER1_RELS.replace(
+  '</Relationships>',
+  '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout2.xml"/></Relationships>',
+)
 
 const fillStyles =
   '<a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill>' +
@@ -109,7 +129,7 @@ const bgFillStyles =
   '<a:solidFill><a:schemeClr val="phClr"/></a:solidFill>' +
   '<a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst>'
 
-const THEME1 =
+const themeXml = (majorLatin: string, minorLatin: string): string =>
   XMLDECL +
   `<a:theme xmlns:a="${NS_A}" name="Office">` +
   '<a:themeElements>' +
@@ -132,29 +152,130 @@ const THEME1 =
   // (theme.ts resolveFontRef): a pinned family is unresolvable off Windows and unreachable
   // for the life of the file, while these are the per-script faces PowerPoint's own blank
   // Office theme ships, with renderer display stacks and metrics aliases for each.
-  '<a:majorFont><a:latin typeface="Calibri Light"/><a:ea typeface=""/><a:cs typeface=""/>' +
+  `<a:majorFont><a:latin typeface="${majorLatin}"/>` +
+  '<a:ea typeface=""/><a:cs typeface=""/>' +
   '<a:font script="Jpan" typeface="ＭＳ ゴシック"/><a:font script="Hang" typeface="맑은 고딕"/><a:font script="Hans" typeface="等线"/><a:font script="Hant" typeface="新細明體"/>' +
   '</a:majorFont>' +
-  '<a:minorFont><a:latin typeface="Calibri"/><a:ea typeface=""/><a:cs typeface=""/>' +
+  `<a:minorFont><a:latin typeface="${minorLatin}"/>` +
+  '<a:ea typeface=""/><a:cs typeface=""/>' +
   '<a:font script="Jpan" typeface="ＭＳ Ｐゴシック"/><a:font script="Hang" typeface="맑은 고딕"/><a:font script="Hans" typeface="等线"/><a:font script="Hant" typeface="新細明體"/>' +
   '</a:minorFont>' +
   '</a:fontScheme>' +
   `<a:fmtScheme name="Office">${fillStyles}${lnStyles}${effectStyles}${bgFillStyles}</a:fmtScheme>` +
   '</a:themeElements></a:theme>'
 
+/**
+ * Theme Latin faces of a new deck per UI language (Hanpan 0.17), in step with new
+ * workbooks (xlsx-gateway new-workbook-lang) and new documents (docx blank latinFont):
+ * Korean gets 맑은 고딕, Vietnamese Arial (Malgun Gothic lacks most Vietnamese
+ * letters), every other language PowerPoint's Office theme (Calibri Light / Calibri).
+ */
+export function blankPptxThemeFontsFor(lang?: string): { major: string; minor: string } {
+  if (lang === 'ko') return { major: '맑은 고딕', minor: '맑은 고딕' }
+  if (lang === 'vi') return { major: 'Arial', minor: 'Arial' }
+  return { major: 'Calibri Light', minor: 'Calibri' }
+}
+
+// "Title Slide" layout: centered title + subtitle placeholders (PowerPoint's 16:9 geometry)
+const TITLE_XFRM =
+  '<a:xfrm><a:off x="1524000" y="1122363"/><a:ext cx="9144000" cy="2387600"/></a:xfrm>'
+const SUBTITLE_XFRM =
+  '<a:xfrm><a:off x="1524000" y="3602038"/><a:ext cx="9144000" cy="1655762"/></a:xfrm>'
+const TITLE_LST =
+  '<a:lstStyle><a:lvl1pPr algn="ctr"><a:defRPr sz="6000"><a:latin typeface="+mj-lt"/><a:ea typeface="+mj-ea"/></a:defRPr></a:lvl1pPr></a:lstStyle>'
+const SUBTITLE_LST =
+  '<a:lstStyle><a:lvl1pPr marL="0" indent="0" algn="ctr"><a:buNone/><a:defRPr sz="2400"/></a:lvl1pPr></a:lstStyle>'
+// The paragraph mark carries lang like PowerPoint's own (an attribute-less
+// <a:endParaRPr/> is dropped by the parser, and typing into the empty title
+// would then start from the editor's fallback face instead of the title style)
+const titleSp = (
+  id: number,
+  ph: 'ctrTitle' | 'subTitle',
+  withGeometry: boolean,
+  endLang = 'en-US',
+): string => {
+  const isTitle = ph === 'ctrTitle'
+  const name = isTitle ? 'Title 1' : 'Subtitle 2'
+  const xfrm = withGeometry ? (isTitle ? TITLE_XFRM : SUBTITLE_XFRM) : ''
+  const idx = isTitle ? '' : ' idx="1"'
+  const anchor = isTitle ? ' anchor="b"' : ''
+  return (
+    `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr>` +
+    `<p:nvPr><p:ph type="${ph}"${idx}/></p:nvPr></p:nvSpPr>` +
+    `<p:spPr>${xfrm}</p:spPr>` +
+    `<p:txBody><a:bodyPr${withGeometry ? anchor : ''}/>${withGeometry ? (isTitle ? TITLE_LST : SUBTITLE_LST) : '<a:lstStyle/>'}<a:p><a:endParaRPr lang="${endLang}"/></a:p></p:txBody></p:sp>`
+  )
+}
+const spTreeWith = (shapes: string): string =>
+  EMPTY_SPTREE.replace('</p:spTree>', `${shapes}</p:spTree>`)
+
+const LAYOUT_TITLE =
+  XMLDECL +
+  `<p:sldLayout xmlns:a="${NS_A}" xmlns:r="${NS_R}" xmlns:p="${NS_P}" type="title" preserve="1">` +
+  `<p:cSld name="Title Slide">${spTreeWith(titleSp(2, 'ctrTitle', true) + titleSp(3, 'subTitle', true))}</p:cSld>` +
+  '<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>'
+
+const titleSlideXml = (endLang: string): string =>
+  XMLDECL +
+  `<p:sld xmlns:a="${NS_A}" xmlns:r="${NS_R}" xmlns:p="${NS_P}">` +
+  `<p:cSld>${spTreeWith(titleSp(2, 'ctrTitle', false, endLang) + titleSp(3, 'subTitle', false, endLang))}</p:cSld>` +
+  '<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>'
+
+const LANG_TAG: Readonly<Record<string, string>> = {
+  ko: 'ko-KR',
+  vi: 'vi-VN',
+  ja: 'ja-JP',
+  zh: 'zh-CN',
+  'zh-TW': 'zh-TW',
+}
+
+export interface BlankPptxOptions {
+  /** UI language: picks the theme's Latin faces (blankPptxThemeFontsFor) */
+  lang?: string
+  /**
+   * First slide is a "Title Slide" with empty title/subtitle placeholders, so a new
+   * deck opens with "click to add title" instead of a white page. Off by default:
+   * pipelines and converters build on the empty first slide.
+   */
+  titleSlide?: boolean
+}
+
 /** Generate blank presentation bytes (16:9, one blank slide). */
-export async function createBlankPptx(): Promise<Uint8Array> {
+export async function createBlankPptx(options?: BlankPptxOptions): Promise<Uint8Array> {
+  const fonts = blankPptxThemeFontsFor(options?.lang)
+  const titleSlide = options?.titleSlide === true
   const zip = new JSZip()
   zip.file('[Content_Types].xml', CONTENT_TYPES)
   zip.file('_rels/.rels', ROOT_RELS)
   zip.file('ppt/presentation.xml', PRESENTATION)
   zip.file('ppt/_rels/presentation.xml.rels', PRESENTATION_RELS)
-  zip.file('ppt/slides/slide1.xml', BLANK_SLIDE_XML)
-  zip.file('ppt/slides/_rels/slide1.xml.rels', SLIDE1_RELS)
+  zip.file(
+    'ppt/slides/slide1.xml',
+    titleSlide ? titleSlideXml(LANG_TAG[options?.lang ?? ''] ?? 'en-US') : BLANK_SLIDE_XML,
+  )
+  zip.file(
+    'ppt/slides/_rels/slide1.xml.rels',
+    titleSlide ? SLIDE1_RELS.replace('slideLayout1.xml', 'slideLayout2.xml') : SLIDE1_RELS,
+  )
   zip.file('ppt/slideLayouts/slideLayout1.xml', LAYOUT1)
   zip.file('ppt/slideLayouts/_rels/slideLayout1.xml.rels', LAYOUT1_RELS)
-  zip.file('ppt/slideMasters/slideMaster1.xml', MASTER1)
-  zip.file('ppt/slideMasters/_rels/slideMaster1.xml.rels', MASTER1_RELS)
-  zip.file('ppt/theme/theme1.xml', THEME1)
+  if (titleSlide) {
+    zip.file('ppt/slideLayouts/slideLayout2.xml', LAYOUT_TITLE)
+    zip.file('ppt/slideLayouts/_rels/slideLayout2.xml.rels', LAYOUT1_RELS)
+    zip.file(
+      '[Content_Types].xml',
+      CONTENT_TYPES.replace(
+        '<Override PartName="/ppt/slides/slide1.xml"',
+        '<Override PartName="/ppt/slideLayouts/slideLayout2.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>' +
+          '<Override PartName="/ppt/slides/slide1.xml"',
+      ),
+    )
+  }
+  zip.file('ppt/slideMasters/slideMaster1.xml', titleSlide ? MASTER1_TITLE : MASTER1)
+  zip.file(
+    'ppt/slideMasters/_rels/slideMaster1.xml.rels',
+    titleSlide ? MASTER1_RELS_TITLE : MASTER1_RELS,
+  )
+  zip.file('ppt/theme/theme1.xml', themeXml(fonts.major, fonts.minor))
   return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' })
 }

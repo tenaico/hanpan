@@ -89,8 +89,9 @@ describe('Ribbon source mode', () => {
     // use for it), plus the image-host button, which is not a formatting
     // control and so renders in either mode, plus the paper-theme picker and
     // the backlinks and graph buttons, which are markdown-only views like the
-    // source-view toggle.
-    expect(markdown.iconButtons).toBe(21)
+    // source-view toggle. UX v2 #16 moved image host, backlinks and graph into
+    // one Advanced menu button: 21 - 3 + 1.
+    expect(markdown.iconButtons).toBe(19)
     // source mode keeps exactly two: the spellcheck toggle (the withhold
     // toggle gates the block editor's marks, which source mode does not carry)
     // and the paper-theme picker (the paper exists in source view too)
@@ -144,7 +145,7 @@ describe('Ribbon source mode', () => {
     expect(styleDropdown).toBe(1)
     // 20 here too: the source-view toggle is present here and absent above,
     // the withhold toggle, the image-host button, the paper-theme picker and
-    // the backlinks and graph buttons are present in both
-    expect(iconButtons).toBe(21)
+    // the backlinks and graph buttons are present in both (now one Advanced menu)
+    expect(iconButtons).toBe(19)
   })
 })

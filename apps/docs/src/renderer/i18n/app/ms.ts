@@ -54,11 +54,12 @@ export const ms = {
   appVerticalTextNotice:
     'Dokumen ini mengandungi teks menegak (dipaparkan mendatar buat masa ini; penyimpanan tidak terjejas)',
   appNewDocCreated:
-    'Dokumen kosong telah dibuat. Terangkan kandungan yang hendak dijana di panel AI sebelah kiri.',
+    'Dokumen kosong telah dibuat. Terangkan kandungan yang hendak dijana di panel AI.',
   appNewFailed: 'Gagal membuat dokumen: {error}',
   appSaveFailed: 'Gagal menyimpan: {error}',
   appAutoSavedAt: 'Disimpan secara automatik ({time})',
   appSaved: 'Disimpan',
+  appUnsaved: 'Belum disimpan',
   appSectionBreakInserted: 'Pemisah seksyen disisipkan ({type})',
   appSectionBreakPending:
     'Pemisah seksyen disisipkan; seksyen baharu berkuat kuasa selepas disimpan',
@@ -125,6 +126,8 @@ export const ms = {
   appExportingImages: 'Mengeksport imej…',
   appExportImagesProgress: 'Mengeksport {count} imej…',
   appExportImagesDone: '{count} imej dieksport ke {dir}',
+  appOpenExported: 'Buka',
+  appRevealExported: 'Buka folder',
   appExportImagesFailed: 'Eksport imej gagal: {error}',
   appMixedExportOpening:
     'Saiz kertas bercampur: membuka pratonton penomboran halaman untuk eksport dengan gabungan mengikut halaman…',
@@ -491,6 +494,7 @@ export const ms = {
   appMatchCase: 'Padankan huruf besar/kecil',
   appWholeWord: 'Perkataan penuh sahaja',
   appNoResults: 'Tiada hasil',
+  appReplacedCount: '{count} diganti',
   appPrevMatch: 'Sebelumnya (Shift+Enter)',
   appNextMatch: 'Berikutnya (Enter)',
   appCloseEsc: 'Tutup (Esc)',

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { columnLabel } from '@genoffice/xlsx-gateway/domain/cell-address'
+
 import { useI18n } from './i18n/locale'
 import { useModalDialog } from './modal-dialog'
 
@@ -15,6 +17,20 @@ export type {
   PivotValueFilterOption,
   PivotValueSpec,
 } from './pivot-field-model'
+
+/// 원본 범위 오른쪽에 한 칸 띄운 셀(X22): 예시와 빈 칸일 때의 대상
+export function suggestPivotTarget(sourceRange: string): string {
+  const match = /\$?([A-Z]+)\$?(\d+)\s*:\s*\$?([A-Z]+)\$?\d+\s*$/i.exec(sourceRange.trim())
+  if (!match) return 'H1'
+  const endColumn = columnIndexOf(match[3]!.toUpperCase())
+  return `${columnLabel(endColumn + 2)}${match[2]}`
+}
+
+function columnIndexOf(letters: string): number {
+  let index = 0
+  for (const letter of letters) index = index * 26 + (letter.charCodeAt(0) - 64)
+  return index - 1
+}
 
 export interface PivotCreateRequest {
   readonly sourceRange: string
@@ -34,6 +50,7 @@ export function PivotDialog({
   readonly onClose: () => void
 }): React.JSX.Element {
   const { t } = useI18n()
+  const suggestedTarget = suggestPivotTarget(sourceRange)
   const [targetCell, setTargetCell] = useState('')
   const [error, setError] = useState<string | null>(null)
   const modal = useModalDialog(onClose)
@@ -61,12 +78,15 @@ export function PivotDialog({
               <input
                 type="text"
                 className="cell-input"
-                placeholder={t('dlgPivotTargetPlaceholder')}
+                placeholder={t('dlgPivotTargetPlaceholder', { cell: suggestedTarget })}
                 value={targetCell}
                 onChange={(event) => setTargetCell(event.target.value.toUpperCase())}
                 style={{ width: 80 }}
               />
             </label>
+            <p className="dialog-note dialog-span">
+              {t('dlgPivotTargetEmptyHint', { cell: suggestedTarget })}
+            </p>
             <p className="dialog-note dialog-span">{t('dlgPivotCreateHint')}</p>
           </div>
         )}
@@ -83,7 +103,10 @@ export function PivotDialog({
             <button
               className="primary-action"
               onClick={() => {
-                const failure = onCreate({ sourceRange, targetCell: targetCell.trim() || 'A1' })
+                const failure = onCreate({
+                  sourceRange,
+                  targetCell: targetCell.trim() || suggestedTarget,
+                })
                 if (failure !== null) setError(failure)
                 else onClose()
               }}

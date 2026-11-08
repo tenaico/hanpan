@@ -70,8 +70,7 @@ function connectionOf(
 interface RenderOptions {
   onDone?: () => Promise<boolean>
   connection?: SubscriptionConnection
-  noticeDue?: boolean
-  onNoticeAcknowledge?: () => void
+  lang?: 'en' | 'ko'
 }
 
 function renderOnboarding(options: RenderOptions = {}): void {
@@ -79,12 +78,10 @@ function renderOnboarding(options: RenderOptions = {}): void {
     root.render(
       createElement(
         LocaleProvider,
-        { initial: 'en' },
+        { initial: options.lang ?? 'en' },
         createElement(Onboarding, {
           onDone: options.onDone ?? vi.fn(async () => true),
           connection: options.connection ?? connectionOf(statuses('not-installed', 'signed-out')),
-          noticeDue: options.noticeDue ?? false,
-          onNoticeAcknowledge: options.onNoticeAcknowledge ?? vi.fn(),
         }),
       ),
     )
@@ -135,14 +132,14 @@ describe('Onboarding', () => {
     expect(activeStep()).toBe('welcome')
   })
 
-  it('describes the product plainly on the welcome step', () => {
+  it('describes Hanpan plainly on the welcome step', () => {
     renderOnboarding()
     const step = host.querySelector<HTMLElement>('.onb-slide[data-step="welcome"]')!
-    expect(step.querySelector('.onb-subtitle')!.textContent).toBe(strings.en.onbWelcomeSubtitle)
-    expect(step.querySelector('.onb-body')!.textContent).toBe(strings.en.onbWelcomeBody)
+    expect(step.querySelector('.onb-title')!.textContent).toBe(strings.en.hpOnbTitle)
+    expect(step.querySelector('.onb-subtitle')!.textContent).toBe(strings.en.hpOnbSubtitle)
+    expect(step.querySelector('.onb-body')!.textContent).toBe(strings.en.hpOnbBody)
     // no superlative of its own
     expect(step.textContent).not.toMatch(/\b(first|best|leading|most|only)\b|AI-native/i)
-    expect(strings.en.onbWelcomeSubtitle).toBe('An open-source office suite')
   })
 
   it('can be completed without connecting a subscription', async () => {
@@ -157,7 +154,7 @@ describe('Onboarding', () => {
 
     await click('.onb-next')
     expect(activeStep()).toBe('done')
-    expect(host.textContent).toContain(strings.en.onbDoneNotConnected)
+    expect(host.textContent).toContain(strings.en.hpOnbDoneNotConnected)
     expect(onDone).not.toHaveBeenCalled()
 
     await click('.onb-next')
@@ -174,11 +171,33 @@ describe('Onboarding', () => {
     expect(onDone).toHaveBeenCalledTimes(1)
 
     await click('.onb-next')
+    // the first Esc asks; the second leaves (0.17 review v2 shell #7)
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+      await Promise.resolve()
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+    expect(host.querySelector('[data-onb-skip-ask]')).not.toBeNull()
     await act(async () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
       await Promise.resolve()
     })
     expect(onDone).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps going after Esc when "keep watching" is chosen, and drops Skip on the last step', async () => {
+    const onDone = vi.fn(async () => true)
+    renderOnboarding({ onDone })
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+      await Promise.resolve()
+    })
+    await click('[data-onb-skip-ask] .onb-back')
+    expect(host.querySelector('[data-onb-skip-ask]')).toBeNull()
+    expect(onDone).not.toHaveBeenCalled()
+    await click('.onb-next')
+    await click('.onb-next')
+    expect(host.querySelector('.onb-skip')).toBeNull()
   })
 
   it('asks which AI the user has on the connect step, then walks that one path on the live status', async () => {
@@ -214,9 +233,8 @@ describe('Onboarding', () => {
     await click('.onb-slide[data-step="connect"] [data-path="chatgpt"]')
     await click('.onb-slide[data-step="connect"] [data-action="guide-alternate"]')
     expect(cards()).toEqual([['codex', 'signed-out']])
-    expect(step.querySelector('.ai-sub-codex')!.textContent).toBe(
-      aiSubscriptionText('en', 'codexNotice'),
-    )
+    // 0.17 리뷰 #4: no Codex policy line on the first run (Settings still shows it)
+    expect(step.querySelector('.ai-sub-codex')).toBeNull()
     await click('.onb-slide[data-step="connect"] [data-provider="codex"] [data-action="login"]')
     expect(connection.login).toHaveBeenCalledWith('codex')
   })
@@ -288,33 +306,22 @@ describe('Onboarding', () => {
     }
   })
 
-  it('keeps the first-connection notice for the connect step and reports its acknowledgement', async () => {
-    const onNoticeAcknowledge = vi.fn()
-    const onDone = vi.fn(async () => true)
+  // 0.17 리뷰 #4: the privacy notice (skills, Codex history) waits for the first AI use;
+  // it never covers the first-run connect step
+  it('does not open the first-connection notice during the first run', async () => {
     renderOnboarding({
-      onDone,
-      noticeDue: true,
-      onNoticeAcknowledge,
       connection: connectionOf(statuses('ready', 'signed-out')),
     })
-    expect(host.querySelector('.first-notice')).toBeNull()
-
-    await click('.onb-next')
-    const notice = host.querySelector<HTMLElement>('.first-notice')!
-    expect(notice.textContent).toContain(aiSubscriptionText('en', 'noticeSend'))
-    expect(notice.textContent).toContain(aiSubscriptionText('en', 'noticeTraining'))
-    expect(notice.textContent).toContain(aiSubscriptionText('en', 'noticeCodexHistory'))
-
-    // the notice owns the keyboard: the onboarding behind it neither skips nor advances
+    for (let step = 0; step < ONBOARDING_STEPS.length; step++) {
+      expect(host.querySelector('.first-notice')).toBeNull()
+      if (step < ONBOARDING_STEPS.length - 1) await click('.onb-next')
+    }
+    // the keys still move the onboarding: nothing above it owns them
     await act(async () => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))
       await Promise.resolve()
     })
     expect(activeStep()).toBe('connect')
-    expect(onDone).not.toHaveBeenCalled()
-
-    await click('.first-notice .ai-sub-btn')
-    expect(onNoticeAcknowledge).toHaveBeenCalledTimes(1)
   })
 
   it('carries no credits offer, community call, star hint or statistics notice', async () => {
@@ -352,5 +359,89 @@ describe('welcome copy', () => {
     expect(body).toContain('Codex')
     // the product is named by the title above, and no vendor of the suite is named at all
     expect(`${strings[lang].onbWelcomeSubtitle} ${body}`).not.toMatch(/genoffice/i)
+  })
+})
+
+// 0.17 #5: the first run introduces Hanpan, not the upstream product; AI needs a
+// Claude/ChatGPT login or the PC model, never a paid subscription; and no
+// "no ads" promise is made (not confirmed by the company yet).
+describe('Hanpan first-run copy', () => {
+  async function allSteps(lang: 'en' | 'ko'): Promise<string[]> {
+    renderOnboarding({ lang, connection: connectionOf(statuses('not-installed', 'signed-out')) })
+    const seen: string[] = []
+    for (let step = 0; step < ONBOARDING_STEPS.length; step++) {
+      seen.push(host.querySelector<HTMLElement>('.onb-slide.active')!.textContent ?? '')
+      if (step < ONBOARDING_STEPS.length - 1) await click('.onb-next')
+    }
+    return seen
+  }
+
+  it('introduces Hanpan and its apps in Korean', async () => {
+    const [welcome] = await allSteps('ko')
+    expect(welcome).toContain('한판')
+    for (const app of [
+      'AI 워드',
+      'AI 엑셀',
+      'AI 파워포인트',
+      'AI 한글',
+      'PDF',
+      '마인드맵',
+      '디자인 보드',
+      'AI 포토',
+      'AI 일러스트',
+    ])
+      expect(welcome, app).toContain(app)
+  })
+
+  it('says AI runs on a Claude or ChatGPT login or the PC model', async () => {
+    const [, connect] = await allSteps('ko')
+    const lead = host.querySelector('.onb-slide[data-step="connect"] .onb-body-lead')!.textContent
+    expect(lead).toBe(strings.ko.hpOnbConnectBody)
+    for (const word of ['Claude', 'ChatGPT', 'PC']) expect(lead, word).toContain(word)
+    expect(connect).not.toContain(aiSubscriptionText('ko', 'connectBody'))
+  })
+
+  it.each(['ko', 'en'] as const)(
+    'names no upstream product, paid plan or ad promise (%s)',
+    async (lang) => {
+      const steps = await allSteps(lang)
+      const text = steps.join('\n')
+      expect(text).not.toMatch(/genoffice/i)
+      expect(text).not.toMatch(/광고|\bads?\b|advert/i)
+      // the copy Hanpan writes itself (the connection cards below are shared UI)
+      const own = [steps[0], host.querySelector('.onb-slide[data-step="done"]')!.textContent]
+      expect(own.join('\n')).not.toMatch(/유료|구독|paid|subscription/i)
+      const lead = host.querySelector('.onb-slide[data-step="connect"] .onb-body-lead')!
+      expect(lead.textContent).not.toMatch(/유료|구독|paid|subscription/i)
+    },
+  )
+
+  // 0.17 리뷰 #4: step 1 says free; the connect step must not then ask for a paid plan
+  it.each(['ko', 'en'] as const)(
+    'the connect step asks for no paid plan, in the question or an opened way (%s)',
+    async (lang) => {
+      const [, asked] = await allSteps(lang)
+      expect(asked).not.toMatch(
+        /유료|구독|요금제가 있어야|Pro 또는 Max|paid|subscription|Pro or Max/i,
+      )
+      act(() => root.unmount())
+      root = createRoot(host)
+      // Claude already works: its way opens by itself
+      renderOnboarding({ lang, connection: connectionOf(statuses('ready', 'signed-out')) })
+      await click('.onb-next')
+      const opened = host.querySelector<HTMLElement>('.onb-slide[data-step="connect"]')!
+      expect(opened.querySelector('.ai-sub-guide-open')).not.toBeNull()
+      expect(opened.textContent).not.toMatch(
+        /유료|구독|요금제가 있어야|Pro 또는 Max|paid|subscription|Pro or Max/i,
+      )
+    },
+  )
+
+  it('offers the PC model on the "not yet" way (ko)', async () => {
+    await allSteps('ko')
+    const free = host.querySelector<HTMLElement>(
+      '.onb-slide[data-step="connect"] [data-path="free"]',
+    )!
+    expect(free.textContent).toContain('PC')
   })
 })

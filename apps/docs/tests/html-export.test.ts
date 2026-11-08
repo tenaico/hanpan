@@ -16,6 +16,19 @@ function mount(html: string): HTMLElement {
 }
 
 describe('buildStandaloneHtml', () => {
+  it('drops the editor-only chip and the dashed box of protected blocks', () => {
+    const root = mount(
+      '<div class="doc-protected" style="border:1px dashed #999;background-color:#eee">' +
+        '<span class="doc-protected-label">보호된 콘텐츠</span>' +
+        '<span class="doc-protected-preview">본문 미리보기</span></div>',
+    )
+    const out = buildStandaloneHtml(root, { title: 'T' })
+    expect(out).not.toContain('보호된 콘텐츠')
+    expect(out).toContain('본문 미리보기')
+    expect(out).not.toContain('dashed')
+    expect(out).not.toContain('background-color:rgb(238, 238, 238)')
+  })
+
   it('drops widgets and tracked deletions, unwraps comments and insertions', () => {
     const root = mount(
       '<p class="doc-p">Hello <span class="doc-comment">noted</span> ' +

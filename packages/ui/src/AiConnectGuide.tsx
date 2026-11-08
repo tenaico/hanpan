@@ -46,6 +46,7 @@ export function AiConnectGuide({
   freeContent,
   freeConnected = false,
   codexNotice = false,
+  pathText,
   renderAfterCard,
   onOpenConnectHelp,
   ...actions
@@ -61,6 +62,9 @@ export function AiConnectGuide({
   readonly freeConnected?: boolean | undefined
   /** the line about Codex, wherever Codex can be picked: the question and its own path */
   readonly codexNotice?: boolean | undefined
+  /** a host's own words for a way's title or body (undefined keeps the shared text) */
+  readonly pathText?:
+    ((path: AiConnectPath, part: 'title' | 'body') => string | undefined) | undefined
   /** anything the host shows under a provider's card (a launch that failed) */
   readonly renderAfterCard?: ((provider: AiSubscriptionProviderId) => React.ReactNode) | undefined
   /**
@@ -94,14 +98,18 @@ export function AiConnectGuide({
                 onClick={() => setChosen(option.path)}
               >
                 <span className="ai-sub-guide-path-head">
-                  <span className="ai-sub-guide-path-title">{t(option.titleKey)}</span>
+                  <span className="ai-sub-guide-path-title">
+                    {pathText?.(option.path, 'title') ?? t(option.titleKey)}
+                  </span>
                   {option.badgeKey && (
                     <span className="ai-sub-guide-badge" data-badge={option.badgeKey}>
                       {t(option.badgeKey)}
                     </span>
                   )}
                 </span>
-                <span className="ai-sub-guide-path-body">{t(option.bodyKey)}</span>
+                <span className="ai-sub-guide-path-body">
+                  {pathText?.(option.path, 'body') ?? t(option.bodyKey)}
+                </span>
               </button>
             ))}
           </div>
@@ -109,7 +117,11 @@ export function AiConnectGuide({
       ) : view.open === 'free' ? (
         <div className="ai-sub-guide-open" data-path="free">
           {/* free cards drawn in place say all this themselves */}
-          {!freeContent && <p className="ai-sub-guide-need">{t('guidePathFreeBody')}</p>}
+          {!freeContent && (
+            <p className="ai-sub-guide-need">
+              {pathText?.('free', 'body') ?? t('guidePathFreeBody')}
+            </p>
+          )}
           {freeContent ??
             (onChooseFree && (
               <div className="ai-sub-actions">
@@ -133,6 +145,7 @@ export function AiConnectGuide({
           actions={actions}
           after={renderAfterCard?.(view.open)}
           needKey={aiConnectPathText(view.open).bodyKey}
+          needText={pathText?.(view.open, 'body')}
           onAlternate={(path) => setChosen(path)}
         />
       )}
@@ -167,6 +180,7 @@ function GuidePath({
   actions,
   after,
   needKey,
+  needText,
   onAlternate,
 }: {
   readonly provider: AiSubscriptionProviderId
@@ -176,6 +190,7 @@ function GuidePath({
   readonly actions: AiSubscriptionCardActions
   readonly after: React.ReactNode
   readonly needKey: Parameters<typeof aiSubscriptionText>[1]
+  readonly needText?: string | undefined
   /** open the other way along the same answer (ChatGPT directly, or through Codex) */
   readonly onAlternate: (path: AiConnectPath) => void
 }): React.JSX.Element {
@@ -190,7 +205,7 @@ function GuidePath({
   }
   return (
     <div className="ai-sub-guide-open" data-path={provider}>
-      <p className="ai-sub-guide-need">{aiSubscriptionText(lang, needKey, params)}</p>
+      <p className="ai-sub-guide-need">{needText ?? aiSubscriptionText(lang, needKey, params)}</p>
       <ol className="ai-sub-guide-steps" aria-label={aiSubscriptionText(lang, 'guideStepsLabel')}>
         {steps.steps.map((step, index) => (
           <li

@@ -12,6 +12,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: '保存译本',
     dlgSaveBilingualTitle: '保存双语对照本',
     closeUnsavedMsg: '此文档有未保存的更改。',
+    closeUnsavedNamedMsg: '“{name}”有未保存的更改。',
     closeUnsavedDetail: '关闭前是否保存？',
     btnSave: '保存',
     btnDontSave: '不保存',
@@ -23,6 +24,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Save Translated Book',
     dlgSaveBilingualTitle: 'Save Bilingual Book',
     closeUnsavedMsg: 'This document has unsaved changes.',
+    closeUnsavedNamedMsg: '“{name}” has unsaved changes.',
     closeUnsavedDetail: 'Do you want to save them before closing?',
     btnSave: 'Save',
     btnDontSave: "Don't Save",
@@ -34,6 +36,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Lưu bản dịch',
     dlgSaveBilingualTitle: 'Lưu bản song ngữ',
     closeUnsavedMsg: 'Tài liệu này có những thay đổi chưa được lưu.',
+    closeUnsavedNamedMsg: '“{name}” có những thay đổi chưa được lưu.',
     closeUnsavedDetail: 'Bạn có muốn lưu các thay đổi trước khi đóng không?',
     btnSave: 'Lưu',
     btnDontSave: 'Không lưu',
@@ -45,6 +48,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: '翻訳版を保存',
     dlgSaveBilingualTitle: '対訳版を保存',
     closeUnsavedMsg: 'このドキュメントに未保存の変更があります。',
+    closeUnsavedNamedMsg: '「{name}」に未保存の変更があります。',
     closeUnsavedDetail: '閉じる前に保存しますか？',
     btnSave: '保存',
     btnDontSave: '保存しない',
@@ -56,6 +60,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: '번역본 저장',
     dlgSaveBilingualTitle: '대역본 저장',
     closeUnsavedMsg: '이 문서에 저장하지 않은 변경 사항이 있습니다.',
+    closeUnsavedNamedMsg: '‘{name}’에 저장하지 않은 변경 사항이 있습니다.',
     closeUnsavedDetail: '닫기 전에 저장하시겠습니까?',
     btnSave: '저장',
     btnDontSave: '저장 안 함',
@@ -67,6 +72,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Enregistrer le livre traduit',
     dlgSaveBilingualTitle: 'Enregistrer le livre bilingue',
     closeUnsavedMsg: 'Ce document contient des modifications non enregistrées.',
+    closeUnsavedNamedMsg: '« {name} » contient des modifications non enregistrées.',
     closeUnsavedDetail: 'Voulez-vous les enregistrer avant de fermer ?',
     btnSave: 'Enregistrer',
     btnDontSave: 'Ne pas enregistrer',
@@ -78,6 +84,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Übersetztes Buch speichern',
     dlgSaveBilingualTitle: 'Zweisprachiges Buch speichern',
     closeUnsavedMsg: 'Dieses Dokument enthält ungespeicherte Änderungen.',
+    closeUnsavedNamedMsg: '„{name}“ enthält ungespeicherte Änderungen.',
     closeUnsavedDetail: 'Vor dem Schließen speichern?',
     btnSave: 'Speichern',
     btnDontSave: 'Nicht speichern',
@@ -89,6 +96,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Guardar libro traducido',
     dlgSaveBilingualTitle: 'Guardar libro bilingüe',
     closeUnsavedMsg: 'Este documento tiene cambios sin guardar.',
+    closeUnsavedNamedMsg: '«{name}» tiene cambios sin guardar.',
     closeUnsavedDetail: '¿Quieres guardarlos antes de cerrar?',
     btnSave: 'Guardar',
     btnDontSave: 'No guardar',
@@ -100,6 +108,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'บันทึกฉบับแปล',
     dlgSaveBilingualTitle: 'บันทึกฉบับสองภาษา',
     closeUnsavedMsg: 'เอกสารนี้มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
+    closeUnsavedNamedMsg: '“{name}” มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
     closeUnsavedDetail: 'ต้องการบันทึกก่อนปิดหรือไม่?',
     btnSave: 'บันทึก',
     btnDontSave: 'ไม่บันทึก',
@@ -111,6 +120,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Simpan Buku Terjemahan',
     dlgSaveBilingualTitle: 'Simpan Buku Dwibahasa',
     closeUnsavedMsg: 'Dokumen ini memiliki perubahan yang belum disimpan.',
+    closeUnsavedNamedMsg: '“{name}” memiliki perubahan yang belum disimpan.',
     closeUnsavedDetail: 'Simpan sebelum menutup?',
     btnSave: 'Simpan',
     btnDontSave: 'Jangan Simpan',
@@ -122,6 +132,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Сохранить переведённую книгу',
     dlgSaveBilingualTitle: 'Сохранить двуязычную книгу',
     closeUnsavedMsg: 'В этом документе есть несохранённые изменения.',
+    closeUnsavedNamedMsg: 'В «{name}» есть несохранённые изменения.',
     closeUnsavedDetail: 'Сохранить их перед закрытием?',
     btnSave: 'Сохранить',
     btnDontSave: 'Не сохранять',
@@ -133,6 +144,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'حفظ الكتاب المترجم',
     dlgSaveBilingualTitle: 'حفظ الكتاب ثنائي اللغة',
     closeUnsavedMsg: 'يحتوي هذا المستند على تغييرات غير محفوظة.',
+    closeUnsavedNamedMsg: 'يحتوي ”{name}“ على تغييرات غير محفوظة.',
     closeUnsavedDetail: 'هل تريد حفظها قبل الإغلاق؟',
     btnSave: 'حفظ',
     btnDontSave: 'عدم الحفظ',
@@ -144,6 +156,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Salvar livro traduzido',
     dlgSaveBilingualTitle: 'Salvar livro bilíngue',
     closeUnsavedMsg: 'Este documento tem alterações não salvas.',
+    closeUnsavedNamedMsg: '“{name}” tem alterações não salvas.',
     closeUnsavedDetail: 'Deseja salvá-las antes de fechar?',
     btnSave: 'Salvar',
     btnDontSave: 'Não Salvar',
@@ -155,6 +168,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Salva libro tradotto',
     dlgSaveBilingualTitle: 'Salva libro bilingue',
     closeUnsavedMsg: 'Questo documento contiene modifiche non salvate.',
+    closeUnsavedNamedMsg: '“{name}” contiene modifiche non salvate.',
     closeUnsavedDetail: 'Vuoi salvarle prima di chiudere?',
     btnSave: 'Salva',
     btnDontSave: 'Non salvare',
@@ -166,6 +180,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Zapisz przetłumaczoną książkę',
     dlgSaveBilingualTitle: 'Zapisz książkę dwujęzyczną',
     closeUnsavedMsg: 'Ten dokument ma niezapisane zmiany.',
+    closeUnsavedNamedMsg: '„{name}” zawiera niezapisane zmiany.',
     closeUnsavedDetail: 'Czy zapisać je przed zamknięciem?',
     btnSave: 'Zapisz',
     btnDontSave: 'Nie zapisuj',
@@ -177,6 +192,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Uložit přeloženou knihu',
     dlgSaveBilingualTitle: 'Uložit dvojjazyčnou knihu',
     closeUnsavedMsg: 'Tento dokument obsahuje neuložené změny.',
+    closeUnsavedNamedMsg: '„{name}“ obsahuje neuložené změny.',
     closeUnsavedDetail: 'Chcete je před zavřením uložit?',
     btnSave: 'Uložit',
     btnDontSave: 'Neukládat',
@@ -188,6 +204,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Vertaald boek opslaan',
     dlgSaveBilingualTitle: 'Tweetalig boek opslaan',
     closeUnsavedMsg: 'Dit document bevat niet-opgeslagen wijzigingen.',
+    closeUnsavedNamedMsg: '“{name}” bevat niet-opgeslagen wijzigingen.',
     closeUnsavedDetail: 'Wilt u ze opslaan voordat u sluit?',
     btnSave: 'Opslaan',
     btnDontSave: 'Niet opslaan',
@@ -199,6 +216,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'Simpan Buku Terjemahan',
     dlgSaveBilingualTitle: 'Simpan Buku Dwibahasa',
     closeUnsavedMsg: 'Dokumen ini mempunyai perubahan yang belum disimpan.',
+    closeUnsavedNamedMsg: '“{name}” mempunyai perubahan yang belum disimpan.',
     closeUnsavedDetail: 'Simpan sebelum menutup?',
     btnSave: 'Simpan',
     btnDontSave: 'Jangan Simpan',
@@ -210,6 +228,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'שמירת הספר המתורגם',
     dlgSaveBilingualTitle: 'שמירת הספר הדו-לשוני',
     closeUnsavedMsg: 'במסמך הזה יש שינויים שלא נשמרו.',
+    closeUnsavedNamedMsg: 'ב„{name}” יש שינויים שלא נשמרו.',
     closeUnsavedDetail: 'האם לשמור אותם לפני הסגירה?',
     btnSave: 'שמירה',
     btnDontSave: 'אל תשמור',
@@ -221,6 +240,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: 'अनुवादित पुस्तक सहेजें',
     dlgSaveBilingualTitle: 'द्विभाषी पुस्तक सहेजें',
     closeUnsavedMsg: 'इस दस्तावेज़ में सहेजे नहीं गए परिवर्तन हैं।',
+    closeUnsavedNamedMsg: '“{name}” में सहेजे नहीं गए परिवर्तन हैं।',
     closeUnsavedDetail: 'क्या बंद करने से पहले उन्हें सहेजना चाहते हैं?',
     btnSave: 'सहेजें',
     btnDontSave: 'न सहेजें',
@@ -232,6 +252,7 @@ const tDlg = createI18n({
     dlgSaveTranslatedTitle: '儲存譯本',
     dlgSaveBilingualTitle: '儲存雙語對照本',
     closeUnsavedMsg: '此文件有未儲存的變更。',
+    closeUnsavedNamedMsg: '「{name}」有未儲存的變更。',
     closeUnsavedDetail: '關閉前是否儲存？',
     btnSave: '儲存',
     btnDontSave: '不儲存',
@@ -245,12 +266,13 @@ export type MainTextKey =
   | 'dlgSaveTranslatedTitle'
   | 'dlgSaveBilingualTitle'
   | 'closeUnsavedMsg'
+  | 'closeUnsavedNamedMsg'
   | 'closeUnsavedDetail'
   | 'btnSave'
   | 'btnDontSave'
   | 'btnCancel'
 
 /** A text of the main process in the language the app currently shows. */
-export function tm(key: MainTextKey): string {
-  return tDlg(getUiLang(), key)
+export function tm(key: MainTextKey, params?: Record<string, string | number>): string {
+  return tDlg(getUiLang(), key, params)
 }

@@ -83,6 +83,8 @@ describe('copy addressing', () => {
       'markdown-autosave',
       'html-autosave',
       'mindmap-autosave',
+      'photo-autosave',
+      'illust-autosave',
     ])
   })
 
@@ -118,6 +120,30 @@ describe('copy addressing', () => {
       join(root, 'hwp-autosave', `${sha16(hwpx)}.hwpx`),
     )
     expect(store.copyPath({ kind: 'mindmap', filePath: '/d/m.xmind' })).toMatch(/\.xmind$/)
+  })
+
+  it('keeps AI Photo and AI Illustration copies in folders of their own, in the file format', () => {
+    const psd = '/d/poster.PSD'
+    expect(store.copyPath({ kind: 'photo', filePath: psd })).toBe(
+      join(root, 'photo-autosave', `${sha16(psd)}.psd`),
+    )
+    const vc = '/d/logo.vectorcraft'
+    expect(store.copyPath({ kind: 'illust', filePath: vc })).toBe(
+      join(root, 'illust-autosave', `${sha16(vc)}.vectorcraft`),
+    )
+    expect(store.copyPath({ kind: 'photo', untitledId: 'abc', ext: '.png' })).toBe(
+      join(root, 'photo-autosave', 'untitled', 'abc.png'),
+    )
+  })
+
+  it('lists .vectorcraft copies (an 11-letter extension), untitled and of a file', async () => {
+    const untitled = { kind: 'illust' as const, untitledId: 'vc1', ext: '.vectorcraft' }
+    const doc = userDoc('logo.vectorcraft')
+    await store.writeCopy(untitled, Buffer.from('a'), { title: 'Untitled Illustration' })
+    await store.writeCopy({ kind: 'illust', filePath: doc }, Buffer.from('b'))
+    const listed = store.listCopies({ kinds: ['illust'] }).map((copy) => copy.identity)
+    expect(listed).toContainEqual(untitled)
+    expect(listed).toContainEqual({ kind: 'illust', filePath: doc })
   })
 
   it('finds a copy the previous version left (no metadata) and reads it as "later"', async () => {

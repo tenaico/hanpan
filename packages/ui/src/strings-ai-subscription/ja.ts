@@ -78,6 +78,8 @@ export const ja = {
   usageWindowFiveHour: '5 時間の上限',
   usageWindowSevenDay: '7 日間の上限',
   noticeTitle: 'サブスクリプションで AI を使う前に',
+  noticeSummary: '文書と会話はご自身のアカウントで Anthropic または OpenAI に送信されます。',
+  noticeMore: '詳細',
   noticeSend:
     '文書の内容と会話は、ご自身のアカウントで Anthropic または OpenAI に送信されます。リクエストごとに「AI に任せる」にしたスキルの名前・タイトル・説明も送られ、使うスキルの内容と、AI が読んだスキルのファイルも一緒に送信されます。',
   noticeTraining:

@@ -158,7 +158,7 @@ describe('applyCellEditsToXlsx style edits', () => {
     // refuses to import a workbook without one), so strip it to reach the
     // "workbook has no stylesheet" state this test is about.
     const stripped = await (async () => {
-      const zip = await JSZip.loadAsync(await blankXlsxBuffer())
+      const zip = await JSZip.loadAsync(await blankXlsxBuffer('Sheet1'))
       zip.remove('xl/styles.xml')
       const rels = await zip.file('xl/_rels/workbook.xml.rels')!.async('string')
       zip.file(
@@ -194,6 +194,7 @@ describe('applyCellEditsToXlsx style edits', () => {
     )
   })
 
+  // the new workbook's own first sheet (0.17: 시트1, Normal font 맑은 고딕) saves like any other
   it('persists a styled table written into an empty workbook', async () => {
     const values = [
       ['Name', 'Gender', 'Age', 'Phone'],
@@ -202,7 +203,7 @@ describe('applyCellEditsToXlsx style edits', () => {
     ]
     const edits: CellEdit[] = values.flatMap((row, rowIndex) =>
       row.map((value, column) => ({
-        sheetName: 'Sheet1',
+        sheetName: '시트1',
         row: rowIndex,
         column,
         writeValue: true,
@@ -214,6 +215,8 @@ describe('applyCellEditsToXlsx style edits', () => {
     const worksheet = await entryText(mutation.buffer, 'xl/worksheets/sheet1.xml')
 
     expect(worksheet).toContain('<dimension ref="A1:D3"/>')
+    expect(await entryText(mutation.buffer, 'xl/workbook.xml')).toContain('<sheet name="시트1"')
+    expect(await entryText(mutation.buffer, 'xl/styles.xml')).toContain('<name val="맑은 고딕"/>')
     for (const [rowIndex, row] of values.entries()) {
       for (const [column, value] of row.entries()) {
         const address = `${String.fromCharCode(65 + column)}${rowIndex + 1}`
@@ -538,7 +541,7 @@ describe('large edit batches', () => {
       }
     }
     const started = performance.now()
-    const insertMutation = await applyCellEditsToXlsx(await blankXlsxBuffer(), inserts)
+    const insertMutation = await applyCellEditsToXlsx(await blankXlsxBuffer('Sheet1'), inserts)
     const worksheet = await entryText(insertMutation.buffer, 'xl/worksheets/sheet1.xml')
     expect(worksheet).toContain('<dimension ref="A1:AX2000"/>')
     expect(worksheet).toContain('<c r="A1"><v>0</v></c>')

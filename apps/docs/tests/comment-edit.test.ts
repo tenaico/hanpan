@@ -213,3 +213,29 @@ describe('CommentsPanel editing', () => {
     editor.destroy()
   })
 })
+
+describe('CommentsPanel card', () => {
+  it('pressing a thread card asks the app to select its anchor (0.17 v2 #5)', () => {
+    const editor = makeEditor()
+    const onSelect = vi.fn()
+    const { root, container } = mount(
+      createElement(CommentsPanel, {
+        comments: [{ id: 'c1', author: 'A', text: 'old text', done: false }] as CommentInfo[],
+        docNode: editor.state.doc,
+        composing: false,
+        onSubmitNew: noop,
+        onReply: noop,
+        onEdit: noop,
+        onResolve: noop,
+        onCancelNew: noop,
+        onDelete: noop,
+        onClose: noop,
+        onSelect,
+      }),
+    )
+    act(() => container.querySelector<HTMLElement>('.comment-card')!.click())
+    expect(onSelect).toHaveBeenCalledWith('c1')
+    act(() => root.unmount())
+    container.remove()
+  })
+})

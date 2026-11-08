@@ -1312,6 +1312,11 @@
   display: none;
 }
 
+/* 0.17 UI/UX review v2 #13 and 0.17.1 #21: the column never floats over the document (that hid
+ * the start of every line and the editor's menu bar at 1366). When the window cannot hold the AI
+ * panel, the column and an editor wide enough, the one opened last stays out and the other folds
+ * (sidesShown in MemoSide.tsx). */
+
 /* drag handle on the edge toward the document */
 .memo-side-resizer {
   position: absolute;

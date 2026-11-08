@@ -279,6 +279,16 @@
 - 바깥 링크는 다른 편집기와 같이 안전한 주소만 기본 브라우저로 연다.
 - 편집은 뒷단이 받은 블록 범위 바꾸기로만 일어나고, 번역이 도는 동안과 읽기 전용 장에서는 뒷단이 거절한다. 번역 결과 책은 저장 창에서 사람이 고른 경로에만 쓰고, 원본 책과 다른 탭에 열린 파일의 경로는 거절한다.
 
+## AI 포토·AI 일러스트 (결정 0093)
+
+- 두 탭의 호스트 페이지는 `genoffice-app://photo/`, `genoffice-app://illust/`에서, PhotoCraft·VectorCraft 웹판은 그와 다른 출처인 `genoffice-app://photo-app/`, `genoffice-app://illust-app/`의 틀(iframe)에서 돈다(결정 0093, 안 B, 2026-11-06). 웹판은 `tools/fetch-graphics-web.mjs`가 `tools/graphics-web-pins.json`에 적은 크기와 SHA-256이 맞는 릴리스 zip만 풀어 싣는다. CI와 릴리스 빌드(`CI`, `IEUM_RELEASE`)는 로컬 빌드와 핀 없는 앱을 거절한다.
+- **웹판은 호스트에 닿지 못한다.** 출처가 다르니 웹판 코드는 호스트 페이지의 창·DOM·다리(저장, 내보내기, AI 설정, AI 요청, 구독 연결)를 읽거나 부를 수 없다. 호스트는 메시지로만 웹판의 페이지 API를 부른다. 웹판 틀 안의 중계(`apps/graphics/src/renderer/frame/frame-agent.ts`)가 부모 창, 부모 출처에서 온 메시지에만 페이지 API 아홉 가지와 입력 잠금으로 답한다. 호스트는 그 틀의 창에서, 그 틀의 출처로 온 답만 받는다. 같은 preload가 웹판 틀에서도 돌지만(`nodeIntegrationInSubFrames`) 거기서는 아무 다리도 내놓지 않고, 앱이 뜨기 전에 저장소를 준비하고 중계를 심는 일만 한다. 호스트 쪽 다리는 그래도 한 번만 넘겨준다(`graphicsBridge.take()`). 호스트 출처는 웹판 파일(`/web/`)을 내주지 않고, 웹판 출처는 자기 웹판 파일만 내준다(`graphicsRequestAllowed`).
+- 웹판 페이지에는 `frame-ancestors genoffice-app://<앱>`을 붙여, 자기 호스트 페이지 말고는 앱 페이지를 틀에 넣지 못하게 한다. 호스트 페이지의 CSP는 두 웹판 출처만 틀로 허용한다. 보기는 `sandbox`이고, 새 창과 바깥으로의 이동은 막는다.
+- **디스크에 쓰는 길은 main의 저장 하나다.** `graphics:begin-save`가 대상을 정한다. 앱이 열었다고 화면이 확인한 파일(`graphics:open-confirmed`, main이 넘긴 경로와 같을 때만)이거나, 저장 창에서 사람이 고른 경로다. `graphics:commit-save`는 그 대상에만 원자적으로 쓴다. 내보내기는 저장 창에서 고른 경로에만 쓴다. 앱이 내려받기로 만든 파일은 가로채서 메모리에만 두고, 디스크에 바로 쓰지 않는다. AI나 빠른 작업이 도는 동안 가로챈 파일은 저장으로도 내보내기로도 쓰지 않는다. 비정상 종료에 대비한 복구 사본(`graphics:recovery-write`)은 화면이 바이트와 형식만 넘기고, main이 공용 복구 저장소로 프로필의 `photo-autosave`·`illust-autosave` 폴더에만 쓴다. 받는 형식은 그 탭이 다시 여는 것(포토 PSD·PNG, 일러스트 .vectorcraft)뿐이다.
+- AI 도구는 앱의 명령만 부른다. 저장·열기·내보내기, 앱 설정, 플러그인·스크립트·동작, 링크와 라이브러리, 인쇄, 단축키, 창, 되돌리기·다시 하기는 부르지 못한다(`apps/graphics/src/renderer/ai/blocked-commands.ts`). 사본 내보내기는 `export_file` 하나뿐이고, 저장 창에서 사람이 경로를 고른다. AI가 도는 동안 사람의 입력은 앱에 닿지 않는다(가림막과 틀 안의 캡처 단계 막기). 그래서 앱 기록에는 그 실행의 편집만 쌓이고, 되돌리기 한 번이 그것만 되돌린다.
+- VectorCraft의 복구 저장(`autosaveRecovery`)은 끄고, 남은 복구 사본(`vectorcraft-recovery/`)은 지운다. 문서 내용이 브라우저 저장소에 남지 않게 하기 위해서다.
+- 운영체제 파일 연결은 하지 않는다. 그림 파일은 한판 안에서 열 때만 두 탭으로 간다.
+
 ## 키와 기록의 보관
 
 - 키 제공자의 키, 이미지·분석·검색 제공자의 키, 직접 운영하는 서버의 키, GitHub 읽기 토큰은 데이터 폴더의 `ai-settings.json`에, 홈 검색의 재정렬 키는 `app-settings.json`에 있다. Windows(DPAPI)와 Linux(GNOME 키링·KWallet이 있을 때)에서는 운영체제 암호화(`safeStorage`)로 봉인해 `sealed:v1:`로 쓴다(결정 0063). 같은 계정으로 도는 프로그램은 풀 수 있고, 파일을 다른 PC나 계정으로 옮기면 풀리지 않는다. 터미널 명령어는 앱을 창 없이 `--reveal-ai-secrets`로 띄워 풀고 메모리에만 둔다. macOS와 키링이 없는 Linux는 평문이다. 사용자 프로필을 읽을 수 있는 사람은 읽을 수 있다. macOS는 ad hoc 서명이라 봉인하면 업데이트마다 키체인 확인 창이 떠서, 개발자 서명 전에는 켜지 않는다.

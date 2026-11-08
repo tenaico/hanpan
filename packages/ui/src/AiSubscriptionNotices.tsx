@@ -11,6 +11,7 @@ export function AiFirstConnectionNotice({
   lang,
   codexKeepsHistory = false,
   sendsWholeDocument = false,
+  compact = false,
   onAcknowledge,
 }: {
   readonly lang: Lang
@@ -18,18 +19,33 @@ export function AiFirstConnectionNotice({
   readonly codexKeepsHistory?: boolean | undefined
   /** add the sentence that page images and the whole document text may be sent (the PDF editor) */
   readonly sendsWholeDocument?: boolean | undefined
+  /** one summary line with the full sentences folded under "More" (a narrow side panel) */
+  readonly compact?: boolean | undefined
   /** adds the acknowledge button; omit where the notice is only re-read */
   readonly onAcknowledge?: (() => void) | undefined
 }): React.JSX.Element {
+  const list = (
+    <ul className="ai-sub-first-list">
+      <li>{aiSubscriptionText(lang, 'noticeSend')}</li>
+      <li>{aiSubscriptionText(lang, 'noticeTraining')}</li>
+      {sendsWholeDocument && <li>{aiSubscriptionText(lang, 'noticePdfWholeDocument')}</li>}
+      {codexKeepsHistory && <li>{aiSubscriptionText(lang, 'noticeCodexHistory')}</li>}
+    </ul>
+  )
   return (
     <section className="ai-sub-notice ai-sub-first" role="note">
       <h3 className="ai-sub-first-title">{aiSubscriptionText(lang, 'noticeTitle')}</h3>
-      <ul className="ai-sub-first-list">
-        <li>{aiSubscriptionText(lang, 'noticeSend')}</li>
-        <li>{aiSubscriptionText(lang, 'noticeTraining')}</li>
-        {sendsWholeDocument && <li>{aiSubscriptionText(lang, 'noticePdfWholeDocument')}</li>}
-        {codexKeepsHistory && <li>{aiSubscriptionText(lang, 'noticeCodexHistory')}</li>}
-      </ul>
+      {compact ? (
+        <>
+          <p className="ai-sub-first-summary">{aiSubscriptionText(lang, 'noticeSummary')}</p>
+          <details className="ai-sub-first-more">
+            <summary>{aiSubscriptionText(lang, 'noticeMore')}</summary>
+            {list}
+          </details>
+        </>
+      ) : (
+        list
+      )}
       {onAcknowledge && (
         <div className="ai-sub-actions">
           <button type="button" className="ai-sub-btn primary" onClick={onAcknowledge}>

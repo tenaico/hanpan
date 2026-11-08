@@ -48,13 +48,10 @@ export function QuickLookField() {
 
   return (
     <>
-      <div className="set-field" data-testid="quick-look-in-app">
-        <div className="set-field-text">
-          <div className="set-field-stack">
-            <div className="set-field-label">{quickLookText(lang, 'setQuickLookTitle')}</div>
-            <div className="set-field-desc">{quickLookText(lang, 'setQuickLookHint')}</div>
-          </div>
-        </div>
+      {/* a heading over the switches below, not a setting without a switch (#22) */}
+      <div className="set-quicklook-head" data-testid="quick-look-in-app">
+        <h4 className="set-pane-subtitle">{quickLookText(lang, 'setQuickLookTitle')}</h4>
+        <div className="set-field-desc">{quickLookText(lang, 'setQuickLookHint')}</div>
       </div>
       {isWindows && (
         <>

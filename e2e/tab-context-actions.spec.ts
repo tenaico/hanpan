@@ -27,9 +27,9 @@ test('tab context menu saves current edits from a background tab and tooltip sho
     await content.press('Enter')
     await content.pressSequentially('Unsaved context-menu edit.')
 
-    // Hover tooltip includes file path
+    // Hover tooltip includes file path, and says the edit above is not saved yet (c6f1d17a)
     const tabItem = home.locator('.tab-bar .tab-item:not(.tab-home)').first()
-    await expect(tabItem).toHaveAttribute('title', `notes.md\n${source}`)
+    await expect(tabItem).toHaveAttribute('title', `notes.md — Unsaved changes\n${source}`)
 
     const tabId = await home.evaluate(async () => {
       const api = (window as unknown as { aiOfficeTabs: TabsApi }).aiOfficeTabs

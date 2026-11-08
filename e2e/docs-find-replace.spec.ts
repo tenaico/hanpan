@@ -61,7 +61,8 @@ test('find, wildcards, regex replace, go to and the Editing group', async () => 
     await expect
       .poll(() => docPage.evaluate((el) => el.textContent ?? ''), POLL)
       .toContain('Numbers 345-12.')
-    await expect(panel.locator('.find-count')).toContainText('No results')
+    // with no hits left the count says how many Replace All changed (0.17 review v2 docs #27)
+    await expect(panel.locator('.find-count')).toHaveText('Replaced 1')
 
     // ---- Go To ----
     await editor.keyboard.press(MAC ? 'Alt+Meta+g' : 'Control+g')

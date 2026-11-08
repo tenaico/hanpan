@@ -130,6 +130,7 @@ import {
   savePptxToFile,
   commitSaved,
   builtinLayoutInfos,
+  BUILTIN_LAYOUTS,
   ensureBuiltinLayout,
   shouldOfferBuiltinLayouts,
   BUILTIN_LAYOUT_PREFIX,
@@ -264,9 +265,12 @@ import type {
   SetEffectsPatch,
 } from '../shared/ipc'
 import { DECK_LINK_PROTOCOLS } from '../shared/run-link'
+import { newSlideLayoutPath } from '../shared/new-slide-layout'
 import { planSlideDuplicates, planSlideMoves } from '../shared/slide-selection'
 import { buildPrintDocumentHtml } from '../shared/print-html'
 
+import { animTargetName } from './anim-target-name'
+import { localizeMasterPrompts } from './master-prompts'
 import { tm } from './i18n-main'
 import { tiffToPng } from './tiff-decode'
 import {
@@ -852,9 +856,16 @@ export async function requestSlidesClose(
   if (autoSavePrefByWc.get(contents.id) && sessions.get(contents.id)?.path) {
     if (await requestRendererSave(contents)) return true
   }
+  // 어느 덱인지 이름을 넣는다: 저장 안 한 덱이 여럿이면 같은 창이 거듭 떠 무엇을 버리는지 모른다
+  const closing = sessions.get(contents.id)
+  const deckName = closing?.path
+    ? basename(closing.path).replace(/\.pptx$/i, '')
+    : closing
+      ? untitledRecoveryTitle(closing)
+      : tm('untitledDeck')
   const options = {
     type: 'warning' as const,
-    message: tm('closeUnsavedMsg'),
+    message: tm('closeUnsavedMsg', { name: deckName }),
     detail: tm('closeUnsavedDetail'),
     buttons: [tm('menuSave'), tm('btnDontSave'), tm('btnCancel')],
     defaultId: 0,
@@ -1604,6 +1615,9 @@ function openExportedPdf(path: string): void {
 }
 
 let ipcRegistered = false
+
+/** Folders written by Export as Images in this run — the only ones "Open folder" may open */
+const exportedImageDirs = new Set<string>()
 
 export function registerSlidesIpc(): void {
   if (ipcRegistered) return
@@ -2398,7 +2412,9 @@ export function registerSlidesIpc(): void {
   ipcMain.handle(
     'slides:new-blank',
     async (e, fitWidthPx: number, size?: unknown): Promise<OpenResult> => {
-      const opened = await openPptx(await createBlankPptx())
+      // 화면 언어의 기본 글꼴(한국어 맑은 고딕)과, 하얀 빈 화면 대신 "제목을 추가하려면 클릭"이
+      // 보이는 제목 슬라이드로 시작한다
+      const opened = await openPptx(await createBlankPptx({ lang: getUiLang(), titleSlide: true }))
       // the renderer's saved default size; anything a .pptx cannot store keeps the template
       const side = (v: unknown): v is number =>
         typeof v === 'number' && Number.isInteger(v) && v >= 914400 && v <= 51206400
@@ -2963,6 +2979,16 @@ export function registerSlidesIpc(): void {
   ipcMain.handle('slides:add-blank-slide', (e, op: AddBlankSlideOp) => {
     const session = sessions.get(e.sender.id)
     if (!session) return null
+    // the ribbon's New Slide: a slide with placeholders (Title and Content after a
+    // title slide, else the source slide's layout); a blank source keeps the blank insert
+    if (op.withPlaceholders && !op.before) {
+      const source = session.opened.deck.slides[op.sourceIndex]
+      const layoutPath = source
+        ? newSlideLayoutPath(layoutChoices(session), source.layoutPath)
+        : null
+      if (layoutPath)
+        return addSlideWithLayoutTo(session, op.sourceIndex, layoutPath, op.fitWidthPx)
+    }
     const r = sessionTxn(session, {
       ops: [
         { op: 'addBlankSlide', target: { slide: op.sourceIndex } },
@@ -2985,6 +3011,19 @@ export function registerSlidesIpc(): void {
   })
 
   // 'builtin:<key>' virtual paths get injected into the package on first use
+  /** The layout list the picker shows: the deck's own layouts, plus — for decks whose own
+   *  layouts carry no placeholders (AI-generated single blank layout) — the built-in
+   *  standard set, injected into the package on first use */
+  function layoutChoices(session: Session) {
+    const layouts = listSlideLayouts(session.opened.archive)
+    if (shouldOfferBuiltinLayouts(layouts)) {
+      layouts.push(
+        ...builtinLayoutInfos(session.opened.deck.size, new Set(layouts.map((l) => l.name))),
+      )
+    }
+    return layouts
+  }
+
   const resolveLayoutPath = (session: Session, layoutPath?: string): string | undefined => {
     if (!layoutPath?.startsWith(BUILTIN_LAYOUT_PREFIX)) return layoutPath
     return (
@@ -2996,42 +3035,43 @@ export function registerSlidesIpc(): void {
     )
   }
 
-  ipcMain.handle('slides:add-slide-with-layout', (e, op: AddSlideWithLayoutOp) => {
-    const session = sessions.get(e.sender.id)
-    if (!session) return null
+  function addSlideWithLayoutTo(
+    session: Session,
+    sourceIndex: number,
+    requestedPath: string,
+    fitWidthPx: number,
+  ) {
     // 'builtin:' resolution may inject a layout part — do it before the undo snapshot
     // is taken so a failed insert still rolls back to a consistent package
     pushHistory(session)
-    const layoutPath = resolveLayoutPath(session, op.layoutPath)
+    const layoutPath = resolveLayoutPath(session, requestedPath)
     const r = layoutPath
       ? journaledTxn(session, 'edit', {
-          ops: [{ op: 'addSlideWithLayout', target: { slide: op.sourceIndex }, layoutPath }],
+          ops: [{ op: 'addSlideWithLayout', target: { slide: sourceIndex }, layoutPath }],
         })
       : null
     if (!r?.applied) {
       session.undoStack.pop()
       return null
     }
-    session.fitWidthPx = op.fitWidthPx
+    session.fitWidthPx = fitWidthPx
     markMetaDirty(session)
     return {
-      slides: buildAllRenderSlides(session.opened, op.fitWidthPx),
-      index: op.sourceIndex + 1,
+      slides: buildAllRenderSlides(session.opened, fitWidthPx),
+      index: sourceIndex + 1,
     }
+  }
+
+  ipcMain.handle('slides:add-slide-with-layout', (e, op: AddSlideWithLayoutOp) => {
+    const session = sessions.get(e.sender.id)
+    if (!session) return null
+    return addSlideWithLayoutTo(session, op.sourceIndex, op.layoutPath, op.fitWidthPx)
   })
 
   ipcMain.handle('slides:get-layouts', (e) => {
     const session = sessions.get(e.sender.id)
     if (!session) return null
-    const layouts = listSlideLayouts(session.opened.archive)
-    // Decks whose own layouts carry no placeholders (AI-generated single blank layout)
-    // get the built-in standard set, injected into the package on first use
-    if (shouldOfferBuiltinLayouts(layouts)) {
-      layouts.push(
-        ...builtinLayoutInfos(session.opened.deck.size, new Set(layouts.map((l) => l.name))),
-      )
-    }
-    return { layouts, size: { ...session.opened.deck.size } }
+    return { layouts: layoutChoices(session), size: { ...session.opened.deck.size } }
   })
 
   // ── Master edit view ───────────────────────────────────────────────
@@ -3040,14 +3080,29 @@ export function registerSlidesIpc(): void {
   // reparses all slides — inheritance takes effect immediately, and each undo snapshot's
   // (slides model, entries) pair stays self-consistent (rendering and file don't diverge after
   // undo).
+  /** PowerPoint's English master prompts → UI language, for drawing only (the model keeps them) */
+  const masterPromptDict = (): Record<string, string> => ({
+    'Click to edit Master title style': tm('masterPromptTitle'),
+    'Click to edit Master subtitle style': tm('masterPromptSubtitle'),
+    'Click to edit Master text styles': tm('masterPromptText'),
+    'Second level': tm('masterPromptLevel2'),
+    'Third level': tm('masterPromptLevel3'),
+    'Fourth level': tm('masterPromptLevel4'),
+    'Fifth level': tm('masterPromptLevel5'),
+  })
+
   const buildMasterRenderSlide = (session: Session): RenderSlide | null => {
     const me = session.masterEdit
     if (!me) return null
-    return buildRenderSlide(me.slide, session.opened.deck.size, {
-      fitWidthPx: session.fitWidthPx,
-      media: makeMediaResolver(session.opened),
-      metrics: getFontMetrics(),
-    })
+    return buildRenderSlide(
+      localizeMasterPrompts(me.slide, masterPromptDict()),
+      session.opened.deck.size,
+      {
+        fitWidthPx: session.fitWidthPx,
+        media: makeMediaResolver(session.opened),
+        metrics: getFontMetrics(),
+      },
+    )
   }
 
   // Master edits run as part-addressed op transactions seeded with the live
@@ -3066,15 +3121,27 @@ export function registerSlidesIpc(): void {
     const session = sessions.get(e.sender.id)
     if (!session) return null
     session.fitWidthPx = fitWidthPx
+    // A deck whose own layouts carry no placeholders (a new or AI-made deck) is offered the
+    // built-in standard set by New Slide; master view shows that same set, so it is put in
+    // the package here (PowerPoint's blank deck carries the full set too)
+    if (shouldOfferBuiltinLayouts(listSlideLayouts(session.opened.archive))) {
+      for (const def of BUILTIN_LAYOUTS)
+        ensureBuiltinLayout(session.opened.archive, session.opened.deck.size, def.key)
+    }
     const items: MasterEnterResult['items'] = []
+    const prompts = masterPromptDict()
     for (const p of listMasterParts(session.opened.archive)) {
       const slide = parseMasterPart(session.opened.archive, p.partPath)
       if (!slide) continue
-      const rendered = buildRenderSlide(slide, session.opened.deck.size, {
-        fitWidthPx,
-        media: makeMediaResolver(session.opened),
-        metrics: getFontMetrics(),
-      })
+      const rendered = buildRenderSlide(
+        localizeMasterPrompts(slide, prompts),
+        session.opened.deck.size,
+        {
+          fitWidthPx,
+          media: makeMediaResolver(session.opened),
+          metrics: getFontMetrics(),
+        },
+      )
       items.push({ partPath: p.partPath, kind: p.kind, name: p.name, slide: rendered })
       if (!session.masterEdit) session.masterEdit = { partPath: p.partPath, slide }
     }
@@ -4488,13 +4555,24 @@ export function registerSlidesIpc(): void {
       chart: tm('labelChart'),
       passthrough: tm('labelObject'),
     }
+    const animLabels = {
+      title: tm('labelTitle'),
+      subtitle: tm('labelSubtitle'),
+      text: typeLabel.text!,
+      shape: typeLabel.shape!,
+      picture: typeLabel.picture!,
+      table: typeLabel.table!,
+      chart: typeLabel.chart!,
+      group: typeLabel.group!,
+      object: tm('labelObject'),
+    }
     const out: AnimationItem[] = []
     for (const a of getSlideAnimations(slide)) {
       const el = bySpid.get(a.spid)
       if (!el) continue // Leftover animations whose target shape was deleted are not echoed back
       out.push({
         sourceId: el.id,
-        targetName: el.name || typeLabel[el.type] || tm('labelObject'),
+        targetName: animTargetName(el, animLabels),
         effect: a.effect,
         trigger: a.trigger,
         durationMs: a.durationMs,
@@ -4900,18 +4978,26 @@ export function registerSlidesIpc(): void {
       try {
         // Zero-padding width follows the total page count (3 digits for ≥100 pages)
         const pad = op.pngsBase64.length >= 100 ? 3 : 2
+        const ext = op.ext === 'jpg' ? 'jpg' : 'png'
         const paths: string[] = []
         for (let i = 0; i < op.pngsBase64.length; i++) {
-          const p = join(op.dir, `${op.baseName}-${String(i + 1).padStart(pad, '0')}.png`)
+          const p = join(op.dir, `${op.baseName}-${String(i + 1).padStart(pad, '0')}.${ext}`)
           await writeFile(p, Buffer.from(op.pngsBase64[i], 'base64'))
           paths.push(p)
         }
+        exportedImageDirs.add(resolve(op.dir))
         return { ok: true, paths }
       } catch (err) {
         return { ok: false, error: String(err) }
       }
     },
   )
+
+  // 알림의 "폴더 열기": 이번 실행에서 이미지를 써 넣은 폴더만 연다(렌더러가 임의 경로를 열게 두지 않는다)
+  ipcMain.handle('slides:reveal-export-folder', async (_e, dir: unknown) => {
+    if (typeof dir !== 'string' || !exportedImageDirs.has(resolve(dir))) return false
+    return (await shell.openPath(resolve(dir))) === ''
+  })
 
   ipcMain.handle('slides:pick-export-pdf-path', async (_e, defaultName: string) => {
     const parent = dialogParent()

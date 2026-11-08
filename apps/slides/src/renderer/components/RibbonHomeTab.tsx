@@ -447,7 +447,7 @@ export function RibbonHomeTab({ rb }: { rb: RibbonTabCtx }) {
             className="rb-big rb-split"
             disabled={!hasDoc}
             onClick={onAddSlide}
-            data-tip={platformShortcuts(t('ribbonNewSlideTip'))}
+            data-tip={layoutOpen ? undefined : platformShortcuts(t('ribbonNewSlideTip'))}
             data-tip-kbd={IS_MAC ? '⇧⌘N' : 'Ctrl+M'}
           >
             <span className="rb-big-icon">
@@ -456,7 +456,7 @@ export function RibbonHomeTab({ rb }: { rb: RibbonTabCtx }) {
               </span>
               <span
                 className={`rb-caret-hit${layoutOpen ? ' active' : ''}`}
-                data-tip={t('ribbonChooseLayoutNew')}
+                data-tip={layoutOpen ? undefined : t('ribbonChooseLayoutNew')}
                 onMouseDown={(e) => {
                   e.stopPropagation()
                   closeSiblingPanels(e, closePanels, 'layout')

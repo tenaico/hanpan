@@ -9,7 +9,8 @@
  * - →/space/enter/PgDn/click next step/page; ←/PgUp previous page; Home/End first/last page;
  *   B/. black screen, W/, white screen (any key or click restores); digits + Enter jump to that
  *   slide number; Esc exits; advancing past the last page shows the "end of show" black screen
- * - Right-click opens PowerPoint's show menu (next/previous/last viewed/see all slides/screen/end)
+ * - Right-click opens PowerPoint's show menu (next/previous/last viewed/see all slides/screen/
+ *   pointer options: laser/pen/arrow/erase ink — E also erases/end)
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RenderNode, RenderSlide, ShapeRenderNode } from '@genoffice/pptx-render'
@@ -29,7 +30,8 @@ import {
   type ShowKeyState,
   type ShowScreen,
 } from '../show-keys'
-import { buildShowMenu } from '../show-menu'
+import { buildShowMenu, type ShowTool } from '../show-menu'
+import { InkLayer, type InkStroke } from './ShowInk'
 import {
   computePlayOrder,
   finishRehearse,
@@ -54,6 +56,8 @@ const ANIMATED = [
 
 const IS_MAC = navigator.platform.toLowerCase().includes('mac')
 const GRID_THUMB_W = 200
+/** 쇼 화면 펜 색(발표자 보기와 같은 빨강) */
+const SHOW_PEN_COLOR = '#e53935'
 
 export function SlideShowView({
   slides,
@@ -123,6 +127,24 @@ export function SlideShowView({
   gridRef.current = grid
   /** Left button went down outside the open menu: that click only closes the menu, it must not advance */
   const menuClickRef = useRef(false)
+  // 펜·레이저 포인터(오른쪽 클릭 메뉴 › 포인터 옵션). 장을 넘기면 필기는 지운다(발표자 보기와 같음)
+  const [tool, setTool] = useState<ShowTool>('none')
+  const [strokes, setStrokes] = useState<InkStroke[]>([])
+  const [laser, setLaser] = useState<{ x: number; y: number } | null>(null)
+  const inkBoxRef = useRef<HTMLDivElement>(null)
+  const drawingRef = useRef(false)
+  useEffect(() => {
+    setStrokes([])
+    setLaser(null)
+  }, [pos])
+  const inkPoint = (e: React.PointerEvent): { x: number; y: number } | null => {
+    const r = inkBoxRef.current?.getBoundingClientRect()
+    if (!r || r.width === 0 || r.height === 0) return null
+    return {
+      x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)),
+      y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)),
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -398,6 +420,11 @@ export function SlideShowView({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (menuRef.current) return
+      if (!gridRef.current && (e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault()
+        setStrokes([])
+        return
+      }
       if (gridRef.current) {
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -442,6 +469,8 @@ export function SlideShowView({
 
   const onRootClick = (e: React.MouseEvent) => {
     if ((e.target as Element).closest('.ctx-menu, .ss-grid')) return
+    // 펜·레이저를 쥐고 있을 때 클릭은 그리기·가리키기라 장을 넘기지 않는다
+    if (tool !== 'none') return
     if (showKeysRef.current.screen !== 'none') {
       setKeys(INITIAL_SHOW_KEYS)
       return
@@ -471,6 +500,8 @@ export function SlideShowView({
           pending: player.pending,
           hasLastViewed: visitedRef.current.length > 0,
           screen: blank,
+          tool,
+          hasInk: strokes.length > 0,
         },
         {
           next,
@@ -481,6 +512,11 @@ export function SlideShowView({
             if (!ended) setKeys(toggleScreen(showKeysRef.current, sc))
           },
           end: () => exitRef.current(),
+          setTool: (next) => {
+            setTool(next)
+            setLaser(null)
+          },
+          clearInk: () => setStrokes([]),
         },
       )
     : null
@@ -526,14 +562,43 @@ export function SlideShowView({
               className={`ss-frame${anim.kind !== 'none' ? ` ss-anim-${anim.kind}` : ''}`}
             >
               <div
+                ref={inkBoxRef}
+                className={tool !== 'none' ? `ss-tool-${tool}` : undefined}
                 style={{ position: 'relative', width: fitW, margin: '0 auto' }}
+                onPointerDown={(e) => {
+                  if (tool !== 'pen' || e.button !== 0) return
+                  const p = inkPoint(e)
+                  if (!p) return
+                  e.currentTarget.setPointerCapture(e.pointerId)
+                  drawingRef.current = true
+                  setStrokes((ss) => [...ss, { color: SHOW_PEN_COLOR, points: [p.x, p.y] }])
+                }}
+                onPointerMove={(e) => {
+                  if (tool === 'pen' && drawingRef.current) {
+                    const p = inkPoint(e)
+                    if (!p) return
+                    setStrokes((ss) => {
+                      const last = ss[ss.length - 1]
+                      if (!last) return ss
+                      return [...ss.slice(0, -1), { ...last, points: [...last.points, p.x, p.y] }]
+                    })
+                  } else if (tool === 'laser') {
+                    setLaser(inkPoint(e))
+                  }
+                }}
+                onPointerUp={() => {
+                  drawingRef.current = false
+                }}
+                onPointerLeave={() => setLaser(null)}
                 onClick={(e) => {
+                  if (tool !== 'none') return
                   const target = linkAt(e)
                   if (!target) return // Bubbles to the root onClick → next page
                   e.stopPropagation()
                   followLink(target)
                 }}
                 onMouseMove={(e) => {
+                  if (tool !== 'none') return
                   e.currentTarget.style.cursor = linkAt(e) ? 'pointer' : ''
                 }}
               >
@@ -551,6 +616,12 @@ export function SlideShowView({
                   commands={player.mediaCmds}
                   epoch={player.epoch}
                   mediaBase={player.mediaBase}
+                />
+                <InkLayer
+                  strokes={strokes}
+                  laser={laser}
+                  width={fitW}
+                  height={Math.round((fitW * slide.heightPx) / slide.widthPx)}
                 />
               </div>
             </div>

@@ -1,7 +1,8 @@
 /**
  * Fonts on the design board: the template font set the installer already ships
  * (resources/template-fonts, @genoffice/ui/template-fonts, SIL OFL 1.1 or KOGL type 1) and
- * the fonts most Windows PCs have. Each bundled face is registered at start as a
+ * the fonts installed on this PC (read when the list is first opened; until then the
+ * ones most Windows PCs have). Each bundled face is registered at start as a
  * FontFace pointing at its URL, so a file is read only when text first uses it.
  */
 import { TEMPLATE_FONT_FACE_REGISTRATIONS, templateFontUrl } from '@genoffice/ui/template-fonts'
@@ -71,4 +72,99 @@ export function registerBundledFonts(): void {
   registered = true
   for (const { family, file, weight } of TEMPLATE_FONT_FACE_REGISTRATIONS)
     document.fonts.add(new FontFace(family, `url("${templateFontUrl(file)}")`, { weight }))
+}
+
+/** What the main process reads from a font file (app:font-family-info, @genoffice/font-metrics) */
+export interface PcFontInfo {
+  /** the Korean family name, when the font carries one */
+  ko?: string
+  hangul: boolean
+}
+
+const SHIPPED = new Set([...BUNDLED_FONTS, ...GONGU_FONTS].map((f) => f.family))
+const FIXED_PC = new Set(SYSTEM_FONTS.map((f) => f.family))
+const MAX_PC_FONTS = 2000
+
+/**
+ * The fonts installed on this PC as picker choices: one per family, the
+ * bundled families and Windows' vertical-writing twins (`@…`) left out,
+ * Hangul fonts first, each under its Korean name when it has one. A family the
+ * fixed list stored by its Korean name ("맑은 고딕") keeps that name, so older
+ * designs still show their font as chosen.
+ */
+export function pcFontChoices(
+  families: readonly string[],
+  info: ReadonlyMap<string, PcFontInfo>,
+): FontChoice[] {
+  const seen = new Set<string>()
+  const out: Array<FontChoice & { hangul: boolean }> = []
+  for (const family of families) {
+    if (!family || family.startsWith('@') || SHIPPED.has(family) || seen.has(family)) continue
+    seen.add(family)
+    const facts = info.get(family)
+    const label = facts?.ko || family
+    out.push({
+      family: facts?.ko && FIXED_PC.has(facts.ko) ? facts.ko : family,
+      label,
+      hangul: facts?.hangul === true,
+    })
+  }
+  out.sort((a, b) =>
+    a.hangul !== b.hangul ? (a.hangul ? -1 : 1) : a.label.localeCompare(b.label, 'ko'),
+  )
+  return out.slice(0, MAX_PC_FONTS).map(({ family, label }) => ({ family, label }))
+}
+
+type LocalFontQuery = () => Promise<ReadonlyArray<{ readonly family: string }>>
+
+let pcFonts: Promise<FontChoice[]> | null = null
+
+/**
+ * Reads the installed fonts once per window (the Local Font Access API, as the
+ * Word, Excel and PowerPoint pickers do) and their Korean names from the main
+ * process. Call it from a click or a focus: the API wants a user gesture. An
+ * empty list (no API, refused, failed) leaves the fixed list in place.
+ */
+export function loadPcFonts(
+  familyInfo?: (families: string[]) => Promise<ReadonlyArray<[string, PcFontInfo]>>,
+): Promise<FontChoice[]> {
+  pcFonts ??= (async () => {
+    const query = (globalThis as { queryLocalFonts?: LocalFontQuery }).queryLocalFonts
+    if (!query) return []
+    try {
+      const families = [...new Set((await query.call(globalThis)).map((f) => f.family))]
+      const info = familyInfo
+        ? new Map(await familyInfo(families).catch(() => []))
+        : new Map<string, PcFontInfo>()
+      return pcFontChoices(families, info)
+    } catch {
+      return []
+    }
+  })()
+  const loading = pcFonts
+  // a refused or failed read may be tried again by the next gesture
+  void loading.then((list) => {
+    if (!list.length && pcFonts === loading) pcFonts = null
+  })
+  return loading
+}
+
+/**
+ * Reads the installed fonts at the first press or key anywhere on the board (점검 v2
+ * hwp-design #17): read only from the font box itself, the box that opened still showed
+ * the fixed list. The Local Font Access API wants a user gesture, so it waits for one.
+ * Returns a function that stops listening.
+ */
+export function readPcFontsOnFirstGesture(target: EventTarget, read: () => void): () => void {
+  const once = () => {
+    stop()
+    read()
+  }
+  const stop = () => {
+    target.removeEventListener('pointerdown', once, { capture: true })
+    target.removeEventListener('keydown', once, { capture: true })
+  }
+  target.addEventListener('pointerdown', once, { capture: true })
+  target.addEventListener('keydown', once, { capture: true })
+  return stop
 }

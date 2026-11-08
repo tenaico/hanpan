@@ -294,6 +294,11 @@ export const es = {
   paneShowMenuScreen: 'Pantalla',
   paneShowMenuBlack: 'Pantalla en negro',
   paneShowMenuWhite: 'Pantalla en blanco',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'Fin de la presentación',
   panePresenterWhiteOn: 'Pantalla en blanco (W para reanudar)',
 } satisfies Record<keyof typeof zh, string>

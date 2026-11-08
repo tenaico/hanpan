@@ -5,6 +5,7 @@
  */
 import type { CellFormatPatch } from '@genoffice/xlsx-gateway/domain/workbook-dsl'
 import type { WorkbookSnapshot } from '@genoffice/xlsx-gateway/domain/workbook.types'
+import { firstSheetNameFor } from '@genoffice/xlsx-gateway/gateway/new-workbook-lang'
 import type { ChartEditData } from './WorkbookVisuals'
 
 export const CHART_TYPE_COMMANDS = ['column', 'bar', 'line', 'area', 'pie', 'doughnut'] as const
@@ -33,16 +34,21 @@ export const CHART_PALETTES: Record<string, readonly string[]> = {
   gray: ['#404040', '#7f7f7f', '#a6a6a6', '#bfbfbf', '#d0cece', '#595959'],
 }
 
-export const initialSnapshot: WorkbookSnapshot = {
+/// The in-memory blank workbook, its first sheet named in the UI language like the blank
+/// file the shell creates (new-workbook-lang.ts).
+export const initialSnapshotFor = (lang: string): WorkbookSnapshot => ({
   revision: 0,
   sheets: [
     {
       id: 'sheet-1',
-      name: 'Sheet1',
+      name: firstSheetNameFor(lang),
       cells: {},
     },
   ],
-}
+})
+
+/// The Korean blank workbook (Hanpan starts in Korean).
+export const initialSnapshot: WorkbookSnapshot = initialSnapshotFor('ko')
 
 export const FORMULA_MODE_MAX_CELLS = 50_000
 /// Formula mode's open-time preload installs style-only blanks too (a border

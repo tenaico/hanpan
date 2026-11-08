@@ -265,3 +265,9 @@ describe('Quick Look 21-language dictionary', () => {
     expect(quickLookText('en', 'openInEditor')).toContain(PRODUCT_NAME)
   })
 })
+
+describe('Explorer Spacebar preview default (0.17 review v2 shell #22)', () => {
+  it('starts off', () => {
+    expect(DEFAULT_QUICK_LOOK_SETTINGS.explorerSpacePreview).toBe(false)
+  })
+})

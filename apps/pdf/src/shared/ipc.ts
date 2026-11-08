@@ -74,6 +74,8 @@ export const PDF_CHANNELS = {
   cropPages: 'pdf:crop-pages',
   exportImages: 'pdf:export-images',
   convertOffice: 'pdf:convert-office',
+  /** File menu Save As: the shell's Save As flow for the asking tab */
+  saveAsDialog: 'pdf:save-as-dialog',
   createDocument: 'pdf:create-document',
   openInPdfTools: 'pdf:open-in-pdf-tools',
   generateImage: 'pdf:generate-image',
@@ -92,6 +94,9 @@ export const PDF_CHANNELS = {
   noteOpen: 'pdf:note-open',
   noteInsert: 'pdf:note-insert',
   noteUnsaved: 'pdf:note-unsaved',
+  // printing to a chosen printer with copies (P4), like the Excel print dialog
+  listPrinters: 'pdf:list-printers',
+  printToDevice: 'pdf:print-to-device',
   dirtyChanged: 'pdf:dirty-changed',
   closeSaveRequest: 'pdf:close-save-request',
   closeSaveResult: 'pdf:close-save-result',
@@ -1541,6 +1546,10 @@ export interface PdfApi {
   exportImages(request: ExportImagesRequest): Promise<ExportImagesResult>
   /** Convert the current PDF to Word / Excel / PowerPoint via the shell's local conversion flows */
   convertOffice(format: PdfConvertFormat): Promise<void>
+  /** File menu Open: the shell's open dialog (the same as the tab bar menu and Ctrl+O) */
+  openFileDialog(): Promise<void>
+  /** File menu Save As: the shell's Save As flow (the same as the tab bar menu) */
+  saveAsDialog(): Promise<void>
   /** Shell File menu → open the Markdown / EPUB conversion dialog */
   onConvertDialogRequest(handler: (format: PdfReflowFormat) => void): () => void
   /** Before a Markdown job writes: close a Markdown tab showing that file (its unsaved-changes guard applies). False = still open */
@@ -1596,6 +1605,10 @@ export interface PdfApi {
   noteInsert(request: PdfNoteInsertRequest): Promise<PdfNoteResult>
   /** this view's PDF has no path the person saved yet (a new blank before its first save): the note buttons wait */
   noteUnsaved(): Promise<boolean>
+  /** The printers this view can print to; [] when none are known */
+  listPrinters(): Promise<PdfPrinterInfo[]>
+  /** Print the view's rendered print pages without the system dialog */
+  printToDevice(request: PdfPrintToDeviceRequest): Promise<PdfPrintResult>
   /** Mirror unsaved-changes state to the main process; drives the save prompt before closing a tab/window */
   setDirty(dirty: boolean): void
   /** Main process asks for a save (close prompt, menu Save, export flows) and waits for sendCloseSaveResult.
@@ -1662,3 +1675,21 @@ export interface PdfApi {
   aiStreamCancel(requestId: string, scope?: 'request'): Promise<void>
   onAiStream(handler: (chunk: AiStreamChunk) => void): () => void
 }
+
+/** A printer the print dialog offers (P4) */
+export interface PdfPrinterInfo {
+  readonly name: string
+  readonly displayName: string
+}
+
+/** Print to a printer: '' is the system's default printer */
+export interface PdfPrintToDeviceRequest {
+  readonly deviceName: string
+  readonly copies: number
+  readonly collate: boolean
+}
+
+export type PdfPrintResult =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly canceled: true }
+  | { readonly ok: false; readonly error: string }

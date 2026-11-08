@@ -44,7 +44,8 @@ export const vi = {
   meteredMeaning:
     'Lần đăng nhập này dùng khóa API hoặc tài khoản trả phí theo mức sử dụng, hoặc không xác định được loại đăng nhập. Chọn "Vẫn sử dụng" để AI chạy qua kết nối này, và mỗi yêu cầu sẽ được tính vào tài khoản đó.',
   connectTitle: 'Kết nối AI để bắt đầu',
-  connectBody: 'AI chạy bằng gói đăng ký Claude hoặc Codex mà bạn đã có. Không cần khóa API.',
+  connectBody:
+    'AI chạy bằng tài khoản Claude, ChatGPT hoặc AI miễn phí. Dùng Claude hay ChatGPT thì không cần khóa API.',
   connectProviderTitle: 'Kết nối {provider} hiện chưa dùng được',
   connectKeyBody:
     'Thiết lập {provider} chưa hoàn tất. Hãy hoàn tất trong Cài đặt hoặc chọn AI khác.',
@@ -77,6 +78,9 @@ export const vi = {
   usageWindowFiveHour: 'Giới hạn 5 giờ',
   usageWindowSevenDay: 'Giới hạn 7 ngày',
   noticeTitle: 'Trước khi dùng AI bằng gói đăng ký của bạn',
+  noticeSummary:
+    'Tài liệu và cuộc trò chuyện được gửi tới Anthropic hoặc OpenAI bằng tài khoản của bạn.',
+  noticeMore: 'Chi tiết',
   noticeSend:
     'Nội dung tài liệu và cuộc trò chuyện được gửi đến Anthropic hoặc OpenAI bằng chính tài khoản của bạn. Mỗi yêu cầu còn kèm tên, tiêu đề và mô tả của mọi kỹ năng đặt ở "AI tự quyết định"; kỹ năng đang dùng và các tệp kỹ năng mà AI đọc cũng được gửi kèm.',
   noticeTraining:

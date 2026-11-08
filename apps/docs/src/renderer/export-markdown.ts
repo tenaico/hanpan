@@ -65,7 +65,16 @@ export function documentToMarkdown(editor: Editor): MarkdownExport {
     flush(index - 1)
     if (isTrackedDeleted(node)) return
     const formula = node.attrs.formulaDisplay as { tokens?: string[]; latex?: string } | null
-    if (formula?.latex) {
+    const field = node.attrs.fieldDisplay as {
+      kind?: string
+      left?: string
+      num?: string
+    } | null
+    if (field?.kind === 'tocLine') {
+      // a page number means nothing in Markdown, and glued to the title it read as text
+      const entry = [field.num, field.left].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim()
+      if (entry) parts.push(`<p>${escapeHtml(entry)}</p>`)
+    } else if (formula?.latex) {
       parts.push(`<formula>${escapeHtml(formula.latex)}</formula>`)
     } else if (formula?.tokens?.length) {
       parts.push(`<p>${escapeHtml(formula.tokens.join(' '))}</p>`)

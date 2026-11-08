@@ -28,6 +28,7 @@ import type {
   MindmapRecoveryApi,
   MindmapSeedApi,
   SaveMode,
+  DocTheme,
   UiTheme,
 } from '../shared/ipc'
 import {
@@ -67,6 +68,12 @@ const core: MindmapCoreApi = {
   onLanguageChanged: (handler) => listen<[Lang]>(APP_CHANNELS.languageChanged, handler),
   getTheme: () => ipcRenderer.invoke(APP_CHANNELS.getTheme),
   onThemeChanged: (handler) => listen<[UiTheme]>(APP_CHANNELS.themeChanged, handler),
+  getDocumentTheme: async () => {
+    const theme: unknown = await ipcRenderer.invoke(APP_CHANNELS.getDocumentTheme)
+    return theme === 'light' || theme === 'dark' ? theme : 'follow'
+  },
+  onDocumentThemeChanged: (handler) =>
+    listen<[DocTheme]>(APP_CHANNELS.documentThemeChanged, handler),
   getAutoSaveDefault: () => ipcRenderer.invoke(APP_CHANNELS.getAutoSaveDefault),
   onAutoSaveDefaultChanged: (handler) =>
     listen<[AutoSaveDefault]>(APP_CHANNELS.autoSaveDefaultChanged, handler),
@@ -82,6 +89,7 @@ const exporting: MindmapExportApi = {
   exportPdf: (request) => ipcRenderer.invoke(MINDMAP_CHANNELS.exportPdf, request),
   exportMarkdown: (request) => ipcRenderer.invoke(MINDMAP_CHANNELS.exportMarkdown, request),
   print: (request) => ipcRenderer.invoke(MINDMAP_CHANNELS.print, request),
+  listPrinters: () => ipcRenderer.invoke(MINDMAP_CHANNELS.printers),
 }
 
 // ---- the AI panel's bridge: the panel and the attachment handlers are T12's ----
@@ -145,6 +153,7 @@ const ai: MindmapAiApi = {
   getPathForFile: (file) => webUtils.getPathForFile(file),
   setProvisionalTitle: (title) => ipcRenderer.send(MINDMAP_CHANNELS.provisionalTitle, title),
   openSourcePath: (path) => ipcRenderer.invoke(APP_CHANNELS.openSourcePath, path),
+  openFileDialog: () => ipcRenderer.invoke(APP_CHANNELS.openFileDialog),
   getAiPanelPrefs: () => ipcRenderer.invoke(APP_CHANNELS.getAiPanelPrefs),
   setAiPanelPrefs: (patch) => ipcRenderer.invoke(APP_CHANNELS.setAiPanelPrefs, patch),
   onAiPanelPrefsChanged: (handler) =>
@@ -207,6 +216,14 @@ const send: MindmapSendApi = {
   sendToDesign: (outline) => ipcRenderer.send(MINDMAP_CHANNELS.sendToDesign, outline),
   syncCheck: (request) => ipcRenderer.invoke(MINDMAP_CHANNELS.syncCheck, request),
   syncFinish: (request) => ipcRenderer.invoke(MINDMAP_CHANNELS.syncFinish, request),
+  getKoreanDocFeatures: () =>
+    ipcRenderer
+      .invoke(APP_CHANNELS.getKoreanDocFeatures)
+      .then((stored: unknown) => (typeof stored === 'boolean' ? stored : null)),
+  onKoreanDocFeaturesChanged: (handler) =>
+    listen<[unknown]>(APP_CHANNELS.koreanDocFeaturesChanged, (stored) =>
+      handler(typeof stored === 'boolean' ? stored : null),
+    ),
 }
 
 // ---- crash-recovery copies ----

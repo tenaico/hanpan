@@ -155,7 +155,8 @@ export const vi = {
   dlgPivotAddValue: '+ Thêm trường giá trị',
   dlgPivotAddCalc: '+ Thêm trường tính toán',
   dlgPivotTargetCell: 'Ô đích',
-  dlgPivotTargetPlaceholder: 'Ví dụ: F1',
+  dlgPivotTargetPlaceholder: 'Ví dụ: {cell}',
+  dlgPivotTargetEmptyHint: 'Để trống thì PivotTable được đặt ở {cell}, bên phải vùng nguồn.',
   dlgPivotTargetLocked: 'Vùng kết quả giữ nguyên ô trên cùng bên trái khi chỉnh sửa',
   dlgPivotNote:
     'Tạo một PivotTable OOXML chuẩn mà Excel/WPS có thể nhận diện và làm mới sau khi lưu.',
@@ -366,8 +367,7 @@ export const vi = {
   dlgFcNoFill: 'Không tô màu',
   dlgFcLocked: 'Đã khóa',
   dlgFcHidden: 'Ẩn (công thức)',
-  dlgFcProtectionNote:
-    'Khóa và ẩn chỉ có hiệu lực khi trang tính được bảo vệ trong Excel. Các cờ này được lưu vào tệp; bản thân trình chỉnh sửa không bắt buộc thực thi.',
+  dlgFcProtectionNote: 'Khóa và ẩn chỉ có hiệu lực khi trang tính được bảo vệ.',
 
   dlgAdvFilterNeedCondition: 'Bộ lọc nâng cao cần ít nhất một điều kiện.',
   dlgAdvFilterMaxTwo: 'Bộ lọc nâng cao chỉ hỗ trợ tối đa hai điều kiện.',
@@ -638,6 +638,12 @@ export const vi = {
   dlgPrintNextPage: 'Trang sau',
   dlgPrintZoomFit: 'Vừa trang',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Vừa chiều rộng',
+  dlgPrintColumnsSplit:
+    'Các cột của "{sheets}" không vừa chiều rộng một trang; các cột bên phải sẽ in sang trang sau.',
+  dlgPrintPastEdge: 'Một số cột vượt quá mép phải của trang và sẽ bị cắt khi in.',
+  dlgPrintClippedText:
+    'Một phần chữ ở cột ngoài cùng bên phải vượt quá vùng in và sẽ bị cắt. Hãy nới rộng cột đó hoặc bật Ngắt dòng văn bản.',
   dlgPrintButton: 'In',
   dlgPrintToPdf: 'In ra PDF',
   dlgPrintPageSetup: 'Thiết lập trang…',

@@ -8,7 +8,7 @@
  *   1. → 가. → 1) → 가) → (1) → (가) → ① → ㉮.
  */
 
-export type MarkerStyle = 'report' | 'chapter-report' | 'gongmun'
+export type MarkerStyle = 'report' | 'chapter-report' | 'gongmun' | 'outline'
 
 /** Report symbols by depth; deeper than the list repeats the last one. */
 export const REPORT_SYMBOLS = ['□', '○', '―', '·'] as const
@@ -25,7 +25,22 @@ export function romanNumeral(n: number): string {
 /** 가, 나, ... 하, then 거, 너 ... (편람 says to continue with 거너더 after 하). */
 export function ganada(n: number): string {
   if (n <= GANADA.length) return GANADA[n - 1]!
-  const second = ['거', '너', '더', '러', '머', '버', '서', '어', '저', '처', '커', '터', '퍼', '허']
+  const second = [
+    '거',
+    '너',
+    '더',
+    '러',
+    '머',
+    '버',
+    '서',
+    '어',
+    '저',
+    '처',
+    '커',
+    '터',
+    '퍼',
+    '허',
+  ]
   return second[n - GANADA.length - 1] ?? String(n)
 }
 
@@ -59,10 +74,14 @@ export function reportMarker(depth: number): string {
  * The marker for the `n`th of `siblings` items at `depth`.
  * `gongmun`: a lone item gets no number (편람: 항목이 하나뿐이면 항목기호를 붙이지 않는다).
  * `chapter-report`: depth 0 is the chapter (Ⅰ.), the symbol ladder starts at depth 1.
+ * `outline`: Hanpan without its Korean document features (decision 0091): chapters
+ * numbered 1. 2., then • and – under them.
  */
 export function markerFor(style: MarkerStyle, depth: number, n: number, siblings: number): string {
+  if (style === 'outline') return depth === 0 ? `${n}.` : depth === 1 ? '•' : '–'
   if (style === 'gongmun') return siblings === 1 ? '' : gongmunMarker(depth, n)
-  if (style === 'chapter-report') return depth === 0 ? `${romanNumeral(n)}.` : reportMarker(depth - 1)
+  if (style === 'chapter-report')
+    return depth === 0 ? `${romanNumeral(n)}.` : reportMarker(depth - 1)
   return reportMarker(depth)
 }
 

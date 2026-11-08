@@ -31,6 +31,8 @@ const DEPTH_BY_MARKER: Record<MarkerStyle, (marker: string) => number | null> = 
             number
           >
         )[m] ?? null),
+  outline: (m) =>
+    /^\d+\.$/.test(m) ? 0 : (({ '•': 1, '–': 2 } as Record<string, number>)[m] ?? null),
   gongmun: (m) => {
     if (/^\d+\.$/.test(m)) return 0
     if (/^[가-힣]\.$/.test(m)) return 1

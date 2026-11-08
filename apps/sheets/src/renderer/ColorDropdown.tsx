@@ -118,7 +118,7 @@ export function ColorDropdown({
         <button
           type="button"
           className={`color-tool-caret${open ? ' is-active' : ''}`}
-          aria-label={`${label} options`}
+          aria-label={t('appColorOptions', { label })}
           aria-haspopup="dialog"
           aria-expanded={open}
           disabled={disabled}

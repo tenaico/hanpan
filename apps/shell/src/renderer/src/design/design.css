@@ -15,16 +15,17 @@
   --dz-sample-shadow: rgba(15, 23, 42, 0.35);
 }
 
+/* dark: the same navy family as light, lightened to read on a dark ground (점검 v2 #35) */
 [data-theme='dark'] {
-  --accent: #ff8a3d;
-  --dz-on-accent: #1e1e1e;
+  --accent: #8fb3e0;
+  --dz-on-accent: #0f1b2b;
   --dz-guide: #ff4fb3;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-theme='dark']) {
-    --accent: #ff8a3d;
-    --dz-on-accent: #1e1e1e;
+    --accent: #8fb3e0;
+    --dz-on-accent: #0f1b2b;
     --dz-guide: #ff4fb3;
   }
 }
@@ -107,6 +108,55 @@ body {
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
 }
+/* 파일 메뉴 (0.17 리뷰 #8) */
+.dz-file {
+  position: relative;
+}
+.dz-file-button {
+  font-weight: 600;
+}
+.dz-file-button[aria-expanded='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.dz-file-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-menu);
+}
+.dz-file-menu button {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border: none;
+  background: none;
+  text-align: start;
+  white-space: nowrap;
+}
+.dz-file-menu button:hover,
+.dz-file-menu button:focus-visible {
+  background: var(--accent-soft);
+}
+.dz-file-menu kbd {
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+}
+.dz-file-menu hr {
+  width: 100%;
+  margin: 4px 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
 .dz-name input {
   width: 200px;
   font-weight: 600;
@@ -160,9 +210,18 @@ body {
 .dz-left {
   width: 250px;
   border-inline-end: 1px solid var(--border);
+  /* the tiles' Korean labels (외곽선 제목) break between words, never inside one */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+/* a template's preview is a page: its text breaks as it does on the board */
+.dz-left .dz-page {
+  word-break: normal;
+  overflow-wrap: normal;
 }
 .dz-right {
-  width: 272px;
+  /* one width for 속성 and AI 도우미: switching tabs never moves the page (점검 v2 #35) */
+  width: 320px;
   border-inline-start: 1px solid var(--border);
 }
 .dz-templates {
@@ -279,7 +338,8 @@ body {
 }
 .dz-pv-outlined {
   color: var(--dz-sample-light);
-  font-size: 20px;
+  /* the shadowed sample's size: "외곽선 제목" fits its tile on one line at 1366 */
+  font-size: 18px;
   font-weight: 900;
   -webkit-text-stroke: 3px var(--dz-sample-dark);
   paint-order: stroke fill;
@@ -295,6 +355,8 @@ body {
 }
 .dz-layers {
   display: grid;
+  /* rows never grow past the panel: the lock stays in sight, long names end in … */
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
   margin: 8px 0 0;
   padding: 0;
@@ -302,6 +364,7 @@ body {
 }
 .dz-layers li {
   display: flex;
+  min-width: 0;
   gap: 2px;
   border-radius: 6px;
 }
@@ -875,8 +938,6 @@ body {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 4px;
-  max-height: 232px;
-  overflow-y: auto;
 }
 .dz .dz-icon-grid button {
   display: grid;
@@ -892,9 +953,6 @@ body {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-.dz-credit {
-  font-size: 11px;
 }
 
 /* ---- the AI helper (right side), its entry in the top bar and the quick rewrite ---- */
@@ -931,7 +989,6 @@ body {
 .dz-right.dz-right-ai {
   display: flex;
   flex-direction: column;
-  width: 336px;
   overflow: hidden;
   padding-bottom: 10px;
 }
@@ -1208,4 +1265,26 @@ body {
   align-items: center;
   gap: 4px;
   font-size: 12px;
+}
+
+/* an empty page says what to do (점검 v2 #34); never part of an export */
+.dz-empty-hint {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 10%;
+  color: var(--text-secondary);
+  text-align: center;
+  pointer-events: none;
+  word-break: keep-all;
+}
+.dz-export-label {
+  align-self: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.dz .dz-gongu-settings {
+  margin-inline-start: 6px;
 }

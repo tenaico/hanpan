@@ -44,7 +44,7 @@ export const en = {
     'This login is an API key or a pay-as-you-go account, or its type could not be confirmed. "Use anyway" lets AI run on this connection, and every request is billed to that account.',
   connectTitle: 'Connect an AI to get started',
   connectBody:
-    'AI runs on the Claude or Codex subscription you already have. No API key is needed.',
+    'AI runs on a Claude or ChatGPT sign-in, or on a free AI. Claude and ChatGPT need no API key.',
   connectProviderTitle: 'The {provider} connection cannot be used right now',
   connectKeyBody:
     'The {provider} setup is not finished. Complete it in Settings, or choose another AI.',
@@ -74,6 +74,8 @@ export const en = {
   usageWindowFiveHour: '5-hour limit',
   usageWindowSevenDay: '7-day limit',
   noticeTitle: 'Before you use AI with your subscription',
+  noticeSummary: 'Documents and chats go to Anthropic or OpenAI under your own account.',
+  noticeMore: 'More',
   noticeSend:
     'Document content and your conversation are sent to Anthropic or OpenAI under your own account. Each request also carries the name, title and description of every skill set to “AI decides”; skills in use, and skill files the AI reads, go along with them.',
   noticeTraining:

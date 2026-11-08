@@ -25,6 +25,7 @@ import type { ThemeId, ViewLayout } from '@genoffice/xmind-engine'
 import { t as translate, useI18n } from './i18n/locale'
 import { mapStrings } from './i18n/map-strings'
 import type { StringKey } from './i18n/locale'
+import type { Params } from '@genoffice/i18n'
 import { linkFromInput, linkInputKind } from './document/link-input'
 import { newMap, type OpenFailure, type OpenNotices, openMapBytes } from './document/open'
 import { openCopiedMap, seededMap } from './document/open'
@@ -47,6 +48,7 @@ import { MarkerMenu, type MarkerMenuRequest } from './components/MarkerMenu'
 import { markerFamily, type MarkerFamily, withMarker } from './map/marker-families'
 import { NotePanel, type NotePanelHandle } from './components/NotePanel'
 import { MindmapAiDock, useMindmapAi } from './ai/AiDock'
+import { PrintDialog } from './components/PrintDialog'
 import { useMapHandoff } from './ai/use-handoff'
 import {
   ConfirmDialog,
@@ -55,7 +57,7 @@ import {
   TopicFieldDialog,
   type TopicFieldRequest,
 } from './components/dialogs'
-import type { MindmapMenuCommand, SaveMode } from '../shared/ipc'
+import type { MindmapMenuCommand, PrintJob, PrintResult, SaveMode } from '../shared/ipc'
 
 type LoadStatus = 'loading' | 'ready' | 'failed' | 'error'
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed'
@@ -72,6 +74,19 @@ const AUTO_SAVE_INTERVAL_MS = 30_000
 /** Labels are typed in one field, separated by a comma: the plain one, the full-width one or the ideographic one. */
 const LABEL_SEPARATORS = /[,\uFF0C\u3001]/
 const TOAST_MS = 4000
+
+/** The keys that step a presentation: forward or back by one main topic. */
+const PRESENT_KEYS: Readonly<Record<string, number>> = {
+  ArrowRight: 1,
+  ArrowDown: 1,
+  ' ': 1,
+  PageDown: 1,
+  Enter: 1,
+  ArrowLeft: -1,
+  ArrowUp: -1,
+  PageUp: -1,
+  Backspace: -1,
+}
 
 const HIDDEN_PARTS_KEY = 'mindmapapp.hiddenParts'
 
@@ -115,7 +130,7 @@ export default function App() {
   const [notices, setNotices] = useState<OpenNotices>({ preserved: 0, unknownTheme: false })
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null)
   const [fieldRequest, setFieldRequest] = useState<TopicFieldRequest | null>(null)
-  const [toast, setToast] = useState<StringKey | null>(null)
+  const [toast, setToast] = useState<{ key: StringKey; params?: Params } | null>(null)
   // Hanpan: the "send to a document" dialog's target, and the line told after a send
   const [sendTarget, setSendTarget] = useState<SendTarget | null>(null)
   const [sendNotice, setSendNotice] = useState<string | null>(null)
@@ -124,6 +139,8 @@ export default function App() {
   const [themeOpen, setThemeOpen] = useState(false)
   /** F5: the map alone, shell chrome covered by HTML fullscreen */
   const [presenting, setPresenting] = useState(false)
+  /** a new, empty map: the line on how to add topics shows until the map is first changed */
+  const [startHint, setStartHint] = useState(false)
   const [hiddenParts, setHiddenParts] = useState<HiddenPart[]>(rememberedHiddenParts)
   const [find, setFind] = useState<FindState | null>(null)
   const hiddenPartsRef = useRef(hiddenParts)
@@ -176,7 +193,7 @@ export default function App() {
     resolve?.(ok)
   }, [])
 
-  const say = useCallback((key: StringKey) => setToast(key), [])
+  const say = useCallback((key: StringKey, params?: Params) => setToast({ key, params }), [])
   useEffect(() => {
     if (toast === null) return
     const timer = window.setTimeout(() => setToast(null), TOAST_MS)
@@ -289,6 +306,8 @@ export default function App() {
                   sheetTitle: translate('sheetDefaultName', { n: 1 }),
                   rootTitle: translate('centralTopic'),
                 })
+            // an empty new map: its central topic is picked and the keys are told
+            if (!seed) setStartHint(true)
           }
           if (cancelled) return
         }
@@ -329,6 +348,12 @@ export default function App() {
     if (dirty && saveState === 'saved') setSaveState('idle')
   }, [dirty, saveState])
 
+  const startHintRef = useRef(startHint)
+  startHintRef.current = startHint
+  useEffect(() => {
+    if (dirty) setStartHint(false)
+  }, [dirty])
+
   // ---- one drawing-library instance per sheet, made when the sheet is first shown ----
 
   useEffect(() => {
@@ -344,6 +369,8 @@ export default function App() {
     })
     created.setHiddenParts(hiddenPartsRef.current)
     controllers.current.set(activeKey, created)
+    // a new map starts on its central topic, so Tab and Enter work at once
+    if (startHintRef.current) created.revealTopic(session.view(activeKey).root.id)
     setMapTick((tick) => tick + 1)
   }, [session, activeKey, host, tabs])
 
@@ -586,10 +613,28 @@ export default function App() {
 
   // ---- presentation (F5): the map alone, no ribbon or sheet tabs ----
 
+  /** Where the presentation is: 0 is the whole map, n the n-th main topic. */
+  const presentAt = useRef(0)
+  /** The editor's zoom when the show started, given back when it ends. */
+  const zoomBeforePresent = useRef<number | null>(null)
   const fitPresented = useCallback(() => {
     // the fullscreen bounds arrive after the event, so fit once the view has resized
-    window.setTimeout(() => activeController()?.zoomFit(), 80)
+    presentAt.current = 0
+    window.setTimeout(() => activeController()?.presentStep(presentAt.current), 80)
   }, [activeController])
+
+  /** The next or the previous step of the presentation, kept within the map's main topics. */
+  const presentMove = useCallback(
+    (by: number) => {
+      const controller = activeController()
+      if (!controller) return
+      const next = Math.max(0, Math.min(controller.presentSteps, presentAt.current + by))
+      if (next === presentAt.current) return
+      presentAt.current = next
+      controller.presentStep(next)
+    },
+    [activeController],
+  )
 
   const exitPresent = useCallback(() => {
     setPresenting(false)
@@ -599,16 +644,38 @@ export default function App() {
   const enterPresent = useCallback(() => {
     // a title still being typed belongs to the map before the chrome goes away
     flushAll()
+    zoomBeforePresent.current = activeController()?.zoom ?? null
     setPresenting(true)
     const root = document.documentElement
     if (!document.fullscreenElement && root.requestFullscreen)
       void root.requestFullscreen().then(fitPresented, fitPresented)
     else fitPresented()
-  }, [flushAll, fitPresented])
+  }, [flushAll, fitPresented, activeController])
+
+  // the show enlarges the map step by step; the editor gets back the zoom it had
+  useEffect(() => {
+    if (presenting) return
+    const scale = zoomBeforePresent.current
+    if (scale === null) return
+    zoomBeforePresent.current = null
+    // leaving full screen resizes the view a moment after the event
+    const timer = window.setTimeout(() => activeController()?.restoreView(scale), 80)
+    return () => window.clearTimeout(timer)
+  }, [presenting, activeController])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (status !== 'ready') return
+      if (presenting && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        const by = PRESENT_KEYS[event.key]
+        if (by !== undefined) {
+          // the map's own keys (move the selection, open the edit box) wait until the show is over
+          event.preventDefault()
+          event.stopPropagation()
+          presentMove(by)
+          return
+        }
+      }
       const action = presentationKeyOf(event, presenting)
       if (!action) return
       // F5 and Ctrl/Cmd/Shift+F5 both start the map's show; it has one view.
@@ -621,7 +688,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown, true)
     return () => window.removeEventListener('keydown', onKeyDown, true)
-  }, [status, presenting, enterPresent, exitPresent])
+  }, [status, presenting, enterPresent, exitPresent, presentMove])
 
   useEffect(() => {
     const onFullScreenChange = (): void => {
@@ -886,7 +953,32 @@ export default function App() {
   }, [doSave, runCommand, openFind])
 
   // export, print and the preview picture a save writes (export/use-map-export.ts)
-  const exporter = useMapExport({ session, controllers, activeKey, path, flushAll, say })
+  const [printPage, setPrintPage] = useState<string | null>(null)
+  const exporter = useMapExport({
+    session,
+    controllers,
+    activeKey,
+    path,
+    flushAll,
+    say,
+    openPrint: setPrintPage,
+  })
+  const printJob = useCallback(
+    async (job: PrintJob): Promise<PrintResult> => {
+      if (printPage === null) return { ok: true, canceled: true }
+      try {
+        const result = await window.mindmapApi.print({ html: printPage, job })
+        if (!result.ok) console.error('[mindmap] print failed:', result.error)
+        else if (!('canceled' in result)) say('printSent')
+        return result
+      } catch (error) {
+        console.error('[mindmap] print failed:', error)
+        return { ok: false, error: String(error) }
+      }
+    },
+    [printPage, say],
+  )
+  const closePrint = useCallback(() => setPrintPage(null), [])
 
   // ---- sheets ----
 
@@ -976,7 +1068,7 @@ export default function App() {
   // computed on every render: `t` is a new function each time and must not be a hook dependency
   const statusText =
     toast !== null
-      ? t(toast)
+      ? t(toast.key, toast.params)
       : saveState === 'saving'
         ? t('saving')
         : saveState === 'failed'
@@ -1128,7 +1220,13 @@ export default function App() {
           ai.setOpen(!ai.open)
         }}
         onExport={exporter.exportAs}
-        onMakeFromDocument={() => window.mindmapApi.makeFromDocument?.()}
+        onPrint={exporter.print}
+        onOpen={() => void window.mindmapApi.openFileDialog().catch(() => {})}
+        mapSaved={path !== null}
+        onMakeFromDocument={() => {
+          if (path === null) say('makeFromNeedsSave')
+          else window.mindmapApi.makeFromDocument?.()
+        }}
         onSendTo={window.mindmapApi.sendToDocument ? (target) => setSendTarget(target) : undefined}
         onSync={window.mindmapApi.syncCheck ? () => setSyncOpen(true) : undefined}
         onCredits={() => {
@@ -1214,7 +1312,28 @@ export default function App() {
 
       <main className="mm-stage">
         {/* the theme panel and the AI panel dock at this element's end side, one open at a time */}
-        <div className="mm-card" aria-label={t('appName')} onClickCapture={onMapClick}>
+        <div
+          className="mm-card"
+          aria-label={t('appName')}
+          onClickCapture={(event) => {
+            if (presenting) {
+              event.stopPropagation()
+              presentMove(1)
+              return
+            }
+            onMapClick(event)
+          }}
+        >
+          {presenting && (
+            <div className="mm-present-hint" data-hint="present" role="note">
+              {t('presentHint')}
+            </div>
+          )}
+          {startHint && !presenting && (
+            <div className="mm-start-hint" data-hint="new-map" role="note">
+              {t('newMapHint')}
+            </div>
+          )}
           {find && !presenting && (
             <FindBar
               withReplace={find.withReplace}
@@ -1335,6 +1454,9 @@ export default function App() {
       </footer>
 
       {confirm && <ConfirmDialog request={confirm} onAnswer={answer} />}
+      {printPage !== null && (
+        <PrintDialog html={printPage} onPrint={printJob} onClose={closePrint} />
+      )}
       {fieldRequest && (
         <TopicFieldDialog
           key={`${fieldRequest.field}:${fieldRequest.topicId}`}

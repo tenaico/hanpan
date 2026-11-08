@@ -351,6 +351,26 @@ describe('open_documents tool', () => {
     expect(textOf(result.content)).toContain('viewer')
   })
 
+  it.each([
+    ['photo', 'cat.png'],
+    ['illust', 'logo.svg'],
+  ] as const)('refuses to read or save a %s tab, saying it is a picture', async (kind, title) => {
+    const picture = doc({ id: 'g1', kind, title, filePath: `C:/art/${title}`, dirty: true })
+    const save = vi.fn()
+    await startService(controlOf({ list: async () => [picture], save }))
+    for (const action of ['read', 'save'] as const) {
+      const result = await client!.callTool({
+        name: 'open_documents',
+        arguments: { action, target: `C:/art/${title}` },
+      })
+      expect(result.isError).toBe(true)
+      const text = textOf(result.content)
+      expect(text).not.toContain('PDF')
+      expect(text).toContain('saved by the user in its tab')
+    }
+    expect(save).not.toHaveBeenCalled()
+  })
+
   it('reads an open book, its unsaved edits included', async () => {
     const read = vi.fn(async (tab: OpenDocumentTab) => `# Chapter 1 of ${tab.title}`)
     await startService(controlOf({ read }))

@@ -79,6 +79,8 @@ export const es = {
   usageWindowFiveHour: 'Límite de 5 horas',
   usageWindowSevenDay: 'Límite de 7 días',
   noticeTitle: 'Antes de usar la IA con tu suscripción',
+  noticeSummary: 'Los documentos y chats se envían a Anthropic u OpenAI con tu propia cuenta.',
+  noticeMore: 'Detalles',
   noticeSend:
     'El contenido del documento y tu conversación se envían a Anthropic u OpenAI con tu propia cuenta. Cada solicitud lleva además el nombre, el título y la descripción de cada habilidad configurada como «Decide la IA»; también se envían las habilidades que se usan y los archivos de habilidad que lee la IA.',
   noticeTraining:

@@ -198,12 +198,12 @@ test.describe('docs mirrored margins', () => {
       await page.getByRole('button', { name: 'Margins', exact: true }).click()
       await expect(page.locator('[data-rb-panel] button.active b')).toHaveText('Mirrored')
       await page.getByRole('button', { name: 'Custom Margins…' }).click()
-      const dialog = page.locator('.modal', { hasText: 'Custom Page Margins' })
+      const dialog = page.locator('.modal', { hasText: 'Page Setup' })
       await expect(dialog.getByRole('textbox', { name: 'Inside', exact: true })).toHaveValue(
         '1.25"',
       )
       await expect(dialog.getByRole('textbox', { name: 'Outside', exact: true })).toHaveValue('1"')
-      const pages = dialog.getByRole('combobox')
+      const pages = dialog.getByRole('combobox', { name: 'Multiple pages' })
       await expect(pages).toHaveValue('mirror')
       await pages.selectOption('normal')
       await expect(dialog.getByRole('textbox', { name: 'Left', exact: true })).toHaveValue('1.25"')
@@ -236,7 +236,7 @@ test.describe('docs mirrored margins', () => {
       await showTab(page, /^Layout$/)
       await page.getByRole('button', { name: 'Margins', exact: true }).click()
       await page.getByRole('button', { name: 'Custom Margins…' }).click()
-      await dialog.getByRole('combobox').selectOption('normal')
+      await dialog.getByRole('combobox', { name: 'Multiple pages' }).selectOption('normal')
       await dialog.getByRole('button', { name: 'OK', exact: true }).click()
       await expect.poll(() => colShift(page, 'Beta')).toBe(0)
       await beta.click()

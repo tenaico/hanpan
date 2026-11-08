@@ -236,7 +236,11 @@ function createDocument(context, parts, rendered, generator) {
         document: {
           // OOXML default is OFF unless a style sets it; Word's own new-doc
           // template enables it — match that so no stranded single lines
-          paragraph: { widowControl: true } as any,
+          // Word's CJK/digit auto spacing (w:autoSpaceDN, on unless a paragraph turns it
+          // off) widens "2학기" to "2 학기"; the page the document comes from has no such gap
+          paragraph: (isCJK
+            ? { widowControl: true, autoSpaceEastAsianText: false }
+            : { widowControl: true }) as any,
           run: isCJK
             ? {
                 // ascii/hAnsi stay Latin-proportional: a CJK font on Latin

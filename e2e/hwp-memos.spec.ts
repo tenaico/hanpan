@@ -73,6 +73,22 @@ async function openMemoPanel(page: Page): Promise<void> {
 
 const memoCards = (page: Page) => page.locator('.memo-card')
 
+/**
+ * A point on the body's first line, near the top of the page. The open memo column sits left of
+ * the editor (on a narrow window the AI panel folds for it, 0.17.1 #21), so the point moves right
+ * of the column when the column would take the press.
+ */
+async function firstLinePoint(page: Page): Promise<{ x: number; y: number }> {
+  const box = (await page.locator('.hwp-editor-host iframe').boundingBox())!
+  let x = box.x + box.width * 0.25
+  const memo = page.locator('.memo-side:not(.collapsed)')
+  if ((await memo.count()) > 0) {
+    const side = (await memo.boundingBox())!
+    if (x < side.x + side.width) x = side.x + side.width + 40
+  }
+  return { x, y: box.y + 190 }
+}
+
 /** The File menu items the plugin adds fire this event on the editor's window. */
 async function fileCommand(page: Page, command: 'save' | 'saveAs'): Promise<void> {
   await page.evaluate((detail) => {
@@ -191,10 +207,10 @@ test('adds a memo, then holds save and tab close until its editor is closed', as
   try {
     const page = await hwpPage(launched.app)
     await openMemoPanel(page)
-    const box = (await page.locator('.hwp-editor-host iframe').boundingBox())!
     // The body's first line is near the top of the page; End puts the caret
     // after the existing memo anchor instead of inside it.
-    await page.mouse.click(box.x + box.width * 0.25, box.y + 190)
+    const at = await firstLinePoint(page)
+    await page.mouse.click(at.x, at.y)
     await page.keyboard.press('End')
     await page.locator('.memo-add-button').click()
     await expect(page.locator('.memo-modal')).toBeVisible()
@@ -303,8 +319,8 @@ test('removes a memo and brings it back with undo', async () => {
     await table.getByRole('button', { name: '지우기' }).click()
     await expect(memoCards(page)).toHaveCount(2)
 
-    const box = (await page.locator('.hwp-editor-host iframe').boundingBox())!
-    await page.mouse.click(box.x + box.width * 0.25, box.y + 190)
+    const at = await firstLinePoint(page)
+    await page.mouse.click(at.x, at.y)
     await page.keyboard.press('Control+z')
     await expect(memoCards(page)).toHaveCount(3, { timeout: 15_000 })
     await expect(memoCards(page).filter({ hasText: '표 칸 메모입니다.' })).toHaveCount(1)

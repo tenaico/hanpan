@@ -20,6 +20,8 @@ export default tseslint.config(
       'packages/*/src/vendor/**',
       // the rhwp engine build (tools/build-rhwp-core.mjs): wasm-bindgen glue, kept verbatim
       'vendor/rhwp-core/**',
+      // the AI Photo / AI Illustration web builds (tools/fetch-graphics-web.mjs), git-ignored
+      'apps/graphics/public/web/**',
       // Browser-side extractor fragments are function-body slices (top-level
       // return), not modules; they are injected as raw text.
       'packages/html2docx/src/browser/**',

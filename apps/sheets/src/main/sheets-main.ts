@@ -10,6 +10,7 @@ import {
 } from 'node:fs'
 import { copyFile, mkdir, open, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { refreshCsvDigest } from './csv-digest'
+import { planCsvAllExport } from './csv-all-export'
 import { createServer } from 'node:http'
 import { basename, dirname, isAbsolute, join } from 'node:path'
 
@@ -31,6 +32,7 @@ import {
 import type {
   IpcMainInvokeEvent,
   MenuItemConstructorOptions,
+  MessageBoxOptions,
   OpenDialogOptions,
   SaveDialogOptions,
   WebContents,
@@ -126,6 +128,7 @@ import {
   csvToXlsxBufferForOpen,
   decodeCsvBuffer,
   sheetCsvToXlsxBuffer,
+  sheetNameFromFileStem,
 } from '@genoffice/xlsx-gateway/gateway/csv-import'
 import {
   abortMediaCalls,
@@ -184,7 +187,9 @@ import {
   screenSourcesResultSchema,
   workbookPivotDefinitionSchema,
   workbookCreateDocumentRequestSchema,
+  workbookExportCsvAllRequestSchema,
   workbookExportCsvRequestSchema,
+  workbookExportImageRequestSchema,
   workbookExportPdfRequestSchema,
   printerInfoSchema,
   workbookRangeRequestSchema,
@@ -194,6 +199,7 @@ import {
   saveEditsChunkArraySchema,
   workbookSaveEditsChunkSchema,
   workbookSaveRequestSchema,
+  type MenuAction,
   type WorkbookCreateDocumentResult,
   type WorkbookSaveRequest,
 } from '../shared/desktop-api'
@@ -288,6 +294,11 @@ const tMain = createI18n({
     btnCancel: '取消',
     csvSaveAsNotice: 'CSV 格式不保留样式等格式修改——另存为 .xlsx 可保留全部内容。',
     menuExportCsv: '导出 CSV…',
+    menuExportPng: '导出为图片 (PNG)…',
+    menuExportCsvAll: '将所有工作表导出为 CSV…',
+    csvAllFolderTitle: '选择保存各工作表 CSV 的文件夹',
+    csvAllOverwriteMsg: '该文件夹中已有 {count} 个同名文件。要覆盖吗？',
+    btnOverwrite: '覆盖',
     filterCsv: 'CSV (逗号分隔)',
     csvFormulaLossMsg: '当前工作表包含公式,CSV 格式无法保留。',
     csvFormulaLossDetail: 'CSV 只保留纯文本值——公式会被替换为当前计算结果,格式也会丢失。',
@@ -345,6 +356,11 @@ const tMain = createI18n({
     btnCancel: 'Cancel',
     csvSaveAsNotice: "CSV files can't keep formatting — saving as .xlsx keeps all your changes.",
     menuExportCsv: 'Export CSV…',
+    menuExportPng: 'Export as Image (PNG)…',
+    menuExportCsvAll: 'Export All Sheets as CSV…',
+    csvAllFolderTitle: 'Choose a folder for the sheets’ CSV files',
+    csvAllOverwriteMsg: '{count} file(s) with these names are already in the folder. Replace them?',
+    btnOverwrite: 'Replace',
     filterCsv: 'CSV (Comma delimited)',
     csvFormulaLossMsg: 'This sheet contains formulas that CSV cannot keep.',
     csvFormulaLossDetail:
@@ -406,6 +422,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'Tệp CSV không thể giữ lại định dạng — lưu dưới dạng .xlsx sẽ giữ lại tất cả các thay đổi của bạn.',
     menuExportCsv: 'Xuất CSV…',
+    menuExportPng: 'Xuất thành hình ảnh (PNG)…',
+    menuExportCsvAll: 'Xuất tất cả trang tính thành CSV…',
+    csvAllFolderTitle: 'Chọn thư mục lưu CSV của các trang tính',
+    csvAllOverwriteMsg: 'Thư mục đã có {count} tệp trùng tên. Thay thế chúng?',
+    btnOverwrite: 'Thay thế',
     filterCsv: 'CSV (Phân tách bằng dấu phẩy)',
     csvFormulaLossMsg: 'Trang tính này chứa các công thức mà định dạng CSV không thể lưu giữ.',
     csvFormulaLossDetail:
@@ -469,6 +490,12 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'CSV 形式は書式を保持できません。.xlsx として保存すると変更をすべて保持できます。',
     menuExportCsv: 'CSV をエクスポート…',
+    menuExportPng: '画像 (PNG) としてエクスポート…',
+    menuExportCsvAll: 'すべてのシートを CSV にエクスポート…',
+    csvAllFolderTitle: '各シートの CSV を保存するフォルダーを選択',
+    csvAllOverwriteMsg:
+      'このフォルダーには同じ名前のファイルが {count} 個あります。置き換えますか?',
+    btnOverwrite: '置き換え',
     filterCsv: 'CSV (コンマ区切り)',
     csvFormulaLossMsg: 'このシートには CSV 形式では保持できない数式が含まれています。',
     csvFormulaLossDetail:
@@ -531,6 +558,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'CSV 형식은 서식을 저장할 수 없습니다. .xlsx로 저장하면 모든 변경 내용이 유지됩니다.',
     menuExportCsv: 'CSV 내보내기…',
+    menuExportPng: '이미지(PNG)로 내보내기…',
+    menuExportCsvAll: '모든 시트를 CSV로 내보내기…',
+    csvAllFolderTitle: '시트별 CSV를 저장할 폴더 선택',
+    csvAllOverwriteMsg: '이 폴더에 같은 이름의 파일이 {count}개 있습니다. 바꾸시겠습니까?',
+    btnOverwrite: '바꾸기',
     filterCsv: 'CSV (쉼표로 분리)',
     csvFormulaLossMsg: '현재 시트에 CSV 형식이 유지할 수 없는 수식이 포함되어 있습니다.',
     csvFormulaLossDetail:
@@ -594,6 +626,12 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'Le format CSV ne conserve pas la mise en forme — enregistrez en .xlsx pour conserver toutes vos modifications.',
     menuExportCsv: 'Exporter en CSV…',
+    menuExportPng: 'Exporter en image (PNG)…',
+    menuExportCsvAll: 'Exporter toutes les feuilles en CSV…',
+    csvAllFolderTitle: 'Choisir un dossier pour les CSV des feuilles',
+    csvAllOverwriteMsg:
+      '{count} fichier(s) portant ces noms existent déjà dans le dossier. Les remplacer ?',
+    btnOverwrite: 'Remplacer',
     filterCsv: 'CSV (délimité par des virgules)',
     csvFormulaLossMsg:
       'Cette feuille contient des formules que le format CSV ne peut pas conserver.',
@@ -658,6 +696,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'CSV-Dateien können keine Formatierung speichern – als .xlsx speichern, um alle Änderungen zu behalten.',
     menuExportCsv: 'CSV exportieren…',
+    menuExportPng: 'Als Bild (PNG) exportieren…',
+    menuExportCsvAll: 'Alle Blätter als CSV exportieren…',
+    csvAllFolderTitle: 'Ordner für die CSV-Dateien der Blätter wählen',
+    csvAllOverwriteMsg: 'Im Ordner gibt es bereits {count} Datei(en) mit diesen Namen. Ersetzen?',
+    btnOverwrite: 'Ersetzen',
     filterCsv: 'CSV (Trennzeichen-getrennt)',
     csvFormulaLossMsg: 'Dieses Blatt enthält Formeln, die das CSV-Format nicht speichern kann.',
     csvFormulaLossDetail:
@@ -721,6 +764,12 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'El formato CSV no conserva el formato: guarda como .xlsx para conservar todos tus cambios.',
     menuExportCsv: 'Exportar a CSV…',
+    menuExportPng: 'Exportar como imagen (PNG)…',
+    menuExportCsvAll: 'Exportar todas las hojas a CSV…',
+    csvAllFolderTitle: 'Elija una carpeta para los CSV de las hojas',
+    csvAllOverwriteMsg:
+      'Ya hay {count} archivo(s) con estos nombres en la carpeta. ¿Reemplazarlos?',
+    btnOverwrite: 'Reemplazar',
     filterCsv: 'CSV (delimitado por comas)',
     csvFormulaLossMsg: 'Esta hoja contiene fórmulas que el formato CSV no puede conservar.',
     csvFormulaLossDetail:
@@ -782,6 +831,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'ไฟล์ CSV ไม่สามารถเก็บการจัดรูปแบบได้ — บันทึกเป็น .xlsx เพื่อเก็บการเปลี่ยนแปลงทั้งหมดของคุณ',
     menuExportCsv: 'ส่งออก CSV…',
+    menuExportPng: 'ส่งออกเป็นรูปภาพ (PNG)…',
+    menuExportCsvAll: 'ส่งออกทุกชีตเป็น CSV…',
+    csvAllFolderTitle: 'เลือกโฟลเดอร์สำหรับไฟล์ CSV ของแต่ละชีต',
+    csvAllOverwriteMsg: 'มีไฟล์ชื่อเดียวกัน {count} ไฟล์ในโฟลเดอร์แล้ว แทนที่หรือไม่',
+    btnOverwrite: 'แทนที่',
     filterCsv: 'CSV (คั่นด้วยเครื่องหมายจุลภาค)',
     csvFormulaLossMsg: 'ชีตนี้มีสูตรที่รูปแบบ CSV เก็บไว้ไม่ได้',
     csvFormulaLossDetail:
@@ -843,6 +897,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'File CSV tidak dapat menyimpan pemformatan — simpan sebagai .xlsx untuk mempertahankan semua perubahan Anda.',
     menuExportCsv: 'Ekspor CSV…',
+    menuExportPng: 'Ekspor sebagai Gambar (PNG)…',
+    menuExportCsvAll: 'Ekspor Semua Lembar sebagai CSV…',
+    csvAllFolderTitle: 'Pilih folder untuk file CSV setiap lembar',
+    csvAllOverwriteMsg: 'Sudah ada {count} file dengan nama ini di folder. Ganti?',
+    btnOverwrite: 'Ganti',
     filterCsv: 'CSV (dipisahkan koma)',
     csvFormulaLossMsg: 'Lembar ini berisi rumus yang tidak dapat disimpan dalam format CSV.',
     csvFormulaLossDetail:
@@ -905,6 +964,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'Формат CSV не сохраняет форматирование — сохраните в .xlsx, чтобы не потерять изменения.',
     menuExportCsv: 'Экспорт в CSV…',
+    menuExportPng: 'Экспорт в изображение (PNG)…',
+    menuExportCsvAll: 'Экспорт всех листов в CSV…',
+    csvAllFolderTitle: 'Выберите папку для CSV-файлов листов',
+    csvAllOverwriteMsg: 'В папке уже есть файлов с такими именами: {count}. Заменить?',
+    btnOverwrite: 'Заменить',
     filterCsv: 'CSV (разделители — запятые)',
     csvFormulaLossMsg: 'Этот лист содержит формулы, которые формат CSV не сохраняет.',
     csvFormulaLossDetail:
@@ -964,6 +1028,11 @@ const tMain = createI18n({
     btnCancel: 'إلغاء',
     csvSaveAsNotice: 'ملفات CSV لا تحتفظ بالتنسيق — احفظ بصيغة ‎.xlsx للاحتفاظ بجميع تغييراتك.',
     menuExportCsv: 'تصدير CSV…',
+    menuExportPng: 'تصدير كصورة (PNG)…',
+    menuExportCsvAll: 'تصدير كل الأوراق بتنسيق CSV…',
+    csvAllFolderTitle: 'اختر مجلدًا لملفات CSV الخاصة بالأوراق',
+    csvAllOverwriteMsg: 'يوجد في المجلد {count} ملف بنفس الأسماء. هل تريد استبدالها؟',
+    btnOverwrite: 'استبدال',
     filterCsv: 'CSV (محدد بفواصل)',
     csvFormulaLossMsg: 'تحتوي هذه الورقة على صيغ لا يمكن لتنسيق CSV الاحتفاظ بها.',
     csvFormulaLossDetail: 'يحتفظ CSV بالقيم فقط — تُستبدل الصيغ بنتائجها الحالية ويُفقد التنسيق.',
@@ -1025,6 +1094,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'Arquivos CSV não mantêm a formatação — salve como .xlsx para manter todas as suas alterações.',
     menuExportCsv: 'Exportar CSV…',
+    menuExportPng: 'Exportar como imagem (PNG)…',
+    menuExportCsvAll: 'Exportar todas as planilhas como CSV…',
+    csvAllFolderTitle: 'Escolha uma pasta para os CSV das planilhas',
+    csvAllOverwriteMsg: 'Já existem {count} arquivo(s) com esses nomes na pasta. Substituir?',
+    btnOverwrite: 'Substituir',
     filterCsv: 'CSV (separado por vírgulas)',
     csvFormulaLossMsg: 'Esta planilha contém fórmulas que o formato CSV não pode manter.',
     csvFormulaLossDetail:
@@ -1088,6 +1162,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'I file CSV non conservano la formattazione: salva come .xlsx per mantenere tutte le modifiche.',
     menuExportCsv: 'Esporta CSV…',
+    menuExportPng: 'Esporta come immagine (PNG)…',
+    menuExportCsvAll: 'Esporta tutti i fogli in CSV…',
+    csvAllFolderTitle: 'Scegli una cartella per i CSV dei fogli',
+    csvAllOverwriteMsg: 'Nella cartella ci sono già {count} file con questi nomi. Sostituirli?',
+    btnOverwrite: 'Sostituisci',
     filterCsv: 'CSV (delimitato da virgole)',
     csvFormulaLossMsg: 'Questo foglio contiene formule che il formato CSV non può conservare.',
     csvFormulaLossDetail:
@@ -1150,6 +1229,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'Pliki CSV nie zachowują formatowania — zapisz jako .xlsx, aby zachować wszystkie zmiany.',
     menuExportCsv: 'Eksportuj CSV…',
+    menuExportPng: 'Eksportuj jako obraz (PNG)…',
+    menuExportCsvAll: 'Eksportuj wszystkie arkusze do CSV…',
+    csvAllFolderTitle: 'Wybierz folder na pliki CSV arkuszy',
+    csvAllOverwriteMsg: 'W folderze jest już {count} plików o tych nazwach. Zastąpić je?',
+    btnOverwrite: 'Zastąp',
     filterCsv: 'CSV (rozdzielany przecinkami)',
     csvFormulaLossMsg: 'Ten arkusz zawiera formuły, których format CSV nie zachowuje.',
     csvFormulaLossDetail:
@@ -1212,6 +1296,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'Soubory CSV nezachovávají formátování — uložením jako .xlsx zachováte všechny změny.',
     menuExportCsv: 'Exportovat CSV…',
+    menuExportPng: 'Exportovat jako obrázek (PNG)…',
+    menuExportCsvAll: 'Exportovat všechny listy do CSV…',
+    csvAllFolderTitle: 'Vyberte složku pro soubory CSV listů',
+    csvAllOverwriteMsg: 'Ve složce už je {count} souborů s těmito názvy. Nahradit je?',
+    btnOverwrite: 'Nahradit',
     filterCsv: 'CSV (oddělený čárkami)',
     csvFormulaLossMsg: 'Tento list obsahuje vzorce, které formát CSV nezachová.',
     csvFormulaLossDetail:
@@ -1275,6 +1364,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'CSV-bestanden bewaren geen opmaak — sla op als .xlsx om al uw wijzigingen te behouden.',
     menuExportCsv: 'CSV exporteren…',
+    menuExportPng: 'Exporteren als afbeelding (PNG)…',
+    menuExportCsvAll: 'Alle bladen exporteren als csv…',
+    csvAllFolderTitle: 'Kies een map voor de csv-bestanden van de bladen',
+    csvAllOverwriteMsg: 'Er staan al {count} bestand(en) met deze namen in de map. Vervangen?',
+    btnOverwrite: 'Vervangen',
     filterCsv: 'CSV (kommagescheiden)',
     csvFormulaLossMsg: 'Dit blad bevat formules die het CSV-formaat niet kan bewaren.',
     csvFormulaLossDetail:
@@ -1335,6 +1429,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'Fail CSV tidak dapat menyimpan pemformatan — simpan sebagai .xlsx untuk mengekalkan semua perubahan anda.',
     menuExportCsv: 'Eksport CSV…',
+    menuExportPng: 'Eksport sebagai Imej (PNG)…',
+    menuExportCsvAll: 'Eksport Semua Helaian sebagai CSV…',
+    csvAllFolderTitle: 'Pilih folder untuk fail CSV setiap helaian',
+    csvAllOverwriteMsg: 'Sudah ada {count} fail dengan nama ini dalam folder. Gantikan?',
+    btnOverwrite: 'Gantikan',
     filterCsv: 'CSV (dipisahkan koma)',
     csvFormulaLossMsg:
       'Helaian ini mengandungi formula yang tidak dapat disimpan dalam format CSV.',
@@ -1395,6 +1494,11 @@ const tMain = createI18n({
     btnCancel: 'ביטול',
     csvSaveAsNotice: 'קובצי CSV אינם שומרים עיצוב — שמרו כ‑.xlsx כדי לשמור על כל השינויים.',
     menuExportCsv: 'ייצוא CSV…',
+    menuExportPng: 'ייצוא כתמונה (PNG)…',
+    menuExportCsvAll: 'ייצוא כל הגיליונות כ-CSV…',
+    csvAllFolderTitle: 'בחר תיקייה לקובצי ה-CSV של הגיליונות',
+    csvAllOverwriteMsg: 'בתיקייה כבר יש {count} קבצים בשמות אלה. להחליף אותם?',
+    btnOverwrite: 'החלף',
     filterCsv: 'CSV (מופרד באמצעות פסיקים)',
     csvFormulaLossMsg: 'גיליון זה מכיל נוסחאות שתבנית CSV אינה יכולה לשמור.',
     csvFormulaLossDetail:
@@ -1456,6 +1560,11 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'CSV फ़ाइलें फ़ॉर्मेटिंग सहेज नहीं सकतीं — सभी बदलाव बनाए रखने के लिए .xlsx के रूप में सहेजें।',
     menuExportCsv: 'CSV निर्यात करें…',
+    menuExportPng: 'छवि (PNG) के रूप में निर्यात करें…',
+    menuExportCsvAll: 'सभी शीट CSV के रूप में निर्यात करें…',
+    csvAllFolderTitle: 'शीटों की CSV फ़ाइलों के लिए फ़ोल्डर चुनें',
+    csvAllOverwriteMsg: 'फ़ोल्डर में इन नामों की {count} फ़ाइलें पहले से हैं। बदलें?',
+    btnOverwrite: 'बदलें',
     filterCsv: 'CSV (अल्पविराम द्वारा सीमांकित)',
     csvFormulaLossMsg: 'इस शीट में ऐसे सूत्र हैं जिन्हें CSV प्रारूप सहेज नहीं सकता।',
     csvFormulaLossDetail:
@@ -1515,6 +1624,11 @@ const tMain = createI18n({
     btnCancel: '取消',
     csvSaveAsNotice: 'CSV 格式不保留樣式等格式修改——另存為 .xlsx 可保留全部內容。',
     menuExportCsv: '匯出 CSV…',
+    menuExportPng: '匯出為圖片 (PNG)…',
+    menuExportCsvAll: '將所有工作表匯出為 CSV…',
+    csvAllFolderTitle: '選擇儲存各工作表 CSV 的資料夾',
+    csvAllOverwriteMsg: '此資料夾已有 {count} 個同名檔案。要取代嗎？',
+    btnOverwrite: '取代',
     filterCsv: 'CSV (逗號分隔)',
     csvFormulaLossMsg: '目前工作表包含公式,CSV 格式無法保留。',
     csvFormulaLossDetail: 'CSV 只保留純文字值——公式會被取代為目前計算結果,格式也會遺失。',
@@ -2072,9 +2186,7 @@ export function setSheetsPasswordPrompt(
 }
 
 /** forward an application-menu File command into the sheets renderer */
-export function sendSheetsMenuAction(
-  action: 'open' | 'save' | 'save-as' | 'print' | 'export-pdf' | 'export-csv' | 'undo' | 'redo',
-): void {
+export function sendSheetsMenuAction(action: MenuAction): void {
   activeSheetsWebContents?.send(IPC_CHANNELS.menuAction, action)
 }
 
@@ -2648,7 +2760,9 @@ function startCaptureServer(): void {
         action === 'save-as' ||
         action === 'print' ||
         action === 'export-pdf' ||
+        action === 'export-png' ||
         action === 'export-csv' ||
+        action === 'export-csv-all' ||
         action === 'undo' ||
         action === 'redo'
       ) {
@@ -3670,6 +3784,71 @@ export function registerSheetsIpc(): void {
     return { canceled: false, path: targetPath }
   })
 
+  // Every sheet as its own CSV (0.17): a folder, not a zip — whatever takes a CSV (Excel,
+  // an upload form, another program) opens one file at a time.
+  ipcMain.handle(IPC_CHANNELS.exportCsvAll, async (event, input: unknown) => {
+    const entry = sessionFor(event)
+    const request = workbookExportCsvAllRequestSchema.parse(input)
+    const parent = dialogParent(event)
+    const ask = (options: MessageBoxOptions) =>
+      parent ? dialog.showMessageBox(parent, options) : dialog.showMessageBox(options)
+    if (request.hasFormulas) {
+      const { response } = await ask({
+        type: 'warning',
+        message: tm('csvFormulaLossMsg'),
+        detail: tm('csvFormulaLossDetail'),
+        buttons: [tm('csvKeepXlsxBtn'), tm('csvContinueBtn'), tm('btnCancel')],
+        defaultId: 0,
+        cancelId: 2,
+        noLink: true,
+      })
+      if (response === 0) return { canceled: true, saveAsXlsxInstead: true }
+      if (response === 2) return { canceled: true }
+    }
+    const picked = await openFileDialog(event, {
+      title: tm('csvAllFolderTitle'),
+      properties: ['openDirectory', 'createDirectory'],
+    })
+    const folder = picked.canceled ? undefined : picked.filePaths[0]
+    if (!folder) return { canceled: true }
+    const files = planCsvAllExport(folder, request.baseName, request.sheets)
+    const existing = files.filter((file) => existsSync(file.path)).length
+    if (existing > 0) {
+      const { response } = await ask({
+        type: 'question',
+        message: tm('csvAllOverwriteMsg', { count: existing }),
+        buttons: [tm('btnOverwrite'), tm('btnCancel')],
+        defaultId: 1,
+        cancelId: 1,
+        noLink: true,
+      })
+      if (response !== 0) return { canceled: true }
+    }
+    for (const file of files) {
+      await atomicWriteFile(file.path, file.bytes)
+      const writtenSha = await sha256File(file.path).catch(() => undefined)
+      if (writtenSha !== undefined) refreshCsvDigest(entry.sessions, file.path, writtenSha)
+    }
+    if (files[0]) shell.showItemInFolder(files[0].path)
+    return { canceled: false, folder, count: files.length }
+  })
+
+  // The sheet or the selected range as a PNG (0.17), drawn by the renderer.
+  ipcMain.handle(IPC_CHANNELS.exportImage, async (event, input: unknown) => {
+    sessionFor(event)
+    const request = workbookExportImageRequestSchema.parse(input)
+    const selection = await saveFileDialog(event, {
+      defaultPath: request.fileName,
+      filters: [{ name: 'PNG', extensions: ['png'] }],
+    })
+    if (selection.canceled || !selection.filePath) return { canceled: true }
+    const target = /\.png$/i.test(selection.filePath)
+      ? selection.filePath
+      : `${selection.filePath}.png`
+    await atomicWriteFile(target, Buffer.from(request.png))
+    return { canceled: false, path: target }
+  })
+
   // AI create_document: dialog-free — the file lands in the default save
   // folder under a unique sanitized name and opens in a new tab. xlsx/csv
   // write the renderer-serialized worksheet data here (xlsx through the same
@@ -3695,7 +3874,7 @@ export function registerSheetsIpc(): void {
           return { ok: true, path: filePath }
         }
         if (request.type === 'xlsx') {
-          const buffer = await sheetCsvToXlsxBuffer(request.content, request.sheetName ?? 'Sheet1')
+          const buffer = await sheetCsvToXlsxBuffer(request.content, request.sheetName, getUiLang())
           const filePath = uniquePathIn(
             configuredDefaultSaveDir(app),
             `${sanitizeGeneratedFileBase(request.title)}.xlsx`,
@@ -5075,7 +5254,10 @@ async function openEmptyXlsx(path: string): Promise<{
   await mkdir(directory, { recursive: true })
   const openPath = join(directory, basename(path))
   try {
-    await writeFile(openPath, (await csvToXlsxBufferForOpen('', 'Sheet1')).buffer)
+    await writeFile(
+      openPath,
+      (await csvToXlsxBufferForOpen('', undefined, undefined, getUiLang())).buffer,
+    )
   } catch (error) {
     await cleanupImportTempDirectory(app.getPath('temp'), directory)
     throw error
@@ -5264,8 +5446,10 @@ async function prepareWorkbookForOpen(
         }
         const converted = await csvToXlsxBufferForOpen(
           decodeCsvBuffer(await readFile(path), legacyCsvCharset()),
-          'Sheet1',
+          // X19: Excel names a CSV's sheet after the file
+          sheetNameFromFileStem(basename(path).replace(/\.[^.]+$/, '')),
           copyExtension === 'tsv' ? '\t' : undefined,
+          getUiLang(),
         )
         await writeFile(openPath, converted.buffer)
       }
@@ -5308,7 +5492,8 @@ async function prepareWorkbookForOpen(
       if (csvStat.size > MAX_DELIMITED_IMPORT_BYTES) throw new Error(tm('errFileTooLarge'))
       const converted = await csvToXlsxBufferForOpen(
         decodeCsvBuffer(await readFile(path), legacyCsvCharset()),
-        'Sheet1',
+        // X19: Excel names a CSV's sheet after the file
+        sheetNameFromFileStem(stem),
         // A .tsv's delimiter is declared by its extension, and sniffing by
         // frequency can get it wrong: annotation-heavy exports (gene
         // descriptions, database cross-references) hold comma-separated
@@ -5316,6 +5501,7 @@ async function prepareWorkbookForOpen(
         // every row shatters on the comma. A .csv keeps the sniff — the prose
         // guard in resolveImportDelimiter is what that path needs.
         extension === 'tsv' ? '\t' : undefined,
+        getUiLang(),
       )
       emptyCsv = converted.empty
       await writeFile(openPath, converted.buffer)
@@ -5407,8 +5593,16 @@ function installApplicationMenu(): void {
             click: () => sendMenuAction('export-pdf'),
           },
           {
+            label: tm('menuExportPng'),
+            click: () => sendMenuAction('export-png'),
+          },
+          {
             label: tm('menuExportCsv'),
             click: () => sendMenuAction('export-csv'),
+          },
+          {
+            label: tm('menuExportCsvAll'),
+            click: () => sendMenuAction('export-csv-all'),
           },
           { type: 'separator' },
           // tab mode: the item closes the focused tab or window, never the app,

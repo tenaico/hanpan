@@ -131,6 +131,11 @@ vi.mock('../../epub/src/main/epub-main', () => ({
   epubIsDirty: vi.fn(() => false),
   requestEpubClose: vi.fn(() => Promise.resolve(true)),
 }))
+vi.mock('../../graphics/src/main/graphics-main', () => ({
+  createGraphicsView: vi.fn(),
+  graphicsIsDirty: () => false,
+  requestGraphicsClose: vi.fn(() => Promise.resolve(true)),
+}))
 
 vi.mock('../src/main/tab-manager', () => ({
   canonicalPath: (p: string) => p.toLowerCase(),
@@ -244,6 +249,44 @@ describe('detachedSessionTabs', () => {
     instances[1]!.destroyed = true
     expect(detached.detachedSessionTabs()).toEqual([
       { id: 'detached:41', kind: 'hwp', title: 'report.hwp', filePath: 'C:/docs/report.hwp' },
+    ])
+  })
+})
+
+describe('a UI language change', () => {
+  it('renames the still-untitled detached windows; saved files keep their names', () => {
+    const before: Record<string, string> = { hwp: '제목 없는 한글 문서', docs: '제목 없는 문서' }
+    const after: Record<string, string> = {
+      hwp: 'HWP chưa có tiêu đề',
+      docs: 'Tài liệu chưa có tiêu đề',
+    }
+    detached.createDetachedEditorWindow({
+      view: fakeView(51) as never,
+      kind: 'hwp',
+      title: '제목 없는 한글 문서',
+      applyMenuFor: () => {},
+    })
+    detached.createDetachedEditorWindow({
+      view: fakeView(52) as never,
+      kind: 'hwp',
+      title: '보고서.hwp',
+      filePath: 'C:/docs/보고서.hwp',
+      applyMenuFor: () => {},
+    })
+    detached.createDetachedEditorWindow({
+      view: fakeView(53) as never,
+      kind: 'docs',
+      title: '회의 메모',
+      applyMenuFor: () => {},
+    })
+    detached.retitleUntitledDetached(
+      (kind) => before[kind] ?? '',
+      (kind) => after[kind] ?? '',
+    )
+    expect(instances.map((w) => w.getTitle())).toEqual([
+      'HWP chưa có tiêu đề',
+      '보고서.hwp',
+      '회의 메모',
     ])
   })
 })

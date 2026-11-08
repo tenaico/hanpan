@@ -292,6 +292,11 @@ export const vi = {
   paneShowMenuScreen: 'Màn hình',
   paneShowMenuBlack: 'Màn hình đen',
   paneShowMenuWhite: 'Màn hình trắng',
+  paneShowMenuPointer: 'Tùy chọn con trỏ',
+  paneShowMenuLaser: 'Bút laser',
+  paneShowMenuPen: 'Bút',
+  paneShowMenuArrow: 'Mũi tên (bấm để chuyển)',
+  paneShowMenuEraseInk: 'Xóa mọi nét vẽ trên trang',
   paneShowMenuEnd: 'Kết thúc trình chiếu',
   panePresenterWhiteOn: 'Màn hình trắng (nhấn W để tiếp tục)',
 } satisfies Record<keyof typeof zh, string>

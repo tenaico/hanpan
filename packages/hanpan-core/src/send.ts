@@ -35,7 +35,7 @@ export type SendResult = { ok: true; title: string } | { ok: false; error: strin
 const MAX_NODES = 5000
 const MAX_TEXT = 20_000
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
-const STYLES: readonly MarkerStyle[] = ['report', 'chapter-report', 'gongmun']
+const STYLES: readonly MarkerStyle[] = ['report', 'chapter-report', 'gongmun', 'outline']
 const TARGETS: readonly SendTarget[] = ['hwp', 'slides', 'docx']
 
 function text(value: unknown, what: string, optional = false): string | undefined {
@@ -57,7 +57,11 @@ const isLine = (v: unknown, max: number): v is string =>
   typeof v === 'string' && v.trim() !== '' && v.length <= max && !/[\r\n]/.test(v)
 
 /** A map of topic key → text; what is not text of the right size is left out. */
-function textMap(value: unknown, what: string, ok: (v: unknown) => v is string): Record<string, string> {
+function textMap(
+  value: unknown,
+  what: string,
+  ok: (v: unknown) => v is string,
+): Record<string, string> {
   if (value === undefined || value === null) return {}
   if (typeof value !== 'object' || Array.isArray(value)) throw new Error(`bad ${what}`)
   const entries = Object.entries(value as Record<string, unknown>)
@@ -77,12 +81,22 @@ function checkSlideWriting(value: unknown): SlideWriting | undefined {
     if (entries.length > MAX_WRITTEN) throw new Error('bad details')
     for (const [key, list] of entries) {
       if (!Array.isArray(list)) continue
-      const lines = list.slice(0, MAX_DETAILS * 4).filter((l) => isLine(l, SLIDE_LINE_MAX)).slice(0, MAX_DETAILS)
-      if (lines.length) Object.defineProperty(details, key, { value: lines, enumerable: true, writable: true, configurable: true })
+      const lines = list
+        .slice(0, MAX_DETAILS * 4)
+        .filter((l) => isLine(l, SLIDE_LINE_MAX))
+        .slice(0, MAX_DETAILS)
+      if (lines.length)
+        Object.defineProperty(details, key, {
+          value: lines,
+          enumerable: true,
+          writable: true,
+          configurable: true,
+        })
     }
   }
   const line = (v: unknown): v is string => isLine(v, SLIDE_LINE_MAX)
-  const notes = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '' && v.length <= MAX_NOTES
+  const notes = (v: unknown): v is string =>
+    typeof v === 'string' && v.trim() !== '' && v.length <= MAX_NOTES
   return {
     titles: textMap(w.titles, 'titles', line),
     lines: textMap(w.lines, 'lines', line),

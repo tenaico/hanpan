@@ -6,6 +6,8 @@
  * element. The same goes for rewriting one text box: plain text in, plain
  * text out. Pure functions; DesignBoard.tsx sends and applies.
  */
+import { aiLanguageName } from '@genoffice/hanpan-core/renderer'
+import { EN } from './words/en'
 import {
   FORMATS,
   newId,
@@ -75,7 +77,8 @@ export function briefRequest(
   }
   const lines = [
     'You write the words for posters, notices and card news. A program does the design; you write only the text.',
-    `Format: ${format.name}. Today: ${today}.`,
+    `Write every line in ${aiLanguageName(lang)} unless the request asks for another language. The keys below stay in English.`,
+    `Format: ${EN.formats[format.id] ?? format.name}. Today: ${today}.`,
     'Answer only in lines of the form below. No explanations, preamble, code blocks or Markdown emphasis.',
     'KICKER: a short line above the title (organiser, series; leave the line out if none)',
     'TITLE: the title (short and strong, about 6 words)',
@@ -774,30 +777,105 @@ export function designFromBrief(brief: DesignBrief, formatId: string, name?: str
 export type RewriteMode = 'polish' | 'shorter' | 'catchy' | 'translate'
 export const REWRITE_MODES: readonly RewriteMode[] = ['polish', 'shorter', 'catchy', 'translate']
 
-/** Hangul in the text means it goes to English; otherwise to Korean. */
-const isKorean = (text: string): boolean => /[가-힣]/.test(text)
+/** Korean names of the UI languages, for the Korean prompt */
+const KO_LANG_NAMES: Readonly<Record<string, string>> = {
+  ko: '한국어',
+  en: '영어',
+  vi: '베트남어',
+  zh: '중국어(간체)',
+  'zh-TW': '중국어(번체)',
+  ja: '일본어',
+  th: '태국어',
+  id: '인도네시아어',
+  ms: '말레이어',
+  fr: '프랑스어',
+  de: '독일어',
+  es: '스페인어',
+  pt: '포르투갈어',
+  it: '이탈리아어',
+  nl: '네덜란드어',
+  pl: '폴란드어',
+  cs: '체코어',
+  ru: '러시아어',
+  ar: '아랍어',
+  he: '히브리어',
+  hi: '힌디어',
+}
 
+/** Letters only Vietnamese uses among the Latin-script languages */
+const VIETNAMESE = /[ăđơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i
+
+/** Whether the text is already written in the UI language, as far as its script tells. */
+function inLanguage(text: string, lang: string): boolean {
+  switch (lang) {
+    case 'ko':
+      return /[가-힣]/.test(text)
+    case 'ja':
+      return /[\u3040-\u30ff]/.test(text)
+    case 'zh':
+    case 'zh-TW':
+      return /[\u4e00-\u9fff]/.test(text) && !/[가-힣\u3040-\u30ff]/.test(text)
+    case 'vi':
+      return VIETNAMESE.test(text)
+    case 'th':
+      return /[\u0e00-\u0e7f]/.test(text)
+    case 'ru':
+      return /[\u0400-\u04ff]/.test(text)
+    case 'ar':
+      return /[\u0600-\u06ff]/.test(text)
+    case 'he':
+      return /[\u0590-\u05ff]/.test(text)
+    case 'hi':
+      return /[\u0900-\u097f]/.test(text)
+    case 'en':
+      return (
+        /[a-z]/i.test(text) &&
+        !VIETNAMESE.test(text) &&
+        !/[^\p{Script=Latin}\s\p{P}\p{S}\d]/u.test(text)
+      )
+    default:
+      // other Latin-script languages cannot be told apart by their letters
+      return false
+  }
+}
+
+/**
+ * Where a translation goes when the person has not picked a language: into the UI
+ * language, or, for a text already in it, into English (into Korean from an English UI).
+ */
+export function translateTarget(lang: string, text: string): string {
+  if (!inLanguage(text, lang)) return lang
+  return lang === 'en' ? 'ko' : 'en'
+}
+
+/**
+ * Edit one text box. Polishing, shortening and sharpening keep the text's own language;
+ * a translation goes into `target`, or the default of translateTarget.
+ */
 export function rewriteRequest(
   text: string,
   mode: RewriteMode,
   lang: string,
+  target: string = translateTarget(lang, text),
 ): { system: string; user: string } {
   const lines = text.split('\n').length
   const ko = lang === 'ko'
   const task: Record<RewriteMode, string> = ko
     ? {
-        polish: '자연스럽고 매끄럽게 다듬으세요. 뜻과 사실은 그대로 둡니다.',
-        shorter: '뜻은 그대로 두고 절반 정도 길이로 줄이세요.',
-        catchy: '포스터에 어울리게 눈길을 끄는 문구로 바꾸세요. 사실은 바꾸지 않습니다.',
-        translate: isKorean(text) ? '자연스러운 영어로 옮기세요.' : '자연스러운 한국어로 옮기세요.',
+        polish: '자연스럽고 매끄럽게 다듬으세요. 뜻과 사실은 그대로 두고, 글과 같은 언어로 씁니다.',
+        shorter: '뜻은 그대로 두고 절반 정도 길이로 줄이세요. 글과 같은 언어로 씁니다.',
+        catchy:
+          '포스터에 어울리게 눈길을 끄는 문구로 바꾸세요. 사실은 바꾸지 않고, 글과 같은 언어로 씁니다.',
+        translate: `자연스러운 ${KO_LANG_NAMES[target] ?? aiLanguageName(target)}로 옮기세요.`,
       }
     : {
-        polish: 'Polish it so it reads smoothly. Keep the meaning and the facts.',
-        shorter: 'Cut it to about half the length, keeping the meaning.',
-        catchy: 'Make it catchy, as a poster line. Do not change the facts.',
-        translate: isKorean(text)
-          ? 'Translate it into natural English.'
-          : 'Translate it into natural Korean.',
+        polish:
+          'Polish it so it reads smoothly. Keep the meaning, the facts and the same language as the text.',
+        shorter:
+          'Cut it to about half the length, keeping the meaning and the same language as the text.',
+        catchy:
+          'Make it catchy, as a poster line. Do not change the facts; keep the same language as the text.',
+        translate: `Translate it into natural ${aiLanguageName(target)}.`,
       }
   const system = ko
     ? `디자인에 들어갈 글 상자의 문구를 고칩니다. ${task[mode]}\n고친 글만 답하세요. 설명, 따옴표, 머리말은 쓰지 않습니다.${lines > 1 ? ` 지금 글은 ${lines}줄이니 줄 나눔을 비슷하게 유지하세요.` : ' 한 줄로 답하세요.'}`
@@ -883,6 +961,7 @@ export function fillRequest(
         ].join('\n')
       : [
           'You rewrite the words of a poster, notice or card news that is already designed. The layout and colours stay; only the words change.',
+          `Write the new words in ${aiLanguageName(lang)} unless the request asks for another language.`,
           `Today: ${today}.`,
           'The list below is the text boxes in the design now. Write new words for each box to fit the request.',
           '- Keep each box close to its current length and number of lines. Titles stay short; a date or place box stays a date or place.',

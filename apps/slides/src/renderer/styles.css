@@ -535,6 +535,8 @@ button {
 
 .ribbon-tab-file:hover,
 .ribbon-tab-file.open {
+  /* .ribbon-tab:hover가 글자를 강조색으로 바꾸면 강조색 바탕에 묻힌다: 흰 글자 유지 */
+  color: var(--slides-on-accent);
   background: var(--accent-dark);
 }
 
@@ -559,6 +561,9 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* labels never wrap: the menu widens to the longest item instead (docs parity) */
+  gap: 16px;
+  white-space: nowrap;
   width: 100%;
   border: none;
   background: none;
@@ -4617,13 +4622,25 @@ body.vib .slide-list {
 }
 
 /* Format-background pane: fill-type buttons wrap their two-word labels */
-.fp-btn.fp-btn-wrap {
-  flex: 1;
-  height: auto;
-  min-height: 26px;
-  padding: 4px 8px;
-  white-space: normal;
-  line-height: 1.3;
+/* 배경 서식 창 채우기 방식: 좁은 창에서도 낱말이 꺾이지 않는 세로 라디오 목록 */
+.fp-fill-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0 8px;
+}
+.fp-radio {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.fp-radio input {
+  margin: 0;
+  accent-color: var(--accent);
 }
 
 /* Format-background pane: hide-background-graphics checkbox + picture preview */
@@ -6634,7 +6651,8 @@ body.vib .slide-list {
 
 .comments-empty-sub {
   font-size: 11.5px !important;
-  color: var(--border-strong);
+  /* a text colour: the old border token read as faint grey text */
+  color: var(--text-secondary);
 }
 
 .comment-card {
@@ -6730,6 +6748,11 @@ body.vib .slide-list {
 
 .comment-new textarea:focus {
   border-color: var(--accent);
+}
+
+.comment-new textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
 }
 
 .comment-new .btn-primary {
@@ -6828,7 +6851,8 @@ body.vib .slide-list {
   display: flex;
   gap: 6px;
   align-items: center;
-  max-width: 560px;
+  /* all eight cards side by side once the window is wide enough (1920px) */
+  max-width: min(660px, 45vw);
   overflow-x: auto;
   padding: 2px;
 }
@@ -6837,7 +6861,8 @@ body.vib .slide-list {
   flex: 0 0 auto;
   width: 74px;
   height: 62px;
-  border: 1px solid var(--border);
+  /* strong token: a dark preset card (Graphite) on the dark ribbon still has an edge */
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   cursor: pointer;
   padding: 5px 6px 4px;
@@ -6854,6 +6879,12 @@ body.vib .slide-list {
 .theme-card:hover:not(:disabled) {
   border-color: var(--accent);
   box-shadow: var(--slides-shadow-float);
+}
+
+/* the theme applied in this window */
+.theme-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .theme-card:disabled {
@@ -6984,15 +7015,33 @@ body.show-curtain::after {
 
 .slideshow .ss-counter {
   position: absolute;
-  right: 14px;
-  bottom: 10px;
-  font-size: 12px;
-  color: var(--slides-show-ink-40);
+  right: 16px;
+  bottom: 12px;
+  /* 발표자가 멀리서도 읽을 수 있게: 흐린 회색 12px → 또렷한 16px */
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--slides-show-ink-85);
   background: var(--slides-show-counter-bg);
-  border-radius: 4px;
-  padding: 3px 8px;
+  border-radius: 6px;
+  padding: 5px 11px;
   line-height: 1;
   pointer-events: none;
+}
+
+/* 쇼 화면의 오른쪽 클릭 메뉴는 편집 화면보다 크게(전체 화면에서 읽기 쉽게) */
+.slideshow .ctx-item {
+  font-size: 15px;
+  padding: 8px 14px;
+}
+.slideshow .ctx-hint {
+  font-size: 13px;
+}
+.slideshow .ss-tool-pen {
+  cursor: crosshair;
+}
+.slideshow .ss-tool-laser {
+  cursor: none;
 }
 
 .slideshow .ss-end {
@@ -9153,6 +9202,17 @@ body.show-curtain::after {
   align-items: center;
   gap: 4px;
   padding: 6px 8px;
+  /* a folded group with many effects (animations) wraps into rows instead of
+     running past the window's right edge */
+  flex-wrap: wrap;
+  max-width: min(560px, calc(100vw - 24px));
+}
+
+.rb-collapse-hint {
+  flex-basis: 100%;
+  padding: 2px 4px 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 /* ── Layout picker panel ──────────────────────────────────────────────── */
@@ -9428,6 +9488,9 @@ body.show-curtain::after {
   display: flex;
   justify-content: safe center;
 }
+.master-stage .master-fit {
+  flex-shrink: 0;
+}
 .master-stage .stage-rel {
   flex-shrink: 0;
   background: var(--slides-paper);
@@ -9541,8 +9604,24 @@ body.show-curtain::after {
   accent-color: var(--accent);
 }
 .print-options .print-radio:has(input:disabled) {
-  opacity: 0.45;
+  /* 꺼진 선택지도 다크에서 보이게: 글자만 흐리게 하고 단추는 테두리를 살린다 */
+  color: var(--text-dim);
   cursor: default;
+}
+.print-options .print-radio input:disabled {
+  opacity: 0.75;
+  outline: 1px solid var(--border-strong);
+  outline-offset: 1px;
+  border-radius: 50%;
+}
+.print-options .print-radio input[type='checkbox']:disabled {
+  border-radius: 2px;
+}
+.print-options .print-range-error {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--danger);
 }
 .print-options .print-range-input {
   display: block;
@@ -9651,6 +9730,30 @@ body.show-curtain::after {
   background: var(--slides-toast-error-bg);
 }
 
+/* 단추가 있는 알림(내보내기 뒤 "폴더 열기")은 누를 수 있어야 한다 */
+.app-toast.has-action.show {
+  pointer-events: auto;
+}
+.app-toast-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-toast-action {
+  flex: none;
+  margin-left: 4px;
+  padding: 3px 10px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.app-toast-action:hover {
+  --app-toast-action-hover: rgb(255 255 255 / 14%);
+  background: var(--app-toast-action-hover);
+}
+
 .app-toast-icon {
   width: 16px;
   height: 16px;
@@ -9709,4 +9812,11 @@ body.show-curtain::after {
   background: var(--bullet-img) center / contain no-repeat;
   user-select: none;
   pointer-events: none;
+}
+
+/* 이미지로 내보내기 대화상자: 인쇄 대화상자의 선택지 모양을 그대로 쓰고 폭만 넓힌다 */
+.export-images-dialog .export-images-options {
+  width: auto;
+  min-width: 340px;
+  margin: 4px 0 14px;
 }

@@ -215,6 +215,9 @@ export interface SheetPrintOptions {
   /// Print this A1 range instead of the sheet's print area (Excel's "Print Selection").
   readonly selection?: string | null
   readonly now?: Date
+  /// Everything on one page sized to the cells, at 100% (the sheet image): no paper to
+  /// split across, so breaks and the page setup's scale do not apply.
+  readonly singlePage?: boolean
 }
 
 /// One laid-out page before the job-wide numbering is known.
@@ -314,25 +317,35 @@ export function layoutSheetPrint(
       headingWidthPt + titleColumnsWidthPt + columns.reduce((sum, c) => sum + columnWidthPt(c), 0),
     )
   }
-  const scale = setup.fitToPage
-    ? fitToPageScale({
-        printableWidthPt,
-        printableHeightPt,
-        fitToWidth: setup.fitToWidth,
-        fitToHeight: setup.fitToHeight,
-        contentWidthPt,
-        areas: areaHeights,
-      })
-    : clamp(setup.scale / 100, MIN_PRINT_SCALE, MAX_PRINT_SCALE)
+  const singlePage = options.singlePage === true
+  const scale = singlePage
+    ? 1
+    : setup.fitToPage
+      ? fitToPageScale({
+          printableWidthPt,
+          printableHeightPt,
+          fitToWidth: setup.fitToWidth,
+          fitToHeight: setup.fitToHeight,
+          contentWidthPt,
+          areas: areaHeights,
+        })
+      : clamp(setup.scale / 100, MIN_PRINT_SCALE, MAX_PRINT_SCALE)
 
   // Excel ignores manual breaks while fit-to-page decides the scale.
-  const breaks = setup.fitToPage ? null : options.breaks
+  const breaks = setup.fitToPage || singlePage ? null : options.breaks
+  // one page holds the whole content: the tallest area with its repeated rows
+  const contentHeightPt = Math.max(
+    0,
+    ...areaHeights.map(
+      (area) => area.repeatedHeightPt + area.rowHeightsPt.reduce((sum, h) => sum + h, 0),
+    ),
+  )
   const plan: PaginationInput = {
     ...baseInput,
     rowBreaks: breaks?.rowBreaks ?? [],
     colBreaks: breaks?.colBreaks ?? [],
-    pageWidthPt: printableWidthPt / scale,
-    pageHeightPt: printableHeightPt / scale,
+    pageWidthPt: singlePage ? contentWidthPt + 1 : printableWidthPt / scale,
+    pageHeightPt: singlePage ? contentHeightPt + 1 : printableHeightPt / scale,
   }
   const pages = planPrintPages(plan)
 
@@ -547,7 +560,7 @@ export function layoutSheetPrint(
   return {
     sheetName,
     fileName,
-    paper,
+    paper: singlePage ? contentPaper(contentWidthPt, contentHeightPt, margins) : paper,
     margins,
     scale,
     headerFooterScale: setup.headerFooterScaleWithDoc ? scale : 1,
@@ -560,6 +573,75 @@ export function layoutSheetPrint(
     css: visuals.css,
     pages: records,
     now: options.now ?? new Date(),
+  }
+}
+
+/// A paper exactly the content's size plus the margins (the sheet image's one page).
+function contentPaper(widthPt: number, heightPt: number, margins: PrintMargins): PaperGeometry {
+  // the page writes its content box rounded to 0.01 in: without the slack the last row's
+  // and column's borders (drawn inside the cells) fall just outside it
+  const widthIn = round4((widthPt + CONTENT_SLACK_PT) / 72 + margins.left + margins.right)
+  const heightIn = round4((heightPt + CONTENT_SLACK_PT) / 72 + margins.top + margins.bottom)
+  return { pageSize: { width: widthIn, height: heightIn }, landscape: false, widthIn, heightIn }
+}
+
+/// Room past the cells for rounding (0.01 in is 0.72pt).
+const CONTENT_SLACK_PT = 1.5
+
+/// White border around the sheet image, in inches (about 8px).
+const IMAGE_MARGIN_IN = 1 / 12
+
+export interface SheetImageLayout {
+  readonly html: string
+  /// The picture's size in CSS pixels.
+  readonly widthPx: number
+  readonly heightPx: number
+}
+
+/// The sheet (its used range, or `selection`) as one picture: the cells laid out as for
+/// print, on one page sized to them at 100%, with the gridlines the screen shows and no
+/// header, footer, page number, print area or print titles.
+export function layoutSheetImage(
+  worksheet: PrintWorksheet,
+  setup: EffectivePageSetup,
+  fileName: string,
+  sheetName: string,
+  visuals: PrintVisualSnapshot,
+  selection: string | null,
+): SheetImageLayout {
+  const margin = IMAGE_MARGIN_IN
+  const imageSetup: EffectivePageSetup = {
+    ...setup,
+    scale: 100,
+    fitToPage: false,
+    margins: { left: margin, right: margin, top: margin, bottom: margin, header: 0, footer: 0 },
+    printGridlines: true,
+    printHeadings: false,
+    printAreas: [],
+    printTitles: null,
+    printTitleColumns: null,
+    header: null,
+    footer: null,
+    firstPage: null,
+    evenPages: null,
+    headerFooterPictures: [],
+  }
+  const document = layoutSheetPrint(
+    worksheet,
+    imageSetup,
+    fileName,
+    sheetName,
+    new Map(),
+    visuals,
+    {
+      selection,
+      singlePage: true,
+    },
+  )
+  return {
+    html: assemblePrintHtml([document]).html,
+    widthPx: Math.ceil(document.paper.widthIn * 96),
+    heightPx: Math.ceil(document.paper.heightIn * 96),
   }
 }
 

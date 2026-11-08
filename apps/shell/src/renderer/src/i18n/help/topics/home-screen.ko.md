@@ -49,7 +49,7 @@
 - **AI Sheets**(.xlsx): Sheets 편집기의 빈 스프레드시트입니다. 저장하기 전에는 디스크에 파일이 없고, 이름은 첫 저장을 위해 예약됩니다. 처음 AI로 내용을 만든 뒤에는 내용에 따라 파일 이름을 자동으로 바꿀 수도 있습니다.
 - **AI Slides**(.pptx): Slides 편집기의 빈 프레젠테이션입니다.
 - **AI Markdown**(.md): Markdown 편집기의 빈 Markdown 문서입니다.
-- **AI HTML**(.html): HTML 편집기의 빈 웹 페이지입니다.
+- **AI 웹 문서**(.html): 빈 웹 문서입니다.
 - **AI PDF**(.pdf): 다른 카드와 다릅니다. **즉시** 대상 폴더에 진짜 한 페이지짜리 빈 PDF를 만들고 일반 파일로 엽니다(PDF 편집기는 실제 파일을 다룹니다). 주석 달기, 가리개 처리, 텍스트 추가에 적합합니다. 처음 저장할 때 내용에 따라 파일 이름을 자동으로 바꿀 수도 있습니다.
 - **로컬 파일 열기**: 시스템 파일 선택 창을 엽니다. Word(.docx/.doc/.odt), Excel(.xlsx/.xlsm/.xls/.csv/.tsv), PowerPoint(.pptx/.ppt), PDF, Markdown(.md/.markdown), 웹 페이지(.html/.htm)을 지원합니다. 여러 개를 한 번에 고를 수 있고, 각 파일은 별도의 탭으로 열립니다. 텍스트 파일(.txt, .json)도 여기서 열 수 있습니다 — Markdown 편집기의 소스 보기로 열립니다.
 

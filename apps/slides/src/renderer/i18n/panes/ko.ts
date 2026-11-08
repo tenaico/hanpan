@@ -292,6 +292,11 @@ export const ko = {
   paneShowMenuScreen: '화면',
   paneShowMenuBlack: '검은 화면',
   paneShowMenuWhite: '흰 화면',
+  paneShowMenuPointer: '포인터 옵션',
+  paneShowMenuLaser: '레이저 포인터',
+  paneShowMenuPen: '펜',
+  paneShowMenuArrow: '화살표(넘기기)',
+  paneShowMenuEraseInk: '필기 모두 지우기',
   paneShowMenuEnd: '쇼 마침',
   panePresenterWhiteOn: '흰 화면 (W 키로 복귀)',
 } satisfies Record<keyof typeof zh, string>

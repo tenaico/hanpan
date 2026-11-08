@@ -74,3 +74,12 @@ describe('the feedback mail', () => {
     expect(decodeURIComponent(url.split('body=')[1]!)).toContain('version 1.2.3')
   })
 })
+
+describe('the OS line of a feedback mail (0.17 review v2 shell #20)', () => {
+  it('names Windows 11 by its build, not the kernel version 10.0', async () => {
+    const { osLabel } = await import('../src/main/feedback')
+    expect(osLabel('win32', '10.0.26300')).toBe('Windows 11 (10.0.26300)')
+    expect(osLabel('win32', '10.0.19045')).toBe('Windows 10 (10.0.19045)')
+    expect(osLabel('darwin', '24.1.0')).toBe('macOS 24.1.0')
+  })
+})

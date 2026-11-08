@@ -173,10 +173,15 @@ export function AiSection({
   connection,
   openTab,
   advanced,
+  noticeDue = false,
+  onNoticeAcknowledge,
 }: {
   t: TFunc
   lang: Lang
   connection: SubscriptionConnection
+  /** the first-connection notice is owed: shown here, in the section, not over the shell */
+  noticeDue?: boolean
+  onNoticeAcknowledge?: () => void
   /** open with Advanced expanded on this area (an outside entry point asked for a key block) */
   openTab?: AdvancedTab | undefined
   /** the key pane of an Advanced area */
@@ -257,6 +262,15 @@ export function AiSection({
   return (
     <>
       <h3 className="set-pane-title">{t('setSecAi')}</h3>
+      {noticeDue && (
+        <div className="set-ai-notice-due" data-ai-notice-due="">
+          <AiFirstConnectionNotice
+            lang={lang}
+            codexKeepsHistory={CODEX_MAY_KEEP_HISTORY}
+            onAcknowledge={onNoticeAcknowledge}
+          />
+        </div>
+      )}
       <h4 className="set-pane-subtitle set-sub-title">{t('setSubTitle')}</h4>
       <div className="set-field-desc set-ai-note">{aiSubscriptionText(lang, 'connectBody')}</div>
       <div className="set-sub-cards">

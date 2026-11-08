@@ -156,7 +156,8 @@ export const id = {
   dlgPivotAddValue: '+ Tambahkan bidang nilai',
   dlgPivotAddCalc: '+ Tambahkan bidang terhitung',
   dlgPivotTargetCell: 'Sel awal tujuan',
-  dlgPivotTargetPlaceholder: 'mis. F1',
+  dlgPivotTargetPlaceholder: 'mis. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'Sel kiri atas area keluaran tidak berubah saat mengedit',
   dlgPivotNote:
     'Membuat PivotTable OOXML asli yang dapat dikenali dan disegarkan oleh Excel/WPS setelah disimpan.',
@@ -640,6 +641,12 @@ export const id = {
   dlgPrintNextPage: 'Halaman berikutnya',
   dlgPrintZoomFit: 'Paskan halaman',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Paskan lebar',
+  dlgPrintColumnsSplit:
+    'Kolom "{sheets}" tidak muat dalam lebar satu halaman; kolom di sebelah kanan dicetak di halaman berikutnya.',
+  dlgPrintPastEdge: 'Beberapa kolom melewati tepi kanan halaman dan akan terpotong.',
+  dlgPrintClippedText:
+    'Sebagian teks di kolom paling kanan melewati area cetak dan akan terpotong. Lebarkan kolom itu atau aktifkan Bungkus Teks.',
   dlgPrintButton: 'Cetak',
   dlgPrintToPdf: 'Cetak ke PDF',
   dlgPrintPageSetup: 'Penyetelan Halaman…',

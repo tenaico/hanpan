@@ -576,10 +576,74 @@ describe('the studio source the build fetched', () => {
     'src/command/commands/edit.ts',
     'src/command/commands/insert.ts',
     'src/command/commands/table.ts',
+    'src/command/commands/format.ts',
     'src/command/shortcut-map.ts',
     'src/command/registry.ts',
     'src/i18n/locales/ko.ts',
     'src/i18n/locales/en.ts',
+    'src/i18n/core.ts',
+    'src/i18n/index.ts',
+    'src/ui/style-toolbar-overflow.ts',
+    'src/ui/toolbar.ts',
+    'src/ui/about-dialog.ts',
+    'src/ui/page-setup-dialog.ts',
+    // studio text moved to app keys (scripts/studio-dialog-text.mjs)
+    'src/ui/bookmark-dialog.ts',
+    'src/ui/cell-border-bg-dialog.ts',
+    'src/ui/char-shape-dialog.ts',
+    'src/ui/chart-data-dialog.ts',
+    'src/ui/compare-dialog.ts',
+    'src/ui/compare-result-window.ts',
+    'src/ui/equation-props-dialog.ts',
+    'src/ui/field-insert-dialog.ts',
+    'src/ui/font-set-edit-dialog.ts',
+    'src/ui/formula-dialog.ts',
+    'src/ui/history-dialog.ts',
+    'src/ui/para-shape-dialog.ts',
+    'src/ui/table-create-dialog.ts',
+    'src/ui/equation-editor-dialog.ts',
+    'src/ui/hml-import-warning-message.ts',
+    'src/ui/hml-save-format-message.ts',
+    'src/ui/hyperlink-dialog.ts',
+    'src/ui/options-dialog.ts',
+    'src/ui/page-border-dialog.ts',
+    'src/ui/style-dialog.ts',
+    'src/ui/style-edit-dialog.ts',
+    'src/ui/table-cell-props-dialog.ts',
+    'src/ui/table-row-column-dialog.ts',
+    // studio text outside the dialogs moved to app keys (scripts/studio-dialog-text.mjs)
+    'src/ui/numbering-dialog.ts',
+    'src/engine/input-handler-mouse.ts',
+    'src/engine/input-handler-text.ts',
+    'src/engine/input-handler-table.ts',
+    'src/engine/input-handler-picture.ts',
+    'src/engine/input-handler-hyperlink.ts',
+    'src/engine/input-handler-hyperlink-delete.ts',
+    'src/engine/cell-selection-phase.ts',
+    'src/command/commands/file.ts',
+    'src/command/commands/hyperlink.ts',
+    'src/command/export-html.ts',
+    'src/command/file-open-picker.ts',
+    'src/command/file-system-access.ts',
+    'src/command/print-pages.ts',
+    'src/command/print-surface.ts',
+    'src/command/save-format.ts',
+    'src/compare/diff-engine.ts',
+    'src/compare/diff-location-label.ts',
+    'src/core/char-format-error.ts',
+    'src/core/char-shape-runs.ts',
+    'src/core/chart-grid-model.ts',
+    'src/core/document-signature.ts',
+    'src/core/export-content-loss.ts',
+    'src/core/hml-save-capability.ts',
+    'src/core/hyperlink.ts',
+    'src/core/page-body-limits.ts',
+    'src/core/user-settings.ts',
+    'src/recent/recent-open.ts',
+    'src/recovery/recovery-format.ts',
+    'src/recovery/recovery-ui.ts',
+    'src/history/idb-store.ts',
+    'src/view/zoom-dialog-state.ts',
   ].map((file) => join(studio, file))
 
   // only where a build has fetched it; a fresh checkout has nothing to look at
@@ -606,6 +670,26 @@ describe('the studio source the build fetched', () => {
       .map((file) => readFileSync(join(commands, file), 'utf8'))
       .join('\n')
     expect(missingHancomCommands(sources)).toEqual([])
+  })
+})
+
+describe('a patch edit that names a count', () => {
+  it('replaces every occurrence when there are exactly that many', () => {
+    const code = [
+      "    this.guideInput.value = '입력하세요';",
+      '    this.guideInput.maxLength = 10;',
+      "    this.guideInput.value = '입력하세요';",
+    ].join(String.fromCharCode(10))
+    const next = applyPatch('studio-text-field-insert-dialog', code)
+    expect(next).not.toContain('입력하세요')
+    expect(next.match(/hanpan\.field\.defaultGuide/g)).toHaveLength(2)
+  })
+
+  it('stops the build when the count differs (the upstream source changed)', () => {
+    const one = "    this.guideInput.value = '입력하세요';"
+    expect(() => applyPatch('studio-text-field-insert-dialog', one)).toThrow(
+      /upstream source changed/,
+    )
   })
 })
 
@@ -862,5 +946,27 @@ describe('rhwp Hangul-key patches', () => {
     ] as const) {
       expect(STUDIO_PATCHES).toContain(name)
     }
+  })
+})
+
+describe('rhwp load-timing patch', () => {
+  // the studio's status line after a document opens, as the pinned release has it
+  const source = [
+    '    const elapsed = performance.now() - startTime;',
+    "    await initializeDocument(docInfo, t('ui.sbMessage.filePagesTimed', { p1: fileName, p2: docInfo.pageCount, p3: elapsed.toFixed(1) }), {",
+    '      suppressDialogs: options.suppressDialogs,',
+  ].join('\n')
+
+  it('shows the name and pages without the load time, and logs the time instead', () => {
+    const patched = applyPatch('studio-hide-load-timing', source)
+    expect(patched).not.toContain('filePagesTimed')
+    expect(patched).toContain(
+      "t('ui.sbMessage.filePages', { p1: fileName, p2: docInfo.pageCount })",
+    )
+    expect(patched).toMatch(/console\.(debug|info)\([^)]*elapsed\.toFixed\(1\)/)
+  })
+
+  it('is in the studio build', () => {
+    expect(STUDIO_PATCHES).toContain('studio-hide-load-timing')
   })
 })

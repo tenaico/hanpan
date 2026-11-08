@@ -14,9 +14,10 @@ export const en = {
     'The translation column is not available: the file is not saved, or this window cannot read the document structure.',
   blUnsavedPages: 'Save to line the translation column up with the pages',
   blContinued: 'Continued from the previous page',
-  blCollapseAsk: 'Fold the translation column?',
-  blCollapse: 'Fold',
-  blKeep: 'Keep',
+  blCollapseAsk:
+    'The page looks narrow. Fold the translation column to the right edge to widen it.',
+  blCollapse: 'Fold column',
+  blKeep: 'Keep as is',
   blExpand: 'Unfold the translation column',
   blFontSmaller: 'Smaller translation text',
   blFontLarger: 'Larger translation text',

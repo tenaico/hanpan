@@ -6,8 +6,10 @@
  * the HWP file the law publishes, so they offer HWP only.
  */
 import { useEffect, useMemo, useState } from 'react'
+import { useDialogKeys } from '../dialog-keys'
 import { useI18n } from '../locale'
 import type { MarkdownConverterApi } from './MarkdownConverter'
+import { MyFormsSection, type MyFormsApi } from './MyForms'
 
 export interface TemplateSummary {
   id: string
@@ -19,7 +21,7 @@ export interface TemplateSummary {
   form?: string
 }
 
-export interface HanpanApi extends Partial<MarkdownConverterApi> {
+export interface HanpanApi extends Partial<MarkdownConverterApi>, Partial<MyFormsApi> {
   templates(): Promise<TemplateSummary[]>
   openTemplate(
     id: string,
@@ -28,6 +30,9 @@ export interface HanpanApi extends Partial<MarkdownConverterApi> {
   openDesign?(): Promise<void>
   /** a new mind map with `topic` as its central topic */
   newMap?(topic: string): Promise<{ ok: true } | { ok: false; error: string }>
+  /** a tab's "내 양식으로 저장…": open this dialog ready to save that tab; returns unsubscribe */
+  onSaveMyFormRequest?(listener: (tabId: string) => void): () => void
+  onOpenTemplatesRequest?(listener: () => void): () => void
 }
 
 declare global {
@@ -50,11 +55,32 @@ const CATEGORY_ORDER = [
   '기타',
 ]
 
-export function TemplatePicker(p: { onClose(): void }) {
+/** the 내 양식 calls, only when every one of them is there */
+function myFormsApiOf(api: HanpanApi | undefined): MyFormsApi | null {
+  if (
+    !api?.myForms ||
+    !api.myFormSources ||
+    !api.saveMyForm ||
+    !api.importMyForm ||
+    !api.openMyForm ||
+    !api.deleteMyForm
+  )
+    return null
+  return api as MyFormsApi
+}
+
+export function TemplatePicker(p: {
+  onClose(): void
+  /** opened from a tab's "내 양식으로 저장…": that document is the one to save */
+  saveTabId?: string
+}) {
   const { t } = useI18n()
   const [templates, setTemplates] = useState<TemplateSummary[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const dialogRef = useDialogKeys(p.onClose)
+  // the user's own forms, when this build's preload offers them
+  const [myFormsApi] = useState(() => myFormsApiOf(window.hanpanApi))
 
   useEffect(() => {
     void window.hanpanApi
@@ -93,7 +119,7 @@ export function TemplatePicker(p: { onClose(): void }) {
         role="dialog"
         aria-modal="true"
         aria-label={t('hpTemplatesTitle')}
-        onKeyDown={(e) => e.key === 'Escape' && p.onClose()}
+        ref={dialogRef}
       >
         <div className="hp-tpl-head">
           <h2>{t('hpTemplatesTitle')}</h2>
@@ -112,6 +138,9 @@ export function TemplatePicker(p: { onClose(): void }) {
           </p>
         )}
         <div className="hp-tpl-body">
+          {myFormsApi && (
+            <MyFormsSection api={myFormsApi} onOpened={p.onClose} saveTabId={p.saveTabId} />
+          )}
           {groups.map(([category, list]) => (
             <section key={category}>
               <h3>{category}</h3>

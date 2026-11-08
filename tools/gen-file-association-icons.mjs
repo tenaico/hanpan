@@ -80,7 +80,12 @@ const FORMATS = {
   epub: { color: '#8E5B3E', picto: 'book' }, // leather brown
   txt: { color: '#858D9B', picto: 'lines' }, // gray
   json: { color: '#977A2E', picto: 'braces' }, // ochre
+  photo: { color: '#C0466F', picto: 'picture' }, // rose (AI Photo, decision 0093)
+  illust: { color: '#2E8F9A', picto: 'pen' }, // sea teal (AI Illustration)
 }
+
+/** Formats shown only inside the app (tabs, menus, Home): no OS file association, so no .ico or .icns. */
+const TAB_ONLY = new Set(['photo', 'illust'])
 
 /** Attachment kinds that are not a single format. */
 const GENERIC = {
@@ -106,7 +111,19 @@ const SHADOW_COLOR = '#0F172A'
 const SVG_DIR = 'apps/shell/src/renderer/src/assets'
 const BUILD_DIR = 'apps/shell/build'
 const MENU_DIR = 'apps/shell/src/main/assets'
-const MENU_TYPES = ['docx', 'xlsx', 'pptx', 'pdf', 'md', 'html', 'mindmap', 'hwp', 'epub']
+const MENU_TYPES = [
+  'docx',
+  'xlsx',
+  'pptx',
+  'pdf',
+  'md',
+  'html',
+  'mindmap',
+  'hwp',
+  'epub',
+  'photo',
+  'illust',
+]
 
 /** attachment-card file name -> icon key (FORMATS or GENERIC) */
 const ATTACHMENT_ICONS = {
@@ -341,6 +358,19 @@ function pictogram(kind, b, fg, bg, sw, small) {
             )
             .join('')
       return page(-1) + page(1) + (text ? stroke(text, sw * 0.6, bg) : '')
+    }
+    case 'pen': {
+      // a pen nib, its slit and breather hole cut out
+      const nib =
+        `<path d="M${X(0.5)} ${Y(0)}L${X(0.2)} ${Y(0.44)}L${X(0.34)} ${Y(1)}H${X(0.66)}` +
+        `L${X(0.8)} ${Y(0.44)}Z" fill="${fg}"/>`
+      return (
+        nib +
+        stroke(`M${X(0.5)} ${Y(0.04)}L${X(0.5)} ${Y(0.46)}`, sw * 0.6, bg) +
+        (small
+          ? ''
+          : `<circle cx="${X(0.5)}" cy="${Y(0.56)}" r="${num(b.w * 0.07)}" fill="${bg}"/>`)
+      )
     }
     case 'picture':
       // a picture: a hill and a sun cut out of a filled frame
@@ -618,6 +648,12 @@ try {
     const svg = svgs.get(key)
     write(`${SVG_DIR}/file-${key}.svg`, svg)
 
+    if (MENU_TYPES.includes(key)) {
+      write(`${MENU_DIR}/menu-${key}.png`, (await rasterize(page, svg, 16, 16)).png)
+      write(`${MENU_DIR}/menu-${key}@2x.png`, (await rasterize(page2x, svg, 16, 16)).png)
+    }
+    if (TAB_ONLY.has(key)) continue
+
     const win = []
     for (const size of WIN_SIZES) {
       win.push({ size, png: (await rasterize(page, svg, size, size)).png })
@@ -637,11 +673,6 @@ try {
         })),
       ),
     )
-
-    if (MENU_TYPES.includes(key)) {
-      write(`${MENU_DIR}/menu-${key}.png`, (await rasterize(page, svg, 16, 16)).png)
-      write(`${MENU_DIR}/menu-${key}@2x.png`, (await rasterize(page2x, svg, 16, 16)).png)
-    }
   }
 
   const attachments = new Map()

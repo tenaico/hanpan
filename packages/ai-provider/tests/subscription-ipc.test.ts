@@ -11,6 +11,7 @@ import * as browser from '../src/browser'
 import * as root from '../src/index'
 import {
   SUBSCRIPTION_IPC_CHANNELS,
+  checkSharedSubscriptionStatuses,
   checkingSubscriptionStatus,
   createSubscriptionIpcDeps,
   ensureSubscriptionIpc,
@@ -491,6 +492,28 @@ describe('ensureSubscriptionIpc', () => {
     resetSharedSubscriptionIpc()
     expect(ipc.handlers.size).toBe(0)
     expect(sharedSubscriptionStatuses()).toEqual({})
+  })
+})
+
+describe('checkSharedSubscriptionStatuses', () => {
+  const SETUP = {
+    getSettings: () => ({ providers: {} as never }),
+    setMeteredAccepted: () => undefined,
+    dataDir: 'unused',
+  }
+
+  it('answers null before any editor registered the channels', async () => {
+    resetSharedSubscriptionIpc()
+    expect(await checkSharedSubscriptionStatuses()).toBeNull()
+  })
+
+  it('asks every program once and answers what the main process decides on', async () => {
+    resetSharedSubscriptionIpc()
+    const { ipc, deps, log } = setup()
+    ensureSubscriptionIpc(ipc, SETUP, () => deps)
+    expect(await checkSharedSubscriptionStatuses()).toEqual(READY)
+    expect(log.filter((entry) => entry.startsWith('check'))).toEqual(['check:all'])
+    resetSharedSubscriptionIpc()
   })
 })
 

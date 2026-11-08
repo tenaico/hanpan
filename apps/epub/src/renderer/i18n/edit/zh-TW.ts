@@ -6,6 +6,7 @@ export const zhTW = {
   editBold: '粗體',
   editItalic: '斜體',
   editReplace: '取代',
+  editFindReplaceTitle: '尋找及取代',
   editReplaceWith: '取代為',
   editReplaceOne: '取代',
   editReplaceAll: '全部取代',

@@ -64,6 +64,8 @@ export const MINDMAP_CHANNELS = {
   printRequest: 'mindmap:print-request',
   /** invoke(`PrintMindmapRequest`) → `PrintResult`. T10 */
   print: 'mindmap:print',
+  /** invoke() → `PrinterInfo[]`: the printers the in-app print dialog offers */
+  printers: 'mindmap:printers',
 
   // ---- chat attachments (T12) ----
   /** invoke → `AttachmentAddResult | null`. T12 */
@@ -136,6 +138,8 @@ export const APP_CHANNELS = {
   languageChanged: 'app:language-changed',
   getTheme: 'app:get-theme',
   themeChanged: 'app:theme-changed',
+  getDocumentTheme: 'app:get-document-theme',
+  documentThemeChanged: 'app:document-theme-changed',
   getAutoSaveDefault: 'app:get-auto-save-default',
   autoSaveDefaultChanged: 'app:auto-save-default-changed',
   getAiPanelPrefs: 'app:get-ai-panel-prefs',
@@ -143,6 +147,11 @@ export const APP_CHANNELS = {
   aiPanelPrefsChanged: 'app:ai-panel-prefs-changed',
   chromePressed: 'app:chrome-pressed',
   openSourcePath: 'home:open-path',
+  /** the shell's open dialog (the one Home's Open uses); the picked files open in tabs */
+  openFileDialog: 'home:browse',
+  /** Hanpan: the stored Korean document features switch (true, false, or null when never set) */
+  getKoreanDocFeatures: 'app:get-korean-doc-features',
+  koreanDocFeaturesChanged: 'app:korean-doc-features-changed',
 } as const
 
 /** The shared AI channels, registered once for the whole app by the docs main. Pass-through only. T12 */
@@ -164,6 +173,9 @@ export const AI_CHANNELS = {
 } as const
 
 export type UiTheme = 'light' | 'dark' | 'system'
+
+/** Settings › Document page theme: a light or dark page, or the app's theme */
+export type DocTheme = 'follow' | 'light' | 'dark'
 
 /** shell-wide AutoSave default; updatedAt is 0 until the user has ever set it */
 export interface AutoSaveDefault {
@@ -261,6 +273,22 @@ export type ExportResult =
 export interface PrintMindmapRequest {
   /** self-contained print HTML */
   html: string
+  /**
+   * What the in-app print dialog chose. A printer name ('' = the system's
+   * default printer) prints without the system dialog; `deviceName: null` or
+   * no job opens the system dialog.
+   */
+  job?: PrintJob
+}
+
+export interface PrintJob {
+  deviceName: string | null
+  copies?: number
+}
+
+export interface PrinterInfo {
+  name: string
+  displayName: string
 }
 
 /** A cancelled job is the user closing the system dialog: an outcome, not a failure. */
@@ -414,6 +442,8 @@ export interface MindmapCoreApi {
   onLanguageChanged(handler: (lang: Lang) => void): () => void
   getTheme(): Promise<UiTheme>
   onThemeChanged(handler: (theme: UiTheme) => void): () => void
+  getDocumentTheme(): Promise<DocTheme>
+  onDocumentThemeChanged(handler: (theme: DocTheme) => void): () => void
   getAutoSaveDefault(): Promise<AutoSaveDefault>
   onAutoSaveDefaultChanged(handler: (value: AutoSaveDefault) => void): () => void
   /** press on the shell chrome (the tab strip is another view): dismiss open popovers */
@@ -428,6 +458,7 @@ export interface MindmapExportApi {
   exportPdf(request: ExportPdfRequest): Promise<ExportResult>
   exportMarkdown(request: ExportMarkdownRequest): Promise<ExportResult>
   print(request: PrintMindmapRequest): Promise<PrintResult>
+  listPrinters(): Promise<PrinterInfo[]>
 }
 
 /** The AI panel's bridge. The panel and the attachment handlers are T12's. */
@@ -442,6 +473,8 @@ export interface MindmapAiApi {
   setProvisionalTitle(title: string): void
   /** open any shell-routed document path (a citation in an AI answer) */
   openSourcePath(path: string): Promise<void>
+  /** the File menu's Open: the shell's open dialog (rejects in standalone) */
+  openFileDialog(): Promise<void>
   getAiPanelPrefs(): Promise<AiPanelPrefs>
   setAiPanelPrefs(patch: Partial<AiPanelPrefs>): Promise<AiPanelPrefs>
   onAiPanelPrefsChanged(handler: (prefs: AiPanelPrefs) => void): () => void
@@ -528,6 +561,9 @@ export interface MindmapSendApi {
   sendToDesign?(outline: string): void
   syncCheck?(request: SyncCheckRequest): Promise<SyncCheckResult>
   syncFinish?(request: SyncFinishRequest): Promise<SyncFinishResult>
+  /** the stored Korean document features switch (decision 0091): null when never set */
+  getKoreanDocFeatures?(): Promise<boolean | null>
+  onKoreanDocFeaturesChanged?(handler: (stored: boolean | null) => void): () => void
 }
 
 /** API exposed by preload to the renderer (window.mindmapApi) */

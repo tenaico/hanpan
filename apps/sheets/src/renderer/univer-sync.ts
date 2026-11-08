@@ -3422,12 +3422,8 @@ async function loadRange(
         state.retryTimers.set(sheetId, timer)
       }
     } else if (isActiveSheet(runtime, sheetId)) {
-      setMessage(
-        t('appStreamingRows', {
-          name: state.file.name,
-          rows: sheet?.rowCount.toLocaleString() ?? '?',
-        }),
-      )
+      // the sheet is fully read: a "still opening" line would stay up for good (0.17 #1)
+      setMessage('')
     }
   } catch (error: unknown) {
     if (lazyWorkbookRef.current === state && isActiveSheet(runtime, sheetId)) {

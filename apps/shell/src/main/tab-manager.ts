@@ -43,6 +43,11 @@ import {
 } from '../../../mindmap/src/main/mindmap-main'
 import { createEpubView, epubIsDirty, requestEpubClose } from '../../../epub/src/main/epub-main'
 import {
+  createGraphicsView,
+  graphicsIsDirty,
+  requestGraphicsClose,
+} from '../../../graphics/src/main/graphics-main'
+import {
   createPdfView,
   clearPdfDirty,
   markPdfUntitledCopy,
@@ -67,6 +72,7 @@ import {
 import { rendererUrl, safeExternalUrl } from '@genoffice/electron-utils'
 import type { DocumentTabKind, OpenDocumentTab, TabKind, TabSummary } from '../shared/tabs-api'
 import { isSettledRect, tabStripHeight } from '../shared/tab-drag-geometry'
+import { rendererReportedDirty } from './tab-dirty-mirror'
 import type {
   SplitDropIntent,
   SplitOrientation,
@@ -213,7 +219,8 @@ export class TabManager {
   private readonly bleedWcIds = new Set<number>()
   /** tabs mid unsaved-changes prompt, so a second close click doesn't stack dialogs */
   private readonly closingIds = new Set<string>()
-  private closedListener: ((tab: { kind: TabKind; filePath: string }) => void) | null = null
+  private closedListener:
+    ((tab: { kind: TabKind; filePath: string; index?: number }) => void) | null = null
   /** views whose HTML-fullscreen listeners are installed: a view that leaves
    *  for a detached window and docks back must not get a second pair */
   private readonly fullScreenTracked = new WeakSet<WebContentsView>()
@@ -463,7 +470,64 @@ export class TabManager {
       closable: t.id !== HOME_ID,
       active: t.id === this.activeId,
       ...(t.filePath ? { filePath: t.filePath } : {}),
+      ...(this.tabShowsDirty(t) ? { dirty: true } : {}),
     }))
+  }
+
+  /** dirty tab ids at the last refreshDirty, so only a real change re-sends the list */
+  private lastDirtyKey = ''
+
+  /**
+   * Recompute the tab strip's unsaved dots. True when the set of dirty tabs
+   * changed since the last call (the caller then re-sends the tab list).
+   */
+  refreshDirty(): boolean {
+    const key = this.tabs
+      .filter((t) => this.tabShowsDirty(t))
+      .map((t) => t.id)
+      .join(',')
+    if (key === this.lastDirtyKey) return false
+    this.lastDirtyKey = key
+    return true
+  }
+
+  /**
+   * Unsaved-changes state for the tab strip, answered synchronously: docs reads
+   * the value its renderer last pushed (the close guard still asks it directly).
+   */
+  private tabShowsDirty(tab: TabRecord): boolean {
+    const wc = tab.view?.webContents
+    if (!wc || wc.isDestroyed()) return false
+    try {
+      switch (tab.kind) {
+        case 'sheets':
+          return sheetsPendingEditCount(wc.id) > 0
+        case 'pdf':
+          return pdfIsDirty(wc.id) === true
+        case 'markdown':
+          return markdownIsDirty(wc.id) === true
+        case 'html':
+          return htmlIsDirty(wc.id) === true
+        case 'hwp':
+          return hwpIsDirty(wc.id) === true
+        case 'slides':
+          return slidesIsDirty(wc.id) === true
+        case 'docs':
+          return rendererReportedDirty(wc.id)
+        case 'mindmap':
+          return mindmapIsDirty(wc.id) === true
+        case 'epub':
+          return epubIsDirty(wc.id) === true
+        case 'photo':
+        case 'illust':
+          return graphicsIsDirty(wc.id) === true
+        default:
+          return false
+      }
+    } catch {
+      // a family that has not finished wiring its view yet counts as clean
+      return false
+    }
   }
 
   /**
@@ -516,6 +580,9 @@ export class TabManager {
         return mindmapIsDirty(wc.id)
       case 'epub':
         return epubIsDirty(wc.id)
+      case 'photo':
+      case 'illust':
+        return graphicsIsDirty(wc.id)
       default:
         return false
     }
@@ -691,6 +758,37 @@ export class TabManager {
       kind: 'mindmap',
       view,
       title: openPath ? basename(openPath) : this.untitled('mindmap', 'Mind Map'),
+      filePath: openPath,
+    })
+    this.activateTab(id)
+    return id
+  }
+
+  /** AI Photo (decision 0093): a picture, or the app's start screen for a new one */
+  openPhotoTab(openPath?: string): string {
+    return this.addGraphicsTab('photo', openPath)
+  }
+
+  /** AI Illustration (decision 0093): an illustration, or the app's start screen for a new one */
+  openIllustTab(openPath?: string): string {
+    return this.addGraphicsTab('illust', openPath)
+  }
+
+  // not named open…Tab: the kind-coverage test calls every open…Tab with a path
+  private addGraphicsTab(kind: 'photo' | 'illust', openPath?: string): string {
+    const view = createGraphicsView(kind, openPath)
+    const id = `t${this.nextId++}`
+    this.shellWindow.contentView.addChildView(view)
+    view.setVisible(false)
+    this.trackHtmlFullScreen(view)
+    this.trackPaneFocus(view)
+    this.tabs.push({
+      id,
+      kind,
+      view,
+      title: openPath
+        ? basename(openPath)
+        : this.untitled(kind, kind === 'photo' ? 'AI Photo' : 'AI Illustration'),
       filePath: openPath,
     })
     this.activateTab(id)
@@ -1392,6 +1490,10 @@ export class TabManager {
         return this.openHwpTab(path)
       case 'epub':
         return path ? this.openEpubTab(path) : null
+      // two copies of the web app cannot share one document
+      case 'photo':
+      case 'illust':
+        return null
       default:
         return null
     }
@@ -1478,6 +1580,23 @@ export class TabManager {
     tab.filePath = filePath
     tab.title = basename(filePath)
     this.onChanged()
+  }
+
+  /**
+   * The UI language changed: a tab that still has no file and still carries the untitled name
+   * of the language it left (`previous`) takes the name of the new one. Saved files and
+   * untitled documents that named themselves keep their names.
+   */
+  retitleUntitled(previous: (kind: TabKind) => string): void {
+    let changed = false
+    for (const tab of this.tabs) {
+      if (tab.kind === 'home' || tab.filePath || tab.title !== previous(tab.kind)) continue
+      const next = this.untitled(tab.kind, tab.title)
+      if (next === tab.title) continue
+      tab.title = next
+      changed = true
+    }
+    if (changed) this.onChanged()
   }
 
   /** an untitled document named itself before its first save (html: from the first AI request) */
@@ -1571,6 +1690,18 @@ export class TabManager {
       .map((t) => ({ id: t.id, webContents: t.view!.webContents }))
   }
 
+  /** AI Photo and AI Illustration tabs with unsaved changes (shell-close guard) */
+  dirtyGraphicsTabs(): Array<{ id: string; webContents: WebContents }> {
+    return this.tabs
+      .filter(
+        (t) =>
+          (t.kind === 'photo' || t.kind === 'illust') &&
+          t.view &&
+          graphicsIsDirty(t.view.webContents.id),
+      )
+      .map((t) => ({ id: t.id, webContents: t.view!.webContents }))
+  }
+
   /** slides tabs whose main-process session has unsaved edits (shell-close guard) */
   dirtySlidesTabs(): Array<{ id: string; webContents: WebContents }> {
     return this.tabs
@@ -1629,6 +1760,9 @@ export class TabManager {
     }
     if (!closeGuard && tab.kind === 'epub' && tab.view) {
       if (epubIsDirty(tab.view.webContents.id)) closeGuard = requestEpubClose
+    }
+    if (!closeGuard && (tab.kind === 'photo' || tab.kind === 'illust') && tab.view) {
+      if (graphicsIsDirty(tab.view.webContents.id)) closeGuard = requestGraphicsClose
     }
     // docs dirty state lives in the renderer and needs an async query; skip the guard when clean (avoids a flash activation)
     if (!closeGuard && tab.kind === 'docs' && tab.view) {
@@ -1689,7 +1823,7 @@ export class TabManager {
     if (this.htmlFullScreenId === id) this.htmlFullScreenId = null
     const [removed] = this.tabs.splice(idx, 1)
     if (removed.filePath && !removed.present)
-      this.closedListener?.({ kind: removed.kind, filePath: removed.filePath })
+      this.closedListener?.({ kind: removed.kind, filePath: removed.filePath, index: idx })
     const split = this.split
     const survivor = split ? splitSurvivor(split, id) : null
     if (survivor !== null) {
@@ -1732,7 +1866,9 @@ export class TabManager {
   }
 
   /** told when a tab with a file is closed (not detached), so it can be reopened */
-  setClosedListener(listener: ((tab: { kind: TabKind; filePath: string }) => void) | null): void {
+  setClosedListener(
+    listener: ((tab: { kind: TabKind; filePath: string; index?: number }) => void) | null,
+  ): void {
     this.closedListener = listener
   }
 
@@ -1899,6 +2035,24 @@ export class TabManager {
       : undefined
   }
 
+  findPhotoTabByPath(path?: string): string | undefined {
+    return this.findTabOfKindByPath('photo', path)
+  }
+
+  findIllustTabByPath(path?: string): string | undefined {
+    return this.findTabOfKindByPath('illust', path)
+  }
+
+  /** the active tab's graphics view, if the active tab is AI Photo or AI Illustration (its menu target) */
+  activeGraphicsTab():
+    | { id: string; kind: 'photo' | 'illust'; webContents: WebContents; filePath?: string }
+    | undefined {
+    const tab = this.tabs.find((t) => t.id === this.activeId)
+    return (tab?.kind === 'photo' || tab?.kind === 'illust') && tab.view
+      ? { id: tab.id, kind: tab.kind, webContents: tab.view.webContents, filePath: tab.filePath }
+      : undefined
+  }
+
   findHwpTabByPath(path?: string): string | undefined {
     return this.findTabOfKindByPath('hwp', path)
   }
@@ -1979,6 +2133,9 @@ export function createPlainEditorView(kind: DocumentTabKind, filePath?: string):
     case 'epub':
       if (!filePath) throw new Error('an EPUB tab needs its file')
       return createEpubView(filePath)
+    case 'photo':
+    case 'illust':
+      return createGraphicsView(kind, filePath)
   }
 }
 

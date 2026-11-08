@@ -67,7 +67,7 @@ describe('handleDroppedFiles', () => {
   it('ignores junk payloads and unrecognized file types entirely', () => {
     const deps = fakeDeps()
     handleDroppedFiles(null, deps)
-    handleDroppedFiles(['/tmp/photo.png', 42, ''], deps)
+    handleDroppedFiles(['/tmp/clip.mp4', 42, ''], deps)
     expect(deps.opened).toEqual([])
     expect(deps.revealed).not.toHaveBeenCalled()
     expect(deps.warned).toEqual([])

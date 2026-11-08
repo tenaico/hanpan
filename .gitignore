@@ -15,6 +15,7 @@ electron-builder.env
 /probe*.mjs
 /apps/shell/build/THIRD-PARTY-NOTICES.txt
 /apps/shell/src/main/quick-look/win-quicklook.exe
+/apps/shell/src/main/share/win-share.exe
 /example/
 /.task/
 /docs-archive/
@@ -31,6 +32,10 @@ electron-builder.env
 
 # Playwright artifacts
 /test-results/
+
+# AI Photo / AI Illustration web builds fetched by tools/fetch-graphics-web.mjs (decision 0093)
+/apps/graphics/public/web/
+/vendor/graphics-web/
 
 .cursor/rules/git-remote.mdc
 __pycache__/

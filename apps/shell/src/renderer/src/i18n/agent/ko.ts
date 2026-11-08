@@ -1,10 +1,10 @@
 import type { zh } from './zh'
 
 export const ko = {
-  windowTitle: '에이전트',
+  windowTitle: 'AI 폴더 작업',
   homeCardSub: '폴더에서 Claude Code·Codex로 일하기',
   intro:
-    '에이전트는 고른 폴더에서 Claude Code나 Codex를 실행합니다. 폴더 안의 파일을 읽고, 새 파일을 만들고, 스킬을 쓰고, 스크립트를 실행하고, GenOffice에 열린 문서를 고칠 수 있습니다.',
+    'AI 폴더 작업은 고른 폴더에서 Claude Code나 Codex를 실행합니다. 폴더 안의 파일을 읽고, 새 파일을 만들고, 스킬을 쓰고, 스크립트를 실행하고, GenOffice에 열린 문서를 고칠 수 있습니다.',
   folderLabel: '프로젝트 폴더',
   folderPick: '폴더 고르기…',
   folderNone: '고른 폴더가 없습니다',
@@ -42,9 +42,9 @@ export const ko = {
   stop: '멈추기',
   newSession: '새로 시작',
   send: '보내기',
-  inputPlaceholder: '에이전트에게 무엇을 시킬까요?',
+  inputPlaceholder: 'AI에게 무엇을 시킬까요?',
   you: '나',
-  agent: '에이전트',
+  agent: 'AI',
   startedLine: '{program}을(를) {folder}에서 시작했습니다',
   skillsLine: '스킬 {n}개를 쓸 수 있습니다',
   skillsLineOne: '스킬 {n}개를 쓸 수 있습니다',

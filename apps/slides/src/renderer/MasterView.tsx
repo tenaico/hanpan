@@ -16,8 +16,11 @@ import { IconShapes, IconTextBox } from './components/icons'
 import { defaultShapeStyle } from './default-shape'
 import { isLineDrawKind, type DrawRect } from './draw-shape'
 import { textBoxInsertSpec } from './textbox-insert'
+import { masterEscapeAction } from './escape-targets'
 import type { EditParagraph, MasterPartItem } from '../shared/ipc'
 import { t } from './i18n/locale'
+import { layoutLabel } from './layout-names'
+import { masterFitScale } from './master-fit'
 
 interface Props {
   initialItems: MasterPartItem[]
@@ -44,6 +47,20 @@ export function MasterView({ initialItems, onClose }: Props) {
   const toolsRef = useRef<HTMLDivElement>(null)
 
   const slide = items[sel]?.slide
+
+  // 무대 크기에 맞춰 줄인다: 마스터는 1280px 폭으로 그려 오므로 1366폭 화면에서 잘렸다
+  const stageRef = useRef<HTMLDivElement>(null)
+  const [stageBox, setStageBox] = useState<{ w: number; h: number } | null>(null)
+  useEffect(() => {
+    const el = stageRef.current
+    if (!el) return
+    const measure = () => setStageBox({ w: el.clientWidth, h: el.clientHeight })
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const applyCurrent = useCallback(
     (updated: RenderSlide | null) => {
@@ -207,6 +224,36 @@ export function MasterView({ initialItems, onClose }: Props) {
     return () => document.removeEventListener('mousedown', onDown)
   }, [shapesOpen])
 
+  // Esc: shapes dropdown → selection → leave the master view (like PowerPoint's Close Master View)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.isComposing || e.defaultPrevented) return
+      const action = masterEscapeAction({
+        editing: !!editing,
+        drawing: drawKind != null,
+        shapesOpen,
+        menuOpen: ctxMenu != null,
+        selected: selectedIds.length,
+      })
+      switch (action) {
+        case 'closeShapes':
+          setShapesOpen(false)
+          break
+        case 'deselect':
+          setSelectedIds([])
+          break
+        case 'close':
+          onClose()
+          break
+        default:
+          return
+      }
+      e.preventDefault()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [editing, drawKind, shapesOpen, ctxMenu, selectedIds, onClose])
+
   // Delete/Backspace deletes selected elements (not intercepted while editing)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -266,6 +313,7 @@ export function MasterView({ initialItems, onClose }: Props) {
   }, [ctxMenu, slide, pickColor, applyCurrent, deleteSelected])
 
   if (!slide) return null
+  const fit = stageBox ? masterFitScale(stageBox.w, stageBox.h, slide.widthPx, slide.heightPx) : 1
 
   return (
     <div className="master-view">
@@ -313,7 +361,7 @@ export function MasterView({ initialItems, onClose }: Props) {
               key={it.partPath}
               className={`thumb master-thumb ${i === sel ? 'active' : ''} ${it.kind === 'layout' ? 'master-thumb-layout' : ''}`}
               onClick={() => void selectPart(i)}
-              data-tip={it.kind === 'master' ? t('appMasterThumbMaster') : it.name}
+              data-tip={it.kind === 'master' ? t('appMasterThumbMaster') : layoutLabel(it.name, t)}
             >
               <SlideThumb
                 slide={it.slide}
@@ -323,55 +371,70 @@ export function MasterView({ initialItems, onClose }: Props) {
               <span className="master-thumb-label">
                 {it.kind === 'master'
                   ? t('appMasterThumbMaster')
-                  : it.name || t('appMasterThumbLayout', { n: i })}
+                  : (it.name && layoutLabel(it.name, t)) || t('appMasterThumbLayout', { n: i })}
               </span>
             </div>
           ))}
         </div>
-        <div className="master-stage">
+        <div className="master-stage" ref={stageRef}>
+          {/* 줄인 크기만큼 자리를 잡는 틀 + 그 안에서 transform으로 줄인 무대 */}
           <div
-            className="stage-rel"
-            style={{ position: 'relative', width: slide.widthPx, height: slide.heightPx }}
+            className="master-fit"
+            style={{
+              width: slide.widthPx * fit,
+              height: slide.heightPx * fit,
+            }}
           >
-            <SlideCanvas
-              slide={slide}
-              selectedIds={selectedIds}
-              onSelect={(id, additive) =>
-                setSelectedIds((prev) => {
-                  if (!id) return []
-                  if (additive)
-                    return prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-                  return [id]
-                })
-              }
-              onEditText={(sourceId, caret) => setEditing({ sourceId, caret })}
-              onTransform={onTransform}
-              // Master edits have no snapshot undo to pop: settle the gesture on its start box
-              onTransformCancel={(id, startBox) => void onTransform(id, startBox)}
-              onEditTableCell={() => {}}
-              onTableColResize={() => {}}
-              onContextMenu={(sourceId, x, y) => {
-                if (editing) return
-                if (sourceId)
-                  setSelectedIds((prev) => (prev.includes(sourceId) ? prev : [sourceId]))
-                setCtxMenu({ x, y, targetId: sourceId })
+            <div
+              className="stage-rel"
+              style={{
+                position: 'relative',
+                width: slide.widthPx,
+                height: slide.heightPx,
+                transform: fit !== 1 ? `scale(${fit})` : undefined,
+                transformOrigin: '0 0',
               }}
-              onMarqueeSelect={setSelectedIds}
-              images={images}
-              editingText={editing ? { sourceId: editing.sourceId } : null}
-              drawMode={drawKind ? { kind: drawKind } : null}
-              onDrawCommit={(rect) => void commitDraw(rect)}
-              onDrawCancel={() => setDraw(null)}
-            />
-            {editing && editNode && (
-              <TextEditOverlay
-                node={editNode}
-                scale={slide.scale}
-                caretPoint={editing.caret}
-                onCommit={commitEdit}
-                onCancel={() => setEditing(null)}
+            >
+              <SlideCanvas
+                slide={slide}
+                selectedIds={selectedIds}
+                onSelect={(id, additive) =>
+                  setSelectedIds((prev) => {
+                    if (!id) return []
+                    if (additive)
+                      return prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                    return [id]
+                  })
+                }
+                onEditText={(sourceId, caret) => setEditing({ sourceId, caret })}
+                onTransform={onTransform}
+                // Master edits have no snapshot undo to pop: settle the gesture on its start box
+                onTransformCancel={(id, startBox) => void onTransform(id, startBox)}
+                onEditTableCell={() => {}}
+                onTableColResize={() => {}}
+                onContextMenu={(sourceId, x, y) => {
+                  if (editing) return
+                  if (sourceId)
+                    setSelectedIds((prev) => (prev.includes(sourceId) ? prev : [sourceId]))
+                  setCtxMenu({ x, y, targetId: sourceId })
+                }}
+                onMarqueeSelect={setSelectedIds}
+                images={images}
+                editingText={editing ? { sourceId: editing.sourceId } : null}
+                drawMode={drawKind ? { kind: drawKind } : null}
+                onDrawCommit={(rect) => void commitDraw(rect)}
+                onDrawCancel={() => setDraw(null)}
               />
-            )}
+              {editing && editNode && (
+                <TextEditOverlay
+                  node={editNode}
+                  scale={slide.scale}
+                  caretPoint={editing.caret}
+                  onCommit={commitEdit}
+                  onCancel={() => setEditing(null)}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

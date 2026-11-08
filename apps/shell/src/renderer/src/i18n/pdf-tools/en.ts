@@ -2,13 +2,13 @@ import type { zh } from './zh'
 
 export const en = {
   toolMerge: 'Merge PDF',
-  toolSplit: 'Split PDF',
+  toolSplit: 'Split into files',
   toolExtract: 'Extract Pages as PDF',
   toolReverse: 'Reverse order',
   toolRotate: 'Rotate all',
   toolNup: 'Merge pages',
   toolPageSize: 'Page size',
-  toolSplitPages: 'Split pages',
+  toolSplitPages: 'Cut one page into several',
   toolStamps: 'Watermark & header/footer',
   toolCrop: 'Crop pages',
   toolExportImages: 'Export images',

@@ -272,6 +272,8 @@ describe('MCP surface over Streamable HTTP (/mcp)', () => {
         'xmind',
         'hwp',
         'epub',
+        'photo',
+        'illust',
       ])
       // the book entry (spec: get_app_info lists it with its editor formats only)
       expect(infoJson.families.find((f) => f.family === 'epub')).toEqual({

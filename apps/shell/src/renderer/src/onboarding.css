@@ -38,10 +38,9 @@
   display: flex;
   flex-direction: column;
   width: 540px;
-  /* 420px is the design-spec height for the anchor languages; longer locales
-   * (de/ru/ar wrap the copy to more lines) grow the card instead of
-   * overflowing the fixed box and eating the bottom padding */
-  min-height: 420px;
+  /* one height for every step (0.17 리뷰 v2 shell #7): "Next" stays put while
+   * the connect step opens and closes its paths; a longer step scrolls inside */
+  height: 600px;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 48px);
   border-radius: 20px;
@@ -68,6 +67,12 @@
   flex-direction: column;
   align-items: flex-start;
   text-align: start;
+}
+
+/* the short steps sit in the middle of the fixed card instead of on top of a gap */
+.onb-slide[data-step='welcome'],
+.onb-slide[data-step='done'] {
+  justify-content: center;
 }
 
 .onb-slide.active {
@@ -208,6 +213,23 @@
 }
 
 /* footer: progress dots on the start side, Skip / Back / Next grouped on the end side */
+.onb-skip-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--onb-bg-subtle);
+  font-size: 13px;
+  color: var(--onb-text-primary);
+}
+
+.onb-skip-ask span {
+  flex: 1 1 200px;
+}
+
 .onb-footer {
   display: flex;
   align-items: center;

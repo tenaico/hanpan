@@ -148,6 +148,7 @@ export function AiPanel({
   onCitation,
   templateDocument,
   onSkillHandoff,
+  documentBlank = false,
 }: {
   api: PdfAppDeps
   /** Absolute path of the open PDF (chat history is keyed to it) */
@@ -167,6 +168,8 @@ export function AiPanel({
   templateDocument?: TemplateDocument | null
   /** this tab took a request handed over by the template flow: show the panel */
   onSkillHandoff?: () => void
+  /** the document has nothing on its pages yet (a new blank PDF): no summary suggestions */
+  documentBlank?: boolean
 }): ReactElement {
   const { lang, t } = useI18n()
   const [chat, setChat] = useState<ChatEntry[]>([])
@@ -716,6 +719,13 @@ export function AiPanel({
   }
 
   useEffect(() => {
+    // An empty conversation opens at the top: following the bottom there scrolled
+    // the quick actions out of sight behind the first-use notice
+    if (chat.length === 0 && !sendGate.connectChoice) {
+      chatRef.current?.scrollTo({ top: 0 })
+      stickToBottomRef.current = true
+      return
+    }
     if (stickToBottomRef.current) {
       chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight })
     }
@@ -989,40 +999,44 @@ export function AiPanel({
           <div className="ai-chat-empty">
             <div className="ai-chat-empty-title">{t('aiEmptyTitle')}</div>
             <div className="ai-chat-empty-body">{t('aiEmptyBody')}</div>
-            <div className="ai-quick-actions">
-              <button
-                className="ai-quick-btn"
-                onClick={() =>
-                  send(t(hasScopeSelection ? 'aiQuickSummarySelPrompt' : 'aiQuickSummaryPrompt'))
-                }
-              >
-                {t('aiQuickSummary')}
-              </button>
-              <button
-                className="ai-quick-btn"
-                onClick={() =>
-                  send(
-                    t(hasScopeSelection ? 'aiQuickKeyPointsSelPrompt' : 'aiQuickKeyPointsPrompt'),
-                  )
-                }
-              >
-                {t('aiQuickKeyPoints')}
-              </button>
-            </div>
-            <div className="ai-suggested" role="group" aria-label={t('airSuggested')}>
-              {SUGGESTED_QUESTIONS.map((key) => (
+            {!documentBlank && (
+              <div className="ai-quick-actions">
                 <button
-                  key={key}
-                  type="button"
-                  className="ai-suggested-btn"
-                  data-question={key}
-                  dir="auto"
-                  onClick={() => send(t(key))}
+                  className="ai-quick-btn"
+                  onClick={() =>
+                    send(t(hasScopeSelection ? 'aiQuickSummarySelPrompt' : 'aiQuickSummaryPrompt'))
+                  }
                 >
-                  {t(key)}
+                  {t('aiQuickSummary')}
                 </button>
-              ))}
-            </div>
+                <button
+                  className="ai-quick-btn"
+                  onClick={() =>
+                    send(
+                      t(hasScopeSelection ? 'aiQuickKeyPointsSelPrompt' : 'aiQuickKeyPointsPrompt'),
+                    )
+                  }
+                >
+                  {t('aiQuickKeyPoints')}
+                </button>
+              </div>
+            )}
+            {!documentBlank && (
+              <div className="ai-suggested" role="group" aria-label={t('airSuggested')}>
+                {SUGGESTED_QUESTIONS.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className="ai-suggested-btn"
+                    data-question={key}
+                    dir="auto"
+                    onClick={() => send(t(key))}
+                  >
+                    {t(key)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
         {chat.map((entry, i) => {

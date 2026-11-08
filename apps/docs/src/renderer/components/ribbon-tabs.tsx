@@ -382,13 +382,18 @@ export async function insertImageFromDataUrl(
   editor: Editor,
   dataUrl: string,
   label = t('ribbonPicture'),
+  /** the pixel size when the caller already knows it (main measured it) */
+  knownSize?: { width: number; height: number },
 ): Promise<boolean> {
   const m = /^data:([^;]+);base64,(.*)$/s.exec(dataUrl)
   if (!m) return false
   const mime = m[1]
   if (!/^image\/(png|jpeg|gif)$/.test(mime)) return false
   try {
-    const natural = await imageSizeOf(dataUrl)
+    const natural =
+      knownSize && knownSize.width > 0 && knownSize.height > 0
+        ? knownSize
+        : await imageSizeOf(dataUrl)
     const scale = Math.min(1, MAX_IMAGE_WIDTH_PX / natural.width)
     editor
       .chain()

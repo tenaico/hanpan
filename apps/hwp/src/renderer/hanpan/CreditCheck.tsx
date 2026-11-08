@@ -5,19 +5,32 @@
  * list. Nothing goes over the network; the only change it makes is adding a line to the list
  * when the user asks.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { licenseName, type PictureCreditIssue } from '@genoffice/hanpan-core/renderer'
 import type { AgentBridge } from '../ai/agent-bridge'
 import { addToCreditList, checkCredits, type CreditCheckResult } from './credit-list'
 import { uiLang, useI18n } from '../i18n/locale'
 
-export function CreditCheck(p: { bridge: AgentBridge; disabled: boolean }) {
+export function CreditCheck(p: {
+  bridge: AgentBridge
+  disabled: boolean
+  /** bumped when another tool runs: this result goes, so two results never mix */
+  clear?: number
+  /** this check starts: the other tools' result goes */
+  onRun?: () => void
+}) {
   const { t } = useI18n()
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<CreditCheckResult | null>(null)
   const [failed, setFailed] = useState<string | null>(null)
 
+  useEffect(() => {
+    setResult(null)
+    setFailed(null)
+  }, [p.clear])
+
   const run = async () => {
+    p.onRun?.()
     setBusy(true)
     setFailed(null)
     try {
@@ -67,42 +80,52 @@ export function CreditCheck(p: { bridge: AgentBridge; disabled: boolean }) {
         type="button"
         disabled={busy || p.disabled}
         data-tool="credits"
+        title={t('hpCreditsDesc')}
         onClick={() => void run()}
       >
-        {t('hpCredits')}
+        <span className="hp-tools-name">{t('hpCredits')}</span>
+        <small className="hp-tools-desc">{t('hpCreditsDesc')}</small>
       </button>
       {failed && (
-        <ul className="hp-tools-result" role="status">
-          <li>{t('hpFailed', { error: failed })}</li>
-        </ul>
+        <div className="hp-tools-result" role="status">
+          <strong className="hp-tools-result-title">
+            {t('hpResultOf', { tool: t('hpCredits') })}
+          </strong>
+          <ul>
+            <li>{t('hpFailed', { error: failed })}</li>
+          </ul>
+        </div>
       )}
       {result && (
-        <ul
-          className="hp-tools-result hp-credit-result"
-          role="status"
-          data-credit-issues={result.issues.length}
-        >
-          {result.pictures.length === 0 && <li>{t('hpCreditsNone')}</li>}
-          {result.pictures.length > 0 && result.issues.length === 0 && (
-            <li>{t('hpCreditsOk', { n: result.pictures.length })}</li>
-          )}
-          {result.issues.map((issue, index) => (
-            <li key={index} data-credit-kind={issue.kind}>
-              <span>{lineOf(issue)}</span>
-              <span className="hp-credit-actions">
-                <button type="button" onClick={() => go(issue)}>
-                  {t('hpCreditGo')}
-                </button>
-                {issue.kind === 'not-listed' && (
-                  <button type="button" disabled={busy} onClick={() => void list(issue.line)}>
-                    {t('hpCreditAddToList')}
+        <div className="hp-tools-result" role="status">
+          <strong className="hp-tools-result-title">
+            {t('hpResultOf', { tool: t('hpCredits') })}
+          </strong>
+          <ul className="hp-credit-result" data-credit-issues={result.issues.length}>
+            {result.pictures.length === 0 && <li>{t('hpCreditsNone')}</li>}
+            {result.pictures.length > 0 && result.issues.length === 0 && (
+              <li>{t('hpCreditsOk', { n: result.pictures.length })}</li>
+            )}
+            {result.issues.map((issue, index) => (
+              <li key={index} data-credit-kind={issue.kind}>
+                <span>{lineOf(issue)}</span>
+                <span className="hp-credit-actions">
+                  <button type="button" onClick={() => go(issue)}>
+                    {t('hpCreditGo')}
                   </button>
-                )}
-              </span>
-            </li>
-          ))}
-          {result.pictures.length > 0 && <li className="hp-credit-scope">{t('hpCreditsScope')}</li>}
-        </ul>
+                  {issue.kind === 'not-listed' && (
+                    <button type="button" disabled={busy} onClick={() => void list(issue.line)}>
+                      {t('hpCreditAddToList')}
+                    </button>
+                  )}
+                </span>
+              </li>
+            ))}
+            {result.pictures.length > 0 && (
+              <li className="hp-credit-scope">{t('hpCreditsScope')}</li>
+            )}
+          </ul>
+        </div>
       )}
     </>
   )

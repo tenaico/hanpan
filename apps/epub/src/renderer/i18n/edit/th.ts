@@ -6,6 +6,7 @@ export const th = {
   editBold: 'ตัวหนา',
   editItalic: 'ตัวเอียง',
   editReplace: 'แทนที่',
+  editFindReplaceTitle: 'ค้นหาและแทนที่',
   editReplaceWith: 'แทนที่ด้วย',
   editReplaceOne: 'แทนที่',
   editReplaceAll: 'แทนที่ทั้งหมด',

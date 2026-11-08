@@ -58,7 +58,8 @@ export const pl = {
     'Malarz formatów (kliknij, aby skopiować i zastosować formatowanie; ⌘⇧C kopiuje format / ⌘⇧V wkleja format)',
   ribbonGroupSlides: 'Slajdy',
   ribbonNewSlide: 'Nowy slajd',
-  ribbonNewSlideTip: 'Nowy pusty slajd (zachowuje tło układu bieżącego slajdu)',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'Wybierz układ',
   ribbonChooseLayoutNew: 'Nowy slajd z układem',
   ribbonChooseLayoutChange: 'Zmień układ bieżącego slajdu',
@@ -791,4 +792,8 @@ export const pl = {
   ribbonZoomSectionItem: 'Slajd {n} Sekcja {k}: {name}',
   ribbonZoomSelectedSlides: 'Wybrano slajdów: {n}',
   ribbonZoomSelectedSections: 'Wybrano sekcji: {n}',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

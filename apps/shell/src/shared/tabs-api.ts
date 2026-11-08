@@ -11,6 +11,8 @@ export type TabKind =
   | 'mindmap'
   | 'hwp'
   | 'epub'
+  | 'photo'
+  | 'illust'
   | 'help'
 
 /** a tab that holds a document — every kind except the Home screen and the in-app manual */
@@ -25,6 +27,8 @@ export interface TabSummary {
   active: boolean
   /** absolute path behind the tab; absent while the document is untitled */
   filePath?: string
+  /** the editor reports unsaved changes (tab strip dot); absent when clean */
+  dirty?: boolean
 }
 
 /**

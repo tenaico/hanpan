@@ -67,7 +67,7 @@ test.describe('sheets: Insert → Equation and Checkbox', () => {
       await sheets.screenshot({ path: screenshotPath('equation-preview') })
       await dialog.getByRole('button', { name: 'OK' }).click()
 
-      await expect(sheets.locator('.workbook-status')).toContainText('Picture inserted', {
+      await expect(sheets.locator('.status-bar .status-msg')).toContainText('Picture inserted', {
         timeout: 20_000,
       })
       await expect(sheets.locator('.xlsx-image')).toBeVisible({ timeout: 15_000 })
@@ -191,7 +191,7 @@ test.describe('sheets: Insert → Timeline', () => {
       await sheets.screenshot({ path: screenshotPath('timeline-panel') })
 
       await panel.locator('.timeline-month').first().click()
-      await expect(sheets.locator('.workbook-status')).toContainText('applied', {
+      await expect(sheets.locator('.status-bar .status-msg')).toContainText('applied', {
         timeout: 15_000,
       })
       await expect(panel.locator('.timeline-month.selected')).toHaveCount(1)
@@ -199,7 +199,7 @@ test.describe('sheets: Insert → Timeline', () => {
 
       // Clearing restores all members.
       await panel.locator('.slicer-clear').click()
-      await expect(sheets.locator('.workbook-status')).toContainText('cleared', {
+      await expect(sheets.locator('.status-bar .status-msg')).toContainText('cleared', {
         timeout: 15_000,
       })
     } finally {

@@ -58,6 +58,34 @@ function wordBoundaryOk(text: string, start: number, len: number): boolean {
   return left && right
 }
 
+/** Rough advance of one character in ems, for placing a hit inside a text run
+    that mixes CJK (full-width) with Latin, digits and spaces (narrow) */
+function charAdvance(ch: string): number {
+  if (CJK_RE.test(ch)) return 1
+  if (ch === ' ' || ch === ' ') return 0.28
+  if (/[-.,:;'"!|()[\]{}]/.test(ch)) return 0.3
+  if (/[A-Z]/.test(ch)) return 0.62
+  return 0.55
+}
+
+/**
+ * Fraction of a run's width before each of `offsets` (character offsets in
+ * `run`). A run in one script spaces its characters about evenly, so the
+ * fraction is the character ratio; a run mixing CJK with narrow characters is
+ * weighted per character, or a hit after many narrow characters lands to the
+ * right of where it is drawn.
+ */
+function runFractions(run: string, offsets: number[]): number[] {
+  const chars = [...run]
+  const hasCjk = chars.some((ch) => CJK_RE.test(ch))
+  const mixed = hasCjk && chars.some((ch) => !CJK_RE.test(ch))
+  if (!mixed || chars.length !== run.length) return offsets.map((o) => o / run.length)
+  const prefix = [0]
+  for (const ch of chars) prefix.push(prefix[prefix.length - 1]! + charAdvance(ch))
+  const total = prefix[prefix.length - 1]!
+  return offsets.map((o) => prefix[o]! / total)
+}
+
 interface RawTextItem {
   str?: string
   transform?: number[]
@@ -130,7 +158,7 @@ export function createSearchIndexCache(): SearchIndexCache {
   }
 }
 
-/** Full-text search with optional case/word modifiers; rects linearly interpolated within items by char ratio (approximate; bounding box for rotated glyphs) */
+/** Full-text search with optional case/word modifiers; rects interpolated within items by character advance (approximate; bounding box for rotated glyphs) */
 export function searchInIndex(
   index: SearchIndex,
   query: string,
@@ -160,9 +188,10 @@ export function searchInIndex(
       const rects: [number, number, number, number][] = []
       for (const it of items) {
         if (it.end <= s || it.start >= e) continue
-        const len = it.end - it.start
-        const lo = (Math.max(s, it.start) - it.start) / len
-        const hi = (Math.min(e, it.end) - it.start) / len
+        const [lo, hi] = runFractions(text.slice(it.start, it.end), [
+          Math.max(s, it.start) - it.start,
+          Math.min(e, it.end) - it.start,
+        ]) as [number, number]
         const x1 = it.x + it.w * lo
         const x2 = it.x + it.w * hi
         if (x2 - x1 < 0.01) continue

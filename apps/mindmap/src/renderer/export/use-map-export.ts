@@ -4,9 +4,12 @@
  * - Picture (PNG) and PDF: the sheet on screen, as it is drawn (folded
  *   branches folded), the whole sheet and not only the part in view.
  * - Markdown outline: every sheet of the file, from the map as it stands now
- *   (unsaved edits included, folding ignored): the engine's `sheetsToOutline`.
- * - Print: the sheet on screen on one landscape A4 page, through the system's
- *   print dialog. Print is in the File menu; the toolbar has the three exports.
+ *   (unsaved edits included, folding ignored): the engine's `sheetsToOutline`;
+ *   a map of one sheet reads as a document, its central topic the title
+ *   (`outline.ts`).
+ * - Print: the sheet on screen on one landscape A4 page, shown in the editor's
+ *   own print dialog first (`PrintDialog`), which prints it. Print is in the
+ *   File menu; the toolbar has the three exports.
  * - The preview picture a save writes into the file: the first sheet, made
  *   only for a save that changes the file. When it cannot be made, or takes
  *   too long, the save goes ahead without one and the file keeps its old one.
@@ -19,8 +22,10 @@ import { t as translate, type StringKey } from '../i18n/locale'
 import type { DocumentSession } from '../document/session'
 import { setThumbnailProvider } from '../document/thumbnail'
 import type { MapController } from '../map/controller'
+import type { Params } from '@genoffice/i18n'
 import type { ExportFormat, ExportResult } from '../../shared/ipc'
 import { documentName, sheetExportName } from './names'
+import { documentOutline } from './outline'
 import { pictureScale, snapshotPage, snapshotPng, thumbnailScale } from './render'
 import { type MapSnapshot, snapshotSheet, type SnapshotOptions } from './snapshot'
 
@@ -35,7 +40,9 @@ export interface MapExportHost {
   /** takes what is being typed and what the screen shows into the map */
   flushAll(): void
   /** a short message in the status line */
-  say(key: StringKey): void
+  say(key: StringKey, params?: Params): void
+  /** shows the print dialog for this page */
+  openPrint(html: string): void
 }
 
 /** A preview picture not made by then is left out of the save. */
@@ -94,12 +101,13 @@ function mapNameOf(session: DocumentSession, path: string | null): string {
   })
 }
 
-function report(say: (key: StringKey) => void, result: ExportResult): void {
+function report(say: MapExportHost['say'], result: ExportResult): void {
   if (!result.ok) {
     console.error('[mindmap] export failed:', result.error)
     say('exportFailed')
   } else if ('path' in result) {
-    say('exportDone')
+    // the file's own name, so it is clear what was written where
+    say('exportDoneNamed', { name: result.path.split(/[\\/]/).pop() ?? result.path })
   }
 }
 
@@ -154,7 +162,7 @@ export function useMapExport(host: MapExportHost): MapExport {
       try {
         if (format === 'markdown') {
           current.flushAll()
-          const text = session.outline()
+          const text = documentOutline(session.outline(), session.tabs().length)
           report(
             current.say,
             await api.exportMarkdown({ text, suggestedName: mapNameOf(session, current.path) }),
@@ -184,8 +192,7 @@ export function useMapExport(host: MapExportHost): MapExport {
     try {
       const taken = await activeSnapshot()
       if (!taken) throw new Error('the sheet is not drawn')
-      const result = await window.mindmapApi.print({ html: snapshotPage(taken.snapshot) })
-      if (!result.ok) throw new Error(result.error)
+      hostRef.current.openPrint(snapshotPage(taken.snapshot))
     } catch (error) {
       console.error('[mindmap] print failed:', error)
       hostRef.current.say('printFailed')

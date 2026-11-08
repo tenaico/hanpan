@@ -154,7 +154,8 @@ export const he = {
   dlgPivotAddValue: '+ הוספת שדה ערך',
   dlgPivotAddCalc: '+ הוספת שדה מחושב',
   dlgPivotTargetCell: 'תא יעד',
-  dlgPivotTargetPlaceholder: 'למשל F1',
+  dlgPivotTargetPlaceholder: 'למשל {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'בעת עריכה, טווח הפלט שומר על התא השמאלי העליון שלו',
   dlgPivotNote: 'יוצר טבלת ציר OOXML אמיתית ש-Excel/WPS יכולים לזהות ולרענן לאחר השמירה.',
   dlgPivotErrDupRowField: 'שדות שורה אינם יכולים לכלול את אותו שדה פעמיים.',
@@ -630,6 +631,12 @@ export const he = {
   dlgPrintNextPage: 'העמוד הבא',
   dlgPrintZoomFit: 'התאם לעמוד',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'התאם לרוחב',
+  dlgPrintColumnsSplit:
+    'העמודות של "{sheets}" אינן נכנסות ברוחב עמוד אחד; העמודות הימניות יודפסו בעמודים הבאים.',
+  dlgPrintPastEdge: 'חלק מהעמודות חורגות מהשוליים הימניים של הדף וייחתכו בהדפסה.',
+  dlgPrintClippedText:
+    'חלק מהטקסט בעמודה האחרונה חורג מאזור ההדפסה וייחתך. הרחיבו את העמודה או הפעילו גלישת טקסט.',
   dlgPrintButton: 'הדפסה',
   dlgPrintToPdf: 'הדפסה ל-PDF',
   dlgPrintPageSetup: 'הגדרת עמוד…',

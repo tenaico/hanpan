@@ -4,14 +4,26 @@ Każdy edytor ma własne przypisania klawiszy i tylko kilka z nich działa wszę
 
 ## Przeczytaj najpierw
 
-**Prawie nic tutaj nie jest globalne.** Poniższe trzy klawisze dostępu już są; wszystko po nich należy do aplikacji, która jest przed tobą, i zmienia się wraz z przełączaniem kart.
+### Wszędzie w Hanpan (karty i okna)
 
-| Czynność                                                    | macOS | Windows / Linux |
-| ----------------------------------------------------------- | ----- | --------------- |
-| Otwórz Podręcznik użytkownika — działa wszędzie w aplikacji | F1    | F1              |
-| Zwiń / rozwiń wstążkę — każdy edytor                        | ⌥⌘R   | Ctrl+F1         |
-| Kompaktowa wstążka — tylko Docs                             | ⌥⌘K   | Ctrl+Alt+K      |
-| Otwórz arkusz Skrótów klawiszowych — tylko Word             | ⌘/    | Ctrl+/          |
+| Czynność                                                                                 | Windows / Linux                | macOS                          |
+| ---------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------ |
+| Następna karta / poprzednia karta                                                        | Ctrl+Tab / Ctrl+Shift+Tab      | ⌃Tab / ⌃⇧Tab                   |
+| Zamknij bieżącą kartę (na stronie głównej: okno, z pytaniem, jeśli są otwarte dokumenty) | Ctrl+W                         | ⌘W                             |
+| Otwórz Ustawienia — na stronie głównej                                                   | Ctrl+,                         | ⌘,                             |
+| Otwórz Podręcznik użytkownika                                                            | F1                             | F1                             |
+| Wybierz kartę na pasku kart — gdy karta ma fokus                                         | ← / →, Enter, Delete (zamknij) | ← / →, Enter, Delete (zamknij) |
+
+### Każdy edytor
+
+**Od tego miejsca klawisze należą do edytora, który jest przed tobą, i zmieniają się wraz z przełączaniem kart.**
+
+| Czynność                                                    | Windows / Linux | macOS |
+| ----------------------------------------------------------- | --------------- | ----- |
+| Otwórz Podręcznik użytkownika — działa wszędzie w aplikacji | F1              | F1    |
+| Zwiń / rozwiń wstążkę — każdy edytor                        | Ctrl+F1         | ⌥⌘R   |
+| Kompaktowa wstążka — tylko Docs                             | Ctrl+Alt+K      | ⌥⌘K   |
+| Otwórz arkusz Skrótów klawiszowych — tylko Word             | Ctrl+/          | ⌘/    |
 
 - **F1 otwiera ten podręcznik**, a nie arkusz skrótów. Należy do menu aplikacji, więc działa z poziomu Word, Sheets, Slides, PDF czy karty Home.
 - **Przełącznik wstążki to `Ctrl+F1`, albo `⌥⌘R` na macOS.** Samo `F1` nic nie robi — F1 to podręcznik, a klawisz wstążki celowo go nie współdzieli. `Ctrl+F1` jest akceptowany także na macOS, ale `⌥⌘R` to klawisz używany przez Office dla Maca.
@@ -41,123 +53,123 @@ Word ma pełny pasek menu, więc poniższe skróty pliku i formatowania działaj
 
 ### Plik
 
-| Czynność        | macOS | Windows / Linux |
-| --------------- | ----- | --------------- |
-| Nowy            | ⌘N    | Ctrl+N          |
-| Nowe okno       | ⇧⌘N   | Ctrl+Shift+N    |
-| Otwórz…         | ⌘O    | Ctrl+O          |
-| Zapisz          | ⌘S    | Ctrl+S          |
-| Zapisz jako…    | ⇧⌘S   | Ctrl+Shift+S    |
-| Drukuj          | ⌘P    | Ctrl+P          |
-| Zamknij (karta) | ⌘W    | Ctrl+W          |
+| Czynność        | Windows / Linux | macOS |
+| --------------- | --------------- | ----- |
+| Nowy            | Ctrl+N          | ⌘N    |
+| Nowe okno       | Ctrl+Shift+N    | ⇧⌘N   |
+| Otwórz…         | Ctrl+O          | ⌘O    |
+| Zapisz          | Ctrl+S          | ⌘S    |
+| Zapisz jako…    | Ctrl+Shift+S    | ⇧⌘S   |
+| Drukuj          | Ctrl+P          | ⌘P    |
+| Zamknij (karta) | Ctrl+W          | ⌘W    |
 
 ⌘P to nie jest drukowanie przeglądarki. Word najpierw układa podgląd wydruku, tak aby jedna wydrukowana strona była dokładnie jedną stroną na ekranie, a potem otwiera własne okno drukowania.
 
 ### Edycja
 
-| Czynność                | macOS | Windows / Linux |
-| ----------------------- | ----- | --------------- |
-| Cofnij                  | ⌘Z    | Ctrl+Z          |
-| Ponów                   | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Wytnij                  | ⌘X    | Ctrl+X          |
-| Kopiuj                  | ⌘C    | Ctrl+C          |
-| Wklej                   | ⌘V    | Ctrl+V          |
-| Wklej jako czysty tekst | ⌥⇧⌘V  | Ctrl+Shift+V    |
-| Zaznacz wszystko        | ⌘A    | Ctrl+A          |
-| Znajdź                  | ⌘F    | Ctrl+F          |
-| Zamień                  | ⌃H    | Ctrl+H          |
-| Przejdź do              | ⌥⌘G   | Ctrl+G          |
-| Skróty klawiszowe       | ⌘/    | Ctrl+/          |
+| Czynność                | Windows / Linux | macOS |
+| ----------------------- | --------------- | ----- |
+| Cofnij                  | Ctrl+Z          | ⌘Z    |
+| Ponów                   | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Wytnij                  | Ctrl+X          | ⌘X    |
+| Kopiuj                  | Ctrl+C          | ⌘C    |
+| Wklej                   | Ctrl+V          | ⌘V    |
+| Wklej jako czysty tekst | Ctrl+Shift+V    | ⌥⇧⌘V  |
+| Zaznacz wszystko        | Ctrl+A          | ⌘A    |
+| Znajdź                  | Ctrl+F          | ⌘F    |
+| Zamień                  | Ctrl+H          | ⌃H    |
+| Przejdź do              | Ctrl+G          | ⌥⌘G   |
+| Skróty klawiszowe       | Ctrl+/          | ⌘/    |
 
 Zamień to na obu platformach Ctrl+H, ponieważ ⌘H ukrywa okno w macOS i nigdy nie trafia do Worda. Przejdź do stosuje podział samego Worda: ⌥⌘G na Macu, dzięki czemu ⇧⌘G zostaje wolny dla Liczby słów.
 
 ### Formatowanie tekstu
 
-| Czynność                                    | macOS    | Windows / Linux       |
-| ------------------------------------------- | -------- | --------------------- |
-| Pogrubienie                                 | ⌘B       | Ctrl+B                |
-| Pochylenie                                  | ⌘I       | Ctrl+I                |
-| Podkreślenie                                | ⌘U       | Ctrl+U                |
-| Czcionka… (okno dialogowe)                  | ⌘D       | Ctrl+D                |
-| Zwiększ rozmiar czcionki                    | ⇧⌘.      | Ctrl+Shift+.          |
-| Zmniejsz rozmiar czcionki                   | ⇧⌘,      | Ctrl+Shift+,          |
-| Zwiększ rozmiar czcionki o 1 pt             | ⌘]       | Ctrl+]                |
-| Zmniejsz rozmiar czcionki o 1 pt            | ⌘[       | Ctrl+[                |
-| Superskrypt                                 | ⇧⌘= / ⌘. | Ctrl+Shift+= / Ctrl+. |
-| Podskrypt                                   | ⌘,       | Ctrl+,                |
-| Zmień wielkość liter                        | ⇧F3      | Shift+F3              |
-| Kopiuj formatowanie (z zaznaczonym tekstem) | ⇧⌘C      | Ctrl+Shift+C          |
-| Wklej formatowanie (po Kopiuj formatowanie) | ⇧⌘V      | Ctrl+Alt+Shift+V      |
-| Wyczyść całe formatowanie                   | ⌃␣       | Ctrl+Space            |
+| Czynność                                    | Windows / Linux       | macOS    |
+| ------------------------------------------- | --------------------- | -------- |
+| Pogrubienie                                 | Ctrl+B                | ⌘B       |
+| Pochylenie                                  | Ctrl+I                | ⌘I       |
+| Podkreślenie                                | Ctrl+U                | ⌘U       |
+| Czcionka… (okno dialogowe)                  | Ctrl+D                | ⌘D       |
+| Zwiększ rozmiar czcionki                    | Ctrl+Shift+.          | ⇧⌘.      |
+| Zmniejsz rozmiar czcionki                   | Ctrl+Shift+,          | ⇧⌘,      |
+| Zwiększ rozmiar czcionki o 1 pt             | Ctrl+]                | ⌘]       |
+| Zmniejsz rozmiar czcionki o 1 pt            | Ctrl+[                | ⌘[       |
+| Superskrypt                                 | Ctrl+Shift+= / Ctrl+. | ⇧⌘= / ⌘. |
+| Podskrypt                                   | Ctrl+,                | ⌘,       |
+| Zmień wielkość liter                        | Shift+F3              | ⇧F3      |
+| Kopiuj formatowanie (z zaznaczonym tekstem) | Ctrl+Shift+C          | ⇧⌘C      |
+| Wklej formatowanie (po Kopiuj formatowanie) | Ctrl+Alt+Shift+V      | ⇧⌘V      |
+| Wyczyść całe formatowanie                   | Ctrl+Space            | ⌃␣       |
 
 Dwa skróty malarza formatów to jedyne miejsce, w którym klawisz Windows nie jest zwykłą zmianą nazwy: Wklej formatowanie zawiera Alt, bo Ctrl+Shift+V tam już wkleja i dopasowuje styl.
 
 ### Formatowanie akapitu
 
-| Czynność                                     | macOS | Windows / Linux |
-| -------------------------------------------- | ----- | --------------- |
-| Wyrównaj do lewej                            | ⌘L    | Ctrl+L          |
-| Wyśrodkuj                                    | ⌘E    | Ctrl+E          |
-| Wyrównaj do prawej                           | ⌘R    | Ctrl+R          |
-| Wyjustuj                                     | ⌘J    | Ctrl+J          |
-| Odstęp wiersza 1,0                           | ⌘1    | Ctrl+1          |
-| Odstęp wiersza 1,5                           | ⌘5    | Ctrl+5          |
-| Odstęp wiersza 2,0                           | ⌘2    | Ctrl+2          |
-| Zwiększ wcięcie                              | ⌃M    | Ctrl+M          |
-| Zmniejsz wcięcie                             | ⌃⇧M   | Ctrl+Shift+M    |
-| Wcięcie wiszące                              | ⌘T    | Ctrl+T          |
-| Usuń wcięcie wiszące                         | ⇧⌘T   | Ctrl+Shift+T    |
-| Wyczyść formatowanie akapitu                 | ⌃Q    | Ctrl+Q          |
-| Normalny (styl)                              | ⌥⌘0   | Ctrl+Alt+0      |
-| Nagłówek 1 (styl)                            | ⌥⌘1   | Ctrl+Alt+1      |
-| Nagłówek 2 (styl)                            | ⌥⌘2   | Ctrl+Alt+2      |
-| Nagłówek 3 (styl)                            | ⌥⌘3   | Ctrl+Alt+3      |
-| Akapit… (okno dialogowe)                     | ⌥⌘M   | Ctrl+Alt+M      |
-| Przesuń akapit w górę                        | ⌥⇧↑   | Alt+Shift+↑     |
-| Przesuń akapit w dół                         | ⌥⇧↓   | Alt+Shift+↓     |
-| Obniż element listy (na początku elementu)   | Tab   | Tab             |
-| Podnieś element listy (na początku elementu) | ⇧Tab  | Shift+Tab       |
+| Czynność                                     | Windows / Linux | macOS |
+| -------------------------------------------- | --------------- | ----- |
+| Wyrównaj do lewej                            | Ctrl+L          | ⌘L    |
+| Wyśrodkuj                                    | Ctrl+E          | ⌘E    |
+| Wyrównaj do prawej                           | Ctrl+R          | ⌘R    |
+| Wyjustuj                                     | Ctrl+J          | ⌘J    |
+| Odstęp wiersza 1,0                           | Ctrl+1          | ⌘1    |
+| Odstęp wiersza 1,5                           | Ctrl+5          | ⌘5    |
+| Odstęp wiersza 2,0                           | Ctrl+2          | ⌘2    |
+| Zwiększ wcięcie                              | Ctrl+M          | ⌃M    |
+| Zmniejsz wcięcie                             | Ctrl+Shift+M    | ⌃⇧M   |
+| Wcięcie wiszące                              | Ctrl+T          | ⌘T    |
+| Usuń wcięcie wiszące                         | Ctrl+Shift+T    | ⇧⌘T   |
+| Wyczyść formatowanie akapitu                 | Ctrl+Q          | ⌃Q    |
+| Normalny (styl)                              | Ctrl+Alt+0      | ⌥⌘0   |
+| Nagłówek 1 (styl)                            | Ctrl+Alt+1      | ⌥⌘1   |
+| Nagłówek 2 (styl)                            | Ctrl+Alt+2      | ⌥⌘2   |
+| Nagłówek 3 (styl)                            | Ctrl+Alt+3      | ⌥⌘3   |
+| Akapit… (okno dialogowe)                     | Ctrl+Alt+M      | ⌥⌘M   |
+| Przesuń akapit w górę                        | Alt+Shift+↑     | ⌥⇧↑   |
+| Przesuń akapit w dół                         | Alt+Shift+↓     | ⌥⇧↓   |
+| Obniż element listy (na początku elementu)   | Tab             | Tab   |
+| Podnieś element listy (na początku elementu) | Shift+Tab       | ⇧Tab  |
 
 Wcięcie, wcięcie wiszące i Wyczyść formatowanie akapitu działają na obu platformach tylko przez Ctrl: ⌘M minimalizuje okno, a ⌘Q kończy pracę, więc skrót z Command byłby po cichu zmianą w tekście tuż przed zamknięciem. Tab zmienia poziom listy tylko wtedy, gdy kursor znajduje się na początku elementu lub obejmuje kilka elementów; w środku tekstu wstawia znak tabulacji, a ⇧Tab zawsze podnosi poziom.
 
 ### Wstawianie
 
-| Czynność                 | macOS | Windows / Linux  |
-| ------------------------ | ----- | ---------------- |
-| Podział strony           | ⌘⏎    | Ctrl+Enter       |
-| Podział kolumny          | ⇧⌘⏎   | Ctrl+Shift+Enter |
-| Podział wiersza          | ⇧⏎    | Shift+Enter      |
-| Wstaw odnośnik…          | ⌘K    | Ctrl+K           |
-| Nowy komentarz           | ⌥⌘A   | Ctrl+Alt+A       |
-| Wstaw przypis dolny      | ⌥⌘F   | Ctrl+Alt+F       |
-| Wstaw przypis końcowy    | ⌥⌘E   | Ctrl+Alt+D       |
-| Data (pole)              | ⌥⇧D   | Alt+Shift+D      |
-| Godzina (pole)           | ⌥⇧T   | Alt+Shift+T      |
-| Spacja nierozdzielająca  | ⇧⌘␣   | Ctrl+Shift+Space |
-| Łącznik nierozdzielający | ⇧⌘-   | Ctrl+Shift+-     |
+| Czynność                 | Windows / Linux  | macOS |
+| ------------------------ | ---------------- | ----- |
+| Podział strony           | Ctrl+Enter       | ⌘⏎    |
+| Podział kolumny          | Ctrl+Shift+Enter | ⇧⌘⏎   |
+| Podział wiersza          | Shift+Enter      | ⇧⏎    |
+| Wstaw odnośnik…          | Ctrl+K           | ⌘K    |
+| Nowy komentarz           | Ctrl+Alt+A       | ⌥⌘A   |
+| Wstaw przypis dolny      | Ctrl+Alt+F       | ⌥⌘F   |
+| Wstaw przypis końcowy    | Ctrl+Alt+D       | ⌥⌘E   |
+| Data (pole)              | Alt+Shift+D      | ⌥⇧D   |
+| Godzina (pole)           | Alt+Shift+T      | ⌥⇧T   |
+| Spacja nierozdzielająca  | Ctrl+Shift+Space | ⇧⌘␣   |
+| Łącznik nierozdzielający | Ctrl+Shift+-     | ⇧⌘-   |
 
 Wstaw przypis końcowy to prawdziwy podział platform, a nie zmiana nazwy: Word używa ⌥⌘E na Macu, bo ⌥⌘D tam należy do Docka.
 
 ### Sprawdzanie i narzędzia
 
-| Czynność                     | macOS | Windows / Linux |
-| ---------------------------- | ----- | --------------- |
-| Śledź zmiany                 | ⇧⌘E   | Ctrl+Shift+E    |
-| Liczba słów                  | ⇧⌘G   | Ctrl+Shift+G    |
-| Sprawdź pisownię i gramatykę | F7    | F7              |
-| Aktualizuj pole              | F9    | F9              |
-| Pokaż / ukryj kody pól       | ⌥F9   | Alt+F9          |
+| Czynność                     | Windows / Linux | macOS |
+| ---------------------------- | --------------- | ----- |
+| Śledź zmiany                 | Ctrl+Shift+E    | ⇧⌘E   |
+| Liczba słów                  | Ctrl+Shift+G    | ⇧⌘G   |
+| Sprawdź pisownię i gramatykę | F7              | F7    |
+| Aktualizuj pole              | F9              | F9    |
+| Pokaż / ukryj kody pól       | Alt+F9          | ⌥F9   |
 
 F7 uruchamia sprawdzanie przez AI, a F9 aktualizuje pola; oba wymagają wczytanego dokumentu. Gdy ograniczenie edycji włączy Śledź zmiany, nie da się go już wyłączyć.
 
 ### Widok
 
-| Czynność                         | macOS | Windows / Linux |
-| -------------------------------- | ----- | --------------- |
-| Powiększ                         | ⌘=    | Ctrl+=          |
-| Pomniejsz                        | ⌘-    | Ctrl+-          |
-| Powiększ do 100%                 | ⌘0    | Ctrl+0          |
-| Pokaż / ukryj znaki formatowania | ⌘8    | Ctrl+Shift+8    |
+| Czynność                         | Windows / Linux | macOS |
+| -------------------------------- | --------------- | ----- |
+| Powiększ                         | Ctrl+=          | ⌘=    |
+| Pomniejsz                        | Ctrl+-          | ⌘-    |
+| Powiększ do 100%                 | Ctrl+0          | ⌘0    |
+| Pokaż / ukryj znaki formatowania | Ctrl+Shift+8    | ⌘8    |
 
 Skrót znaków formatowania stosuje podział samego Worda: ⌘8 wobec Ctrl+Shift+8. Zoom obsługuje Word tylko przez trzy powyższe skróty menu — ⌘+ tutaj nic nie robi.
 
@@ -173,123 +185,123 @@ Dwie konwencje są swoiste dla Sheets. `⌘` i `⌃` zajmują to samo miejsce mo
 
 ### Nawigacja
 
-| Czynność                                                     | macOS      | Windows / Linux |
-| ------------------------------------------------------------ | ---------- | --------------- |
-| Następny arkusz                                              | ⌘PgDn      | Ctrl+PgDn       |
-| Poprzedni arkusz                                             | ⌘PgUp      | Ctrl+PgUp       |
-| Następny arkusz (zgodnie z Excelem dla Maca)                 | ⌥→         |                 |
-| Poprzedni arkusz (zgodnie z Excelem dla Maca)                | ⌥←         |                 |
-| Przejdź do pierwszej komórki niezamrożonej                   | ⌘Home      | Ctrl+Home       |
-| Przejdź do ostatniej użytej komórki (treść lub formatowanie) | ⌘End       | Ctrl+End        |
-| Okno Przejdź do                                              | ⌘G, F5     | Ctrl+G, F5      |
-| Wstaw nowy arkusz                                            | ⇧F11       | Shift+F11       |
-| Przesuń aktywną komórkę o ekran w dół (i przewiń)            | Page Down  | Page Down       |
-| Przesuń aktywną komórkę o ekran w górę (i przewiń)           | Page Up    | Page Up         |
-| Przesuń aktywną komórkę o ekran w prawo (i przewiń)          | ⌥Page Down | Alt+Page Down   |
-| Przesuń aktywną komórkę o ekran w lewo (i przewiń)           | ⌥Page Up   | Alt+Page Up     |
+| Czynność                                                     | Windows / Linux | macOS      |
+| ------------------------------------------------------------ | --------------- | ---------- |
+| Następny arkusz                                              | Ctrl+PgDn       | ⌘PgDn      |
+| Poprzedni arkusz                                             | Ctrl+PgUp       | ⌘PgUp      |
+| Następny arkusz (zgodnie z Excelem dla Maca)                 |                 | ⌥→         |
+| Poprzedni arkusz (zgodnie z Excelem dla Maca)                |                 | ⌥←         |
+| Przejdź do pierwszej komórki niezamrożonej                   | Ctrl+Home       | ⌘Home      |
+| Przejdź do ostatniej użytej komórki (treść lub formatowanie) | Ctrl+End        | ⌘End       |
+| Okno Przejdź do                                              | Ctrl+G, F5      | ⌘G, F5     |
+| Wstaw nowy arkusz                                            | Shift+F11       | ⇧F11       |
+| Przesuń aktywną komórkę o ekran w dół (i przewiń)            | Page Down       | Page Down  |
+| Przesuń aktywną komórkę o ekran w górę (i przewiń)           | Page Up         | Page Up    |
+| Przesuń aktywną komórkę o ekran w prawo (i przewiń)          | Alt+Page Down   | ⌥Page Down |
+| Przesuń aktywną komórkę o ekran w lewo (i przewiń)           | Alt+Page Up     | ⌥Page Up   |
 
 ### Zaznaczanie
 
-| Czynność                                                                            | macOS           | Windows / Linux                                     |
-| ----------------------------------------------------------------------------------- | --------------- | --------------------------------------------------- |
-| Zaznacz całą kolumnę aktywnej komórki                                               | ⌃Space          | Ctrl+Space                                          |
-| Zaznacz cały wiersz aktywnej komórki                                                | ⇧Space          | Shift+Space                                         |
-| Przejdź do krawędzi bloku danych — dowolna z czterech strzałek                      | ⌘↑ ⌘↓ ⌘← ⌘→     | Ctrl+↑ Ctrl+↓ Ctrl+← Ctrl+→                         |
-| Rozszerz zaznaczenie do krawędzi bloku danych; naciśnij ponownie, aby je zmniejszyć | ⌘⇧↑ ⌘⇧↓ ⌘⇧← ⌘⇧→ | Ctrl+Shift+↑ Ctrl+Shift+↓ Ctrl+Shift+← Ctrl+Shift+→ |
-| Przejdź do pierwszej kolumny bieżącego wiersza                                      | Home            | Home                                                |
+| Czynność                                                                            | Windows / Linux                                     | macOS           |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------- | --------------- |
+| Zaznacz całą kolumnę aktywnej komórki                                               | Ctrl+Space                                          | ⌃Space          |
+| Zaznacz cały wiersz aktywnej komórki                                                | Shift+Space                                         | ⇧Space          |
+| Przejdź do krawędzi bloku danych — dowolna z czterech strzałek                      | Ctrl+↑ Ctrl+↓ Ctrl+← Ctrl+→                         | ⌘↑ ⌘↓ ⌘← ⌘→     |
+| Rozszerz zaznaczenie do krawędzi bloku danych; naciśnij ponownie, aby je zmniejszyć | Ctrl+Shift+↑ Ctrl+Shift+↓ Ctrl+Shift+← Ctrl+Shift+→ | ⌘⇧↑ ⌘⇧↓ ⌘⇧← ⌘⇧→ |
+| Przejdź do pierwszej kolumny bieżącego wiersza                                      | Home                                                | Home            |
 
 ### Edycja
 
-| Czynność                                                                                                        | macOS                     | Windows / Linux      |
-| --------------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------- |
-| Wypełnij całe zaznaczenie bieżącym wpisem                                                                       | ⌃⏎ lub ⌘⏎                 | Ctrl+Enter           |
-| Rozpocznij nowy wiersz w komórce                                                                                | ⌥⏎, lub ⌃⌥⏎ / ⌘⌥⏎ na Macu | Alt+Enter            |
-| Edytuj aktywną komórkę w miejscu                                                                                | F2                        | F2                   |
-| Pogrubienie                                                                                                     | ⌘B                        | Ctrl+B               |
-| Pochylenie                                                                                                      | ⌘I                        | Ctrl+I               |
-| Podkreślenie                                                                                                    | ⌘U                        | Ctrl+U               |
-| Znajdź                                                                                                          | ⌘F                        | Ctrl+F               |
-| Wypełnij w prawo od lewej zaznaczonej kolumny                                                                   | ⌘R                        | Ctrl+R               |
-| Przełącz odwołanie w formule między względne a bezwzględne                                                      | F4                        | F4                   |
-| Przełącz odwołanie w formule między względne a bezwzględne (zgodnie z Excelem dla Maca, podczas edycji komórki) | ⌘T                        |                      |
-| Kopiuj                                                                                                          | ⌘C                        | Ctrl+C               |
-| Wytnij                                                                                                          | ⌘X                        | Ctrl+X               |
-| Wklej                                                                                                           | ⌘V                        | Ctrl+V               |
-| Wklej tylko wartości                                                                                            | ⌘⇧V                       | Ctrl+Shift+V         |
-| Szybkie wypełnienie na podstawie wzorca powyżej                                                                 | ⌘E                        | Ctrl+E               |
-| Cofnij                                                                                                          | ⌘Z                        | Ctrl+Z               |
-| Ponów                                                                                                           | ⇧⌘Z                       | Ctrl+Shift+Z         |
-| Zaznacz cały arkusz                                                                                             | ⌘A                        | Ctrl+A               |
-| Wstaw dzisiejszą datę                                                                                           | ⌘;                        | Ctrl+;               |
-| Wstaw bieżący czas                                                                                              | ⌘⇧;                       | Ctrl+Shift+;         |
-| Wyczyść zawartość wszystkich zaznaczonych komórek                                                               | ⌫ lub ⌦                   | Backspace lub Delete |
+| Czynność                                                                                                        | Windows / Linux      | macOS                     |
+| --------------------------------------------------------------------------------------------------------------- | -------------------- | ------------------------- |
+| Wypełnij całe zaznaczenie bieżącym wpisem                                                                       | Ctrl+Enter           | ⌃⏎ lub ⌘⏎                 |
+| Rozpocznij nowy wiersz w komórce                                                                                | Alt+Enter            | ⌥⏎, lub ⌃⌥⏎ / ⌘⌥⏎ na Macu |
+| Edytuj aktywną komórkę w miejscu                                                                                | F2                   | F2                        |
+| Pogrubienie                                                                                                     | Ctrl+B               | ⌘B                        |
+| Pochylenie                                                                                                      | Ctrl+I               | ⌘I                        |
+| Podkreślenie                                                                                                    | Ctrl+U               | ⌘U                        |
+| Znajdź                                                                                                          | Ctrl+F               | ⌘F                        |
+| Wypełnij w prawo od lewej zaznaczonej kolumny                                                                   | Ctrl+R               | ⌘R                        |
+| Przełącz odwołanie w formule między względne a bezwzględne                                                      | F4                   | F4                        |
+| Przełącz odwołanie w formule między względne a bezwzględne (zgodnie z Excelem dla Maca, podczas edycji komórki) |                      | ⌘T                        |
+| Kopiuj                                                                                                          | Ctrl+C               | ⌘C                        |
+| Wytnij                                                                                                          | Ctrl+X               | ⌘X                        |
+| Wklej                                                                                                           | Ctrl+V               | ⌘V                        |
+| Wklej tylko wartości                                                                                            | Ctrl+Shift+V         | ⌘⇧V                       |
+| Szybkie wypełnienie na podstawie wzorca powyżej                                                                 | Ctrl+E               | ⌘E                        |
+| Cofnij                                                                                                          | Ctrl+Z               | ⌘Z                        |
+| Ponów                                                                                                           | Ctrl+Shift+Z         | ⇧⌘Z                       |
+| Zaznacz cały arkusz                                                                                             | Ctrl+A               | ⌘A                        |
+| Wstaw dzisiejszą datę                                                                                           | Ctrl+;               | ⌘;                        |
+| Wstaw bieżący czas                                                                                              | Ctrl+Shift+;         | ⌘⇧;                       |
+| Wyczyść zawartość wszystkich zaznaczonych komórek                                                               | Backspace lub Delete | ⌫ lub ⌦                   |
 
 AutoSum działa tylko w macOS. Naciśnij ⌘⇧T.
 
 ### Formatowanie
 
-| Czynność                                                         | macOS | Windows / Linux |
-| ---------------------------------------------------------------- | ----- | --------------- |
-| Okno Formatuj komórki                                            | ⌘1    | Ctrl+1          |
-| Przekreślenie (z zaznaczonymi komórkami)                         | ⌘5    | Ctrl+5          |
-| Zwiększ rozmiar czcionki (z zaznaczonymi komórkami)              | ⌘⇧.   | Ctrl+Shift+.    |
-| Zmniejsz rozmiar czcionki (z zaznaczonymi komórkami)             | ⌘⇧,   | Ctrl+Shift+,    |
-| Format liczby: Ogólny                                            | ⌘⇧`   | Ctrl+Shift+`    |
-| Format liczby: liczba z dwoma miejscami po przecinku             | ⌘⇧1   | Ctrl+Shift+1    |
-| Format liczby: czas `h:mm AM/PM`                                 | ⌘⇧2   | Ctrl+Shift+2    |
-| Format liczby: data `d-mmm-yy`                                   | ⌘⇧3   | Ctrl+Shift+3    |
-| Format liczby: waluta                                            | ⌘⇧4   | Ctrl+Shift+4    |
-| Format liczby: procent                                           | ⌘⇧5   | Ctrl+Shift+5    |
-| Format liczby: naukowy                                           | ⌘⇧6   | Ctrl+Shift+6    |
-| Wszystkie obramowania (z zaznaczonymi komórkami)                 | ⌘⇧7   | Ctrl+Shift+7    |
-| Bez obramowań (z zaznaczonymi komórkami)                         | ⌘⇧-   | Ctrl+Shift+-    |
-| Anuluj Malarz formatów (tylko gdy Malarz formatów jest włączony) | Esc   | Esc             |
+| Czynność                                                         | Windows / Linux | macOS |
+| ---------------------------------------------------------------- | --------------- | ----- |
+| Okno Formatuj komórki                                            | Ctrl+1          | ⌘1    |
+| Przekreślenie (z zaznaczonymi komórkami)                         | Ctrl+5          | ⌘5    |
+| Zwiększ rozmiar czcionki (z zaznaczonymi komórkami)              | Ctrl+Shift+.    | ⌘⇧.   |
+| Zmniejsz rozmiar czcionki (z zaznaczonymi komórkami)             | Ctrl+Shift+,    | ⌘⇧,   |
+| Format liczby: Ogólny                                            | Ctrl+Shift+`    | ⌘⇧`   |
+| Format liczby: liczba z dwoma miejscami po przecinku             | Ctrl+Shift+1    | ⌘⇧1   |
+| Format liczby: czas `h:mm AM/PM`                                 | Ctrl+Shift+2    | ⌘⇧2   |
+| Format liczby: data `d-mmm-yy`                                   | Ctrl+Shift+3    | ⌘⇧3   |
+| Format liczby: waluta                                            | Ctrl+Shift+4    | ⌘⇧4   |
+| Format liczby: procent                                           | Ctrl+Shift+5    | ⌘⇧5   |
+| Format liczby: naukowy                                           | Ctrl+Shift+6    | ⌘⇧6   |
+| Wszystkie obramowania (z zaznaczonymi komórkami)                 | Ctrl+Shift+7    | ⌘⇧7   |
+| Bez obramowań (z zaznaczonymi komórkami)                         | Ctrl+Shift+-    | ⌘⇧-   |
+| Anuluj Malarz formatów (tylko gdy Malarz formatów jest włączony) | Esc             | Esc   |
 
 ### Wstawianie i usuwanie
 
-| Czynność                                                                                              | macOS                                 | Windows / Linux                          |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------- | ---------------------------------------- |
-| Wstaw komórki — całe wiersze lub kolumny wstawiają się od razu, wszystko inne otwiera okno Wstawianie | ⌘⇧=                                   | Ctrl+Shift+=                             |
-| Wstaw komórki — `+` na klawiaturze numerycznej, to samo okno                                          | ⌘ oraz `+` na klawiaturze numerycznej | Ctrl oraz `+` na klawiaturze numerycznej |
-| Usuń komórki — całe wiersze lub kolumny usuwają się od razu, wszystko inne otwiera okno Usuwanie      | ⌘-                                    | Ctrl+-                                   |
-| Usuń komórki — `-` na klawiaturze numerycznej, to samo okno                                           | ⌘ oraz `-` na klawiaturze numerycznej | Ctrl oraz `-` na klawiaturze numerycznej |
-| Ukryj zaznaczone wiersze                                                                              | ⌘9                                    | Ctrl+9                                   |
-| Pokaż ukryte wiersze w zaznaczeniu                                                                    | ⌘⇧9                                   | Ctrl+Shift+9                             |
-| Ukryj zaznaczone kolumny                                                                              | ⌘0                                    | Ctrl+0                                   |
-| Pokaż ukryte kolumny w zaznaczeniu                                                                    | ⌘⇧0                                   | Ctrl+Shift+0                             |
+| Czynność                                                                                              | Windows / Linux                          | macOS                                 |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------------- |
+| Wstaw komórki — całe wiersze lub kolumny wstawiają się od razu, wszystko inne otwiera okno Wstawianie | Ctrl+Shift+=                             | ⌘⇧=                                   |
+| Wstaw komórki — `+` na klawiaturze numerycznej, to samo okno                                          | Ctrl oraz `+` na klawiaturze numerycznej | ⌘ oraz `+` na klawiaturze numerycznej |
+| Usuń komórki — całe wiersze lub kolumny usuwają się od razu, wszystko inne otwiera okno Usuwanie      | Ctrl+-                                   | ⌘-                                    |
+| Usuń komórki — `-` na klawiaturze numerycznej, to samo okno                                           | Ctrl oraz `-` na klawiaturze numerycznej | ⌘ oraz `-` na klawiaturze numerycznej |
+| Ukryj zaznaczone wiersze                                                                              | Ctrl+9                                   | ⌘9                                    |
+| Pokaż ukryte wiersze w zaznaczeniu                                                                    | Ctrl+Shift+9                             | ⌘⇧9                                   |
+| Ukryj zaznaczone kolumny                                                                              | Ctrl+0                                   | ⌘0                                    |
+| Pokaż ukryte kolumny w zaznaczeniu                                                                    | Ctrl+Shift+0                             | ⌘⇧0                                   |
 
 ### Dane i sprawdzanie
 
-| Czynność                                              | macOS | Windows / Linux |
-| ----------------------------------------------------- | ----- | --------------- |
-| Okno Wstaw funkcję                                    | ⇧F3   | Shift+F3        |
-| Menedżer nazw                                         | ⌃F3   | Ctrl+F3         |
-| Dodaj lub edytuj notatkę na aktywnej komórce          | ⇧F2   | Shift+F2        |
-| Wstaw hiperłącze                                      | ⌘K    | Ctrl+K          |
-| Prześledź poprzedniki (komórka musi zawierać formułę) | ⌘[    | Ctrl+[          |
-| Prześledź następne                                    | ⌘]    | Ctrl+]          |
-| Grupuj zaznaczone wiersze                             | ⌥⇧→   | Alt+Shift+→     |
-| Rozgrupuj zaznaczone wiersze                          | ⌥⇧←   | Alt+Shift+←     |
-| Przelicz cały skoroszyt                               | F9    | F9              |
-| Przelicz tylko aktywny arkusz                         | ⇧F9   | Shift+F9        |
-| Włącz lub wyłącz filtr w zaznaczonym zakresie         | ⌘⇧F   |                 |
+| Czynność                                              | Windows / Linux | macOS |
+| ----------------------------------------------------- | --------------- | ----- |
+| Okno Wstaw funkcję                                    | Shift+F3        | ⇧F3   |
+| Menedżer nazw                                         | Ctrl+F3         | ⌃F3   |
+| Dodaj lub edytuj notatkę na aktywnej komórce          | Shift+F2        | ⇧F2   |
+| Wstaw hiperłącze                                      | Ctrl+K          | ⌘K    |
+| Prześledź poprzedniki (komórka musi zawierać formułę) | Ctrl+[          | ⌘[    |
+| Prześledź następne                                    | Ctrl+]          | ⌘]    |
+| Grupuj zaznaczone wiersze                             | Alt+Shift+→     | ⌥⇧→   |
+| Rozgrupuj zaznaczone wiersze                          | Alt+Shift+←     | ⌥⇧←   |
+| Przelicz cały skoroszyt                               | F9              | F9    |
+| Przelicz tylko aktywny arkusz                         | Shift+F9        | ⇧F9   |
+| Włącz lub wyłącz filtr w zaznaczonym zakresie         |                 | ⌘⇧F   |
 
 Skrót filtru Excela, Ctrl+Shift+L, nie działa w Windows ani Linux. Naciśnij ⌘⇧F w macOS albo użyj polecenia filtru na wstążce na dowolnej platformie.
 
 ### Okno
 
-| Czynność                                                        | macOS           | Windows / Linux    |
-| --------------------------------------------------------------- | --------------- | ------------------ |
-| Zapisz skoroszyt                                                | ⌘S              | Ctrl+S             |
-| Zapisz jako                                                     | ⇧⌘S             | Ctrl+Shift+S       |
-| Otwórz skoroszyt                                                | ⌘O              | Ctrl+O             |
-| Drukuj                                                          | ⌘P              | Ctrl+P             |
-| Zamknij skoroszyt (macOS) / Zakończ aplikację (Windows i Linux) | ⌘W              | Ctrl+Q             |
-| Otwórz Podręcznik użytkownika                                   | F1              | F1                 |
-| Powiększ                                                        | ⌘=              | Ctrl+=             |
-| Zoom kółkiem myszy                                              | ⌘ + przewijanie | Ctrl + przewijanie |
-| Pokaż lub ukryj formuły w komórkach                             | ⌘`              | Ctrl+`             |
-| Rozwiń lub zwiń pasek formuły                                   | ⌘⇧U             | Ctrl+Shift+U       |
+| Czynność                                                        | Windows / Linux    | macOS           |
+| --------------------------------------------------------------- | ------------------ | --------------- |
+| Zapisz skoroszyt                                                | Ctrl+S             | ⌘S              |
+| Zapisz jako                                                     | Ctrl+Shift+S       | ⇧⌘S             |
+| Otwórz skoroszyt                                                | Ctrl+O             | ⌘O              |
+| Drukuj                                                          | Ctrl+P             | ⌘P              |
+| Zamknij skoroszyt (macOS) / Zakończ aplikację (Windows i Linux) | Ctrl+Q             | ⌘W              |
+| Otwórz Podręcznik użytkownika                                   | F1                 | F1              |
+| Powiększ                                                        | Ctrl+=             | ⌘=              |
+| Zoom kółkiem myszy                                              | Ctrl + przewijanie | ⌘ + przewijanie |
+| Pokaż lub ukryj formuły w komórkach                             | Ctrl+`             | ⌘`              |
+| Rozwiń lub zwiń pasek formuły                                   | Ctrl+Shift+U       | ⌘⇧U             |
 
 ## Slides
 
@@ -297,31 +309,31 @@ GenOffice Slides to edytor prezentacji w stylu PowerPointa. Większość klawisz
 
 ### Plik i aplikacja
 
-| Czynność                   | macOS | Windows / Linux |
-| -------------------------- | ----- | --------------- |
-| Zapisz                     | ⌘S    | Ctrl+S          |
-| Zapisz jako                | ⇧⌘S   | Ctrl+Shift+S    |
-| Otwórz                     | ⌘O    | Ctrl+O          |
-| Zamknij bieżącą kartę      | ⌘W    | Ctrl+Q          |
-| Drukuj                     | ⌘P    | Ctrl+P          |
-| Cofnij                     | ⌘Z    | Ctrl+Z          |
-| Ponów                      | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Ponów (skrót alternatywny) | ⌘Y    | Ctrl+Y          |
+| Czynność                   | Windows / Linux | macOS |
+| -------------------------- | --------------- | ----- |
+| Zapisz                     | Ctrl+S          | ⌘S    |
+| Zapisz jako                | Ctrl+Shift+S    | ⇧⌘S   |
+| Otwórz                     | Ctrl+O          | ⌘O    |
+| Zamknij bieżącą kartę      | Ctrl+Q          | ⌘W    |
+| Drukuj                     | Ctrl+P          | ⌘P    |
+| Cofnij                     | Ctrl+Z          | ⌘Z    |
+| Ponów                      | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Ponów (skrót alternatywny) | Ctrl+Y          | ⌘Y    |
 
 Zamykanie karty to jedyne miejsce, w którym obie platformy dzielą się całkowicie: ⌘W w macOS, a w Windows i Linux Ctrl+Q, który kończy całą aplikację, a nie kartę.
 
 ### Edycja
 
-| Czynność                                                   | macOS  | Windows / Linux |
-| ---------------------------------------------------------- | ------ | --------------- |
-| Nowy slajd                                                 | ⇧⌘N    | Ctrl+M          |
-| Znajdź (nie podczas edycji tekstu w kształcie)             | ⌘F     | Ctrl+F          |
-| Opisz zaznaczenie za pomocą AI (z zaznaczonymi kształtami) | ⌘K     | Ctrl+K          |
-| Powiększ                                                   | ⌘=     | Ctrl+=          |
-| Pomniejsz                                                  | ⌘-     | Ctrl+-          |
-| Rozmiar rzeczywisty (100%)                                 | ⌘0     | Ctrl+0          |
-| Zaznacz wszystko                                           | ⌘A     | Ctrl+A          |
-| Przechodź po zaznaczeniu kształtów do przodu / do tyłu     | ⇥ / ⇧⇥ | Tab / Shift+Tab |
+| Czynność                                                   | Windows / Linux | macOS  |
+| ---------------------------------------------------------- | --------------- | ------ |
+| Nowy slajd                                                 | Ctrl+M          | ⇧⌘N    |
+| Znajdź (nie podczas edycji tekstu w kształcie)             | Ctrl+F          | ⌘F     |
+| Opisz zaznaczenie za pomocą AI (z zaznaczonymi kształtami) | Ctrl+K          | ⌘K     |
+| Powiększ                                                   | Ctrl+=          | ⌘=     |
+| Pomniejsz                                                  | Ctrl+-          | ⌘-     |
+| Rozmiar rzeczywisty (100%)                                 | Ctrl+0          | ⌘0     |
+| Zaznacz wszystko                                           | Ctrl+A          | ⌘A     |
+| Przechodź po zaznaczeniu kształtów do przodu / do tyłu     | Tab / Shift+Tab | ⇥ / ⇧⇥ |
 
 Nowy slajd to drugi podział platform. Każda platforma ma własny klawisz, a drugi nic nie robi: ⇧⌘N w macOS, Ctrl+M w Windows i Linux. ⌘M nie może tego zrobić w macOS, bo jest systemowym skrótem Minimalizuj.
 
@@ -331,39 +343,39 @@ Zaznacz wszystko zależy od fokusu: przy fokusie na panel miniatur, panelu konsp
 
 Działają na tekst zaznaczonego kształtu albo na akapit kursora, gdy jesteś w polu tekstowym.
 
-| Czynność                            | macOS | Windows / Linux |
-| ----------------------------------- | ----- | --------------- |
-| Pogrubienie                         | ⌘B    | Ctrl+B          |
-| Pochylenie                          | ⌘I    | Ctrl+I          |
-| Podkreślenie                        | ⌘U    | Ctrl+U          |
-| Wyrównaj do lewej                   | ⌘L    | Ctrl+L          |
-| Wyśrodkuj                           | ⌘E    | Ctrl+E          |
-| Wyrównaj do prawej                  | ⌘R    | Ctrl+R          |
-| Wyjustuj                            | ⌘J    | Ctrl+J          |
-| Zwiększ rozmiar czcionki o 1 pt     | ⌘]    | Ctrl+]          |
-| Zmniejsz rozmiar czcionki o 1 pt    | ⌘[    | Ctrl+[          |
-| Następny rozmiar czcionki na skali  | ⇧⌘>   | Ctrl+Shift+>    |
-| Poprzedni rozmiar czcionki na skali | ⇧⌘<   | Ctrl+Shift+<    |
+| Czynność                            | Windows / Linux | macOS |
+| ----------------------------------- | --------------- | ----- |
+| Pogrubienie                         | Ctrl+B          | ⌘B    |
+| Pochylenie                          | Ctrl+I          | ⌘I    |
+| Podkreślenie                        | Ctrl+U          | ⌘U    |
+| Wyrównaj do lewej                   | Ctrl+L          | ⌘L    |
+| Wyśrodkuj                           | Ctrl+E          | ⌘E    |
+| Wyrównaj do prawej                  | Ctrl+R          | ⌘R    |
+| Wyjustuj                            | Ctrl+J          | ⌘J    |
+| Zwiększ rozmiar czcionki o 1 pt     | Ctrl+]          | ⌘]    |
+| Zmniejsz rozmiar czcionki o 1 pt    | Ctrl+[          | ⌘[    |
+| Następny rozmiar czcionki na skali  | Ctrl+Shift+>    | ⇧⌘>   |
+| Poprzedni rozmiar czcionki na skali | Ctrl+Shift+<    | ⇧⌘<   |
 
 Klawisze skali czcionki przyjmują też klawisze . i , z wciśniętym Shift, w układach klawiatury, które zgłaszają je zamiast klawiszy interpunkcyjnych.
 
 ### Schowek i obiekty
 
-| Czynność                                             | macOS       | Windows / Linux    |
-| ---------------------------------------------------- | ----------- | ------------------ |
-| Kopiuj                                               | ⌘C          | Ctrl+C             |
-| Wytnij                                               | ⌘X          | Ctrl+X             |
-| Wklej                                                | ⌘V          | Ctrl+V             |
-| Wklej tylko format                                   | ⇧⌘V         | Ctrl+Shift+V       |
-| Kopiuj tylko format (z zaznaczonymi kształtami)      | ⇧⌘C         | Ctrl+Shift+C       |
-| Duplikuj w miejscu (z zaznaczonymi kształtami)       | ⌘D          | Ctrl+D             |
-| Grupuj zaznaczenie (z zaznaczonymi kształtami)       | ⌘G          | Ctrl+G             |
-| Rozgrupuj zaznaczenie (z zaznaczonymi kształtami)    | ⇧⌘G         | Ctrl+Shift+G       |
-| Usuń zaznaczenie (z zaznaczonymi kształtami)         | ⌫ / Delete  | Backspace / Delete |
-| Usuń zaznaczony wierzchołek (w trybie Edytuj punkty) | ⌫ / Delete  | Backspace / Delete |
-| Przesuń zaznaczenie (z zaznaczonymi kształtami)      | ↑ ↓ ← →     | Arrow keys         |
-| Przesuń o jeden piksel ekranu                        | ⌘↑ ⌘↓ ⌘← ⌘→ | Ctrl+Arrow keys    |
-| Zmień rozmiar względem środka                        | ⇧↑ ⇧↓ ⇧← ⇧→ | Shift+Arrow keys   |
+| Czynność                                             | Windows / Linux    | macOS       |
+| ---------------------------------------------------- | ------------------ | ----------- |
+| Kopiuj                                               | Ctrl+C             | ⌘C          |
+| Wytnij                                               | Ctrl+X             | ⌘X          |
+| Wklej                                                | Ctrl+V             | ⌘V          |
+| Wklej tylko format                                   | Ctrl+Shift+V       | ⇧⌘V         |
+| Kopiuj tylko format (z zaznaczonymi kształtami)      | Ctrl+Shift+C       | ⇧⌘C         |
+| Duplikuj w miejscu (z zaznaczonymi kształtami)       | Ctrl+D             | ⌘D          |
+| Grupuj zaznaczenie (z zaznaczonymi kształtami)       | Ctrl+G             | ⌘G          |
+| Rozgrupuj zaznaczenie (z zaznaczonymi kształtami)    | Ctrl+Shift+G       | ⇧⌘G         |
+| Usuń zaznaczenie (z zaznaczonymi kształtami)         | Backspace / Delete | ⌫ / Delete  |
+| Usuń zaznaczony wierzchołek (w trybie Edytuj punkty) | Backspace / Delete | ⌫ / Delete  |
+| Przesuń zaznaczenie (z zaznaczonymi kształtami)      | Arrow keys         | ↑ ↓ ← →     |
+| Przesuń o jeden piksel ekranu                        | Ctrl+Arrow keys    | ⌘↑ ⌘↓ ⌘← ⌘→ |
+| Zmień rozmiar względem środka                        | Shift+Arrow keys   | ⇧↑ ⇧↓ ⇧← ⇧→ |
 
 W polu tekstowym kopiowanie, wycinanie i wklejanie dotyczą tekstu, a nie kształtu. Shift ze strzałkami zmienia rozmiar każdego kształtu wokół jego środka, nie rusza łączników i zatwierdza zaznaczenie wielokrotne jako jeden krok Cofnij.
 
@@ -371,57 +383,57 @@ W polu tekstowym kopiowanie, wycinanie i wklejanie dotyczą tekstu, a nie kszta�
 
 Polecenia na poziomie slajdu w rodzaju PowerPointa działają tylko wtedy, gdy fokus klawiatury ma jeden z tych trzech paneli.
 
-| Czynność                                               | macOS                           | Windows / Linux                                 |
-| ------------------------------------------------------ | ------------------------------- | ----------------------------------------------- |
-| Poprzedni / następny slajd                             | ↑ ↓ (także Page Up / Page Down) | ArrowUp / ArrowDown (także Page Up / Page Down) |
-| Pierwszy / ostatni slajd                               | Home / End                      | Home / End                                      |
-| Rozszerz zaznaczenie do pierwszego / ostatniego slajdu | ⇧Home / ⇧End                    | Shift+Home / Shift+End                          |
-| Zaznacz wszystkie slajdy                               | ⌘A                              | Ctrl+A                                          |
-| Usuń zaznaczone slajdy                                 | ⌫ / Delete                      | Backspace / Delete                              |
-| Kopiuj slajdy                                          | ⌘C                              | Ctrl+C                                          |
-| Wytnij slajdy                                          | ⌘X                              | Ctrl+X                                          |
+| Czynność                                               | Windows / Linux                                 | macOS                           |
+| ------------------------------------------------------ | ----------------------------------------------- | ------------------------------- |
+| Poprzedni / następny slajd                             | ArrowUp / ArrowDown (także Page Up / Page Down) | ↑ ↓ (także Page Up / Page Down) |
+| Pierwszy / ostatni slajd                               | Home / End                                      | Home / End                      |
+| Rozszerz zaznaczenie do pierwszego / ostatniego slajdu | Shift+Home / Shift+End                          | ⇧Home / ⇧End                    |
+| Zaznacz wszystkie slajdy                               | Ctrl+A                                          | ⌘A                              |
+| Usuń zaznaczone slajdy                                 | Backspace / Delete                              | ⌫ / Delete                      |
+| Kopiuj slajdy                                          | Ctrl+C                                          | ⌘C                              |
+| Wytnij slajdy                                          | Ctrl+X                                          | ⌘X                              |
 
 Poruszanie się między slajdami strzałkami to wyjątek — działa także z planszy, bez niczego zaznaczonego. Usuwanie slajdów nie działa, gdy aktywne jest narzędzie pióra ani w **trybie czytania**.
 
 ### W polu tekstowym
 
-| Czynność                                                        | macOS                             | Windows / Linux                       |
-| --------------------------------------------------------------- | --------------------------------- | ------------------------------------- |
-| Rozpocznij edycję tekstu w zaznaczonym kształcie tekstowym      | dowolny znak do wydruku, ⏎ lub F2 | dowolny znak do wydruku, Enter lub F2 |
-| Zatwierdź tekst i zaznacz kształt ponownie                      | Esc lub F2                        | Esc lub F2                            |
-| Zatwierdź tekst i zaznacz kształt ponownie (skrót alternatywny) | ⌘⏎                                | Ctrl+⏎                                |
-| Przejdź do następnego symbolu zastępczego                       | ⌃⏎                                | Ctrl+⏎                                |
-| Obniż / podnieś poziom listy                                    | ⇥ / ⇧⇥                            | Tab / Shift+Tab                       |
-| Następna / poprzednia komórka tabeli                            | ⇥ / ⇧⇥                            | Tab / Shift+Tab                       |
-| Miękki podział wiersza                                          | ⇧⏎                                | Shift+⏎                               |
+| Czynność                                                        | Windows / Linux                       | macOS                             |
+| --------------------------------------------------------------- | ------------------------------------- | --------------------------------- |
+| Rozpocznij edycję tekstu w zaznaczonym kształcie tekstowym      | dowolny znak do wydruku, Enter lub F2 | dowolny znak do wydruku, ⏎ lub F2 |
+| Zatwierdź tekst i zaznacz kształt ponownie                      | Esc lub F2                            | Esc lub F2                        |
+| Zatwierdź tekst i zaznacz kształt ponownie (skrót alternatywny) | Ctrl+⏎                                | ⌘⏎                                |
+| Przejdź do następnego symbolu zastępczego                       | Ctrl+⏎                                | ⌃⏎                                |
+| Obniż / podnieś poziom listy                                    | Tab / Shift+Tab                       | ⇥ / ⇧⇥                            |
+| Następna / poprzednia komórka tabeli                            | Tab / Shift+Tab                       | ⇥ / ⇧⇥                            |
+| Miękki podział wiersza                                          | Shift+⏎                               | ⇧⏎                                |
 
 Tab znaczy dwie różne rzeczy: następną komórkę w tabeli oraz obniżenie poziomu listy w kształcie tekstowym.
 
 ### Pokaz slajdów
 
-| Czynność                       | macOS             | Windows / Linux                      |
-| ------------------------------ | ----------------- | ------------------------------------ |
-| Rozpocznij od początku         | F5                | F5                                   |
-| Rozpocznij od bieżącego slajdu | ⇧F5 lub ⌘⏎        | ⇧F5                                  |
-| Następny slajd                 | → ↓ ␣ ⏎ Page Down | Right, Down, Space, Enter, Page Down |
-| Poprzedni slajd                | ← ↑ Page Up       | Left, Up, Page Up                    |
-| Pierwszy slajd                 | Home              | Home                                 |
-| Ostatni slajd                  | End               | End                                  |
-| Przejdź do slajdu N            | wpisz N, potem ⏎  | wpisz N, potem Enter                 |
-| Czarny ekran                   | B lub .           | B lub .                              |
-| Biały ekran                    | W lub ,           | W lub ,                              |
-| Przywróć po zaciemnieniu       | dowolny klawisz   | dowolny klawisz                      |
-| Zakończ pokaz                  | Esc               | Esc                                  |
+| Czynność                       | Windows / Linux                      | macOS             |
+| ------------------------------ | ------------------------------------ | ----------------- |
+| Rozpocznij od początku         | F5                                   | F5                |
+| Rozpocznij od bieżącego slajdu | ⇧F5                                  | ⇧F5 lub ⌘⏎        |
+| Następny slajd                 | Right, Down, Space, Enter, Page Down | → ↓ ␣ ⏎ Page Down |
+| Poprzedni slajd                | Left, Up, Page Up                    | ← ↑ Page Up       |
+| Pierwszy slajd                 | Home                                 | Home              |
+| Ostatni slajd                  | End                                  | End               |
+| Przejdź do slajdu N            | wpisz N, potem Enter                 | wpisz N, potem ⏎  |
+| Czarny ekran                   | B lub .                              | B lub .           |
+| Biały ekran                    | W lub ,                              | W lub ,           |
+| Przywróć po zaciemnieniu       | dowolny klawisz                      | dowolny klawisz   |
+| Zakończ pokaz                  | Esc                                  | Esc               |
 
 Rozpoczynanie od bieżącego slajdu działa w macOS zarówno przez ⌘⏎, jak i przez ⇧F5. W Windows ten sam klawisz pozostaje zarezerwowany do przechodzenia między symbolami zastępczymi.
 
 ### Tryb czytania
 
-| Czynność               | macOS             | Windows / Linux                      |
-| ---------------------- | ----------------- | ------------------------------------ |
-| Następny slajd         | → ↓ ␣ ⏎ Page Down | Right, Down, Space, Enter, Page Down |
-| Poprzedni slajd        | ← ↑ Page Up       | Left, Up, Page Up                    |
-| Wyjdź z trybu czytania | Esc               | Esc                                  |
+| Czynność               | Windows / Linux                      | macOS             |
+| ---------------------- | ------------------------------------ | ----------------- |
+| Następny slajd         | Right, Down, Space, Enter, Page Down | → ↓ ␣ ⏎ Page Down |
+| Poprzedni slajd        | Left, Up, Page Up                    | ← ↑ Page Up       |
+| Wyjdź z trybu czytania | Esc                                  | Esc               |
 
 Naciśnij **Esc**, aby wycofać się z czegokolwiek, w czym jesteś — kadrowania, rysowanego kształtu, **Edytuj punkty**, grupy, pióra, zakreślacza lub gumki, odtwarzacza albo **trybu czytania** — i aby wyczyścić zaznaczenie.
 
@@ -433,30 +445,30 @@ PDF nie ma własnego menu, więc każdy skrót poniżej podąża za aktywną kar
 
 ### Plik i edycja
 
-| Czynność                     | macOS | Windows / Linux |
-| ---------------------------- | ----- | --------------- |
-| Zapisz                       | ⌘S    | Ctrl+S          |
-| Cofnij                       | ⌘Z    | Ctrl+Z          |
-| Ponów                        | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Znajdź (otwórz wyszukiwanie) | ⌘F    | Ctrl+F          |
-| Drukuj                       | ⌘P    | Ctrl+P          |
+| Czynność                     | Windows / Linux | macOS |
+| ---------------------------- | --------------- | ----- |
+| Zapisz                       | Ctrl+S          | ⌘S    |
+| Cofnij                       | Ctrl+Z          | ⌘Z    |
+| Ponów                        | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Znajdź (otwórz wyszukiwanie) | Ctrl+F          | ⌘F    |
+| Drukuj                       | Ctrl+P          | ⌘P    |
 
 Cofnij i Ponów przechodzą po historii dokumentu; gdy kursor znajduje się w polu tekstowym, zostawiają ⌘Z temu polu. ⌘P otwiera to samo okno drukowania w aplikacji co przycisk Drukuj na pasku narzędzi.
 
 ### Widok
 
-| Czynność            | macOS                 | Windows / Linux          |
-| ------------------- | --------------------- | ------------------------ |
-| Powiększ            | ⌘=                    | Ctrl+=                   |
-| Pomniejsz           | ⌘-                    | Ctrl+-                   |
-| Dopasuj szerokość   | ⌘0                    | Ctrl+0                   |
-| Powiększanie ciągłe | ⌘ + kółko przewijania | Ctrl + kółko przewijania |
+| Czynność            | Windows / Linux          | macOS                 |
+| ------------------- | ------------------------ | --------------------- |
+| Powiększ            | Ctrl+=                   | ⌘=                    |
+| Pomniejsz           | Ctrl+-                   | ⌘-                    |
+| Dopasuj szerokość   | Ctrl+0                   | ⌘0                    |
+| Powiększanie ciągłe | Ctrl + kółko przewijania | ⌘ + kółko przewijania |
 
 Powiększ reaguje też na ⌘+ i Ctrl++.
 
 ### Nawigacja po stronach
 
-| Czynność                     | macOS              | Windows / Linux    |
+| Czynność                     | Windows / Linux    | macOS              |
 | ---------------------------- | ------------------ | ------------------ |
 | Następna strona              | →                  | →                  |
 | Poprzednia strona            | ←                  | ←                  |
@@ -471,7 +483,7 @@ Te klawisze nie mają modyfikatora, więc obie platformy wyglądają tak samo. �
 
 ### Zaznaczanie i edycja
 
-| Czynność                  | macOS                | Windows / Linux      |
+| Czynność                  | Windows / Linux      | macOS                |
 | ------------------------- | -------------------- | -------------------- |
 | Usuń zaznaczoną adnotację | Delete lub Backspace | Delete lub Backspace |
 
@@ -479,21 +491,21 @@ Działa tylko wtedy, gdy zaznaczono adnotację, pieczec, zaciemnienie lub obraz.
 
 ### Pasek miniatur
 
-| Działanie                   | macOS                | Windows / Linux      |
+| Działanie                   | Windows / Linux      | macOS                |
 | --------------------------- | -------------------- | -------------------- |
-| Wybieranie stron pojedynczo | ⌘ + kliknięcie       | Ctrl + kliknięcie    |
-| Wybieranie ciągu stron      | ⇧ + kliknięcie       | Shift + kliknięcie   |
-| Wybieranie wszystkich stron | ⌘A                   | Ctrl+A               |
+| Wybieranie stron pojedynczo | Ctrl + kliknięcie    | ⌘ + kliknięcie       |
+| Wybieranie ciągu stron      | Shift + kliknięcie   | ⇧ + kliknięcie       |
+| Wybieranie wszystkich stron | Ctrl+A               | ⌘A                   |
 | Usuwanie wybranych stron    | Delete lub Backspace | Delete lub Backspace |
 
 Wybrane strony są zabarwione. Kliknięcie prawym przyciskiem jednej z nich lub karta Strona obraca, usuwa albo wyodrębnia je razem; przeciągnięcie jednej przenosi wszystkie. Escape lub zwykłe kliknięcie strony usuwa wybór. ⌘A i Delete działają, gdy pasek ma fokus.
 
 ### Escape i okna dialogowe
 
-| Czynność                         | macOS  | Windows / Linux |
-| -------------------------------- | ------ | --------------- |
-| Anuluj najwyższy stan            | Escape | Escape          |
-| Potwierdź otwarte okno dialogowe | Enter  | Enter           |
+| Czynność                         | Windows / Linux | macOS  |
+| -------------------------------- | --------------- | ------ |
+| Anuluj najwyższy stan            | Escape          | Escape |
+| Potwierdź otwarte okno dialogowe | Enter           | Enter  |
 
 Escape cofa jedną warstwę naraz — najpierw otwarte okno dialogowe, potem wyskakujące okno AI, szkic tekstu, panel wyszukiwania, a na końcu samo zaznaczenie. Gdy kursor jest w polu wyszukiwania, Enter i ⇧Enter przechodzą do następnego i poprzedniego dopasowania, a Escape zamyka panel; gdy kursor jest w nowej notatce tekstowej, ⌘⏎ ją zatwierdza.
 
@@ -503,38 +515,38 @@ GenOffice Markdown edytuje Markdown z podglądem na żywo obok.
 
 ### Plik i widok
 
-| Czynność                   | macOS     | Windows / Linux   |
-| -------------------------- | --------- | ----------------- |
-| Zapisz                     | ⌘S        | Ctrl+S            |
-| Zapisz jako                | ⇧⌘S       | Ctrl+Shift+S      |
-| Drukuj                     | ⌘P        | Ctrl+P            |
-| Znajdź                     | ⌘F        | Ctrl+F            |
-| Przełącz źródło / podgląd  | ⌘E        | Ctrl+E            |
-| Powiększ                   | ⌘= lub ⌘+ | Ctrl+= lub Ctrl++ |
-| Pomniejsz                  | ⌘-        | Ctrl+-            |
-| Rozmiar rzeczywisty (100%) | ⌘0        | Ctrl+0            |
+| Czynność                   | Windows / Linux   | macOS     |
+| -------------------------- | ----------------- | --------- |
+| Zapisz                     | Ctrl+S            | ⌘S        |
+| Zapisz jako                | Ctrl+Shift+S      | ⇧⌘S       |
+| Drukuj                     | Ctrl+P            | ⌘P        |
+| Znajdź                     | Ctrl+F            | ⌘F        |
+| Przełącz źródło / podgląd  | Ctrl+E            | ⌘E        |
+| Powiększ                   | Ctrl+= lub Ctrl++ | ⌘= lub ⌘+ |
+| Pomniejsz                  | Ctrl+-            | ⌘-        |
+| Rozmiar rzeczywisty (100%) | Ctrl+0            | ⌘0        |
 
 Pomniejsz działa też przez ⌘_ i Ctrl+_. Zoom działa także przy ściskaniu trackpada albo przytrzymaniu ⌘ lub Ctrl i przewijaniu nad dokumentem.
 
 ### Bloki
 
-| Czynność                                                     | macOS | Windows / Linux      |
-| ------------------------------------------------------------ | ----- | -------------------- |
-| Duplikuj zaznaczone bloki                                    | ⌘D    | Ctrl+D               |
-| Usuń zaznaczone bloki                                        | ⇧⌘⌫   | Ctrl+Shift+Backspace |
-| Przesuń zaznaczony blok w górę                               | ⇧⌘↑   | Ctrl+Shift+ArrowUp   |
-| Przesuń zaznaczony blok w dół                                | ⇧⌘↓   | Ctrl+Shift+ArrowDown |
-| Wstaw odnośnik na zaznaczeniu                                | ⌘K    | Ctrl+K               |
-| Usuń odnośnik (naciśnij ponownie, gdy odnośnik jest aktywny) | ⌘K    | Ctrl+K               |
+| Czynność                                                     | Windows / Linux      | macOS |
+| ------------------------------------------------------------ | -------------------- | ----- |
+| Duplikuj zaznaczone bloki                                    | Ctrl+D               | ⌘D    |
+| Usuń zaznaczone bloki                                        | Ctrl+Shift+Backspace | ⇧⌘⌫   |
+| Przesuń zaznaczony blok w górę                               | Ctrl+Shift+ArrowUp   | ⇧⌘↑   |
+| Przesuń zaznaczony blok w dół                                | Ctrl+Shift+ArrowDown | ⇧⌘↓   |
+| Wstaw odnośnik na zaznaczeniu                                | Ctrl+K               | ⌘K    |
+| Usuń odnośnik (naciśnij ponownie, gdy odnośnik jest aktywny) | Ctrl+K               | ⌘K    |
 
 ### W bloku matematycznym
 
 Działają tylko, gdy otwarty jest pływający edytor LaTeX.
 
-| Czynność                        | macOS | Windows / Linux |
-| ------------------------------- | ----- | --------------- |
-| Zastosuj wzór                   | ⌘⏎    | Ctrl+⏎          |
-| Zamknij edytor bez zastosowania | Esc   | Esc             |
+| Czynność                        | Windows / Linux | macOS |
+| ------------------------------- | --------------- | ----- |
+| Zastosuj wzór                   | Ctrl+⏎          | ⌘⏎    |
+| Zamknij edytor bez zastosowania | Esc             | Esc   |
 
 Zastosowanie pustego wzoru usuwa zamiast tego blok. Edytor zamyka się także przy każdej zmianie w dokumencie, a kliknięcie poza nim go odrzuca.
 
@@ -544,54 +556,54 @@ GenOffice HTML pokazuje edytor kodu obok podglądu na żywo. Klawisze działają
 
 ### Plik i widok źródła
 
-| Czynność                                      | macOS     | Windows / Linux   |
-| --------------------------------------------- | --------- | ----------------- |
-| Zapisz                                        | ⌘S        | Ctrl+S            |
-| Zapisz jako                                   | ⇧⌘S       | Ctrl+Shift+S      |
-| Przełączaj widok (edycja / podział / podgląd) | ⌘\        | Ctrl+\            |
-| Znajdź                                        | ⌘F        | Ctrl+F            |
-| Powiększ                                      | ⌘= lub ⌘+ | Ctrl+= lub Ctrl++ |
-| Pomniejsz                                     | ⌘-        | Ctrl+-            |
-| Rozmiar rzeczywisty (100%)                    | ⌘0        | Ctrl+0            |
+| Czynność                                      | Windows / Linux   | macOS     |
+| --------------------------------------------- | ----------------- | --------- |
+| Zapisz                                        | Ctrl+S            | ⌘S        |
+| Zapisz jako                                   | Ctrl+Shift+S      | ⇧⌘S       |
+| Przełączaj widok (edycja / podział / podgląd) | Ctrl+\            | ⌘\        |
+| Znajdź                                        | Ctrl+F            | ⌘F        |
+| Powiększ                                      | Ctrl+= lub Ctrl++ | ⌘= lub ⌘+ |
+| Pomniejsz                                     | Ctrl+-            | ⌘-        |
+| Rozmiar rzeczywisty (100%)                    | Ctrl+0            | ⌘0        |
 
 Pomniejsz działa też przez ⌘_ i Ctrl+_.
 
 ### Formatowanie i historia
 
-| Czynność                   | macOS | Windows / Linux |
-| -------------------------- | ----- | --------------- |
-| Pogrubienie                | ⌘B    | Ctrl+B          |
-| Pochylenie                 | ⌘I    | Ctrl+I          |
-| Cofnij                     | ⌘Z    | Ctrl+Z          |
-| Ponów                      | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Ponów (skrót alternatywny) | ⌘Y    | Ctrl+Y          |
+| Czynność                   | Windows / Linux | macOS |
+| -------------------------- | --------------- | ----- |
+| Pogrubienie                | Ctrl+B          | ⌘B    |
+| Pochylenie                 | Ctrl+I          | ⌘I    |
+| Cofnij                     | Ctrl+Z          | ⌘Z    |
+| Ponów                      | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Ponów (skrót alternatywny) | Ctrl+Y          | ⌘Y    |
 
 W edytorze kodu lub polu formularza własne klawisze edycji pola przejmują kontrolę.
 
 ### W ramce podglądu, z zaznaczonym elementem
 
-| Czynność                           | macOS      | Windows / Linux    |
-| ---------------------------------- | ---------- | ------------------ |
-| Zapytaj AI o element               | ⌘K         | Ctrl+K             |
-| Usuń element                       | ⌫ / Delete | Backspace / Delete |
-| Poprzedni rodzeństwo               | ↑          | ArrowUp            |
-| Następne rodzeństwo                | ↓          | ArrowDown          |
-| Zaznacz element nadrzędny          | ←          | ArrowLeft          |
-| Zaznacz pierwsze dziecko           | →          | ArrowRight         |
-| Przesuń element wyżej w dokumencie | ⌥↑         | Alt+ArrowUp        |
-| Przesuń element niżej w dokumencie | ⌥↓         | Alt+ArrowDown      |
-| Zniech zaznaczenie                 | Esc        | Esc                |
+| Czynność                           | Windows / Linux    | macOS      |
+| ---------------------------------- | ------------------ | ---------- |
+| Zapytaj AI o element               | Ctrl+K             | ⌘K         |
+| Usuń element                       | Backspace / Delete | ⌫ / Delete |
+| Poprzedni rodzeństwo               | ArrowUp            | ↑          |
+| Następne rodzeństwo                | ArrowDown          | ↓          |
+| Zaznacz element nadrzędny          | ArrowLeft          | ←          |
+| Zaznacz pierwsze dziecko           | ArrowRight         | →          |
+| Przesuń element wyżej w dokumencie | Alt+ArrowUp        | ⌥↑         |
+| Przesuń element niżej w dokumencie | Alt+ArrowDown      | ⌥↓         |
+| Zniech zaznaczenie                 | Esc                | Esc        |
 
 Każdy z nich wymaga już zaznaczonego elementu; gdy nic nie jest zaznaczone, klawisz nic nie robi.
 
 ### W ramce podglądu, przy edycji tekstu w miejscu
 
-| Czynność                              | macOS | Windows / Linux |
-| ------------------------------------- | ----- | --------------- |
-| Zatwierdź edycję                      | Esc   | Esc             |
-| Zatwierdź edycję (skrót alternatywny) | ⌘⏎    | Ctrl+⏎          |
-| Pogrub zaznaczony zakres              | ⌘B    | Ctrl+B          |
-| Pochyl zaznaczony zakres              | ⌘I    | Ctrl+I          |
+| Czynność                              | Windows / Linux | macOS |
+| ------------------------------------- | --------------- | ----- |
+| Zatwierdź edycję                      | Esc             | Esc   |
+| Zatwierdź edycję (skrót alternatywny) | Ctrl+⏎          | ⌘⏎    |
+| Pogrub zaznaczony zakres              | Ctrl+B          | ⌘B    |
+| Pochyl zaznaczony zakres              | Ctrl+I          | ⌘I    |
 
 Zatwierdzenie zachowuje wpisane i przywraca element do stanu zaznaczonego.
 
@@ -601,147 +613,147 @@ Te klawisze działają, gdy karta HWP/HWPX jest na wierzchu, a dokument ma fokus
 
 ### Plik
 
-| Czynność      | macOS | Windows / Linux      |
-| ------------- | ----- | -------------------- |
-| Nowy dokument |       | Alt+N                |
-| Otwórz…       | ⌘O    | Ctrl+O / Alt+O       |
-| Zapisz        | ⌘S    | Ctrl+S / Alt+S       |
-| Zapisz jako…  | ⇧⌘S   | Ctrl+Shift+S / Alt+V |
-| Drukuj        | ⌘P    | Ctrl+P / Alt+P       |
+| Czynność      | Windows / Linux      | macOS |
+| ------------- | -------------------- | ----- |
+| Nowy dokument | Alt+N                |       |
+| Otwórz…       | Ctrl+O / Alt+O       | ⌘O    |
+| Zapisz        | Ctrl+S / Alt+S       | ⌘S    |
+| Zapisz jako…  | Ctrl+Shift+S / Alt+V | ⇧⌘S   |
+| Drukuj        | Ctrl+P / Alt+P       | ⌘P    |
 
 ### Edycja
 
-| Czynność            | macOS       | Windows / Linux              |
-| ------------------- | ----------- | ---------------------------- |
-| Cofnij              | ⌃Z          | Ctrl+Z                       |
-| Ponów               | ⌃⇧Z         | Ctrl+Shift+Z                 |
-| Usuń wiersz         | ⌃Y          | Ctrl+Y                       |
-| Wytnij              | ⌃X          | Ctrl+X                       |
-| Kopiuj              | ⌃C          | Ctrl+C                       |
-| Wklej               | ⌃V          | Ctrl+V                       |
-| Usuń                | ⌃E          | Ctrl+E                       |
-| Zaznacz wszystko    | ⌃A          | Ctrl+A                       |
-| Kopiuj formatowanie | ⌥C          | Alt+C                        |
-| Znajdź              | ⌃F / ⌃Q, F  | Ctrl+F / Ctrl+Q, F           |
-| Znajdź i zamień     | ⌃F2 / ⌃Q, A | Ctrl+H / Ctrl+F2 / Ctrl+Q, A |
-| Znajdź następny     | ⌃L          | Ctrl+L                       |
-| Znajdź wstecz       | ⌃Q, L       | Ctrl+Q, L                    |
-| Przejdź do          | ⌥G          | Alt+G                        |
-| Porównaj dokumenty  | ⌥⇧V         | Alt+Shift+V                  |
+| Czynność            | Windows / Linux              | macOS       |
+| ------------------- | ---------------------------- | ----------- |
+| Cofnij              | Ctrl+Z                       | ⌃Z          |
+| Ponów               | Ctrl+Shift+Z                 | ⌃⇧Z         |
+| Usuń wiersz         | Ctrl+Y                       | ⌃Y          |
+| Wytnij              | Ctrl+X                       | ⌃X          |
+| Kopiuj              | Ctrl+C                       | ⌃C          |
+| Wklej               | Ctrl+V                       | ⌃V          |
+| Usuń                | Ctrl+E                       | ⌃E          |
+| Zaznacz wszystko    | Ctrl+A                       | ⌃A          |
+| Kopiuj formatowanie | Alt+C                        | ⌥C          |
+| Znajdź              | Ctrl+F / Ctrl+Q, F           | ⌃F / ⌃Q, F  |
+| Znajdź i zamień     | Ctrl+H / Ctrl+F2 / Ctrl+Q, A | ⌃F2 / ⌃Q, A |
+| Znajdź następny     | Ctrl+L                       | ⌃L          |
+| Znajdź wstecz       | Ctrl+Q, L                    | ⌃Q, L       |
+| Przejdź do          | Alt+G                        | ⌥G          |
+| Porównaj dokumenty  | Alt+Shift+V                  | ⌥⇧V         |
 
 ### Znak
 
-| Czynność                        | macOS    | Windows / Linux      |
-| ------------------------------- | -------- | -------------------- |
-| Pogrubienie                     | ⌃B / ⌥⇧B | Ctrl+B / Alt+Shift+B |
-| Kursywa                         | ⌃I / ⌥⇧I | Ctrl+I / Alt+Shift+I |
-| Podkreślenie                    | ⌃U / ⌥⇧U | Ctrl+U / Alt+Shift+U |
-| Format normalny                 | ⌥⇧C      | Alt+Shift+C          |
-| Indeks górny                    | ⌥⇧P      | Alt+Shift+P          |
-| Indeks dolny                    | ⌥⇧S      | Alt+Shift+S          |
-| Format znaku…                   | ⌥L       | Alt+L                |
-| Zwiększ rozmiar czcionki        | ⌥⇧E / ⌃] | Alt+Shift+E / Ctrl+] |
-| Zmniejsz rozmiar czcionki       | ⌥⇧R / ⌃[ | Alt+Shift+R / Ctrl+[ |
-| Zwiększ szerokość znaków        | ⌥⇧K      | Alt+Shift+K          |
-| Zmniejsz szerokość znaków       | ⌥⇧J      | Alt+Shift+J          |
-| Zwiększ odstępy między znakami  | ⌥⇧W      | Alt+Shift+W          |
-| Zmniejsz odstępy między znakami | ⌥⇧N      | Alt+Shift+N          |
-| Tekst czarny                    | ⌃M, K    | Ctrl+M, K            |
-| Tekst czerwony                  | ⌃M, R    | Ctrl+M, R            |
-| Tekst niebieski                 | ⌃M, B    | Ctrl+M, B            |
-| Tekst śliwkowy                  | ⌃M, D    | Ctrl+M, D            |
-| Tekst zielony                   | ⌃M, G    | Ctrl+M, G            |
-| Tekst żółty                     | ⌃M, Y    | Ctrl+M, Y            |
-| Tekst turkusowy                 | ⌃M, C    | Ctrl+M, C            |
-| Tekst biały                     | ⌃M, W    | Ctrl+M, W            |
+| Czynność                        | Windows / Linux      | macOS    |
+| ------------------------------- | -------------------- | -------- |
+| Pogrubienie                     | Ctrl+B / Alt+Shift+B | ⌃B / ⌥⇧B |
+| Kursywa                         | Ctrl+I / Alt+Shift+I | ⌃I / ⌥⇧I |
+| Podkreślenie                    | Ctrl+U / Alt+Shift+U | ⌃U / ⌥⇧U |
+| Format normalny                 | Alt+Shift+C          | ⌥⇧C      |
+| Indeks górny                    | Alt+Shift+P          | ⌥⇧P      |
+| Indeks dolny                    | Alt+Shift+S          | ⌥⇧S      |
+| Format znaku…                   | Alt+L                | ⌥L       |
+| Zwiększ rozmiar czcionki        | Alt+Shift+E / Ctrl+] | ⌥⇧E / ⌃] |
+| Zmniejsz rozmiar czcionki       | Alt+Shift+R / Ctrl+[ | ⌥⇧R / ⌃[ |
+| Zwiększ szerokość znaków        | Alt+Shift+K          | ⌥⇧K      |
+| Zmniejsz szerokość znaków       | Alt+Shift+J          | ⌥⇧J      |
+| Zwiększ odstępy między znakami  | Alt+Shift+W          | ⌥⇧W      |
+| Zmniejsz odstępy między znakami | Alt+Shift+N          | ⌥⇧N      |
+| Tekst czarny                    | Ctrl+M, K            | ⌃M, K    |
+| Tekst czerwony                  | Ctrl+M, R            | ⌃M, R    |
+| Tekst niebieski                 | Ctrl+M, B            | ⌃M, B    |
+| Tekst śliwkowy                  | Ctrl+M, D            | ⌃M, D    |
+| Tekst zielony                   | Ctrl+M, G            | ⌃M, G    |
+| Tekst żółty                     | Ctrl+M, Y            | ⌃M, Y    |
+| Tekst turkusowy                 | Ctrl+M, C            | ⌃M, C    |
+| Tekst biały                     | Ctrl+M, W            | ⌃M, W    |
 
 ### Akapit
 
-| Czynność                                    | macOS   | Windows / Linux |
-| ------------------------------------------- | ------- | --------------- |
-| Wyrównaj do lewej                           | ⌃⇧L     | Ctrl+Shift+L    |
-| Wyśrodkuj                                   | ⌃⇧C     | Ctrl+Shift+C    |
-| Wyrównaj do prawej                          | ⌃⇧R     | Ctrl+Shift+R    |
-| Wyjustuj                                    | ⌃⇧M     | Ctrl+Shift+M    |
-| Rozłóż                                      | ⌃⇧T     | Ctrl+Shift+T    |
-| Zwiększ odstęp między wierszami             | ⌥⇧Z     | Alt+Shift+Z     |
-| Zmniejsz odstęp między wierszami            | ⌥⇧A     | Alt+Shift+A     |
-| Format akapitu…                             | ⌥T      | Alt+T           |
-| Styl…                                       | F6      | F6              |
-| Zastosuj style od pierwszego do dziesiątego | ⌃1 … ⌃0 | Ctrl+1 … Ctrl+0 |
-| Format numeracji akapitów                   | ⌃K, N   | Ctrl+K, N       |
+| Czynność                                    | Windows / Linux | macOS   |
+| ------------------------------------------- | --------------- | ------- |
+| Wyrównaj do lewej                           | Ctrl+Shift+L    | ⌃⇧L     |
+| Wyśrodkuj                                   | Ctrl+Shift+C    | ⌃⇧C     |
+| Wyrównaj do prawej                          | Ctrl+Shift+R    | ⌃⇧R     |
+| Wyjustuj                                    | Ctrl+Shift+M    | ⌃⇧M     |
+| Rozłóż                                      | Ctrl+Shift+T    | ⌃⇧T     |
+| Zwiększ odstęp między wierszami             | Alt+Shift+Z     | ⌥⇧Z     |
+| Zmniejsz odstęp między wierszami            | Alt+Shift+A     | ⌥⇧A     |
+| Format akapitu…                             | Alt+T           | ⌥T      |
+| Styl…                                       | F6              | F6      |
+| Zastosuj style od pierwszego do dziesiątego | Ctrl+1 … Ctrl+0 | ⌃1 … ⌃0 |
+| Format numeracji akapitów                   | Ctrl+K, N       | ⌃K, N   |
 
 ### Wstawianie
 
-| Czynność                               | macOS       | Windows / Linux    |
-| -------------------------------------- | ----------- | ------------------ |
-| Wstaw tabelę                           | ⌃N, T       | Ctrl+N, T          |
-| Przypis dolny                          | ⌃N, N       | Ctrl+N, N          |
-| Przypis końcowy                        | ⌃N, E       | Ctrl+N, E          |
-| Nagłówek                               | ⌃N, H       | Ctrl+N, H          |
-| Numer strony                           | ⌃N, P       | Ctrl+N, P          |
-| Wstaw obraz                            | ⌃N, I       | Ctrl+N, I          |
-| Pole tekstowe                          | ⌃N, B       | Ctrl+N, B          |
-| Równanie                               | ⌃N, M       | Ctrl+N, M          |
-| Wstaw podpis                           | ⌃N, C       | Ctrl+N, C          |
-| Hiperłącze                             | ⌃K, H       | Ctrl+K, H          |
-| Zakładka                               | ⌃K, B       | Ctrl+K, B          |
-| Wstaw pole                             | ⌃K, E       | Ctrl+K, E          |
-| Tekst daty/godziny                     | ⌃K, D       | Ctrl+K, D          |
-| Edytuj obiekt, pole lub tabelę/komórkę | ⌃N, K       | Ctrl+N, K          |
-| Symbole                                | ⌃F10 / ⌥F10 | Ctrl+F10 / Alt+F10 |
+| Czynność                               | Windows / Linux    | macOS       |
+| -------------------------------------- | ------------------ | ----------- |
+| Wstaw tabelę                           | Ctrl+N, T          | ⌃N, T       |
+| Przypis dolny                          | Ctrl+N, N          | ⌃N, N       |
+| Przypis końcowy                        | Ctrl+N, E          | ⌃N, E       |
+| Nagłówek                               | Ctrl+N, H          | ⌃N, H       |
+| Numer strony                           | Ctrl+N, P          | ⌃N, P       |
+| Wstaw obraz                            | Ctrl+N, I          | ⌃N, I       |
+| Pole tekstowe                          | Ctrl+N, B          | ⌃N, B       |
+| Równanie                               | Ctrl+N, M          | ⌃N, M       |
+| Wstaw podpis                           | Ctrl+N, C          | ⌃N, C       |
+| Hiperłącze                             | Ctrl+K, H          | ⌃K, H       |
+| Zakładka                               | Ctrl+K, B          | ⌃K, B       |
+| Wstaw pole                             | Ctrl+K, E          | ⌃K, E       |
+| Tekst daty/godziny                     | Ctrl+K, D          | ⌃K, D       |
+| Edytuj obiekt, pole lub tabelę/komórkę | Ctrl+N, K          | ⌃N, K       |
+| Symbole                                | Ctrl+F10 / Alt+F10 | ⌃F10 / ⌥F10 |
 
 ### Tabela
 
-| Czynność             | macOS        | Windows / Linux        |
-| -------------------- | ------------ | ---------------------- |
-| Dodaj wiersz/kolumnę | ⌥⏎ / ⌥Insert | Alt+Enter / Alt+Insert |
-| Usuń wiersz/kolumnę  | ⌥⌫           | Alt+Delete             |
-| Podziel komórkę      | F5 → S       | F5 → S                 |
-| Scal komórki         | F5 → M       | F5 → M                 |
-| Suma bloku           | F5 → ⇧⌘S     | F5 → Ctrl+Shift+S      |
-| Średnia bloku        | F5 → ⌃⇧A     | F5 → Ctrl+Shift+A      |
-| Iloczyn bloku        | F5 → ⌃⇧P     | F5 → Ctrl+Shift+P      |
-| Podziel tabelę       | ⌃N, A        | Ctrl+N, A              |
-| Połącz tabele        | ⌃N, Z        | Ctrl+N, Z              |
-| Formuła obliczeniowa | ⌃N, F        | Ctrl+N, F              |
+| Czynność             | Windows / Linux        | macOS        |
+| -------------------- | ---------------------- | ------------ |
+| Dodaj wiersz/kolumnę | Alt+Enter / Alt+Insert | ⌥⏎ / ⌥Insert |
+| Usuń wiersz/kolumnę  | Alt+Delete             | ⌥⌫           |
+| Podziel komórkę      | F5 → S                 | F5 → S       |
+| Scal komórki         | F5 → M                 | F5 → M       |
+| Suma bloku           | F5 → Ctrl+Shift+S      | F5 → ⇧⌘S     |
+| Średnia bloku        | F5 → Ctrl+Shift+A      | F5 → ⌃⇧A     |
+| Iloczyn bloku        | F5 → Ctrl+Shift+P      | F5 → ⌃⇧P     |
+| Podziel tabelę       | Ctrl+N, A              | ⌃N, A        |
+| Połącz tabele        | Ctrl+N, Z              | ⌃N, Z        |
+| Formuła obliczeniowa | Ctrl+N, F              | ⌃N, F        |
 
 ### Obliczenia tabeli
 
 Działają tylko wtedy, gdy kursor znajduje się w pustej komórce tabeli. Osobne klawisze liczą na podstawie komórek po lewej i komórek powyżej.
 
-| Czynność        | macOS | Windows / Linux |
-| --------------- | ----- | --------------- |
-| Suma z lewej    | ⇧⌘H   | Ctrl+Shift+H    |
-| Suma z góry     | ⌃⇧V   | Ctrl+Shift+V    |
-| Średnia z lewej | ⌃⇧J   | Ctrl+Shift+J    |
-| Średnia z góry  | ⌃⇧B   | Ctrl+Shift+B    |
-| Iloczyn z lewej | ⌃⇧K   | Ctrl+Shift+K    |
-| Iloczyn z góry  | ⌃⇧N   | Ctrl+Shift+N    |
+| Czynność        | Windows / Linux | macOS |
+| --------------- | --------------- | ----- |
+| Suma z lewej    | Ctrl+Shift+H    | ⇧⌘H   |
+| Suma z góry     | Ctrl+Shift+V    | ⌃⇧V   |
+| Średnia z lewej | Ctrl+Shift+J    | ⌃⇧J   |
+| Średnia z góry  | Ctrl+Shift+B    | ⌃⇧B   |
+| Iloczyn z lewej | Ctrl+Shift+K    | ⌃⇧K   |
+| Iloczyn z góry  | Ctrl+Shift+N    | ⌃⇧N   |
 
 ### Strona
 
-| Czynność                | macOS | Windows / Linux  |
-| ----------------------- | ----- | ---------------- |
-| Ustawienia strony       | F7    | F7               |
-| Podział strony          | ⌃⏎    | Ctrl+Enter       |
-| Podział kolumny         | ⌃⇧⏎   | Ctrl+Shift+Enter |
-| Podział ustawień kolumn | ⌃⌥⏎   | Ctrl+Alt+Enter   |
-| Ustawienia sekcji       | ⌃N, G | Ctrl+N, G        |
-| Ukryj stronę            | ⌃N, S | Ctrl+N, S        |
+| Czynność                | Windows / Linux  | macOS |
+| ----------------------- | ---------------- | ----- |
+| Ustawienia strony       | F7               | F7    |
+| Podział strony          | Ctrl+Enter       | ⌃⏎    |
+| Podział kolumny         | Ctrl+Shift+Enter | ⌃⇧⏎   |
+| Podział ustawień kolumn | Ctrl+Alt+Enter   | ⌃⌥⏎   |
+| Ustawienia sekcji       | Ctrl+N, G        | ⌃N, G |
+| Ukryj stronę            | Ctrl+N, S        | ⌃N, S |
 
 ### Widok
 
-| Czynność                             | macOS | Windows / Linux |
-| ------------------------------------ | ----- | --------------- |
-| Powiększ                             | ⌃=    | Ctrl+=          |
-| Pomniejsz                            | ⌃-    | Ctrl+-          |
-| Dopasuj do strony                    | ⌃G, P | Ctrl+G, P       |
-| Dopasuj do szerokości                | ⌃G, W | Ctrl+G, W       |
-| Powiększ do 100%                     | ⌃G, Q | Ctrl+G, Q       |
-| Zwiń lub rozwiń przybornik           | ⌃F1   | Ctrl+F1         |
-| Pokaż lub ukryj znaczniki akapitu    | ⌃G, T | Ctrl+G, T       |
-| Pokaż lub ukryj znaczniki sterujące  | ⌃G, C | Ctrl+G, C       |
-| Przejdź do karty Start (poza tabelą) | ⇧⌘H   | Ctrl+Shift+H    |
+| Czynność                             | Windows / Linux | macOS |
+| ------------------------------------ | --------------- | ----- |
+| Powiększ                             | Ctrl+=          | ⌃=    |
+| Pomniejsz                            | Ctrl+-          | ⌃-    |
+| Dopasuj do strony                    | Ctrl+G, P       | ⌃G, P |
+| Dopasuj do szerokości                | Ctrl+G, W       | ⌃G, W |
+| Powiększ do 100%                     | Ctrl+G, Q       | ⌃G, Q |
+| Zwiń lub rozwiń przybornik           | Ctrl+F1         | ⌃F1   |
+| Pokaż lub ukryj znaczniki akapitu    | Ctrl+G, T       | ⌃G, T |
+| Pokaż lub ukryj znaczniki sterujące  | Ctrl+G, C       | ⌃G, C |
+| Przejdź do karty Start (poza tabelą) | Ctrl+Shift+H    | ⇧⌘H   |
 
 Klawisz zapisany jako `Ctrl+N,T` oznacza: naciśnij Ctrl+N, puść, a następnie naciśnij T. `F5 → S` oznacza zaznaczenie bloku komórek za pomocą F5 i naciśnięcie S. `Ctrl+1 … Ctrl+0` oznaczają style od pierwszego do dziesiątego w dokumencie; `Ctrl+Alt+1 … Ctrl+Alt+0` stosują te same style. Gdy zaznaczony jest blok komórek, `Ctrl+Shift+S` (w macOS `⇧⌘S`) oznacza sumę bloku; poza nim ten klawisz zapisuje jako.

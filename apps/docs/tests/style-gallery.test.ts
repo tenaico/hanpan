@@ -186,10 +186,25 @@ describe('quick style gallery (Word order and hiding)', () => {
     expect(styleLabel(styles.get('Heading1')!, t as never)).toBe('ribbonStyleHeading1')
     expect(styleLabel({ name: 'heading 7' }, t as never)).toBe('H 7')
     expect(styleLabel({ name: 'caption' }, t as never)).toBe('Caption')
+    // 0.17 v2 #28: the table style gallery names Word's built-in grid in the UI language
+    expect(styleLabel({ name: 'Table Grid' }, t as never)).toBe('ribbonStyleTableGrid')
     const intense = stylePreviewCss(styles.get('IntenseEmphasis')!)
     expect(intense.fontStyle).toBe('italic')
     expect(intense.color).toBe('#2F5496')
     expect(stylePreviewCss(styles.get('IntenseReference')!).fontVariant).toBe('small-caps')
     expect(stylePreviewCss(styles.get('Title')!).fontSize).toBe('20px')
+  })
+
+  it('lifts dark style colors on a dark UI so the previews stay readable', () => {
+    const subtle = { type: 'paragraph', display: { color: '595959' } } as never
+    const navy = { type: 'paragraph', display: { color: '1F3864' } } as never
+    const light = { type: 'paragraph', display: { color: 'FFC000' } } as never
+    expect(stylePreviewCss(subtle).color).toBe('#595959')
+    expect(stylePreviewCss(subtle, undefined, true).color).toBe(
+      'color-mix(in srgb, #595959 35%, var(--text))',
+    )
+    expect(stylePreviewCss(navy, undefined, true).color).toContain('var(--text)')
+    // already light enough: keep the document color
+    expect(stylePreviewCss(light, undefined, true).color).toBe('#FFC000')
   })
 })

@@ -39,7 +39,14 @@ export function AiSelectionAsk({ anchor, range, onSend, onDismiss }: Props): Rea
     const width = triggerRef.current.offsetWidth
     const height = triggerRef.current.offsetHeight
     setTriggerPlacement({
-      position: selectionAskPosition(anchor.pointer, anchor.bounds, width, height),
+      position: selectionAskPosition(
+        anchor.pointer,
+        anchor.bounds,
+        width,
+        height,
+        undefined,
+        anchor.selection,
+      ),
       width,
       height,
     })

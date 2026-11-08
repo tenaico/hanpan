@@ -16,7 +16,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PDFDocument } from 'pdf-lib'
 
@@ -247,6 +247,16 @@ describe('copies of unsaved edits', () => {
 
     configurePdfRuntime({ preloadPath: '' })
     expect(recoveryEditor('pdf')?.isUnprotectable(wc as never)).toBe(true)
+  })
+
+  it('the close prompt names the document (closing the window walks several dirty tabs)', async () => {
+    const path = await makePdfFile()
+    const wc = await openedView(path)
+    setDirty(wc, true)
+    showMessageBox.mockResolvedValueOnce({ response: 2 })
+    expect(await requestPdfClose(wc as never)).toBe(false)
+    const options = showMessageBox.mock.calls[0]!.at(-1) as { message: string }
+    expect(options.message).toContain(basename(path))
   })
 
   it('is dropped by "Don\'t Save" and by closing a clean tab, but kept by a crash', async () => {

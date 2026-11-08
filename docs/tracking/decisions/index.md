@@ -90,3 +90,9 @@
 | [0087](0087-hanpan-bundles-free-gongu-works.md)               | 한판은 공유마당의 만료·CC BY 저작물만 앱에 담고, 넣을 때마다 출처를 적는다                      | 2026-11-01 |
 | [0088](0088-hanpan-bundles-official-law-forms.md)             | 한판은 법령에 붙은 서식을 국가법령정보센터의 파일 그대로 담고, 한글로만 연다                    | 2026-11-01 |
 | [0089](0089-hanpan-gongu-picture-search.md)                   | 공유마당 그림 찾기는 사용자 자신의 공공데이터포털 키로 공식 API를 쓰고, 출처는 앱이 적는다      | 2026-11-01 |
+| [0090](0090-hanpan-bundles-artcraft-apps.md)                  | 한판은 PhotoCraft·VectorCraft 설치형을 Windows 설치판에 담는다(대체됨 → 0093)                   | 2026-11-05 |
+| [0091](0091-hanpan-korean-doc-features.md)                    | 한판의 한국 문서 기능은 화면 언어로 기본값을 정하고, 설정 스위치로 바꿀 수 있다                 | 2026-11-05 |
+| [0092](0092-hanpan-first-language-follows-windows.md)         | 한판의 첫 화면 언어는 운영체제 표시 언어를 따르고, 한판에 없는 언어면 한국어다                  | 2026-11-05 |
+| [0093](0093-hanpan-graphics-web-tabs.md)                      | AI 포토·AI 일러스트는 웹판을 한판 탭에 넣고 AI가 고친다(0090을 대체)                            | 2026-11-06 |
+| [0095](0095-hanpan-system-share-sheet.md)                     | 공유하기는 운영체제 공유 창을 열고, Windows에서는 작은 C# 도우미가 띄운다                       | 2026-11-06 |
+| [0096](0096-hanpan-send-to-app-via-markdown.md)               | 앱 간 연동은 Markdown을 거쳐 다른 편집기의 새 문서로 보낸다                                     | 2026-11-06 |

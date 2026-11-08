@@ -102,7 +102,12 @@ import type {
 import type { AiToolCapabilities, MediaToolErrorCode } from '@genoffice/ai-search'
 import type { HeadlessExportTarget } from '@genoffice/electron-utils/headless-export'
 import type { FaceVerticalMetrics } from '@genoffice/font-metrics'
-import type { AiPanelPrefs, FontFamilyInfo } from '@genoffice/ui'
+import type {
+  AiPanelPrefs,
+  FontFamilyInfo,
+  GonguPickerPictureAnswer,
+  GonguPickerSearchAnswer,
+} from '@genoffice/ui'
 import type { DocFormat } from './open-file'
 
 export type { FaceVerticalMetrics }
@@ -454,6 +459,13 @@ export interface DesktopApi {
   onZoteroRequest(handler: (request: ZoteroRendererRequest) => void): () => void
   respondToZotero(response: ZoteroRendererResponse): void
   openDocx(): Promise<OpenDocxResult>
+  /** Review → Compare: pick a .docx and read it on the side (no recovery prompt, recents or write grant) */
+  openCompareDocx(): Promise<
+    | { name: string; dataUrl: string }
+    | { needsPassword: true; name: string }
+    | { error: string }
+    | null
+  >
   openDocxPath(path: string): Promise<OpenDocxResult>
   confirmDocumentReplace(): Promise<boolean>
   /** decrypt-and-open a password-protected docx (path from a needsPassword result) */
@@ -596,6 +608,10 @@ export interface DesktopApi {
   signalMcpReady(): void
   getRecentFiles(): Promise<string[]>
   pickImage(): Promise<PickImageResult | null>
+  /** Hanpan: Insert ▸ Gongu pictures — main searches on the key from Settings (no handler outside the shell) */
+  gonguSearch(query: string, page: number): Promise<GonguPickerSearchAnswer | null>
+  /** Hanpan: the large picture of one Gongu work, fetched by main */
+  gonguPicture(workId: string): Promise<GonguPickerPictureAnswer | null>
   /** Mailings tab: pick a local .xlsx or .csv and read it as a recipient list */
   pickMergeDataSource(): Promise<MergeDataSourceResponse>
   /** Mailings tab: write the merged documents (one file, or one per record) */
@@ -628,6 +644,10 @@ export interface DesktopApi {
     scale?: number,
     links?: PdfInternalLink[],
   ): Promise<{ ok: boolean; path?: string; error?: string }>
+  /** status-bar "Open" after an export (only files this tab exported) */
+  openExported(path: string): Promise<boolean>
+  /** status-bar "Open folder" after an export */
+  revealExported(path: string): Promise<boolean>
   exportHtml(
     defaultName: string,
     html: string,
@@ -767,6 +787,8 @@ export interface DesktopApi {
   /** Close guard: main process queries pre-close state (dirty flag + autosave switch; if autosave is on, save silently without a dialog) */
   onCloseCheck(handler: () => void): () => void
   reportCloseCheck(state: { dirty: boolean; autoSave: boolean; filePath?: string | null }): void
+  /** 저장 안 된 변경 사항이 생기거나 없어질 때 알린다(셸 탭의 "저장 안 됨" 점) */
+  reportDirty?(dirty: boolean): void
   /** Close guard chose "Save": main process asks the renderer to run the full save flow */
   onCloseSaveRequest(handler: () => void): () => void
   reportCloseSaveResult(ok: boolean): void

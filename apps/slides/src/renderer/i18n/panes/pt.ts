@@ -296,6 +296,11 @@ export const pt = {
   paneShowMenuScreen: 'Tela',
   paneShowMenuBlack: 'Tela preta',
   paneShowMenuWhite: 'Tela branca',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'Terminar apresentação',
   panePresenterWhiteOn: 'Tela branca (W para retomar)',
 } satisfies Record<keyof typeof zh, string>

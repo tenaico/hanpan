@@ -86,6 +86,11 @@ export interface PrintOptions {
    * True is also PDF.js's default; the print dialog lets the reader turn it off.
    */
   includeAnnotations?: boolean
+  /**
+   * Hands the rendered pages to a printer chosen in the app's print dialog
+   * (no system dialog). Without it the system print dialog opens.
+   */
+  send?: () => Promise<void>
 }
 
 export async function printPdf(
@@ -179,7 +184,8 @@ export async function printPdf(
   document.body.appendChild(root)
   try {
     await Promise.all([...root.querySelectorAll('img')].map((img) => img.decode()))
-    await waitForPrintDialog(PRINT_DIALOG_TIMEOUT_MS)
+    if (options.send) await options.send()
+    else await waitForPrintDialog(PRINT_DIALOG_TIMEOUT_MS)
   } finally {
     root.remove()
   }

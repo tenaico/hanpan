@@ -9,6 +9,12 @@ import { useI18n } from './i18n/locale'
 import { useModalDialog } from './modal-dialog'
 import { type PrintJob, type PrintPreviewHost, type PrintRange } from './page-layout-actions'
 import { assemblePrintHtml, type PaperGeometry } from './print-html'
+import {
+  edgeOverflow,
+  previewZoom,
+  sheetsSplitByColumns,
+  type PreviewZoomMode,
+} from './print-preview-fit'
 
 type MarginsPreset = 'normal' | 'wide' | 'narrow' | 'custom'
 type Scaling = 'none' | 'sheet' | 'columns' | 'rows' | 'fit-file' | 'custom'
@@ -120,7 +126,10 @@ export function PrintDialog({
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [page, setPage] = useState(1)
-  const [fit, setFit] = useState(true)
+  // Fitting the width reads at near print size; the whole page was too small (X14).
+  const [zoomMode, setZoomMode] = useState<PreviewZoomMode>('width')
+  /// What runs off the right edge of the printed area, measured in the preview.
+  const [overflow, setOverflow] = useState({ pagesPastEdge: 0, clippedCells: 0 })
   const [paneSize, setPaneSize] = useState({ width: 0, height: 0 })
   const paneRef = useRef<HTMLDivElement | null>(null)
   const frameRef = useRef<HTMLIFrameElement | null>(null)
@@ -190,6 +199,7 @@ export function PrintDialog({
     const frame = frameRef.current
     const doc = frame?.contentDocument
     if (!frame || !doc) return
+    let alive = true
     const apply = () => {
       const target = frame.contentDocument
       if (!target) return
@@ -199,24 +209,41 @@ export function PrintDialog({
         style.id = 'pv-page'
         target.head?.appendChild(style)
       }
-      style.textContent = `.page{display:none}.page:nth-child(${current}){display:block}`
+      const pageRule =
+        'html,body{overflow:hidden}' +
+        `.page{display:none}.page:nth-child(${current}){display:block}`
+      // measured with every page laid out, then all but the current one hidden
+      const measure = (sheet: HTMLElement): void => {
+        sheet.textContent = ''
+        setOverflow(edgeOverflow(target))
+        sheet.textContent = pageRule
+      }
+      measure(style)
+      // the CJK fallback faces load after the page and widen the text
+      void target.fonts?.ready.then(() => {
+        if (alive) measure(style)
+      })
     }
     apply()
     frame.addEventListener('load', apply)
-    return () => frame.removeEventListener('load', apply)
+    return () => {
+      alive = false
+      frame.removeEventListener('load', apply)
+    }
   }, [assembled, current])
 
   const pageWidthPx = (paper?.widthIn ?? 8.27) * 96
   const pageHeightPx = (paper?.heightIn ?? 11.69) * 96
-  const zoom = fit
-    ? Math.max(
-        0.05,
-        Math.min(
-          (paneSize.width - PREVIEW_PADDING_PX) / pageWidthPx,
-          (paneSize.height - PREVIEW_PADDING_PX) / pageHeightPx,
-        ),
-      )
-    : 1
+  const zoom = previewZoom(
+    zoomMode,
+    paneSize,
+    { width: pageWidthPx, height: pageHeightPx },
+    PREVIEW_PADDING_PX,
+  )
+  const splitSheets = job ? sheetsSplitByColumns(job.documents) : []
+  const fitsColumns = settings.scaling === 'columns' || settings.scaling === 'sheet'
+  // columns that print on later pages (fitting all columns ends that)
+  const columnsSplit = !fitsColumns && splitSheets.length > 0
 
   const update = (patch: Partial<Settings>, command: string | null): void => {
     setSettings((prev) => ({ ...prev, ...patch }))
@@ -478,14 +505,43 @@ export function PrintDialog({
                 ›
               </button>
               <span className="print-preview-spacer" />
-              <button
-                className="secondary"
-                aria-pressed={fit}
-                onClick={() => setFit((value) => !value)}
-              >
-                {fit ? t('dlgPrintZoomActual') : t('dlgPrintZoomFit')}
-              </button>
+              <span className="print-preview-zoom" aria-live="polite">
+                {Math.round(zoom * 100)}%
+              </span>
+              {(
+                [
+                  ['width', 'dlgPrintZoomWidth'],
+                  ['page', 'dlgPrintZoomFit'],
+                  ['actual', 'dlgPrintZoomActual'],
+                ] as const
+              ).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  className="secondary"
+                  aria-pressed={zoomMode === mode}
+                  onClick={() => setZoomMode(mode)}
+                >
+                  {t(label)}
+                </button>
+              ))}
             </div>
+            {(columnsSplit || overflow.pagesPastEdge > 0 || overflow.clippedCells > 0) && (
+              <div className="print-fit-note" role="status">
+                {(columnsSplit || overflow.pagesPastEdge > 0) && (
+                  <p>
+                    {columnsSplit
+                      ? t('dlgPrintColumnsSplit', { sheets: splitSheets.join(', ') })
+                      : t('dlgPrintPastEdge')}
+                    {!fitsColumns && (
+                      <button className="secondary" onClick={() => setScaling('columns')}>
+                        {t('dlgPrintFitColumns')}
+                      </button>
+                    )}
+                  </p>
+                )}
+                {overflow.clippedCells > 0 && <p>{t('dlgPrintClippedText')}</p>}
+              </div>
+            )}
             <div className="print-preview-pane" ref={paneRef}>
               {assembled && (
                 <div

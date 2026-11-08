@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { initialSnapshot, initialSnapshotFor } from '../src/renderer/app-constants'
 import { nextSheetName, planFromOps, prefetchOpImages } from '../src/renderer/op-executor'
 
 const workbook = {
@@ -8,9 +9,20 @@ const workbook = {
 
 describe('nextSheetName', () => {
   it('picks the lowest free SheetN, case-insensitively', () => {
-    expect(nextSheetName([])).toBe('Sheet1')
+    expect(nextSheetName([], 'Sheet')).toBe('Sheet1')
     expect(nextSheetName(['Sheet1', 'sheet2', 'Data'])).toBe('Sheet3')
     expect(nextSheetName(['Sheet2'])).toBe('Sheet1')
+  })
+
+  // 0.17 #9: a new workbook's sheets go 시트1, 시트2, …
+  it('follows 시트N in a workbook that uses it', () => {
+    expect(nextSheetName(['시트1'])).toBe('시트2')
+    expect(nextSheetName(['시트1', '시트3', 'Data'])).toBe('시트2')
+  })
+
+  it('names a sheet in a workbook with no numbered sheets after the language', () => {
+    expect(nextSheetName(['Data'], '시트')).toBe('시트1')
+    expect(nextSheetName(['Data'], 'Sheet')).toBe('Sheet1')
   })
 })
 
@@ -83,5 +95,19 @@ describe('prefetchOpImages', () => {
       globalThis.Image = savedImage
       vi.unstubAllGlobals()
     }
+  })
+})
+
+describe('the in-memory blank workbook', () => {
+  it('starts on 시트1', () => {
+    expect(initialSnapshot.sheets.map((sheet) => sheet.name)).toEqual(['시트1'])
+  })
+
+  it('names its first sheet in the UI language', () => {
+    const names = (lang: string) => initialSnapshotFor(lang).sheets.map((sheet) => sheet.name)
+    expect(names('ko')).toEqual(['시트1'])
+    expect(names('vi')).toEqual(['Trang tính1'])
+    expect(names('en')).toEqual(['Sheet1'])
+    expect(names('zh-TW')).toEqual(['工作表1'])
   })
 })

@@ -154,7 +154,8 @@ export const ar = {
   dlgPivotAddValue: '+ إضافة حقل قيم',
   dlgPivotAddCalc: '+ إضافة حقل محسوب',
   dlgPivotTargetCell: 'خلية البداية الوجهة',
-  dlgPivotTargetPlaceholder: 'مثل F1',
+  dlgPivotTargetPlaceholder: 'مثل {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'تبقى الخلية العلوية اليسرى لمنطقة الإخراج ثابتة أثناء التحرير',
   dlgPivotNote:
     'ينشئ PivotTable حقيقيًا بتنسيق OOXML يمكن لـ Excel/WPS التعرف عليه وتحديثه بعد الحفظ.',
@@ -634,6 +635,12 @@ export const ar = {
   dlgPrintNextPage: 'الصفحة التالية',
   dlgPrintZoomFit: 'ملاءمة الصفحة',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'ملاءمة العرض',
+  dlgPrintColumnsSplit:
+    'أعمدة «{sheets}» لا تتسع في عرض صفحة واحدة؛ تُطبع الأعمدة اليمنى في صفحات لاحقة.',
+  dlgPrintPastEdge: 'بعض الأعمدة تتجاوز الحافة اليمنى للصفحة وستُقتطع عند الطباعة.',
+  dlgPrintClippedText:
+    'بعض النص في العمود الأخير يتجاوز منطقة الطباعة وسيُقتطع. وسّع هذا العمود أو فعّل التفاف النص.',
   dlgPrintButton: 'طباعة',
   dlgPrintToPdf: 'طباعة إلى PDF',
   dlgPrintPageSetup: 'إعداد الصفحة…',

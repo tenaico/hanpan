@@ -293,6 +293,11 @@ export const hi = {
   paneShowMenuScreen: 'स्क्रीन',
   paneShowMenuBlack: 'काली स्क्रीन',
   paneShowMenuWhite: 'सफ़ेद स्क्रीन',
+  paneShowMenuPointer: 'Pointer Options',
+  paneShowMenuLaser: 'Laser Pointer',
+  paneShowMenuPen: 'Pen',
+  paneShowMenuArrow: 'Arrow (click to advance)',
+  paneShowMenuEraseInk: 'Erase All Ink on Slide',
   paneShowMenuEnd: 'शो समाप्त करें',
   panePresenterWhiteOn: 'सफ़ेद स्क्रीन (वापस जाने के लिए W दबाएँ)',
 } satisfies Record<keyof typeof zh, string>

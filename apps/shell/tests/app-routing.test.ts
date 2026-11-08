@@ -35,6 +35,21 @@ describe('appForPath', () => {
     expect(renameStaysInApp('/x/novel.epub', 'novel.zip')).toBe(false)
   })
 
+  it('routes pictures to AI Photo and vector art to AI Illustration', () => {
+    expect(appForPath('/x/cat.PNG')).toBe('photo')
+    expect(appForPath('/x/cat.psd')).toBe('photo')
+    expect(appForPath('/x/logo.svg')).toBe('illust')
+    expect(appForPath('/x/logo.ai')).toBe('illust')
+    expect(appForPath('/x/logo.vectorcraft')).toBe('illust')
+  })
+
+  it('keeps a picture in its format when it is renamed', () => {
+    expect(renameStaysInApp('/x/cat.png', 'dog.png')).toBe(true)
+    expect(renameStaysInApp('/x/cat.png', 'cat.PNG')).toBe(true)
+    expect(renameStaysInApp('/x/cat.png', 'cat.psd')).toBe(false)
+    expect(renameStaysInApp('/x/logo.svg', 'logo.ai')).toBe(false)
+  })
+
   it('opens OpenDocument text in the Word tab', () => {
     expect(appForPath('/x/a.odt')).toBe('docs')
     expect(appForPath('C:/x/REPORT.ODT')).toBe('docs')

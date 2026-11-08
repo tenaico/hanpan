@@ -250,6 +250,27 @@ describe('CertSignDialog', () => {
     expect(buttonWithText(dialog, 'certCheck').disabled).toBe(true)
   })
 
+  it('turns an empty store into a next step: pick a .pfx/.p12 file (UI/UX review P6)', async () => {
+    const pickCertificate = vi.fn(async () => ({ certId: 'c1', fileName: 'me.pfx' }))
+    installApi({ pickCertificate })
+    const dialog = await mount(createElement(CertSignDialog, { ...props, onSigned: () => {} }))
+    await flush()
+    expect(dialog.textContent).toContain('certSystemEmpty')
+    expect(dialog.textContent).toContain('certNpkiNote')
+    await act(async () => buttonWithText(dialog, 'certChooseFileInstead').click())
+    await flush()
+    expect(pickCertificate).toHaveBeenCalledTimes(1)
+    expect(dialog.querySelector<HTMLSelectElement>('select')!.value).toBe('file')
+    expect(dialog.textContent).toContain('me.pfx')
+  })
+
+  it('words the empty store as an action in ko and vi', async () => {
+    const { strings } = await import('../src/renderer/i18n/strings')
+    expect(strings.ko.certSystemEmpty).toContain('.pfx')
+    expect(strings.ko.certNpkiNote).toContain('공동인증서')
+    expect(strings.vi.certChooseFileInstead).not.toBe(strings.en.certChooseFileInstead)
+  })
+
   it('asks for the store password when the store is locked and retries with it', async () => {
     const listSystemCertificates = vi.fn(async () => ({
       certs: [],

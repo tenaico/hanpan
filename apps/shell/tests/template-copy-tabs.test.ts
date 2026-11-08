@@ -104,6 +104,11 @@ vi.mock('../../epub/src/main/epub-main', () => ({
   epubIsDirty: vi.fn(() => false),
   requestEpubClose: vi.fn(),
 }))
+vi.mock('../../graphics/src/main/graphics-main', () => ({
+  createGraphicsView: vi.fn(),
+  graphicsIsDirty: () => false,
+  requestGraphicsClose: vi.fn(() => Promise.resolve(true)),
+}))
 
 const queueHtmlSeedFor = vi.fn()
 vi.mock('../../html/src/main/seed-main', () => ({

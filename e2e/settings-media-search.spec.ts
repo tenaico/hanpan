@@ -12,7 +12,9 @@ test('Jev reranking lives under AI > Advanced > AI Media & Search, saves with it
   try {
     await page.getByRole('button', { name: 'Settings', exact: true }).click()
     await page.locator('.set-nav-item').filter({ hasText: 'General' }).click()
-    await expect(page.getByRole('switch', { name: 'Jev search reranking' })).toHaveCount(0)
+    await expect(
+      page.getByRole('switch', { name: 'Re-rank search results with AI (sent online)' }),
+    ).toHaveCount(0)
 
     // one AI entry in the navigation; the media and search area sits under Advanced
     await page.locator('.set-nav-item').filter({ hasText: /^AI$/ }).click()
@@ -21,10 +23,13 @@ test('Jev reranking lives under AI > Advanced > AI Media & Search, saves with it
     const block = page.locator('section', {
       has: page.locator('.set-pane-subtitle', { hasText: 'Local file search' }),
     })
-    const toggle = block.getByRole('switch', { name: 'Jev search reranking' })
+    // the switch says what it does and that excerpts leave the PC (f2bb8e69)
+    const toggle = block.getByRole('switch', {
+      name: 'Re-rank search results with AI (sent online)',
+    })
     await expect(toggle).toHaveAttribute('aria-checked', 'false')
     await toggle.click()
-    await block.getByRole('button', { name: 'Jev endpoint', exact: true }).click()
+    await block.getByRole('button', { name: 'Re-ranking server address', exact: true }).click()
     await page.getByRole('option', { name: 'Jev (TypeSafe API)', exact: true }).click()
 
     // the block reports its own verdict: no key entered, nothing leaves the machine

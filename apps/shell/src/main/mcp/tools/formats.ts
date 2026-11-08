@@ -22,7 +22,8 @@
 export type SessionFamily = 'docx' | 'pptx' | 'xlsx'
 
 /** every family the app can edit, including ones MCP does not drive yet */
-export type EditorFamily = SessionFamily | 'md' | 'html' | 'pdf' | 'xmind' | 'hwp' | 'epub'
+export type EditorFamily =
+  SessionFamily | 'md' | 'html' | 'pdf' | 'xmind' | 'hwp' | 'epub' | 'photo' | 'illust'
 
 export interface McpFormats {
   /** format the headless `create_*` tool writes, when exposed */
@@ -141,6 +142,35 @@ export const FORMAT_FAMILIES: readonly FormatFamily[] = [
     editorExport: [],
     // no `mcp` block: an open book is listed, read, saved and closed through
     // open_documents only (epub_translate and epub_status are the command line's)
+  },
+  {
+    family: 'photo',
+    label: 'photo (AI Photo)',
+    editorOpen: [
+      'psd',
+      'psb',
+      'png',
+      'jpg',
+      'jpeg',
+      'webp',
+      'gif',
+      'bmp',
+      'tif',
+      'tiff',
+      'heic',
+      'heif',
+    ],
+    editorSave: ['psd', 'png', 'jpg', 'jpeg', 'webp', 'tif', 'tiff'],
+    editorExport: ['png', 'jpg'],
+    // no `mcp` block: an open picture is only listed by open_documents (decision 0093)
+  },
+  {
+    family: 'illust',
+    label: 'illustration (AI Illustration)',
+    editorOpen: ['svg', 'svgz', 'ai', 'vectorcraft'],
+    editorSave: ['vectorcraft', 'svg', 'svgz', 'ai'],
+    editorExport: ['png', 'svg'],
+    // no `mcp` block: an open illustration is only listed by open_documents
   },
 ]
 

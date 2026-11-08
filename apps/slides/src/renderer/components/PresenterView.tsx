@@ -19,7 +19,8 @@ import type { RenderSlide } from '@genoffice/pptx-render'
 import type { AnimationItem, ShowSyncState } from '../../shared/ipc'
 import { AnimatedSlideStage, useAnimPlayer } from './AnimatedSlide'
 import { ShowMediaLayer } from './ShowMediaLayer'
-import { useI18n } from '../i18n/locale'
+import { getLang, useI18n } from '../i18n/locale'
+import { fmtWallClock } from '../presenter-clock'
 import { SlideThumb } from '../SlideThumb'
 import { InkLayer, type InkStroke } from './ShowInk'
 import {
@@ -48,11 +49,6 @@ function fmtElapsed(sec: number): string {
   const m = Math.floor(sec / 60)
   const s = sec % 60
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-function fmtWallClock(): string {
-  const d = new Date()
-  return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 export function PresenterView({
@@ -98,14 +94,14 @@ export function PresenterView({
   // ── Timer (pausable/resettable) and clock ──────────────────────────────────
   const [elapsed, setElapsed] = useState(0)
   const [paused, setPaused] = useState(false)
-  const [clock, setClock] = useState(fmtWallClock)
+  const [clock, setClock] = useState(() => fmtWallClock(new Date(), getLang()))
   useEffect(() => {
     if (paused) return
     const t = window.setInterval(() => setElapsed((s) => s + 1), 1000)
     return () => window.clearInterval(t)
   }, [paused])
   useEffect(() => {
-    const t = window.setInterval(() => setClock(fmtWallClock()), 10_000)
+    const t = window.setInterval(() => setClock(fmtWallClock(new Date(), getLang())), 10_000)
     return () => window.clearInterval(t)
   }, [])
 
@@ -592,6 +588,7 @@ export function PresenterView({
               className="pv-mini-btn"
               onClick={() => setNoteSize((s) => Math.min(28, s + 2))}
               data-tip={t('panePresenterNotesBigger')}
+              aria-label={t('panePresenterNotesBigger')}
             >
               A⁺
             </button>
@@ -599,6 +596,7 @@ export function PresenterView({
               className="pv-mini-btn"
               onClick={() => setNoteSize((s) => Math.max(11, s - 2))}
               data-tip={t('panePresenterNotesSmaller')}
+              aria-label={t('panePresenterNotesSmaller')}
             >
               A⁻
             </button>

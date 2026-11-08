@@ -156,7 +156,8 @@ export const ms = {
   dlgPivotAddValue: '+ Tambah medan nilai',
   dlgPivotAddCalc: '+ Tambah medan terhitung',
   dlgPivotTargetCell: 'Sel destinasi',
-  dlgPivotTargetPlaceholder: 'cth. F1',
+  dlgPivotTargetPlaceholder: 'cth. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'Semasa mengedit, julat output mengekalkan sel kiri atasnya',
   dlgPivotNote:
     'Mencipta Jadual Pangsi OOXML sebenar yang boleh dikenali dan disegarkan oleh Excel/WPS selepas disimpan.',
@@ -639,6 +640,12 @@ export const ms = {
   dlgPrintNextPage: 'Halaman seterusnya',
   dlgPrintZoomFit: 'Muatkan halaman',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Muatkan lebar',
+  dlgPrintColumnsSplit:
+    'Lajur "{sheets}" tidak muat dalam lebar satu halaman; lajur di sebelah kanan dicetak pada halaman seterusnya.',
+  dlgPrintPastEdge: 'Sesetengah lajur melepasi tepi kanan halaman dan akan terpotong.',
+  dlgPrintClippedText:
+    'Sebahagian teks dalam lajur paling kanan melepasi kawasan cetakan dan akan terpotong. Lebarkan lajur itu atau hidupkan Balut Teks.',
   dlgPrintButton: 'Cetak',
   dlgPrintToPdf: 'Cetak ke PDF',
   dlgPrintPageSetup: 'Persediaan Halaman…',

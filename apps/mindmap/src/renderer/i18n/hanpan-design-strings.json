@@ -1,3 +1,25 @@
 {
-  "sendDesign": { "ko": "카드뉴스로 보내기 (디자인)", "en": "Send to card news (design board)", "zh": "发送为卡片新闻（设计）", "zh-TW": "傳送為卡片新聞（設計）", "ja": "カードニュースへ送る（デザイン）", "th": "ส่งเป็นการ์ดข่าว (ออกแบบ)", "ru": "Отправить в карточки (дизайн)", "ar": "إرسال إلى بطاقات أخبار (تصميم)", "he": "שליחה לכרטיסי חדשות (עיצוב)", "hi": "कार्ड न्यूज़ में भेजें (डिज़ाइन)" }
+  "sendDesign": {
+    "ko": "카드뉴스로 보내기 (디자인)",
+    "en": "Send to card news (design board)",
+    "zh": "发送为卡片新闻（设计）",
+    "zh-TW": "傳送為卡片新聞（設計）",
+    "ja": "カードニュースへ送る（デザイン）",
+    "th": "ส่งเป็นการ์ดข่าว (ออกแบบ)",
+    "ru": "Отправить в карточки (дизайн)",
+    "ar": "إرسال إلى بطاقات أخبار (تصميم)",
+    "he": "שליחה לכרטיסי חדשות (עיצוב)",
+    "hi": "कार्ड न्यूज़ में भेजें (डिज़ाइन)",
+    "vi": "Gửi thành tin dạng thẻ (thiết kế)",
+    "fr": "Envoyer en cartes d’actualité (design)",
+    "de": "An Karten-News senden (Design-Board)",
+    "es": "Enviar a noticias en tarjetas (diseño)",
+    "it": "Invia come notizie in schede (design)",
+    "pt": "Enviar para notícias em cards (design)",
+    "nl": "Naar nieuwskaarten sturen (ontwerpbord)",
+    "pl": "Wyślij do kart informacyjnych (projekt)",
+    "cs": "Odeslat do zpráv v kartách (návrh)",
+    "id": "Kirim ke berita kartu (desain)",
+    "ms": "Hantar ke berita kad (reka bentuk)"
+  }
 }

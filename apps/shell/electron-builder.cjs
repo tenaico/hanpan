@@ -55,7 +55,8 @@ const winArch = winArm64 ? 'arm64' : 'x64'
 // x86_64-pc-windows-msvc; native/xlsx-engine/.cargo/config.toml links its CRT statically,
 // so it needs no VC++ redistributable either. GENOFFICE_WIN_SIDECAR_TARGET names that target.
 const winSidecarTarget =
-  process.env.GENOFFICE_WIN_SIDECAR_TARGET || (winArm64 ? 'aarch64-pc-windows-msvc' : 'x86_64-pc-windows-gnu')
+  process.env.GENOFFICE_WIN_SIDECAR_TARGET ||
+  (winArm64 ? 'aarch64-pc-windows-msvc' : 'x86_64-pc-windows-gnu')
 const WIN_SIDECAR = `../sheets/native/xlsx-engine/target/${winSidecarTarget}/release/xlsx-sidecar.exe`
 
 function assertExtraResourceSources() {
@@ -113,6 +114,8 @@ function compileVisionOcr({ universalOnly } = { universalOnly: false }) {
 
 const WIN_OCR_HELPER = '../../packages/pdf2docx/ocr-helper/win-ocr.exe'
 const WIN_QUICKLOOK_HELPER = 'src/main/quick-look/win-quicklook.exe'
+// 공유하기: opens the Windows share sheet (decision 0094)
+const WIN_SHARE_HELPER = 'src/main/share/win-share.exe'
 
 function ensurePlatformHelpers() {
   if (process.platform === 'darwin' && !existsSync(join(__dirname, VISION_OCR_HELPER))) {
@@ -136,6 +139,16 @@ function ensurePlatformHelpers() {
       })
     } catch (err) {
       throw new Error(`win-quicklook helper compile failed: ${err}`, { cause: err })
+    }
+  }
+  if (process.platform === 'win32') {
+    // build-win.mjs is a no-op when the exe is newer than win-share.cs
+    try {
+      execFileSync(process.execPath, [join(__dirname, 'src/main/share/build-win.mjs')], {
+        stdio: 'inherit',
+      })
+    } catch (err) {
+      throw new Error(`win-share helper compile failed: ${err}`, { cause: err })
     }
   }
 }
@@ -198,6 +211,31 @@ function assertUniversalSidecar() {
   }
 }
 
+/**
+ * AI Photo and AI Illustration (decision 0093): both web builds must be in the
+ * graphics renderer output, and a release build may carry only the pinned ones
+ * (tools/fetch-graphics-web.mjs stamps a local copy `local <dir>`).
+ */
+function assertGraphicsWebBuilt(env = process.env) {
+  const strict = ['CI', 'IEUM_RELEASE'].some(
+    (name) => !['', '0', 'false'].includes((env[name] ?? '').toLowerCase()),
+  )
+  for (const kind of ['photo', 'illust']) {
+    const page = join(__dirname, '../graphics/out/renderer/web', kind, 'index.html')
+    if (!existsSync(page)) {
+      throw new Error(
+        `graphics web ${kind} is missing from ../graphics/out (run npm run build -w @genoffice/graphics)`,
+      )
+    }
+    if (!strict) continue
+    const stamp = join(__dirname, '../graphics/public/web', kind, '.pin')
+    const pin = existsSync(stamp) ? readFileSync(stamp, 'utf8').trim() : ''
+    if (!pin || pin.startsWith('local ')) {
+      throw new Error(`graphics web ${kind} is not the pinned release build: ${pin || 'no .pin'}`)
+    }
+  }
+}
+
 function assertModuleTreesPresent() {
   for (const rel of [
     '../docs/out',
@@ -209,6 +247,7 @@ function assertModuleTreesPresent() {
     '../mindmap/out',
     '../hwp/out',
     '../epub/out',
+    '../graphics/out',
     '../../packages/cli/dist/genoffice.cjs',
     '../../packages/cli/dist/node_modules/jsdom',
   ]) {
@@ -567,6 +606,10 @@ const config = {
       from: '../epub/out',
       to: 'modules/epub',
     },
+    {
+      from: '../graphics/out',
+      to: 'modules/graphics',
+    },
     // PDF text editing engines: the bundled main resolves these under
     // Resources/wasm when node_modules is absent (apps/pdf/src/main/wasm-path.ts)
     {
@@ -602,6 +645,11 @@ const config = {
     {
       from: 'src/main/quick-look/win-quicklook.exe',
       to: 'quicklook/win-quicklook.exe',
+    },
+    // the Windows share sheet helper (only built on Windows; elsewhere the source is absent)
+    {
+      from: WIN_SHARE_HELPER,
+      to: 'share/win-share.exe',
     },
     // genoffice command line: runs on the app binary with ELECTRON_RUN_AS_NODE,
     // so the RunAsNode fuse must stay enabled.
@@ -856,6 +904,7 @@ const config = {
     assertExtraResourceSources()
     ensureThirdPartyNotices()
     assertModuleTreesPresent()
+    assertGraphicsWebBuilt()
     assertPdfStructureProcessBuilt()
     ensureCliBundleCarriesAppVersion()
     if (context.electronPlatformName === 'darwin' && includeMacX64) {

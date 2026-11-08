@@ -108,7 +108,7 @@ import {
   setHangulSpaceWidening,
 } from './line-metrics'
 import { adoptEmbeddedFonts } from './embedded-fonts'
-import { defaultEastAsiaFontFor } from './font-list'
+import { blankDocxFontsFor } from './font-list'
 import { hasPrintableHeaderFooter } from './pagination'
 import { clearPrintZoom, setPrintZoom } from './print-zoom'
 import { collectPdfInternalLinks } from './pdf-internal-links'
@@ -116,6 +116,7 @@ import type { PdfInternalLink } from '../shared/ipc'
 import { showToast } from './components/toast-bus'
 import { buildStandaloneHtml } from './html-export'
 import { aiPanelInitiallyOpen } from '@genoffice/ui'
+import { exportedFileLabel, reportExported, type ExportedOffer } from './export-offer'
 
 /** An export waiting for the pagination preview to mount; resolve settles the caller's exportPdf promise. */
 export type PendingPdfExport = { outPath?: string; resolve: (ok: boolean) => void }
@@ -134,6 +135,8 @@ export interface FileActionContext {
   printAutoOpenedPreviewRef: { current: boolean }
   setShowPrintDialog: (show: boolean) => void
   setStatus: (status: string) => void
+  /** status-bar Open / Open folder for a file an export just wrote (absent: headless) */
+  offerExported?: (offer: ExportedOffer) => void
   setRecent: (paths: string[]) => void
   setShowAi: (show: boolean) => void
   setDoc: Dispatch<SetStateAction<DocState | null>>
@@ -648,7 +651,7 @@ async function systemLocale(): Promise<string> {
 
 async function blankDocxBytes(): Promise<Uint8Array> {
   return buildBlankDocx({
-    eastAsiaFont: defaultEastAsiaFontFor(getLang()),
+    ...blankDocxFontsFor(getLang()),
     paperSize: paperSizeForLocale(await systemLocale()),
   })
 }
@@ -1583,15 +1586,20 @@ async function printGroupsMerged(
   }
   const result = await window.desktop.saveMergedPdf(fileName, parts, outPath, links)
   const mixed = groups.some((g) => g.w !== groups[0].w || g.h !== groups[0].h)
-  ctx.setStatus(
-    result.ok
-      ? mixed
-        ? t('appExportedPdfMixed', { path: result.path ?? '', n: parts.length })
-        : t('appExportedPdf', { path: result.path ?? '' })
-      : result.error
-        ? t('appExportPdfFailed', { error: result.error })
-        : t('appExportPdfCanceled'),
-  )
+  if (result.ok) {
+    const name = exportedFileLabel(result.path)
+    reportExported(
+      ctx,
+      mixed
+        ? t('appExportedPdfMixed', { path: name, n: parts.length })
+        : t('appExportedPdf', { path: name }),
+      result.path,
+    )
+  } else {
+    ctx.setStatus(
+      result.error ? t('appExportPdfFailed', { error: result.error }) : t('appExportPdfCanceled'),
+    )
+  }
   return result.ok
 }
 
@@ -1657,7 +1665,11 @@ export async function exportPdf(ctx: FileActionContext, outPath?: string): Promi
       if (g) {
         const result = await window.desktop.exportPdf(doc.fileName, g.w, g.h, outPath, scale, links)
         if (result.ok) {
-          ctx.setStatus(t('appExportedPdf', { path: result.path ?? '' }))
+          reportExported(
+            ctx,
+            t('appExportedPdf', { path: exportedFileLabel(result.path) }),
+            result.path,
+          )
           return true
         }
         if (!result.error) {
@@ -1729,7 +1741,11 @@ export async function exportPdf(ctx: FileActionContext, outPath?: string): Promi
       outPath,
     )
     if (result.ok) {
-      ctx.setStatus(t('appExportedPdf', { path: result.path ?? '' }))
+      reportExported(
+        ctx,
+        t('appExportedPdf', { path: exportedFileLabel(result.path) }),
+        result.path,
+      )
       return true
     }
     if (!result.error) {
@@ -1766,13 +1782,15 @@ export async function exportImages(ctx: FileActionContext): Promise<boolean> {
   // image stage replaces them
   const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const pdfDone = [
-    new RegExp(`^${esc(t('appExportedPdf', { path: target.pdfPath }))}$`),
+    new RegExp(`^${esc(t('appExportedPdf', { path: exportedFileLabel(target.pdfPath) }))}$`),
     new RegExp(
-      `^${esc(t('appExportedPdfMixed', { path: target.pdfPath, n: '@N@' })).replace('@N@', '\\d+')}$`,
+      `^${esc(t('appExportedPdfMixed', { path: exportedFileLabel(target.pdfPath), n: '@N@' })).replace('@N@', '\\d+')}$`,
     ),
   ]
   const staged: FileActionContext = {
     ...ctx,
+    // the PDF is a temp file: nothing to open
+    offerExported: undefined,
     setStatus: (s) => {
       if (!pdfDone.some((re) => re.test(s))) ctx.setStatus(s)
     },
@@ -1818,7 +1836,12 @@ export async function exportImages(ctx: FileActionContext): Promise<boolean> {
         )
         if (!r.ok) return fail(r.error ?? '')
       }
-      ctx.setStatus(t('appExportImagesDone', { count, dir: target.dir }))
+      reportExported(
+        ctx,
+        t('appExportImagesDone', { count, dir: exportedFileLabel(target.dir) }),
+        target.dir,
+        true,
+      )
       return true
     } finally {
       await task.destroy()
@@ -1844,12 +1867,12 @@ export async function exportHtml(ctx: FileActionContext, outPath?: string): Prom
     textWidthPx: Number.isFinite(textWidthPx) ? textWidthPx : root.clientWidth,
   })
   const result = await window.desktop.exportHtml(doc.fileName, html, outPath)
+  if (result.ok) {
+    reportExported(ctx, t('appExportedHtml', { path: exportedFileLabel(result.path) }), result.path)
+    return true
+  }
   ctx.setStatus(
-    result.ok
-      ? t('appExportedHtml', { path: result.path ?? '' })
-      : result.error
-        ? t('appExportHtmlFailed', { error: result.error })
-        : t('appExportHtmlCanceled'),
+    result.error ? t('appExportHtmlFailed', { error: result.error }) : t('appExportHtmlCanceled'),
   )
   return result.ok
 }
@@ -1863,13 +1886,19 @@ export async function exportMarkdown(ctx: FileActionContext, outPath?: string): 
   const { markdown, images } = documentToMarkdown(editor)
   const result = await window.desktop.exportMarkdown(doc.fileName, markdown, images, outPath)
   const dropped = result.imagesDropped ?? 0
+  if (result.ok) {
+    reportExported(
+      ctx,
+      t('appExportedMarkdown', { path: exportedFileLabel(result.path) }) +
+        (dropped > 0 ? ` ${t('appExportMarkdownImagesDropped', { count: dropped })}` : ''),
+      result.path,
+    )
+    return true
+  }
   ctx.setStatus(
-    result.ok
-      ? t('appExportedMarkdown', { path: result.path ?? '' }) +
-          (dropped > 0 ? ` ${t('appExportMarkdownImagesDropped', { count: dropped })}` : '')
-      : result.error
-        ? t('appExportMarkdownFailed', { error: result.error })
-        : t('appExportMarkdownCanceled'),
+    result.error
+      ? t('appExportMarkdownFailed', { error: result.error })
+      : t('appExportMarkdownCanceled'),
   )
   return result.ok
 }

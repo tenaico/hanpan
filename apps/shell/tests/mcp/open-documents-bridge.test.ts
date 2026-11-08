@@ -144,6 +144,21 @@ describe('open_documents close: discard cleanup', () => {
   })
 })
 
+describe('open_documents: picture tabs', () => {
+  it.each(['photo', 'illust'] as const)(
+    'a changed %s tab is not saved on close; discard closes it',
+    async (kind) => {
+      const closeTab = vi.fn(() => true)
+      const doc = tab({ id: 'g1', kind, title: 'art', filePath: 'C:/art/a.png', dirty: true })
+      const { call } = await controlWith([doc], { closeTab })
+      await expect(call({ action: 'close', target: 'g1' })).rejects.toThrow(/picture/)
+      expect(closeTab).not.toHaveBeenCalled()
+      await call({ action: 'close', target: 'g1', unsaved: 'discard' })
+      expect(closeTab).toHaveBeenCalledWith('g1')
+    },
+  )
+})
+
 describe('open_documents: restored tabs and recovery copies', () => {
   it.each(['docs', 'mindmap', 'hwp'] as const)(
     'drops a %s document’s recovery copy on discard, before the tab goes',

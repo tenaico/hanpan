@@ -20,6 +20,9 @@ export interface ConvertOptions {
   /** Keep tables at their rendered width instead of filling the content
    *  width (how Word lays out imported HTML chunks). */
   naturalTableWidth?: boolean
+  /** Smallest paper margin (CSS px at 96 dpi) for a flowed page; a composed
+   *  page keeps its own geometry. Omitted: the body's measured margins. */
+  minPageMarginPx?: number
 }
 
 export interface ConvertResult {
@@ -628,7 +631,10 @@ export async function convertHtmlToDocx(
   log('[html2docx] generating docx')
   progress('generate', 0)
   const docx = new Uint8Array(
-    await generateDocx(ir, images, { naturalTableWidth: options.naturalTableWidth }),
+    await generateDocx(ir, images, {
+      naturalTableWidth: options.naturalTableWidth,
+      minPageMarginPx: options.minPageMarginPx,
+    }),
   )
   log(`[html2docx] generated ${docx.length} bytes`)
   progress('generate', 100)

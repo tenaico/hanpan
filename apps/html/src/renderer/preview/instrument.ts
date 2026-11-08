@@ -69,7 +69,18 @@ function replaceAuthoredSid(tag: string, sid: number): string {
  * a `data-gx-sid` so the inspector can map clicks straight back to the parse map,
  * and the inspector script is appended. The saved text never sees either.
  */
-export function instrumentForPreview(text: string, map: ParseMap, inspectorSource: string): string {
+export function instrumentForPreview(
+  text: string,
+  map: ParseMap,
+  inspectorSource: string,
+  options: {
+    /**
+     * 받은 HTML 파일의 스크립트를 미리보기에서 끈다(사용자가 "스크립트 실행"을 누르기 전까지).
+     * nonce가 붙은 검사기 스크립트만 도는 CSP를 문서 맨 앞에 넣는다.
+     */
+    blockScripts?: boolean
+  } = {},
+): string {
   const edits = map.elements
     .map((entry) => ({
       start: entry.startTag[0],
@@ -79,8 +90,32 @@ export function instrumentForPreview(text: string, map: ParseMap, inspectorSourc
     .sort((a, b) => b.start - a.start)
   let out = text
   for (const edit of edits) out = out.slice(0, edit.start) + edit.text + out.slice(edit.end)
+  const nonce = options.blockScripts ? previewNonce() : null
   // the frame reports this version with every message so the app can drop input from a stale reload
-  const script = `<script data-gx-inspector>${inspectorSource.replace('__GX_VERSION__', String(map.version))}</script>`
+  const script = `<script data-gx-inspector${nonce ? ` nonce="${nonce}"` : ''}>${inspectorSource.replace('__GX_VERSION__', String(map.version))}</script>`
   const bodyClose = out.search(/<\/body\s*>/i)
-  return bodyClose >= 0 ? out.slice(0, bodyClose) + script + out.slice(bodyClose) : out + script
+  out = bodyClose >= 0 ? out.slice(0, bodyClose) + script + out.slice(bodyClose) : out + script
+  if (!nonce) return out
+  const policy = `<meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}'">`
+  // as early as the parser allows: right after <head>, else <html>, else the doctype
+  const anchor =
+    /<head(\s[^>]*)?>/i.exec(out) ?? /<html(\s[^>]*)?>/i.exec(out) ?? /<!doctype[^>]*>/i.exec(out)
+  if (!anchor) return policy + out
+  const at = anchor.index + anchor[0].length
+  return out.slice(0, at) + policy + out.slice(at)
+}
+
+function previewNonce(): string {
+  const bytes = new Uint8Array(12)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+/** 실행될 것이 있는 문서인지: <script>, on…= 속성, javascript: 링크 */
+export function hasDocumentScripts(text: string): boolean {
+  return (
+    /<script[\s>]/i.test(text) ||
+    /<[a-z][^>]*\son[a-z]+\s*=/i.test(text) ||
+    /=\s*["']?\s*javascript:/i.test(text)
+  )
 }

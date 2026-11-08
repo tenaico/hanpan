@@ -1,6 +1,7 @@
 import { basename } from 'node:path'
 import { BrowserWindow, screen } from 'electron'
 import type { Rectangle, WebContents, WebContentsView } from 'electron'
+import { fitWindowSize } from './window-bounds'
 import { resumeDiscardedCopies } from '@genoffice/electron-utils'
 
 import {
@@ -26,6 +27,7 @@ import { hwpIsDirty, hwpMemoModalOpen, requestHwpClose } from '../../../hwp/src/
 import { htmlIsDirty, requestHtmlClose } from '../../../html/src/main/html-main'
 import { mindmapIsDirty, requestMindmapClose } from '../../../mindmap/src/main/mindmap-main'
 import { epubIsDirty, requestEpubClose } from '../../../epub/src/main/epub-main'
+import { graphicsIsDirty, requestGraphicsClose } from '../../../graphics/src/main/graphics-main'
 import { canonicalPath } from './tab-manager'
 import { releaseClosedRenderer } from './renderer-disposal'
 import { cancelUpdateRestart } from './update-restart'
@@ -128,6 +130,8 @@ const DEFAULT_SIZE: Record<string, { width: number; height: number }> = {
   mindmap: { width: 1200, height: 850 },
   hwp: { width: 1280, height: 900 },
   epub: { width: 1200, height: 900 },
+  photo: { width: 1400, height: 900 },
+  illust: { width: 1400, height: 900 },
 }
 
 /** where the pointer sits inside a freshly torn-off window's title bar */
@@ -264,6 +268,9 @@ async function detachedIsDirty(rec: DetachedRecord): Promise<boolean> {
       return hwpIsDirty(wc.id)
     case 'epub':
       return epubIsDirty(wc.id)
+    case 'photo':
+    case 'illust':
+      return graphicsIsDirty(wc.id)
     default:
       return false
   }
@@ -296,6 +303,9 @@ async function confirmDetachedClose(rec: DetachedRecord): Promise<boolean> {
       return requestHwpClose(wc, win)
     case 'epub':
       return requestEpubClose(wc, win)
+    case 'photo':
+    case 'illust':
+      return requestGraphicsClose(wc, win)
     default:
       return true
   }
@@ -336,6 +346,25 @@ export function detachedSetTitleFor(webContentsId: number, title: string): void 
   const rec = detached.get(webContentsId)
   if (!rec || rec.filePath || rec.window.isDestroyed()) return
   rec.window.setTitle(title)
+}
+
+/**
+ * The UI language changed: a detached window with no file whose title is still the untitled
+ * name of the language it left (`previous`) takes the new one (`next`), as TabManager does for
+ * the strip. Saved files and untitled documents that named themselves keep their titles.
+ */
+export function retitleUntitledDetached(
+  previous: (kind: TabKind) => string,
+  next: (kind: TabKind) => string,
+): void {
+  let changed = false
+  for (const rec of detached.values()) {
+    if (rec.filePath || rec.window.isDestroyed()) continue
+    if (rec.window.getTitle() !== previous(rec.kind)) continue
+    rec.window.setTitle(next(rec.kind))
+    changed = true
+  }
+  if (changed) onChanged()
 }
 
 /** a rename on disk (Home list) — follow it, same contract as renameTabFile */
@@ -481,7 +510,11 @@ export function createDetachedEditorWindow(options: {
   tearOffAt?: { x: number; y: number }
 }): BrowserWindow {
   const { view, kind, title, filePath, applyMenuFor, tearOffAt } = options
-  const size = DEFAULT_SIZE[kind] ?? { width: 1360, height: 900 }
+  // each kind's usual size, inside the screen it opens on (0.17 리뷰 v2 shell #12)
+  const size = fitWindowSize(
+    DEFAULT_SIZE[kind] ?? { width: 1360, height: 900 },
+    screen.getDisplayNearestPoint(tearOffAt ?? screen.getCursorScreenPoint()).workArea,
+  )
   const origin = tearOffAt ? tearOffOrigin(tearOffAt, size) : {}
   const win = new BrowserWindow({
     ...size,

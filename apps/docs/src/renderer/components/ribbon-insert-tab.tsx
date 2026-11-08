@@ -2,7 +2,14 @@ import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { getMarkRange } from '@tiptap/core'
 import type { Editor } from '@tiptap/core'
-import { ShapePreview, WORDART_PRESETS, wordArtStrokePx } from '@genoffice/ui'
+import {
+  GonguPicker,
+  ShapePreview,
+  WORDART_PRESETS,
+  gonguPickerText,
+  wordArtStrokePx,
+} from '@genoffice/ui'
+import { insertGonguPicture } from '../gongu-insert'
 import type { ChartDisplay, HeaderFooter, NewChart } from '@genoffice/docx-engine'
 import { hfHasPageField, hfWithoutPageMarks } from '../editor/hf-dom'
 import { EquationGallery, EquationModal } from './EquationModal'
@@ -367,7 +374,8 @@ export function ChartInsertModal({ editor, onClose }: { editor: Editor; onClose:
           ).map(([value, label]) => (
             <button
               key={value}
-              className={kind === value ? 'btn-primary' : ''}
+              className="modal-btn"
+              aria-pressed={kind === value}
               onClick={() => setKind(value)}
             >
               {label}
@@ -412,8 +420,10 @@ export function ChartInsertModal({ editor, onClose }: { editor: Editor; onClose:
           </tbody>
         </table>
         <div className="modal-row">
-          <button onClick={addCategory}>{t('ribbonChartAddCategory')}</button>
-          <button onClick={addSeries} disabled={kind === 'pie'}>
+          <button className="modal-btn" onClick={addCategory}>
+            {t('ribbonChartAddCategory')}
+          </button>
+          <button className="modal-btn" onClick={addSeries} disabled={kind === 'pie'}>
             {t('ribbonChartAddSeries')}
           </button>
         </div>
@@ -694,7 +704,7 @@ export function InsertTab({
   commentsAllowed,
   onTableInserted,
 }: InsertTabProps) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   /** ODT document: the features ODT switches off are disabled (odt-gate.ts) */
   const odtOff = useOdtSession()
   const [grid, setGrid] = useState<{ r: number; c: number }>({ r: 0, c: 0 })
@@ -704,6 +714,8 @@ export function InsertTab({
   const [bookmarkOpen, setBookmarkOpen] = useState(false)
   const [crossRefOpen, setCrossRefOpen] = useState(false)
   const [chartOpen, setChartOpen] = useState(false)
+  /** Hanpan: the Gongu picture picker */
+  const [gonguOpen, setGonguOpen] = useState(false)
 
   const insertTable = (rows: number, cols: number) => {
     insertTableAt(editor, rows, cols)
@@ -714,7 +726,7 @@ export function InsertTab({
   return (
     <>
       {/* Word: Pages (cover page / blank page / page break) sits leftmost */}
-      <div className="ribbon-group">
+      <div className="ribbon-group ribbon-group-pages">
         <div className="ribbon-group-items">
           <div className="rb-split-wrap">
             <button
@@ -855,6 +867,26 @@ export function InsertTab({
             </span>
             <span>{t('ribbonPicture')}</span>
           </button>
+          <button
+            className="rb-big"
+            disabled={!hasDoc}
+            data-tip={gonguPickerText(lang, 'find')}
+            data-action="insert-gongu"
+            onClick={() => setGonguOpen(true)}
+          >
+            <span className="rb-big-icon">
+              <IconPicture size={BIG} />
+            </span>
+            <span>{gonguPickerText(lang, 'title')}</span>
+          </button>
+          {gonguOpen && (
+            <GonguPicker
+              lang={lang}
+              api={window.desktop}
+              onInsert={(picked) => insertGonguPicture(editor, picked)}
+              onClose={() => setGonguOpen(false)}
+            />
+          )}
           <button
             className="rb-big"
             disabled={!hasDoc}

@@ -13,7 +13,8 @@
  * Everything returned crosses to the app renderer by structured clone.
  */
 
-import { installDialogTheme } from './dialog-theme.mjs'
+import { installDialogTheme, installToolbarClipGuard } from './dialog-theme.mjs'
+import { installLocaleLayout, styleDisplayName, studioLocaleNow } from './studio-locales.mjs'
 
 export const AGENT_PLUGIN_ID = 'ieum-agent'
 /** The size of a picture's credit line put in under it, in points. */
@@ -69,17 +70,39 @@ const REVEAL_COMMAND = 'ext:ieum-reveal'
  */
 export const FILE_COMMAND_EVENT = 'ieum:file-command'
 /**
+ * Fired on the editor's window when the person picks "find in Gongu" for a picture (the
+ * toolbar's Picture choice or the Insert menu's item, 0.17.1 #15): the app opens its picker.
+ */
+export const GONGU_PICTURE_EVENT = 'ieum:gongu-picture'
+/** The Insert menu's Gongu picture item, right under the editor's own Picture. */
+const GONGU_PICTURE_COMMAND = 'ext:ieum-gongu-picture'
+/** The editor's own Picture command: a file window, then a click to place the picture. */
+const IMAGE_COMMAND = 'insert:image'
+/**
+ * The event the About box's licence button fires on the editor's window (0.17 UI/UX review v2,
+ * hwp-design #6): the app opens its own open-source licence list, rhwp's crates included.
+ */
+export const OPEN_LICENSES_EVENT = 'ieum:open-licenses'
+/**
  * The event this plugin fires on the editor's window when the document's unsaved state
  * changes, with the new state (true: unsaved changes) as its detail.
  */
 export const DIRTY_EVENT = 'ieum:dirty-changed'
 /** The File menu items, top to bottom: the command the app runs, and the shortcut shown. */
 const FILE_MENU = [
+  { command: 'open', id: 'ext:ieum-open', shortcut: 'Ctrl+O' },
   { command: 'save', id: 'ext:ieum-save', shortcut: 'Ctrl+S' },
   { command: 'saveAs', id: 'ext:ieum-save-as', shortcut: 'Ctrl+Shift+S' },
   { command: 'pdf', id: 'ext:ieum-export-pdf' },
+  { command: 'docx', id: 'ext:ieum-export-docx' },
+  { command: 'png', id: 'ext:ieum-export-png' },
+  { command: 'pngPage', id: 'ext:ieum-export-png-page' },
   { command: 'print', id: 'ext:ieum-print', shortcut: 'Ctrl+P' },
 ]
+/** The command that reads the page the caret is on (the editor's own services know it). */
+const PAGE_COMMAND = 'ext:ieum-current-page'
+/** Reads where the caret is, for what goes in at the caret (a Gongu picture, 0.17.1 #15). */
+const CARET_COMMAND = 'ext:ieum-caret'
 /** The command that reads what the user has selected in the editor. */
 const SELECTION_COMMAND = 'ext:ieum-selection'
 /** The command that selects the word under the caret (a double click in the page). */
@@ -442,7 +465,7 @@ function memoAuthorOf(author) {
     .slice(0, MAX_MEMO_AUTHOR)
   // the product's name (PRODUCT_NAME of @genoffice/i18n, which this plugin cannot import):
   // Hangul shows it as the author
-  return clean || 'IeumOffice'
+  return clean || 'Hanpan'
 }
 
 /** An anchor the panel hands back, checked before it reaches the engine. */
@@ -1172,19 +1195,21 @@ const CARET_STATE_COMMAND = 'ext:ieum-caret-state'
  * Fill the editor toolbar's style list (`select`) with the document's styles (as
  * getStyleList gives them) when they differ from what it shows. The number shown stays
  * shown when there still is a style by it: the editor sets the list by the number of the
- * caret's style, which may already be the new one. Returns whether the list was refilled.
+ * caret's style, which may already be the new one. Each style shows under its name in the
+ * studio's language (styleDisplayName). Returns whether the list was refilled.
  */
-export function syncStyleList(select, styles) {
+export function syncStyleList(select, styles, locale = studioLocaleNow()) {
   const shown = Array.from(select.options, (option) => [Number(option.value), option.textContent])
-  if (JSON.stringify(shown) === JSON.stringify(styles.map((style) => [style.id, style.name]))) {
+  const names = styles.map((style) => [style.id, styleDisplayName(style, locale)])
+  if (JSON.stringify(shown) === JSON.stringify(names)) {
     return false
   }
   const current = select.value
   select.replaceChildren(
-    ...styles.map((style) => {
+    ...names.map(([id, name]) => {
       const option = select.ownerDocument.createElement('option')
-      option.value = String(style.id)
-      option.textContent = style.name
+      option.value = String(id)
+      option.textContent = name
       return option
     }),
   )
@@ -2898,6 +2923,8 @@ let stopMemoLock = null
 let stopMemoClipboard = null
 /** Closes the channel a copy of memo-bearing text is told on. */
 let stopMemoChannel = null
+/** Takes the Picture button's "this PC / Gongu" choice off the editor again. */
+let stopPictureChoice = null
 /** A redraw of the memo anchors after a change settles, and the probe for pasted memos. */
 let memoSettleTimer = null
 let memoProbeTimer = null
@@ -2917,6 +2944,68 @@ function withPortableWidths(doc, fn) {
   }
 }
 
+/** What `fn` gives, or `fallback` when it throws. */
+function attempt(fn, fallback) {
+  try {
+    return fn()
+  } catch {
+    return fallback
+  }
+}
+
+/** What the engine's clipboard HTML holds between its fragment marks. */
+function fragmentOf(html) {
+  const match = /<!--StartFragment-->([\s\S]*?)<!--EndFragment-->/.exec(html)
+  return (match ? match[1] : html).replace(/<!-- rhwp:[\s\S]*?-->/g, '').trim()
+}
+
+/**
+ * The whole body of the document as one HTML page, for the Word export (0.17): each
+ * paragraph as the engine writes it for the clipboard (character and paragraph formatting),
+ * each table and picture of the paragraph as the engine writes that control (cells, spans,
+ * borders, fills; pictures as data URLs). A control at the start of its paragraph comes
+ * before the paragraph's text, any other after it. Empty paragraphs stay as empty lines.
+ * Headers, footers, footnotes and endnotes, memos, fields' behavior, text boxes and shapes
+ * are not part of it; the engine notes what it leaves out, and those notes are dropped.
+ */
+export function documentHtml(doc) {
+  const blocks = []
+  const sections = doc.getSectionCount()
+  for (let sec = 0; sec < sections; sec++) {
+    const paragraphs = doc.getParagraphCount(sec)
+    for (let para = 0; para < paragraphs; para++) {
+      const length = doc.getParagraphLength(sec, para)
+      const positions = attempt(() => parse(doc.getControlTextPositions(sec, para)), [])
+      const before = []
+      const after = []
+      positions.forEach((at, index) => {
+        // a control the engine cannot write (a shape, a text box) is left out
+        const html = attempt(() => fragmentOf(doc.exportControlHtml(sec, para, '[]', index)), '')
+        if (html) (at > 0 && length > 0 ? after : before).push(html)
+      })
+      const text = length > 0 ? fragmentOf(doc.exportSelectionHtml(sec, para, 0, para, length)) : ''
+      blocks.push(...before)
+      if (text) blocks.push(text)
+      else if (before.length === 0 && after.length === 0)
+        blocks.push('<p style="margin:0">&nbsp;</p>')
+      blocks.push(...after)
+    }
+  }
+  return [
+    '<!DOCTYPE html>',
+    '<html lang="ko">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<style>',
+    "body { margin: 20mm; font-family: '맑은 고딕', 'Malgun Gothic', sans-serif; font-size: 10pt; }",
+    'table { margin: 4pt 0; }',
+    '</style>',
+    '</head>',
+    `<body>${blocks.join('\n')}</body>`,
+    '</html>',
+  ].join('\n')
+}
+
 export const agentPlugin = {
   id: AGENT_PLUGIN_ID,
   apiVersion: 1,
@@ -2934,6 +3023,8 @@ export const agentPlugin = {
     stopMemoClipboard = null
     if (stopMemoChannel) stopMemoChannel()
     stopMemoChannel = null
+    if (stopPictureChoice) stopPictureChoice()
+    stopPictureChoice = null
     if (memoSettleTimer) clearTimeout(memoSettleTimer)
     memoSettleTimer = null
     if (memoProbeTimer) clearTimeout(memoProbeTimer)
@@ -2945,6 +3036,10 @@ export const agentPlugin = {
     // when the plugin comes up, not when the AI panel opens: a settings dialog
     // can be opened on a document the panel never touched.
     installDialogTheme()
+    // no button cut in half at the edges of the scrolling toolbar (0.17 UX v2 #12)
+    installToolbarClipGuard()
+    // the style bar's widths in the added languages (studio-locales.mjs)
+    installLocaleLayout()
 
     // the unsaved state as the editor sets it, in the same task as the edit: the app's close
     // prompt reads its copy of this, and a key typed just before closing must be in it
@@ -3526,6 +3621,61 @@ export const agentPlugin = {
       refreshMarks()
     }
 
+    // the answer of the page command, read by currentPage
+    let currentPageSeen = null
+    try {
+      host.automation.registerCommand({
+        id: PAGE_COMMAND,
+        label: 'Read the current page',
+        execute: (services) => {
+          try {
+            const input = services && services.getInputHandler ? services.getInputHandler() : null
+            const page =
+              input && input.cursor && input.cursor.rect ? input.cursor.rect.pageIndex : null
+            currentPageSeen = Number.isInteger(page) ? page : null
+          } catch {
+            currentPageSeen = null
+          }
+        },
+      })
+    } catch {
+      // registered by an earlier activation of this plugin, or a host without commands
+    }
+
+    // the answer of the caret command: the caret's place in this plugin's terms, or null
+    let caretSeen = null
+    try {
+      host.automation.registerCommand({
+        id: CARET_COMMAND,
+        label: 'Read where the caret is',
+        execute: (services) => {
+          try {
+            const input = services && services.getInputHandler ? services.getInputHandler() : null
+            const cursor = input ? input.cursor : null
+            const elsewhere = ['isInHeaderFooter', 'isInFootnote'].some(
+              (mode) => cursor && typeof cursor[mode] === 'function' && cursor[mode](),
+            )
+            caretSeen =
+              cursor && cursor.getPosition && !elsewhere ? endOf(cursor.getPosition()) : null
+          } catch {
+            caretSeen = null
+          }
+        },
+      })
+    } catch {
+      // registered by an earlier activation of this plugin, or a host without commands
+    }
+    /** The caret's place (see endOf), or null when the editor has none this plugin can address. */
+    const readCaret = () => {
+      caretSeen = null
+      try {
+        host.automation.execute(CARET_COMMAND)
+      } catch {
+        caretSeen = null
+      }
+      return caretSeen
+    }
+
     // the answer of the reveal command: a command of the editor returns nothing itself
     let shown = false
     try {
@@ -3777,6 +3927,113 @@ export const agentPlugin = {
     const openAfter = (box, k, plain) => {
       if (plain) box.addAfter(k)
       else box.split(k, box.length(k))
+    }
+
+    /**
+     * Add a picture in a new paragraph next to the paragraph `locator` finds (see locate), as
+     * one change: insertPicture and insertPictureAtCaret. `where` is 'before', 'after' or
+     * 'end'; a `caption` goes in the paragraph under the picture, small and centred.
+     */
+    const addPicture = (
+      locator,
+      where,
+      base64,
+      widthPt,
+      naturalWidthPx,
+      naturalHeightPx,
+      extension,
+      options,
+      caption,
+      inline = false,
+    ) => {
+      if (caption !== undefined && caption !== null) checkParagraphs([caption])
+      const picture = pictureOf(base64, extension)
+      const naturalW = Math.max(1, Math.round(Number(naturalWidthPx) || 1))
+      const naturalH = Math.max(1, Math.round(Number(naturalHeightPx) || 1))
+      // width is in HWPUNIT (1pt = 100, 75 to a screen pixel; it was taken as 200 until
+      // 0.17.1, which drew every picture twice the asked width); a tall picture is pulled
+      // in so it cannot run past a page, keeping the aspect the natural pixel size gives it
+      let width = Math.round(Math.min(Math.max(Number(widthPt) || 240, 24), 600) * 100)
+      let height = Math.max(100, Math.round((width * naturalH) / naturalW))
+      const maxHeight = 600 * 100
+      if (height > maxHeight) {
+        height = maxHeight
+        width = Math.max(1, Math.round((height * naturalW) / naturalH))
+      }
+      const refusal = host.read((doc) => {
+        const { box, refusal: why } = locator(doc)
+        return box ? null : why
+      })
+      if (refusal) return refusal
+      return keepingObjects((mustKeep) =>
+        change(
+          'insert-picture',
+          (doc) => {
+            const { box, plain } = locator(doc)
+            if (!box) throw fail('CHANGED', 'the document changed mid-call')
+            const before = objectsOf(doc)
+            let at = box.index
+            if (where === 'before') box.split(at, 0)
+            else {
+              openAfter(box, at, plain)
+              at += 1
+            }
+            if (caption) {
+              // the caption's paragraph is opened before the picture goes in: the picture's
+              // paragraph has no text, and a split at its end would carry the picture along
+              box.split(at, 0)
+              box.insert(at + 1, caption)
+              const { chars, paragraph } = resolveFormat(
+                doc,
+                formatOf({ align: 'center', size: CAPTION_PT }, true),
+              )
+              if (paragraph && box.formatParagraph) box.formatParagraph(at + 1, paragraph)
+              if (chars) box.formatChars(at + 1, 0, caption.length, chars)
+            }
+            const place = box.place(at, 0)
+            const inserted = parse(
+              doc.insertPictureEx(
+                JSON.stringify({
+                  sectionIdx: place.sec,
+                  paraIdx: place.para,
+                  charOffset: 0,
+                  ...(place.path ? { cellPath: JSON.stringify(place.path) } : {}),
+                  width,
+                  height,
+                  naturalWidthPx: naturalW,
+                  naturalHeightPx: naturalH,
+                  extension: picture.extension,
+                }),
+                picture.bytes,
+              ),
+            )
+            if (inserted && inserted.ok === false)
+              throw fail('ENGINE_REFUSED', 'the editor refused to insert the picture')
+            // in the body the engine leaves the picture floating at the paper's corner, over
+            // the text there; `inline` stands it in its paragraph like a character
+            if (inline && !place.path && Number.isInteger(inserted?.controlIdx))
+              expectOk(
+                doc.setPictureProperties(
+                  place.sec,
+                  place.para,
+                  inserted.controlIdx,
+                  JSON.stringify({ treatAsChar: true }),
+                ),
+                'stand the picture in its line',
+              )
+            const after = objectsOf(doc)
+            // the new picture is an object of its own; nothing that was there may be gone
+            mustKeep(before, { ...after, controls: Math.min(after.controls, before.controls) })
+            return {
+              ok: true,
+              inTable: box.inTable,
+              place: box.place(at, 0),
+              ...(caption ? { captionPlace: box.place(at + 1, caption.length) } : {}),
+            }
+          },
+          options,
+        ),
+      )
     }
 
     /**
@@ -4093,79 +4350,46 @@ export const agentPlugin = {
           caption,
         ) => {
           checkWhere(where)
-          if (caption !== undefined && caption !== null) checkParagraphs([caption])
-          const picture = pictureOf(base64, extension)
-          const naturalW = Math.max(1, Math.round(Number(naturalWidthPx) || 1))
-          const naturalH = Math.max(1, Math.round(Number(naturalHeightPx) || 1))
-          // width is in HWPUNIT (1pt = 200); a tall picture is pulled in so it cannot run
-          // past a page, keeping the aspect the natural pixel size gives it
-          let width = Math.round(Math.min(Math.max(Number(widthPt) || 240, 24), 600) * 200)
-          let height = Math.max(200, Math.round((width * naturalH) / naturalW))
-          const maxHeight = 600 * 200
-          if (height > maxHeight) {
-            height = maxHeight
-            width = Math.max(1, Math.round((height * naturalW) / naturalH))
-          }
-          const refusal = host.read((doc) => {
-            const { box, refusal: why } = locate(doc, anchor, occurrence, where)
-            return box ? null : why
-          })
-          if (refusal) return refusal
-          return keepingObjects((mustKeep) =>
-            change(
-              'insert-picture',
-              (doc) => {
-                const { box, plain } = locate(doc, anchor, occurrence, where)
-                if (!box) throw fail('CHANGED', 'the document changed mid-call')
-                const before = objectsOf(doc)
-                let at = box.index
-                if (where === 'before') box.split(at, 0)
-                else {
-                  openAfter(box, at, plain)
-                  at += 1
-                }
-                if (caption) {
-                  // the caption's paragraph is opened before the picture goes in: the picture's
-                  // paragraph has no text, and a split at its end would carry the picture along
-                  box.split(at, 0)
-                  box.insert(at + 1, caption)
-                  const { chars, paragraph } = resolveFormat(
-                    doc,
-                    formatOf({ align: 'center', size: CAPTION_PT }, true),
-                  )
-                  if (paragraph && box.formatParagraph) box.formatParagraph(at + 1, paragraph)
-                  if (chars) box.formatChars(at + 1, 0, caption.length, chars)
-                }
-                const place = box.place(at, 0)
-                expectOk(
-                  doc.insertPictureEx(
-                    JSON.stringify({
-                      sectionIdx: place.sec,
-                      paraIdx: place.para,
-                      charOffset: 0,
-                      ...(place.path ? { cellPath: JSON.stringify(place.path) } : {}),
-                      width,
-                      height,
-                      naturalWidthPx: naturalW,
-                      naturalHeightPx: naturalH,
-                      extension: picture.extension,
-                    }),
-                    picture.bytes,
-                  ),
-                  'insert the picture',
-                )
-                const after = objectsOf(doc)
-                // the new picture is an object of its own; nothing that was there may be gone
-                mustKeep(before, { ...after, controls: Math.min(after.controls, before.controls) })
-                return {
-                  ok: true,
-                  inTable: box.inTable,
-                  place: box.place(at, 0),
-                  ...(caption ? { captionPlace: box.place(at + 1, caption.length) } : {}),
-                }
-              },
-              options,
-            ),
+          return addPicture(
+            (doc) => locate(doc, anchor, occurrence, where),
+            where,
+            base64,
+            widthPt,
+            naturalWidthPx,
+            naturalHeightPx,
+            extension,
+            options,
+            caption,
+          )
+        },
+      ),
+
+      /**
+       * Add a picture as insertPicture does, in a new paragraph right after the one the
+       * editor's caret is in (a body paragraph, a table cell's or a text box's); at the end
+       * of the document when the caret is somewhere this plugin has no address for (a header,
+       * a note) or the editor has none. For what the person picks to insert, such as a Gongu
+       * picture with its credit line as `caption` (0.17.1 #15).
+       */
+      insertPictureAtCaret: guarded(
+        (base64, widthPt, naturalWidthPx, naturalHeightPx, extension, caption) => {
+          const caret = readCaret()
+          const hit = caret
+            ? { sec: caret.sec, para: caret.para, ...(caret.path ? { cellPath: caret.path } : {}) }
+            : null
+          const where = hit ? 'after' : 'end'
+          return addPicture(
+            (doc) =>
+              hit ? guardObjects(containerOf(doc, hit), where, 1) : locate(doc, '', null, where),
+            where,
+            base64,
+            widthPt,
+            naturalWidthPx,
+            naturalHeightPx,
+            extension,
+            undefined,
+            caption,
+            true,
           )
         },
       ),
@@ -4440,6 +4664,25 @@ export const agentPlugin = {
           }),
         ),
       ),
+
+      /** The document body as one HTML page for the Word export (see documentHtml). */
+      exportHtml: guarded(() => ({ html: host.read((doc) => documentHtml(doc)) })),
+
+      /**
+       * The page the caret is on (0-based), for "this page as a picture"; the first page
+       * when the editor has no caret yet, the last when the caret's page is gone.
+       */
+      currentPage: guarded(() => {
+        currentPageSeen = null
+        try {
+          host.automation.execute(PAGE_COMMAND)
+        } catch {
+          currentPageSeen = null
+        }
+        const count = host.read((doc) => doc.pageCount())
+        const page = Number.isInteger(currentPageSeen) ? currentPageSeen : 0
+        return Math.max(0, Math.min(page, count - 1))
+      }),
 
       /**
        * The styles of the document by name: paragraph styles (what a format's style takes)
@@ -5367,10 +5610,11 @@ export const agentPlugin = {
       }),
 
       /**
-       * Put Save, Save As, Export as PDF and Print at the top of the editor's File menu. The
+       * Put Open, Save, Save As, the exports (PDF, Word, all pages or this page as pictures)
+       * and Print at the top of the editor's File menu. The
        * embedded editor leaves out its own (the app owns the file), which left the menu with
        * no way to save. Each item fires FILE_COMMAND_EVENT on the editor's window and the app
-       * does the rest. `labels` holds the four names in the app's language, by command. A
+       * does the rest. `labels` holds the names in the app's language, by command. A
        * second call puts the items back where they were; the names stay the first ones.
        */
       installFileMenu: guarded((labels) => {
@@ -5404,6 +5648,113 @@ export const agentPlugin = {
         } catch {
           // an editor without a File menu
           return { ok: false }
+        }
+        return { ok: true }
+      }),
+
+      /**
+       * Offer Gongu pictures where the editor offers pictures (0.17.1 #15): the toolbar's
+       * Picture button opens a small choice, "this PC" (the editor's own Picture: a file
+       * window) or "Gongu" (GONGU_PICTURE_EVENT for the app), and the Insert menu gets a
+       * Gongu item right under Picture. The choice is the editor's own context menu look.
+       * A second call puts it in again; the names are `labels` in the app's language.
+       */
+      installPictureChoice: guarded((labels) => {
+        for (const key of ['fromPc', 'gongu']) {
+          if (typeof labels?.[key] !== 'string' || !labels[key]) {
+            throw fail('BAD_ARGUMENT', `labels.${key} must be a non-empty string`)
+          }
+        }
+        const doc = globalThis.document
+        if (!doc || !host.automation.registerCommand) return { ok: false }
+        const fireGongu = () => globalThis.dispatchEvent?.(new CustomEvent(GONGU_PICTURE_EVENT))
+        try {
+          host.automation.registerCommand({
+            id: GONGU_PICTURE_COMMAND,
+            label: labels.gongu,
+            execute: fireGongu,
+          })
+        } catch {
+          // registered by an earlier call
+        }
+        const itemSelector = (id) => `.md-item[data-cmd="${id}"]`
+        try {
+          if (
+            !doc.querySelector(itemSelector(GONGU_PICTURE_COMMAND)) &&
+            host.automation.addMenuItem
+          )
+            host.automation.addMenuItem({ menuId: 'insert', commandId: GONGU_PICTURE_COMMAND })
+          const mine = doc.querySelector(itemSelector(GONGU_PICTURE_COMMAND))
+          const image = mine?.parentElement?.querySelector(itemSelector(IMAGE_COMMAND))
+          if (mine && image) image.after(mine)
+        } catch {
+          // an editor without an Insert menu: the toolbar's choice still offers Gongu
+        }
+
+        if (stopPictureChoice) stopPictureChoice()
+        let open = null
+        const close = () => {
+          if (!open) return
+          open.remove()
+          open = null
+        }
+        const show = (button) => {
+          const menu = doc.createElement('div')
+          menu.className = 'context-menu ieum-picture-choice'
+          menu.setAttribute('role', 'menu')
+          for (const [label, run] of [
+            [labels.fromPc, () => host.automation.execute(IMAGE_COMMAND)],
+            [labels.gongu, fireGongu],
+          ]) {
+            const item = doc.createElement('div')
+            item.className = 'md-item'
+            item.setAttribute('role', 'menuitem')
+            item.textContent = label
+            item.addEventListener('click', (event) => {
+              event.stopPropagation()
+              close()
+              run()
+            })
+            menu.appendChild(item)
+          }
+          const box = button.getBoundingClientRect()
+          menu.style.left = `${Math.round(box.left)}px`
+          menu.style.top = `${Math.round(box.bottom + 2)}px`
+          doc.body.appendChild(menu)
+          open = menu
+        }
+        const onClick = (event) => {
+          const button = event.target?.closest?.(`button[data-cmd="${IMAGE_COMMAND}"]`)
+          if (!button) return
+          // the editor's own listener would open the file window straight away
+          event.preventDefault()
+          event.stopImmediatePropagation()
+          if (open) close()
+          else show(button)
+        }
+        const onPress = (event) => {
+          if (!open || open.contains(event.target)) return
+          // a press on the button itself is the click that closes the choice
+          if (event.target?.closest?.(`button[data-cmd="${IMAGE_COMMAND}"]`)) return
+          close()
+        }
+        const onKey = (event) => {
+          if (open && event.key === 'Escape') {
+            event.stopPropagation()
+            close()
+          }
+        }
+        const view = doc.defaultView ?? globalThis
+        doc.addEventListener('click', onClick, true)
+        doc.addEventListener('mousedown', onPress, true)
+        view.addEventListener('keydown', onKey, true)
+        view.addEventListener('blur', close)
+        stopPictureChoice = () => {
+          close()
+          doc.removeEventListener('click', onClick, true)
+          doc.removeEventListener('mousedown', onPress, true)
+          view.removeEventListener('keydown', onKey, true)
+          view.removeEventListener('blur', close)
         }
         return { ok: true }
       }),

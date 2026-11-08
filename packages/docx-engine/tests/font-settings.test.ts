@@ -165,3 +165,23 @@ it('an East Asian-only edit does not materialize inherited Latin or complex-scri
   expect(xml).toContain('w:eastAsia="KaiTi"')
   expect(xml).not.toMatch(/w:(ascii|hAnsi|cs)=/)
 })
+
+// 0.17 v2 #12: Design > Fonts must show in the editor, not only after Word reopens
+// the saved file: styles that reference theme slots re-resolve to the new faces
+it('previewFontSettings re-resolves theme-referencing styles with a new theme font pair', async () => {
+  const bytes = await buildDocx({ bodyXml: '<w:p><w:r><w:t>x</w:t></w:r></w:p>' })
+  const zip = await JSZip.loadAsync(bytes)
+  zip.file(
+    'word/styles.xml',
+    '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:eastAsiaTheme="minorEastAsia"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:rPr><w:rFonts w:asciiTheme="majorHAnsi" w:hAnsiTheme="majorHAnsi"/></w:rPr></w:style></w:styles>',
+  )
+  const parsed = await parseDocx(await zip.generateAsync({ type: 'uint8array' }))
+  const { previewFontSettings } = await import('../src/font-settings')
+  const r = await previewFontSettings(parsed, [], undefined, {
+    fonts: { major: 'Malgun Gothic', minor: 'Batang', eastAsia: '바탕' },
+  })
+  const normal = r.styles.get('Normal')!
+  const heading = r.styles.get('Heading1')!
+  expect(JSON.stringify(normal)).toContain('Batang')
+  expect(JSON.stringify(heading)).toContain('Malgun Gothic')
+})

@@ -53,11 +53,12 @@ export const it = {
   appFontsMissing: 'Font del documento mancanti: {names} (mostrati sostituti)',
   appVerticalTextNotice:
     'Questo documento contiene testo verticale (mostrato orizzontalmente per ora; il salvataggio non è interessato)',
-  appNewDocCreated: 'Documento vuoto creato. Descrivi cosa generare nel pannello IA a sinistra.',
+  appNewDocCreated: 'Documento vuoto creato. Descrivi cosa generare nel pannello IA.',
   appNewFailed: 'Creazione del documento non riuscita: {error}',
   appSaveFailed: 'Salvataggio non riuscito: {error}',
   appAutoSavedAt: 'Salvato automaticamente ({time})',
   appSaved: 'Salvato',
+  appUnsaved: 'Non salvato',
   appSectionBreakInserted: 'Interruzione di sezione inserita ({type})',
   appSectionBreakPending:
     'Interruzione di sezione inserita; la nuova sezione avrà effetto dopo il salvataggio',
@@ -123,6 +124,8 @@ export const it = {
   appExportingImages: 'Esportazione delle immagini…',
   appExportImagesProgress: 'Esportazione di {count} immagini…',
   appExportImagesDone: '{count} immagini esportate in {dir}',
+  appOpenExported: 'Apri',
+  appRevealExported: 'Apri cartella',
   appExportImagesFailed: 'Esportazione delle immagini non riuscita: {error}',
   appMixedExportOpening:
     "Formati carta misti: apertura dell'anteprima di impaginazione per esportare unendo per pagina…",
@@ -493,6 +496,7 @@ export const it = {
   appMatchCase: 'Maiuscole/minuscole',
   appWholeWord: 'Solo parole intere',
   appNoResults: 'Nessun risultato',
+  appReplacedCount: '{count} sostituito/i',
   appPrevMatch: 'Precedente (Maiusc+Invio)',
   appNextMatch: 'Successivo (Invio)',
   appCloseEsc: 'Chiudi (Esc)',

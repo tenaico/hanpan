@@ -871,6 +871,7 @@ export function PaginationPreview({
   anchorBlocks,
   revisionView,
   onExportPdf,
+  onPrint,
   onClose,
   suppressEscape,
 }: {
@@ -926,6 +927,8 @@ export function PaginationPreview({
   /** editor view while the canvas is in balloon mode (print view, All Markup): deletions / format changes print as margin balloons */
   revisionView?: EditorView | null
   onExportPdf: () => void
+  /** opens the print dialog over this preview */
+  onPrint?: () => void
   onClose: () => void
   /** While true (e.g. the print dialog is stacked on top), Escape must not close the preview */
   suppressEscape?: boolean
@@ -1452,6 +1455,11 @@ export function PaginationPreview({
         <span className="pv-title">{t('appPaginationPreview')}</span>
         <span className="pv-count">{t('appTotalPagesN', { n: slices.length })}</span>
         <span className="pv-hint">{t('appPvHint')}</span>
+        {onPrint && (
+          <button className="pv-close pv-print" onClick={onPrint}>
+            {t('appPrintTitle')}
+          </button>
+        )}
         <button className="pv-close" data-tip={t('appPvExportTip')} onClick={onExportPdf}>
           {t('appExportPdf')}
         </button>

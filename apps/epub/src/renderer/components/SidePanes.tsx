@@ -90,6 +90,8 @@ export function SearchPane(p: {
   onQueryChange?(query: string): void
   /** shown under the find field (the editing screen's replace row) */
   children?: ReactNode
+  /** the pane's title when it is not plain find (find and replace) */
+  title?: string
 }) {
   const { t } = useI18n()
   const [query, setQuery] = useState('')
@@ -100,9 +102,9 @@ export function SearchPane(p: {
   }, [p.focusSignal])
   const { view } = p
   return (
-    <aside className="epub-side" data-pane="search" aria-label={t('find')}>
+    <aside className="epub-side" data-pane="search" aria-label={p.title ?? t('find')}>
       <div className="epub-side-head">
-        <span className="epub-side-title">{t('find')}</span>
+        <span className="epub-side-title">{p.title ?? t('find')}</span>
         <button
           type="button"
           className="epub-side-close"

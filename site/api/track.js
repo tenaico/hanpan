@@ -1,7 +1,7 @@
-// Counts one page visit or one download click. Keeps only daily totals in the Redis
-// store connected to the Vercel project: no IP address, no cookie, nothing per person.
+// Counts one page visit or one download click. Keeps only daily totals in the tenai.kr
+// Supabase project: no IP address, no cookie, nothing per person.
 const crypto = require('node:crypto')
-const { redis, seoulDate } = require('./_store.js')
+const { rpc, seoulDate } = require('./_store.js')
 
 const PLATFORMS = new Set(['windows', 'mac-arm64', 'mac-x64'])
 const BOTS = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lighthouse/i
@@ -45,34 +45,37 @@ module.exports = async (req, res) => {
     city = decodeURIComponent(String(req.headers['x-vercel-ip-city'] || '')).slice(0, 60)
   } catch {}
   const place = city ? `${country}|${city}` : country
-  const commands = []
+  const counts = []
+  let visitor = null
 
   if (body.e === 'view') {
-    // a daily, one-way fingerprint only feeds the unique-visitor estimate; Redis keeps
-    // the estimate's registers, not the fingerprint
+    // a daily, one-way fingerprint only counts unique visitors; the secret salt keeps it
+    // from being matched to an IP, and the database deletes it after a day
     const ip = String(req.headers['x-forwarded-for'] || '')
       .split(',')[0]
       .trim()
-    const visitor = crypto.createHash('sha256').update(`${day}|${ip}|${ua}`).digest('hex')
-    commands.push(['HINCRBY', `d:${day}`, 'view', 1])
-    commands.push(['PFADD', `uv:${day}`, visitor.slice(0, 32)])
-    commands.push(['HINCRBY', `geo:${day}`, place, 1])
+    const salt = process.env.STATS_SALT || ''
+    visitor = crypto
+      .createHash('sha256')
+      .update(`${salt}|${day}|${ip}|${ua}`)
+      .digest('hex')
+      .slice(0, 32)
+    counts.push({ kind: 'd', field: 'view' })
+    counts.push({ kind: 'geo', field: place })
     const ref = referrerHost(body.r)
-    if (ref && ref !== String(req.headers.host || '')) {
-      commands.push(['HINCRBY', `ref:${day}`, ref, 1])
-    }
+    if (ref && ref !== String(req.headers.host || '')) counts.push({ kind: 'ref', field: ref })
   } else {
     const platform = PLATFORMS.has(body.p) ? body.p : 'windows'
-    commands.push(['HINCRBY', `d:${day}`, `dl:${platform}`, 1])
-    commands.push(['HINCRBY', `dlgeo:${day}`, place, 1])
+    counts.push({ kind: 'd', field: `dl:${platform}` })
+    counts.push({ kind: 'dlgeo', field: place })
     const spot = String(body.place || 'other')
       .replace(/[^a-z-]/g, '')
       .slice(0, 20)
-    commands.push(['HINCRBY', `dlplace:${day}`, spot || 'other', 1])
+    counts.push({ kind: 'dlplace', field: spot || 'other' })
   }
 
   try {
-    await redis(commands)
+    await rpc('hanpan_site_track', { p_day: day, p_counts: counts, p_visitor: visitor })
   } catch (err) {
     console.error('track failed:', err.message)
   }

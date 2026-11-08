@@ -500,6 +500,83 @@ html.genoffice-popover-open .ribbon-tabs {
   flex: 1;
 }
 
+/* the on-screen File menu (FileMenu.tsx), first in the tab row like the slide editor's */
+.sheet-file-menu {
+  position: relative;
+  display: inline-flex;
+  -webkit-app-region: no-drag;
+}
+
+.sheet-file-tab {
+  border: 0;
+  padding: 7px 9px 6px;
+  border-bottom: 2.5px solid transparent;
+  border-radius: 4px 4px 0 0;
+  color: inherit;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sheet-file-tab:hover,
+.sheet-file-tab.open {
+  color: var(--accent-dark);
+}
+
+.sheet-file-pop {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  z-index: 1000;
+  min-width: 220px;
+  width: max-content;
+  padding: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  box-shadow: var(--shadow-menu);
+}
+
+.sheet-file-pop button {
+  /* labels never wrap ("다른 이름으로 저장…" broke onto two lines) */
+  white-space: nowrap;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sheet-file-pop button:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.sheet-file-pop button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.sheet-file-key {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.sheet-file-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
+}
+
 .qa-sep {
   width: 1px;
   height: 16px;
@@ -947,6 +1024,15 @@ html.genoffice-popover-open .ribbon-tabs {
   grid-template-columns: none;
   grid-template-rows: repeat(2, auto);
   grid-auto-flow: column;
+}
+
+/* 좁은 창의 홈 띠(data-fit)는 AI 단추와 셀 도구를 두 줄로 쌓는다. 간단히 보기 띠는
+   한 줄 높이라 쌓으면 아래가 잘리므로, 여기서는 다시 옆으로 늘어놓는다. */
+.ribbon-compact .ribbon[data-fit] .ribbon-group-ai > .ribbon-group-content,
+.ribbon-compact .ribbon[data-fit] .ribbon-group-cells .cell-tools {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 /* Bare colored ribbon glyphs — no chip background.
@@ -1832,6 +1918,19 @@ button.check-item:hover {
   flex-shrink: 0;
 }
 
+/* 선택 범위 집계: 평균·개수·합계 (Excel 상태 표시줄) */
+.status-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.status-stat {
+  font-variant-numeric: tabular-nums;
+}
+
 .zoom-btn {
   border: none;
   background: none;
@@ -2445,6 +2544,22 @@ textarea:focus {
   background: var(--surface);
   box-shadow: var(--shadow-panel);
   font-size: 11px;
+}
+
+/* 차트 옆에 뜨는 편집 창: 상자 안 작은 창 대신(X4) */
+.chart-editor-float {
+  position: fixed;
+  /* 대화상자(.dialog-backdrop 40)보다 아래 */
+  z-index: 30;
+  display: flex;
+}
+
+.chart-editor-float .chart-editor {
+  position: static;
+  max-width: none;
+  max-height: inherit;
+  width: 100%;
+  font-size: 12px;
 }
 
 .chart-editor label {
@@ -6119,23 +6234,26 @@ body > div:has([data-u-comp='find-replace-dialog']) {
   display: none !important;
 }
 
+/* 허용 항목(X13): 다단(columns)에 높이 제한을 걸면 넘친 항목이 가로 단으로
+   밀려 가로 스크롤이 생겼다. 2열 격자로 두고 글씨는 대화상자 본문과 같게. */
 .protect-sheet-allow {
   list-style: none;
   margin: 0 0 10px;
   padding: 6px 10px;
-  max-height: 220px;
-  overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: 6px;
-  columns: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+  font-size: 12px;
 }
 
 .protect-sheet-allow label {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 0;
-  break-inside: avoid;
+  padding: 2px 0;
+  font-size: inherit;
 }
 
 /* Table Design tab: name box, option checks and the styles gallery. Swatch
@@ -6702,8 +6820,8 @@ body > div:has([data-u-comp='find-replace-dialog']) {
 }
 
 .print-preview {
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-small);
@@ -6739,11 +6857,43 @@ body > div:has([data-u-comp='find-replace-dialog']) {
 
 .print-preview-pane {
   position: relative;
+  flex: 1 1 0;
   min-height: 0;
   overflow: auto;
   display: grid;
-  place-items: center;
+  /* safe: a page taller or wider than the pane scrolls from its top-left */
+  place-items: safe center;
   padding: 12px;
+}
+
+.print-preview-zoom {
+  min-width: 40px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-preview-bar button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Columns that run past the page (X14) */
+.print-fit-note {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12px;
+  color: var(--text);
+}
+
+.print-fit-note p {
+  margin: 2px 0;
+}
+
+.print-fit-note button {
+  margin-left: 6px;
+  min-height: 24px;
+  padding: 2px 8px;
 }
 
 .print-preview-page {
@@ -7198,4 +7348,247 @@ body:has(.note-pictures-pane) .threaded-comments-pane {
   font-size: 12px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* Home tab fits 1366- and 1920-wide windows (Hanpan 0.17 #9; measured in the built
+   app, ko UI: the band needed 2162px at 1920 and 2115px at 1366, so both showed a
+   scrollbar under the ribbon). The Editing group lays its seven tools out in three
+   rows by column, as Excel does, instead of two long rows. */
+.editing-grid {
+  display: grid;
+  grid-template-rows: repeat(3, 21px);
+  grid-auto-flow: column;
+  align-content: center;
+  justify-items: start;
+  gap: 0 2px;
+}
+
+/* 세 줄 격자(63px)는 간단히 보기 띠(내용 약 42px)를 넘치므로 거기서는 한 줄로 늘어놓는다 */
+.ribbon-compact .editing-grid {
+  grid-template-rows: 21px;
+  align-items: center;
+}
+
+.ribbon-group-editing .editing-grid .select-like.compact,
+.ribbon-group-editing .editing-grid button.labeled,
+.ribbon-group-cells .select-like.compact {
+  height: 21px;
+  min-width: 0;
+  padding: 0 5px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ribbon-group-editing .tool-label,
+.ribbon-group-cells .tool-label {
+  font-size: 12px;
+}
+
+/* The denser layouts (ribbon-fit.ts sets data-fit when the band overflows). A name a
+   layout takes off a button is clipped, not removed: screen readers still read it and
+   the tooltip keeps it.
+
+   First layout (a 1920 window in Korean): Borders and Format Cells lose their text,
+   the two one-click AI buttons stack as small rows beside the AI assistant, Paste
+   Special's label takes two lines and the insert/delete tools two rows. */
+.ribbon[data-fit] .ribbon-group-font .tool-label,
+.ribbon[data-fit] .ribbon-group-cells .tool-kbd {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ribbon[data-fit] .ribbon-group-ai > .ribbon-group-content {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ribbon[data-fit] .ribbon-group-ai .ai-entry:first-child {
+  grid-row: 1 / span 2;
+  align-self: stretch;
+}
+
+.ribbon[data-fit] .ribbon-group-ai .ribbon-tool.large.ai-entry:not(:first-child) {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 2px 6px 2px 2px;
+}
+
+.ribbon[data-fit] .ribbon-group-ai .ribbon-tool.large.ai-entry:not(:first-child) .tool-icon-row {
+  flex: none;
+}
+
+.ribbon[data-fit] .ribbon-group-ai .ribbon-tool.large.ai-entry:not(:first-child) .ai-feature-icon,
+.ribbon[data-fit]
+  .ribbon-group-ai
+  .ribbon-tool.large.ai-entry:not(:first-child)
+  .ai-feature-icon
+  svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ribbon[data-fit] .ribbon-group-clipboard .ribbon-tool.large strong {
+  display: block;
+  max-width: 64px;
+  white-space: normal;
+  word-break: keep-all;
+  line-height: 1.1;
+}
+
+/* 두 줄 이름을 단 붙여넣기 단추도 띠(내용 68px) 안에 들어가게 위아래 여백을 줄인다.
+   그대로 두면 76px이 되어 단추 위아래가 잘렸다. */
+.ribbon[data-fit] .ribbon-group-clipboard .ribbon-tool.large {
+  gap: 2px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.ribbon[data-fit] .ribbon-group-clipboard .ribbon-tool.large .tool-icon-row {
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.ribbon[data-fit] .ribbon-group-cells .ribbon-rows {
+  grid-auto-flow: column;
+  align-items: center;
+}
+
+.ribbon[data-fit] .ribbon-group-cells .cell-tools {
+  display: grid;
+  grid-template-rows: repeat(2, 28px);
+  grid-auto-flow: column;
+  gap: 0 1px;
+}
+
+.ribbon[data-fit] .ribbon-group {
+  padding: 2px 6px;
+}
+
+/* Second layout (a 1366 window): the Cells, Styles, Alignment and Editing tools keep
+   their icons, the stacked AI buttons too, the square tools narrow to 24px and the
+   font box to 132px. */
+
+.ribbon[data-fit='2'] .ribbon-group-cells .tool-label,
+.ribbon[data-fit='2'] .ribbon-group-styles .tool-label,
+.ribbon[data-fit='2'] .ribbon-group-alignment .tool-label,
+.ribbon[data-fit='2'] .ribbon-group-editing .tool-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ribbon[data-fit='2'] .ribbon-group-font .select-like.font-name {
+  width: 132px;
+}
+
+.ribbon[data-fit='2'] .ribbon-group-font .inline-tools > button:not(.select-like),
+.ribbon[data-fit='2'] .ribbon-group-alignment .inline-tools > button:not(.select-like),
+.ribbon[data-fit='2'] .ribbon-group-number .inline-tools > button:not(.select-like),
+.ribbon[data-fit='2'] .ribbon-group-cells .inline-tools > button:not(.select-like) {
+  min-width: 24px;
+}
+
+.ribbon[data-fit='2'] .ribbon-group-number .number-format,
+.ribbon[data-fit='2'] .ribbon-group-number .select-like {
+  min-width: 0;
+}
+
+.ribbon[data-fit='2'] .ribbon-group-font .inline-tools,
+.ribbon[data-fit='2'] .ribbon-group-alignment .inline-tools,
+.ribbon[data-fit='2'] .ribbon-group-number .inline-tools,
+.ribbon[data-fit='2'] .ribbon-group-cells .inline-tools {
+  gap: 1px;
+}
+
+/* the stacked AI buttons keep their icons */
+.ribbon[data-fit='2']
+  .ribbon-group-ai
+  .ribbon-tool.large.ai-entry:not(:first-child)
+  > span:last-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ribbon[data-fit='2'] .ribbon-group {
+  padding: 2px 4px;
+}
+
+/* 수식 탭(X6): 1366에서 넘치면 함수 범주 단추부터 아이콘만, 더 좁으면 이름 정의·
+   수식 분석·계산 묶음의 큰 단추도 아이콘만 남긴다(이름은 풍선 도움말과 화면 읽기에 남음). */
+.ribbon[data-fit]
+  .ribbon-group-fnlib
+  .ribbon-tool.large:nth-child(n + 3)
+  > span:not(.tool-icon-row),
+.ribbon[data-fit='2'] .ribbon-group-names .ribbon-tool.large > span:not(.tool-icon-row),
+.ribbon[data-fit='2'] .ribbon-group-audit .ribbon-tool.large > span:not(.tool-icon-row),
+.ribbon[data-fit='2'] .ribbon-group-calc .ribbon-tool.large > span:not(.tool-icon-row) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ribbon[data-fit] .ribbon-group-fnlib .ribbon-tool.large:nth-child(n + 3) {
+  min-width: 34px;
+}
+
+/* 함수 인수 힌트(X20): Univer는 머리글에 overflow-wrap:anywhere를 줘서
+   "tab / le_array"처럼 인수 이름 가운데서 끊겼다. 인수 하나(이름+쉼표)를
+   한 덩어리로 두어 인수 사이에서만 줄을 바꾼다. */
+[class*='univer-w-[250px]'] > [style*='overflow-wrap: anywhere'] > div > span {
+  display: inline-block;
+}
+
+/* Univer의 시트 탭 줄 통계(영어 "Count: 12", 좁다고 보면 한 항목만)는 숨긴다.
+   선택 범위 집계는 앱 상태 표시줄(.status-stats)이 앱 언어로 그린다(X2).
+   IStatusBarService를 등록하는 statisticBar 자체는 켜 둬야 한다. */
+[data-range-selector] > div:has(> .univer-gap-x-2 .univer-truncate.univer-cursor-pointer) {
+  display: none !important;
+}
+
+/* Conditional formatting: what to do on an empty rule list (X7). */
+.cf-empty-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cf-empty-hint p {
+  margin: 0;
+}
+
+.cf-empty-hint button {
+  min-height: 30px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-medium);
+  padding: 4px 12px;
+  color: var(--sheets-on-accent);
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.cf-empty-hint button:hover {
+  background: var(--accent-dark);
 }

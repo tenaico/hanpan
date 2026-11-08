@@ -1767,9 +1767,11 @@ export function AiPanel({
     send: (text) => runWith(text),
   })
 
-  // `open` dep: re-expanding lands on messages streamed while collapsed
+  // `open` dep: re-expanding lands on messages streamed while collapsed.
+  // An empty chat keeps the start gallery at its top (a new deck used to open
+  // scrolled halfway down the template list)
   useEffect(() => {
-    if (stickToBottomRef.current) {
+    if (stickToBottomRef.current && chat.length > 0) {
       logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
     }
   }, [chat, open])

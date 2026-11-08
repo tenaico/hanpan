@@ -15,6 +15,7 @@ import {
   type XmindTopic,
 } from '@genoffice/xmind-engine'
 import App from '../src/renderer/App'
+import { MapController } from '../src/renderer/map/controller'
 import { LocaleProvider } from '../src/renderer/i18n/locale'
 import type {
   MindmapApi,
@@ -522,6 +523,23 @@ describe('a new map', () => {
   })
 })
 
+describe('a new map, the first thing seen', () => {
+  it('opens with the central topic picked and a line on how to add topics', async () => {
+    await mountApp(fakeApi(null, null))
+    await until(
+      () => container.querySelector('me-root me-tpc.selected') !== null,
+      'the central topic to be picked',
+    )
+    const hint = container.querySelector('[data-hint="new-map"]')!
+    expect(hint.textContent).toBe('Tab: add a subtopic · Enter: add a topic at the same level')
+  })
+
+  it('a file that opens shows no such line', async () => {
+    await openWith(plainSheet())
+    expect(container.querySelector('[data-hint="new-map"]')).toBeNull()
+  })
+})
+
 describe('sheets', () => {
   it('the only sheet cannot be deleted', async () => {
     await openWith(plainSheet())
@@ -612,6 +630,24 @@ describe('the theme panel', () => {
     expect(fake.saves[0]!.bytes).toEqual(bytes)
     await click('[data-action="theme-close"]')
     expect(container.querySelector('.mm-theme-panel')).toBeNull()
+  })
+
+  it('Escape closes the theme panel and the icon panel', async () => {
+    await openWith(plainSheet())
+    const escape = async (): Promise<void> => {
+      await act(async () => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      })
+      await settle()
+    }
+    await click('[data-action="theme"]')
+    expect(container.querySelector('.mm-theme-panel')).not.toBeNull()
+    await escape()
+    expect(container.querySelector('.mm-theme-panel')).toBeNull()
+    await click('[data-action="icons"]')
+    expect(container.querySelector('.mm-icon-panel')).not.toBeNull()
+    await escape()
+    expect(container.querySelector('.mm-icon-panel')).toBeNull()
   })
 
   it('picking writes the theme to the sheet: the map is drawn with it, is unsaved, and the save carries it', async () => {
@@ -755,6 +791,59 @@ describe('presentation mode', () => {
     })
     await settle()
     expect(app().classList.contains('mm-presenting')).toBe(false)
+  })
+
+  it('steps through the main branches with the arrow keys, Space and a click, and says how', async () => {
+    const step = vi.spyOn(MapController.prototype, 'presentStep')
+    await openWith(plainSheet())
+    const key = async (name: string): Promise<void> => {
+      await act(async () => {
+        window.dispatchEvent(
+          new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }),
+        )
+      })
+      await settle()
+    }
+    await key('F5')
+    // the fit after the screen went full arrives a moment later
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200))
+    })
+    expect(container.querySelector('[data-hint="present"]')!.textContent).toBe(
+      '→ or Space: next branch · ←: back · Esc: end',
+    )
+    step.mockClear()
+    await key('ArrowRight')
+    await key(' ')
+    await key('ArrowLeft')
+    await act(async () => {
+      container.querySelector<HTMLElement>('.mm-card')!.click()
+    })
+    await settle()
+    expect(step.mock.calls.map((call) => call[0])).toEqual([1, 2, 1, 2])
+    await key('Escape')
+    expect(container.querySelector('[data-hint="present"]')).toBeNull()
+    step.mockRestore()
+  })
+
+  it('ending the show puts the map back at the zoom it had before', async () => {
+    const restore = vi.spyOn(MapController.prototype, 'restoreView')
+    await openWith(plainSheet())
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'F5', bubbles: true }))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200))
+    })
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200))
+    })
+    expect(restore).toHaveBeenCalledTimes(1)
+    expect(typeof restore.mock.calls[0]![0]).toBe('number')
+    restore.mockRestore()
   })
 
   it('F5 while presenting returns to the editor', async () => {

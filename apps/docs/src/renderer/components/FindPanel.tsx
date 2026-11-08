@@ -134,6 +134,8 @@ export function FindPanel({
   const [error, setError] = useState<StringKey | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [scanning, setScanning] = useState(false)
+  /** matches the last Replace All changed; shown until the query or document changes */
+  const [replacedCount, setReplacedCount] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const replaceInputRef = useRef<HTMLInputElement>(null)
   const gotoInputRef = useRef<HTMLInputElement>(null)
@@ -242,23 +244,16 @@ export function FindPanel({
   )
 
   // the target field may not be mounted yet when the tab is switching: retry next frame
-  const focusTabInput = useCallback(
-    (which: FindTab) => {
-      const pick = (late: boolean) =>
-        which === 'goto'
-          ? gotoInputRef.current
-          : which === 'replace' && canEdit
-            ? (replaceInputRef.current ?? (late ? inputRef.current : null))
-            : inputRef.current
-      const focus = (el: HTMLElement | null) => {
-        el?.focus()
-        if (el instanceof HTMLInputElement) el.select()
-        return !!el
-      }
-      if (!focus(pick(false))) requestAnimationFrame(() => focus(pick(true)))
-    },
-    [canEdit],
-  )
+  const focusTabInput = useCallback((which: FindTab) => {
+    // Find and Replace both start in the find field (Word: caret in "Find what")
+    const pick = () => (which === 'goto' ? gotoInputRef.current : inputRef.current)
+    const focus = (el: HTMLElement | null) => {
+      el?.focus()
+      if (el instanceof HTMLInputElement) el.select()
+      return !!el
+    }
+    if (!focus(pick())) requestAnimationFrame(() => focus(pick()))
+  }, [])
 
   useEffect(() => {
     focusTabInput(tab)
@@ -399,6 +394,9 @@ export function FindPanel({
       return true
     })
     refresh(query)
+    setReplacedCount(ranges.length)
+    // the clicked button is disabled now (no hits left): keep focus, and Esc, in the panel
+    inputRef.current?.focus()
   }, [editor, flushPending, query, applyReplacement, refresh])
 
   // ---- Go To ----
@@ -467,16 +465,30 @@ export function FindPanel({
     </button>
   )
 
-  const count = query
-    ? scanning
-      ? '…'
-      : matches.length === 0
-        ? t('appNoResults')
-        : `${index + 1}/${matches.length}`
-    : ''
+  const count =
+    replacedCount !== null && matches.length === 0 && query
+      ? t('appReplacedCount', { count: replacedCount })
+      : query
+        ? scanning
+          ? '…'
+          : matches.length === 0
+            ? t('appNoResults')
+            : `${index + 1}/${matches.length}`
+        : ''
 
   return (
-    <div className="find-panel" role="dialog" aria-label={t('appFindPlaceholder')}>
+    <div
+      className="find-panel"
+      role="dialog"
+      aria-label={t('appFindPlaceholder')}
+      onKeyDown={(e) => {
+        // the inputs close on Esc themselves; this catches the chips and buttons
+        if (e.key === 'Escape' && !(e.target instanceof HTMLInputElement)) {
+          e.stopPropagation()
+          close()
+        }
+      }}
+    >
       <div className="find-tabs" role="tablist">
         {(['find', ...(canEdit ? (['replace'] as const) : []), 'goto'] as FindTab[]).map((k) => (
           <button
@@ -519,6 +531,7 @@ export function FindPanel({
               aria-invalid={!!error}
               onChange={(e) => {
                 setQuery(e.target.value)
+                setReplacedCount(null)
                 queryRef.current = e.target.value
                 scheduleRefresh(e.target.value)
               }}

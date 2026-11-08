@@ -170,6 +170,7 @@ const BUILT_IN_LABELS: Record<string, StringKey> = {
   'intense reference': 'ribbonStyleIntenseReference',
   'book title': 'ribbonStyleBookTitle',
   'list paragraph': 'ribbonStyleListParagraph',
+  'table grid': 'ribbonStyleTableGrid',
 }
 
 export function styleLabel(info: Pick<StyleInfo, 'name'>, t: TFunc): string {
@@ -182,7 +183,26 @@ export function styleLabel(info: Pick<StyleInfo, 'name'>, t: TFunc): string {
 }
 
 /** card preview: the style's resolved face, weight, slant, color and caps at gallery scale */
-export function stylePreviewCss(info: StyleInfo, docDefaults?: DocDefaults): CSSProperties {
+/** relative luminance (WCAG) of a 6-digit hex color, or null when unparsable */
+function luminance(hex: string): number | null {
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return null
+  const ch = [0, 2, 4].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2]
+}
+
+/**
+ * Previews sit on the UI surface, not on paper: on a dark UI a dark document
+ * color (Subtitle gray, Heading 3 navy) all but vanishes, so it is blended
+ * toward the UI text color, keeping its hue as a hint.
+ */
+export function stylePreviewCss(
+  info: StyleInfo,
+  docDefaults?: DocDefaults,
+  darkUi = false,
+): CSSProperties {
   const d = info.display ?? {}
   const css: CSSProperties = {}
   const face = d.fontAscii ?? d.font
@@ -198,6 +218,10 @@ export function stylePreviewCss(info: StyleInfo, docDefaults?: DocDefaults): CSS
   if (d.caps === 'small') css.fontVariant = 'small-caps'
   else if (d.caps === 'all') css.textTransform = 'uppercase'
   const color = d.color ?? docDefaults?.color
-  if (color && color !== 'auto') css.color = `#${color}`
+  if (color && color !== 'auto') {
+    const lum = darkUi ? luminance(color) : null
+    css.color =
+      lum !== null && lum < 0.18 ? `color-mix(in srgb, #${color} 35%, var(--text))` : `#${color}`
+  }
   return css
 }

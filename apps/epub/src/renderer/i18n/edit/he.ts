@@ -6,6 +6,7 @@ export const he = {
   editBold: 'מודגש',
   editItalic: 'נטוי',
   editReplace: 'החלפה',
+  editFindReplaceTitle: 'חיפוש והחלפה',
   editReplaceWith: 'להחליף ב־',
   editReplaceOne: 'החלפה',
   editReplaceAll: 'החלפת הכול',

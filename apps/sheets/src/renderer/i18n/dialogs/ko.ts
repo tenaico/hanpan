@@ -154,7 +154,8 @@ export const ko = {
   dlgPivotAddValue: '+ 값 필드 추가',
   dlgPivotAddCalc: '+ 계산 필드 추가',
   dlgPivotTargetCell: '대상 시작 셀',
-  dlgPivotTargetPlaceholder: '예: F1',
+  dlgPivotTargetPlaceholder: '예: {cell}',
+  dlgPivotTargetEmptyHint: '비워 두면 원본 오른쪽 {cell}에 만듭니다.',
   dlgPivotTargetLocked: '피벗 테이블을 편집할 때 출력 범위의 왼쪽 위 셀은 유지됩니다',
   dlgPivotNote:
     '피벗 테이블은 실제 OOXML PivotTable로 생성되며, 저장 후 Excel/WPS에서 바로 인식하고 새로 고칠 수 있습니다.',
@@ -362,8 +363,7 @@ export const ko = {
   dlgFcNoFill: '채우기 없음',
   dlgFcLocked: '잠금',
   dlgFcHidden: '숨김(수식)',
-  dlgFcProtectionNote:
-    '잠금과 숨김은 Excel에서 워크시트를 보호한 경우에만 적용됩니다. 이 플래그는 파일에 저장되며 편집기 자체에서는 강제되지 않습니다.',
+  dlgFcProtectionNote: '잠금과 숨김은 시트를 보호해야 적용됩니다.',
 
   dlgAdvFilterNeedCondition: '고급 필터에는 조건이 하나 이상 필요합니다.',
   dlgAdvFilterMaxTwo: '고급 필터는 조건을 최대 2개까지 지원합니다.',
@@ -633,6 +633,12 @@ export const ko = {
   dlgPrintNextPage: '다음 페이지',
   dlgPrintZoomFit: '페이지 맞춤',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: '폭 맞춤',
+  dlgPrintColumnsSplit:
+    "'{sheets}'의 열이 한 쪽 폭에 다 들어가지 않아, 오른쪽 열은 다음 쪽에 인쇄됩니다.",
+  dlgPrintPastEdge: '일부 열이 쪽의 오른쪽 끝을 넘어 잘린 채 인쇄됩니다.',
+  dlgPrintClippedText:
+    "맨 오른쪽 열의 글자 일부가 인쇄 영역을 넘어 잘립니다. 그 열을 넓히거나 '텍스트 줄 바꿈'을 켜세요.",
   dlgPrintButton: '인쇄',
   dlgPrintToPdf: 'PDF로 인쇄',
   dlgPrintPageSetup: '페이지 설정…',

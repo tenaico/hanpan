@@ -164,7 +164,7 @@ describe('the strings', () => {
   })
 
   it('read in Korean and English as written', () => {
-    expect(valueIn('ko', 'menuMakeFromDocument')).toBe('이 문서로 다른 문서 만들기')
+    expect(valueIn('ko', 'menuMakeFromDocument')).toBe('이 문서로 새 문서 만들기')
     expect(valueIn('ko', 'menuDocumentSources')).toBe('자료 보기')
     expect(valueIn('ko', 'menuDerivedDocuments')).toBe('이 문서로 만든 문서')
     expect(valueIn('en', 'menuMakeFromDocument')).toBe('Make Another Document from This')

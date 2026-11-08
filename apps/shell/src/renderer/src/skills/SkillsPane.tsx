@@ -21,6 +21,8 @@ import {
   listedCount,
   skillDisplayDesc,
   skillDisplayTitle,
+  skillRowTitle,
+  EXTERNAL_SKILL_GROUPS,
   skillMenuActions,
   sourceLabel,
   unreadableKey,
@@ -325,33 +327,50 @@ export function SkillsPane() {
       ) : groups.length === 0 ? (
         <p className="set-field-desc skl-empty">{s('noMatch', { query: query.trim() })}</p>
       ) : (
-        groups.map((group) => (
-          <section key={group.id} className="skl-group" data-group={group.id}>
-            <h4 className="set-pane-subtitle skl-group-title">{s(groupLabelKey(group.id))}</h4>
-            {group.skills.map((view) => (
-              <SkillRow
-                key={view.id}
-                view={view}
-                lang={lang}
-                text={s}
-                onToggle={() => void setState(view, { enabled: !view.enabled })}
-                onInvoke={(invoke) => void setState(view, { invoke })}
-                onAction={(action) => runAction(view, action)}
-                confirm={
-                  confirm?.id === view.id
-                    ? {
-                        text: confirmText(view, confirm.kind),
-                        button: s(CONFIRM_BUTTON[confirm.kind]),
-                        danger: confirm.kind === 'remove' || confirm.kind === 'overwrite',
-                        onConfirm: () => void confirmRow(view, confirm.kind),
-                        onCancel: () => setConfirm(null),
-                      }
-                    : undefined
-                }
-              />
-            ))}
-          </section>
-        ))
+        groups.map((group) => {
+          const rows = group.skills.map((view) => (
+            <SkillRow
+              key={view.id}
+              view={view}
+              lang={lang}
+              text={s}
+              onToggle={() => void setState(view, { enabled: !view.enabled })}
+              onInvoke={(invoke) => void setState(view, { invoke })}
+              onAction={(action) => runAction(view, action)}
+              confirm={
+                confirm?.id === view.id
+                  ? {
+                      text: confirmText(view, confirm.kind),
+                      button: s(CONFIRM_BUTTON[confirm.kind]),
+                      danger: confirm.kind === 'remove' || confirm.kind === 'overwrite',
+                      onConfirm: () => void confirmRow(view, confirm.kind),
+                      onCancel: () => setConfirm(null),
+                    }
+                  : undefined
+              }
+            />
+          ))
+          // other programs' skill folders can hold dozens of English skills: folded
+          // away (and off) until opened; a search opens them (0.17 리뷰 v2 shell #8)
+          return EXTERNAL_SKILL_GROUPS.has(group.id) ? (
+            <details
+              key={group.id}
+              className="skl-group skl-group-external"
+              data-group={group.id}
+              open={query.trim() !== '' || undefined}
+            >
+              <summary className="set-pane-subtitle skl-group-title">
+                {s(groupLabelKey(group.id))} ({group.skills.length})
+              </summary>
+              {rows}
+            </details>
+          ) : (
+            <section key={group.id} className="skl-group" data-group={group.id}>
+              <h4 className="set-pane-subtitle skl-group-title">{s(groupLabelKey(group.id))}</h4>
+              {rows}
+            </section>
+          )
+        })
       )}
 
       {hidden > 0 && (
@@ -432,7 +451,7 @@ function SkillRow({
   onAction: (action: SkillMenuAction) => void
   confirm: RowConfirmProps | undefined
 }) {
-  const title = skillDisplayTitle(view)
+  const title = skillRowTitle(view, lang)
   const desc = skillDisplayDesc(view, lang)
   const unreadable = view.unreadable
   const actions = skillMenuActions(view)
@@ -451,6 +470,9 @@ function SkillRow({
         <div className="skl-row-text">
           <div className="skl-row-head">
             <span className="skl-row-title">{title}</span>
+            {title !== view.name && view.source === 'builtin' && (
+              <span className="skl-row-name">{view.name}</span>
+            )}
             <span className="skl-source">{sourceLabel(view, text)}</span>
           </div>
           {desc && (

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   INSERT_KINDS,
+  bodySkeletonFor,
   insertOp,
   insertPresetHtml,
   type InsertLabels,
@@ -167,5 +168,27 @@ describe('insert presets', () => {
       position: 'append',
     })
     expect(at('just text')).toBeNull()
+  })
+})
+
+describe('empty document skeleton', () => {
+  it('an empty new web document gets an html/body skeleton the insert lands in', () => {
+    const skeleton = bodySkeletonFor('', 'ko')
+    expect(skeleton).not.toBeNull()
+    expect(skeleton).toContain('<html lang="ko">')
+    expect(skeleton).toContain('<meta charset="utf-8">')
+    const map = buildParseMap(skeleton!, 1)
+    const op = insertOp(map, undefined, '<h2>New heading</h2>')
+    expect(op).not.toBeNull()
+    const compiled = compileOps(skeleton!, map, [op!])
+    expect(compiled.errors).toEqual([])
+    const out = applyPatches(skeleton!, compiled.patches)
+    expect(out).toMatch(/<body>[\s\S]*<h2>New heading<\/h2>[\s\S]*<\/body>/)
+  })
+
+  it('whitespace-only counts as empty; a document with content is left alone', () => {
+    expect(bodySkeletonFor('  \n ', 'en')).toContain('<html lang="en">')
+    expect(bodySkeletonFor('<p>hi</p>', 'en')).toBeNull()
+    expect(bodySkeletonFor('<html><body></body></html>', 'en')).toBeNull()
   })
 })

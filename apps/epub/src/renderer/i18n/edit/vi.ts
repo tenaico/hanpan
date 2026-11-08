@@ -6,6 +6,7 @@ export const vi = {
   editBold: 'Đậm',
   editItalic: 'Nghiêng',
   editReplace: 'Thay thế',
+  editFindReplaceTitle: 'Tìm và thay thế',
   editReplaceWith: 'Thay bằng',
   editReplaceOne: 'Thay thế',
   editReplaceAll: 'Thay thế tất cả',

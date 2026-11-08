@@ -93,6 +93,7 @@ const api: DesktopApi = {
   },
   respondToZotero: (response) => ipcRenderer.send('zotero:response', response),
   openDocx: () => ipcRenderer.invoke('docs:open'),
+  openCompareDocx: () => ipcRenderer.invoke('docs:open-compare'),
   openDocxPath: (path: string) => ipcRenderer.invoke('docs:open-path', path),
   confirmDocumentReplace: () => ipcRenderer.invoke('docs:confirm-document-replace'),
   convertAltChunkHtml: (html: string) => ipcRenderer.invoke('docs:altchunk-html-to-docx', html),
@@ -192,6 +193,9 @@ const api: DesktopApi = {
   signalMcpReady: () => ipcRenderer.send('docs:mcp-ready'),
   getRecentFiles: () => ipcRenderer.invoke('docs:recent'),
   pickImage: () => ipcRenderer.invoke('docs:pick-image'),
+  // Hanpan: registered by the shell main (apps/shell/src/main/hanpan/gongu-pictures.ts)
+  gonguSearch: (query, page) => ipcRenderer.invoke('hanpan:gongu-pictures-search', query, page),
+  gonguPicture: (workId) => ipcRenderer.invoke('hanpan:gongu-pictures-picture', workId),
   pickMergeDataSource: () => ipcRenderer.invoke('docs:merge-data-source'),
   writeMergeOutput: (request: MergeOutputRequest) =>
     ipcRenderer.invoke('docs:merge-output', request),
@@ -216,6 +220,8 @@ const api: DesktopApi = {
       scale,
       links,
     ),
+  openExported: (path: string) => ipcRenderer.invoke('docs:open-exported', path),
+  revealExported: (path: string) => ipcRenderer.invoke('docs:reveal-exported', path),
   exportHtml: (defaultName: string, html: string, outPath?: string) =>
     ipcRenderer.invoke('docs:export-html', defaultName, html, outPath),
   exportMarkdown: (
@@ -303,6 +309,7 @@ const api: DesktopApi = {
       darkCanvas: state?.darkCanvas === true,
       odt: state?.odt === true,
     }),
+  reportDirty: (dirty: boolean) => ipcRenderer.send('docs:dirty-changed', dirty === true),
   reportCloseCheck: (state: { dirty: boolean; autoSave: boolean; filePath?: string | null }) =>
     ipcRenderer.send('docs:close-check-result', {
       dirty: state?.dirty === true,

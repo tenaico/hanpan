@@ -24,6 +24,7 @@ import type {
 } from '../shared/home-api'
 import { isValidRenameName } from './rename-validation'
 import { statPathEntries } from './recent-files'
+import { OPEN_EXTS } from '../../../graphics/src/shared/kinds'
 
 /** files the home tree shows; mirrors the shell's open-dialog filter */
 export const TREE_FILE_EXTENSIONS: ReadonlySet<string> = new Set([
@@ -48,6 +49,9 @@ export const TREE_FILE_EXTENSIONS: ReadonlySet<string> = new Set([
   'hwp',
   'hwpx',
   'epub',
+  // AI Photo and AI Illustration (decision 0093)
+  ...OPEN_EXTS.photo,
+  ...OPEN_EXTS.illust,
 ])
 
 const HIDDEN_DIR_NAMES = new Set(['node_modules', '__macosx'])

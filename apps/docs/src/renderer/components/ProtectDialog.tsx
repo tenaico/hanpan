@@ -21,6 +21,7 @@ import {
 import { useI18n } from '../i18n/locale'
 import { FieldError, PasswordInput } from './PasswordInput'
 import { odtOffNotice } from '../odt-gate'
+import { useModalKeys } from './modal-keys'
 
 /** every field: undefined = unchanged; null = remove; value = set */
 export interface ProtectDialogResult {
@@ -72,6 +73,7 @@ export function ProtectDialog({
   onApply: (result: ProtectDialogResult) => void
 }) {
   const { t } = useI18n()
+  const modalKeys = useModalKeys(onCancel)
   const hadModifyPwd = !!writeProtection?.hash
   const wasEnforced = !!protection?.enforced
   /** changing/removing an enforced password-protected restriction needs the password */
@@ -162,7 +164,7 @@ export function ProtectDialog({
   const mismatch = errorKey === 'appEncMismatch'
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop" ref={modalKeys.ref} onKeyDown={modalKeys.onKeyDown}>
       <div className="modal protect-dialog gs-form">
         <h2>{t('appProtectTitle')}</h2>
         <p className="modal-desc">{t('appProtectDesc')}</p>

@@ -4,14 +4,26 @@ Elke editor heeft een eigen toetsenindeling en slechts een paar werken overal. D
 
 ## Lees dit eerst
 
-**Vrijwel niets hiervan is globaal.** De drie toegangstoetsen hieronder wel; alles daarna hoort bij de toepassing die voor je ligt en verandert zodra je van tabblad wisselt.
+### Overal in Hanpan (tabbladen en vensters)
 
-| Actie                                                    | macOS | Windows / Linux |
-| -------------------------------------------------------- | ----- | --------------- |
-| De gebruikershandleiding openen — werkt overal in de app | F1    | F1              |
-| Lint in- of uitklappen — elke editor                     | ⌥⌘R   | Ctrl+F1         |
-| Lint compact — alleen Docs                               | ⌥⌘K   | Ctrl+Alt+K      |
-| Het blad Sneltoetsen openen — alleen Word                | ⌘/    | Ctrl+/          |
+| Actie                                                                                           | Windows / Linux                | macOS                          |
+| ----------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------ |
+| Volgend tabblad / vorig tabblad                                                                 | Ctrl+Tab / Ctrl+Shift+Tab      | ⌃Tab / ⌃⇧Tab                   |
+| Huidig tabblad sluiten (op Start: het venster, met eerst een vraag als er documenten open zijn) | Ctrl+W                         | ⌘W                             |
+| Instellingen openen — op Start                                                                  | Ctrl+,                         | ⌘,                             |
+| De gebruikershandleiding openen                                                                 | F1                             | F1                             |
+| Een tabblad kiezen in de tabbladenbalk — als een tabblad focus heeft                            | ← / →, Enter, Delete (sluiten) | ← / →, Enter, Delete (sluiten) |
+
+### Elke editor
+
+**Vanaf hier horen de toetsen bij de editor die voor je ligt en veranderen ze zodra je van tabblad wisselt.**
+
+| Actie                                                    | Windows / Linux | macOS |
+| -------------------------------------------------------- | --------------- | ----- |
+| De gebruikershandleiding openen — werkt overal in de app | F1              | F1    |
+| Lint in- of uitklappen — elke editor                     | Ctrl+F1         | ⌥⌘R   |
+| Lint compact — alleen Docs                               | Ctrl+Alt+K      | ⌥⌘K   |
+| Het blad Sneltoetsen openen — alleen Word                | Ctrl+/          | ⌘/    |
 
 - **F1 opent deze handleiding**, niet het sneltoetsenblad. De toets hoort bij het toepassingsmenu en werkt dus vanuit Word, Sheets, Slides, PDF of het tabblad Home.
 - **De linttoets is `Ctrl+F1`, of `⌥⌘R` op macOS.** Een kale `F1` doet niets — F1 is de handleiding, en de linttoets deelt die toets bewust niet. `Ctrl+F1` werkt ook op macOS, maar `⌥⌘R` is de toets die Office voor Mac gebruikt.
@@ -41,123 +53,123 @@ Word heeft een volledige menubalk, dus de onderstaande bestands- en opmaakcombin
 
 ### Bestand
 
-| Actie             | macOS | Windows / Linux |
-| ----------------- | ----- | --------------- |
-| Nieuw             | ⌘N    | Ctrl+N          |
-| Nieuw venster     | ⇧⌘N   | Ctrl+Shift+N    |
-| Openen…           | ⌘O    | Ctrl+O          |
-| Opslaan           | ⌘S    | Ctrl+S          |
-| Opslaan als…      | ⇧⌘S   | Ctrl+Shift+S    |
-| Afdrukken         | ⌘P    | Ctrl+P          |
-| Sluiten (tabblad) | ⌘W    | Ctrl+W          |
+| Actie             | Windows / Linux | macOS |
+| ----------------- | --------------- | ----- |
+| Nieuw             | Ctrl+N          | ⌘N    |
+| Nieuw venster     | Ctrl+Shift+N    | ⇧⌘N   |
+| Openen…           | Ctrl+O          | ⌘O    |
+| Opslaan           | Ctrl+S          | ⌘S    |
+| Opslaan als…      | Ctrl+Shift+S    | ⇧⌘S   |
+| Afdrukken         | Ctrl+P          | ⌘P    |
+| Sluiten (tabblad) | Ctrl+W          | ⌘W    |
 
 ⌘P is niet de afdruk van de browser. Word maakt eerst een afdrukvoorbeeld, zodat één afgedrukt vel precies één schermpagina is, en opent daarna zijn eigen afdrukdialoogvenster.
 
 ### Bewerken
 
-| Actie                    | macOS | Windows / Linux |
-| ------------------------ | ----- | --------------- |
-| Ongedaan maken           | ⌘Z    | Ctrl+Z          |
-| Opnieuw uitvoeren        | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Knippen                  | ⌘X    | Ctrl+X          |
-| Kopiëren                 | ⌘C    | Ctrl+C          |
-| Plakken                  | ⌘V    | Ctrl+V          |
-| Plakken als platte tekst | ⌥⇧⌘V  | Ctrl+Shift+V    |
-| Alles selecteren         | ⌘A    | Ctrl+A          |
-| Zoeken                   | ⌘F    | Ctrl+F          |
-| Vervangen                | ⌃H    | Ctrl+H          |
-| Ga naar                  | ⌥⌘G   | Ctrl+G          |
-| Sneltoetsen              | ⌘/    | Ctrl+/          |
+| Actie                    | Windows / Linux | macOS |
+| ------------------------ | --------------- | ----- |
+| Ongedaan maken           | Ctrl+Z          | ⌘Z    |
+| Opnieuw uitvoeren        | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Knippen                  | Ctrl+X          | ⌘X    |
+| Kopiëren                 | Ctrl+C          | ⌘C    |
+| Plakken                  | Ctrl+V          | ⌘V    |
+| Plakken als platte tekst | Ctrl+Shift+V    | ⌥⇧⌘V  |
+| Alles selecteren         | Ctrl+A          | ⌘A    |
+| Zoeken                   | Ctrl+F          | ⌘F    |
+| Vervangen                | Ctrl+H          | ⌃H    |
+| Ga naar                  | Ctrl+G          | ⌥⌘G   |
+| Sneltoetsen              | Ctrl+/          | ⌘/    |
 
 Vervangen is op beide platformen Ctrl+H omdat ⌘H op macOS het venster verbergt en Word nooit bereikt. Ga naar volgt de eigen splitsing van Word: ⌥⌘G op de Mac, zodat ⇧⌘G vrij blijft voor Woordentelling.
 
 ### Tekstopmaak
 
-| Actie                                    | macOS    | Windows / Linux       |
-| ---------------------------------------- | -------- | --------------------- |
-| Vet                                      | ⌘B       | Ctrl+B                |
-| Cursief                                  | ⌘I       | Ctrl+I                |
-| Onderstrepen                             | ⌘U       | Ctrl+U                |
-| Lettertype… (dialoogvenster)             | ⌘D       | Ctrl+D                |
-| Tekengrootte vergroten                   | ⇧⌘.      | Ctrl+Shift+.          |
-| Tekengrootte verkleinen                  | ⇧⌘,      | Ctrl+Shift+,          |
-| Tekengrootte 1 pt vergroten              | ⌘]       | Ctrl+]                |
-| Tekengrootte 1 pt verkleinen             | ⌘[       | Ctrl+[                |
-| Superscript                              | ⇧⌘= / ⌘. | Ctrl+Shift+= / Ctrl+. |
-| Subscript                                | ⌘,       | Ctrl+,                |
-| Hoofdletters veranderen                  | ⇧F3      | Shift+F3              |
-| Opmaak kopiëren (met tekst geselecteerd) | ⇧⌘C      | Ctrl+Shift+C          |
-| Opmaak plakken (na Opmaak kopiëren)      | ⇧⌘V      | Ctrl+Alt+Shift+V      |
-| Alle opmaak wissen                       | ⌃␣       | Ctrl+Space            |
+| Actie                                    | Windows / Linux       | macOS    |
+| ---------------------------------------- | --------------------- | -------- |
+| Vet                                      | Ctrl+B                | ⌘B       |
+| Cursief                                  | Ctrl+I                | ⌘I       |
+| Onderstrepen                             | Ctrl+U                | ⌘U       |
+| Lettertype… (dialoogvenster)             | Ctrl+D                | ⌘D       |
+| Tekengrootte vergroten                   | Ctrl+Shift+.          | ⇧⌘.      |
+| Tekengrootte verkleinen                  | Ctrl+Shift+,          | ⇧⌘,      |
+| Tekengrootte 1 pt vergroten              | Ctrl+]                | ⌘]       |
+| Tekengrootte 1 pt verkleinen             | Ctrl+[                | ⌘[       |
+| Superscript                              | Ctrl+Shift+= / Ctrl+. | ⇧⌘= / ⌘. |
+| Subscript                                | Ctrl+,                | ⌘,       |
+| Hoofdletters veranderen                  | Shift+F3              | ⇧F3      |
+| Opmaak kopiëren (met tekst geselecteerd) | Ctrl+Shift+C          | ⇧⌘C      |
+| Opmaak plakken (na Opmaak kopiëren)      | Ctrl+Alt+Shift+V      | ⇧⌘V      |
+| Alle opmaak wissen                       | Ctrl+Space            | ⌃␣       |
 
 De twee knoppen van de opmaakpainter zijn de enige plek waar de Windows-toets geen gewone naamsverandering is: Opmaak plakken bevat Alt omdat Ctrl+Shift+V daar al plakt en de stijl overneemt.
 
 ### Alineaopmaak
 
-| Actie                                           | macOS | Windows / Linux |
-| ----------------------------------------------- | ----- | --------------- |
-| Links uitlijnen                                 | ⌘L    | Ctrl+L          |
-| Centreren                                       | ⌘E    | Ctrl+E          |
-| Rechts uitlijnen                                | ⌘R    | Ctrl+R          |
-| Uitvullen                                       | ⌘J    | Ctrl+J          |
-| Regelafstand 1,0                                | ⌘1    | Ctrl+1          |
-| Regelafstand 1,5                                | ⌘5    | Ctrl+5          |
-| Regelafstand 2,0                                | ⌘2    | Ctrl+2          |
-| Inspringen vergroten                            | ⌃M    | Ctrl+M          |
-| Inspringen verkleinen                           | ⌃⇧M   | Ctrl+Shift+M    |
-| Hangende inspringing                            | ⌘T    | Ctrl+T          |
-| Hangende inspringing verwijderen                | ⇧⌘T   | Ctrl+Shift+T    |
-| Alineaopmaak wissen                             | ⌃Q    | Ctrl+Q          |
-| Standaard (stijl)                               | ⌥⌘0   | Ctrl+Alt+0      |
-| Kop 1 (stijl)                                   | ⌥⌘1   | Ctrl+Alt+1      |
-| Kop 2 (stijl)                                   | ⌥⌘2   | Ctrl+Alt+2      |
-| Kop 3 (stijl)                                   | ⌥⌘3   | Ctrl+Alt+3      |
-| Alinea… (dialoogvenster)                        | ⌥⌘M   | Ctrl+Alt+M      |
-| Alinea omhoog verplaatsen                       | ⌥⇧↑   | Alt+Shift+↑     |
-| Alinea omlaag verplaatsen                       | ⌥⇧↓   | Alt+Shift+↓     |
-| Lijstitem verlagen (aan het begin van een item) | Tab   | Tab             |
-| Lijstitem verhogen (aan het begin van een item) | ⇧Tab  | Shift+Tab       |
+| Actie                                           | Windows / Linux | macOS |
+| ----------------------------------------------- | --------------- | ----- |
+| Links uitlijnen                                 | Ctrl+L          | ⌘L    |
+| Centreren                                       | Ctrl+E          | ⌘E    |
+| Rechts uitlijnen                                | Ctrl+R          | ⌘R    |
+| Uitvullen                                       | Ctrl+J          | ⌘J    |
+| Regelafstand 1,0                                | Ctrl+1          | ⌘1    |
+| Regelafstand 1,5                                | Ctrl+5          | ⌘5    |
+| Regelafstand 2,0                                | Ctrl+2          | ⌘2    |
+| Inspringen vergroten                            | Ctrl+M          | ⌃M    |
+| Inspringen verkleinen                           | Ctrl+Shift+M    | ⌃⇧M   |
+| Hangende inspringing                            | Ctrl+T          | ⌘T    |
+| Hangende inspringing verwijderen                | Ctrl+Shift+T    | ⇧⌘T   |
+| Alineaopmaak wissen                             | Ctrl+Q          | ⌃Q    |
+| Standaard (stijl)                               | Ctrl+Alt+0      | ⌥⌘0   |
+| Kop 1 (stijl)                                   | Ctrl+Alt+1      | ⌥⌘1   |
+| Kop 2 (stijl)                                   | Ctrl+Alt+2      | ⌥⌘2   |
+| Kop 3 (stijl)                                   | Ctrl+Alt+3      | ⌥⌘3   |
+| Alinea… (dialoogvenster)                        | Ctrl+Alt+M      | ⌥⌘M   |
+| Alinea omhoog verplaatsen                       | Alt+Shift+↑     | ⌥⇧↑   |
+| Alinea omlaag verplaatsen                       | Alt+Shift+↓     | ⌥⇧↓   |
+| Lijstitem verlagen (aan het begin van een item) | Tab             | Tab   |
+| Lijstitem verhogen (aan het begin van een item) | Shift+Tab       | ⇧Tab  |
 
 Inspringen, hangende inspringing en Alineaopmaak wissen werken op beide platformen alleen met Ctrl: ⌘M minimaliseert het venster en ⌘Q sluit af, dus een Command-combinatie zou een stille bewerking zijn op weg naar het einde. Tab verandert alleen een lijstniveau wanneer de caret aan het begin van een item staat of meerdere items omspant; in de tekst voegt het een tabteken in, en ⇧Tab verhoogt altijd.
 
 ### Invoegen
 
-| Actie                      | macOS | Windows / Linux  |
-| -------------------------- | ----- | ---------------- |
-| Pagina-einde               | ⌘⏎    | Ctrl+Enter       |
-| Kolomeinde                 | ⇧⌘⏎   | Ctrl+Shift+Enter |
-| Regeleinde                 | ⇧⏎    | Shift+Enter      |
-| Koppeling…                 | ⌘K    | Ctrl+K           |
-| Nieuwe reactie             | ⌥⌘A   | Ctrl+Alt+A       |
-| Voetnoot invoegen          | ⌥⌘F   | Ctrl+Alt+F       |
-| Eindnoot invoegen          | ⌥⌘E   | Ctrl+Alt+D       |
-| Datum (veld)               | ⌥⇧D   | Alt+Shift+D      |
-| Tijd (veld)                | ⌥⇧T   | Alt+Shift+T      |
-| Niet-afbrekende spatie     | ⇧⌘␣   | Ctrl+Shift+Space |
-| Niet-afbrekend koppelteken | ⇧⌘-   | Ctrl+Shift+-     |
+| Actie                      | Windows / Linux  | macOS |
+| -------------------------- | ---------------- | ----- |
+| Pagina-einde               | Ctrl+Enter       | ⌘⏎    |
+| Kolomeinde                 | Ctrl+Shift+Enter | ⇧⌘⏎   |
+| Regeleinde                 | Shift+Enter      | ⇧⏎    |
+| Koppeling…                 | Ctrl+K           | ⌘K    |
+| Nieuwe reactie             | Ctrl+Alt+A       | ⌥⌘A   |
+| Voetnoot invoegen          | Ctrl+Alt+F       | ⌥⌘F   |
+| Eindnoot invoegen          | Ctrl+Alt+D       | ⌥⌘E   |
+| Datum (veld)               | Alt+Shift+D      | ⌥⇧D   |
+| Tijd (veld)                | Alt+Shift+T      | ⌥⇧T   |
+| Niet-afbrekende spatie     | Ctrl+Shift+Space | ⇧⌘␣   |
+| Niet-afbrekend koppelteken | Ctrl+Shift+-     | ⇧⌘-   |
 
 Eindnoot invoegen is een echte platformsplitsing, geen naamsverandering: Word gebruikt ⌥⌘E op de Mac omdat ⌥⌘D daar bij de Dock hoort.
 
 ### Controleren en hulpmiddelen
 
-| Actie                     | macOS | Windows / Linux |
-| ------------------------- | ----- | --------------- |
-| Wijzigingen bijhouden     | ⇧⌘E   | Ctrl+Shift+E    |
-| Woordentelling            | ⇧⌘G   | Ctrl+Shift+G    |
-| Nakijken                  | F7    | F7              |
-| Veld bijwerken            | F9    | F9              |
-| Veldcodes tonen/verbergen | ⌥F9   | Alt+F9          |
+| Actie                     | Windows / Linux | macOS |
+| ------------------------- | --------------- | ----- |
+| Wijzigingen bijhouden     | Ctrl+Shift+E    | ⇧⌘E   |
+| Woordentelling            | Ctrl+Shift+G    | ⇧⌘G   |
+| Nakijken                  | F7              | F7    |
+| Veld bijwerken            | F9              | F9    |
+| Veldcodes tonen/verbergen | Alt+F9          | ⌥F9   |
 
 F7 start de AI-nakijkbeurt en F9 werkt velden bij; beide vereisen een geladen document. Zodra een bewerkingsbeperking Wijzigingen bijhouden aanzet, kan het niet meer uit.
 
 ### Weergave
 
-| Actie                        | macOS | Windows / Linux |
-| ---------------------------- | ----- | --------------- |
-| Inzoomen                     | ⌘=    | Ctrl+=          |
-| Uitzoomen                    | ⌘-    | Ctrl+-          |
-| Zoomen naar 100%             | ⌘0    | Ctrl+0          |
-| Opmaaktekens tonen/verbergen | ⌘8    | Ctrl+Shift+8    |
+| Actie                        | Windows / Linux | macOS |
+| ---------------------------- | --------------- | ----- |
+| Inzoomen                     | Ctrl+=          | ⌘=    |
+| Uitzoomen                    | Ctrl+-          | ⌘-    |
+| Zoomen naar 100%             | Ctrl+0          | ⌘0    |
+| Opmaaktekens tonen/verbergen | Ctrl+Shift+8    | ⌘8    |
 
 De toets voor opmaaktekens volgt de eigen splitsing van Word, ⌘8 tegenover Ctrl+Shift+8. Word regelt zoomen alleen via de drie menutoetsen hierboven — ⌘+ doet hier niets.
 
@@ -173,123 +185,123 @@ Twee conventies zijn specifiek voor Sheets. `⌘` en `⌃` zijn dezelfde modifie
 
 ### Navigatie
 
-| Actie                                                            | macOS      | Windows / Linux |
-| ---------------------------------------------------------------- | ---------- | --------------- |
-| Volgend werkblad                                                 | ⌘PgDn      | Ctrl+PgDn       |
-| Vorig werkblad                                                   | ⌘PgUp      | Ctrl+PgUp       |
-| Volgend werkblad (pariteit met Excel voor Mac)                   | ⌥→         |                 |
-| Vorig werkblad (pariteit met Excel voor Mac)                     | ⌥←         |                 |
-| Naar de eerste niet-bevroren cel springen                        | ⌘Home      | Ctrl+Home       |
-| Naar de laatst gebruikte cel springen (inhoud of opmaak)         | ⌘End       | Ctrl+End        |
-| Dialoogvenster Ga naar                                           | ⌘G, F5     | Ctrl+G, F5      |
-| Een nieuw werkblad invoegen                                      | ⇧F11       | Shift+F11       |
-| De actieve cel een scherm naar beneden verplaatsen (en scrollen) | Page Down  | Page Down       |
-| De actieve cel een scherm naar boven verplaatsen (en scrollen)   | Page Up    | Page Up         |
-| De actieve cel een scherm naar rechts verplaatsen (en scrollen)  | ⌥Page Down | Alt+Page Down   |
-| De actieve cel een scherm naar links verplaatsen (en scrollen)   | ⌥Page Up   | Alt+Page Up     |
+| Actie                                                            | Windows / Linux | macOS      |
+| ---------------------------------------------------------------- | --------------- | ---------- |
+| Volgend werkblad                                                 | Ctrl+PgDn       | ⌘PgDn      |
+| Vorig werkblad                                                   | Ctrl+PgUp       | ⌘PgUp      |
+| Volgend werkblad (pariteit met Excel voor Mac)                   |                 | ⌥→         |
+| Vorig werkblad (pariteit met Excel voor Mac)                     |                 | ⌥←         |
+| Naar de eerste niet-bevroren cel springen                        | Ctrl+Home       | ⌘Home      |
+| Naar de laatst gebruikte cel springen (inhoud of opmaak)         | Ctrl+End        | ⌘End       |
+| Dialoogvenster Ga naar                                           | Ctrl+G, F5      | ⌘G, F5     |
+| Een nieuw werkblad invoegen                                      | Shift+F11       | ⇧F11       |
+| De actieve cel een scherm naar beneden verplaatsen (en scrollen) | Page Down       | Page Down  |
+| De actieve cel een scherm naar boven verplaatsen (en scrollen)   | Page Up         | Page Up    |
+| De actieve cel een scherm naar rechts verplaatsen (en scrollen)  | Alt+Page Down   | ⌥Page Down |
+| De actieve cel een scherm naar links verplaatsen (en scrollen)   | Alt+Page Up     | ⌥Page Up   |
 
 ### Selectie
 
-| Actie                                                                                            | macOS           | Windows / Linux                                     |
-| ------------------------------------------------------------------------------------------------ | --------------- | --------------------------------------------------- |
-| De hele kolom van de actieve cel selecteren                                                      | ⌃Space          | Ctrl+Space                                          |
-| De hele rij van de actieve cel selecteren                                                        | ⇧Space          | Shift+Space                                         |
-| Naar de rand van het gegevensblok springen — een van de vier pijltjes                            | ⌘↑ ⌘↓ ⌘← ⌘→     | Ctrl+↑ Ctrl+↓ Ctrl+← Ctrl+→                         |
-| De selectie uitbreiden tot de rand van het gegevensblok; nogmaals indrukken om hem te verkleinen | ⌘⇧↑ ⌘⇧↓ ⌘⇧← ⌘⇧→ | Ctrl+Shift+↑ Ctrl+Shift+↓ Ctrl+Shift+← Ctrl+Shift+→ |
-| Naar de eerste kolom van de huidige rij springen                                                 | Home            | Home                                                |
+| Actie                                                                                            | Windows / Linux                                     | macOS           |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------- | --------------- |
+| De hele kolom van de actieve cel selecteren                                                      | Ctrl+Space                                          | ⌃Space          |
+| De hele rij van de actieve cel selecteren                                                        | Shift+Space                                         | ⇧Space          |
+| Naar de rand van het gegevensblok springen — een van de vier pijltjes                            | Ctrl+↑ Ctrl+↓ Ctrl+← Ctrl+→                         | ⌘↑ ⌘↓ ⌘← ⌘→     |
+| De selectie uitbreiden tot de rand van het gegevensblok; nogmaals indrukken om hem te verkleinen | Ctrl+Shift+↑ Ctrl+Shift+↓ Ctrl+Shift+← Ctrl+Shift+→ | ⌘⇧↑ ⌘⇧↓ ⌘⇧← ⌘⇧→ |
+| Naar de eerste kolom van de huidige rij springen                                                 | Home                                                | Home            |
 
 ### Bewerken
 
-| Actie                                                                                                                      | macOS                      | Windows / Linux     |
-| -------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------------------- |
-| De hele selectie vullen met de huidige invoer                                                                              | ⌃⏎ of ⌘⏎                   | Ctrl+Enter          |
-| Binnen de cel een nieuwe regel beginnen                                                                                    | ⌥⏎, of ⌃⌥⏎ / ⌘⌥⏎ op de Mac | Alt+Enter           |
-| De actieve cel ter plaatse bewerken                                                                                        | F2                         | F2                  |
-| Vet                                                                                                                        | ⌘B                         | Ctrl+B              |
-| Cursief                                                                                                                    | ⌘I                         | Ctrl+I              |
-| Onderstrepen                                                                                                               | ⌘U                         | Ctrl+U              |
-| Zoeken                                                                                                                     | ⌘F                         | Ctrl+F              |
-| Naar rechts invullen vanaf de meest linkse geselecteerde kolom                                                             | ⌘R                         | Ctrl+R              |
-| Een formuleverwijzing wisselen tussen relatief en absoluut                                                                 | F4                         | F4                  |
-| Een formuleverwijzing wisselen tussen relatief en absoluut (pariteit met Excel voor Mac, tijdens het bewerken van een cel) | ⌘T                         |                     |
-| Kopiëren                                                                                                                   | ⌘C                         | Ctrl+C              |
-| Knippen                                                                                                                    | ⌘X                         | Ctrl+X              |
-| Plakken                                                                                                                    | ⌘V                         | Ctrl+V              |
-| Alleen waarden plakken                                                                                                     | ⌘⇧V                        | Ctrl+Shift+V        |
-| Snel invullen op basis van het patroon erboven                                                                             | ⌘E                         | Ctrl+E              |
-| Ongedaan maken                                                                                                             | ⌘Z                         | Ctrl+Z              |
-| Opnieuw uitvoeren                                                                                                          | ⇧⌘Z                        | Ctrl+Shift+Z        |
-| Het hele werkblad selecteren                                                                                               | ⌘A                         | Ctrl+A              |
-| De datum van vandaag invoegen                                                                                              | ⌘;                         | Ctrl+;              |
-| De huidige tijd invoegen                                                                                                   | ⌘⇧;                        | Ctrl+Shift+;        |
-| De inhoud van elke geselecteerde cel wissen                                                                                | ⌫ of ⌦                     | Backspace of Delete |
+| Actie                                                                                                                      | Windows / Linux     | macOS                      |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------- |
+| De hele selectie vullen met de huidige invoer                                                                              | Ctrl+Enter          | ⌃⏎ of ⌘⏎                   |
+| Binnen de cel een nieuwe regel beginnen                                                                                    | Alt+Enter           | ⌥⏎, of ⌃⌥⏎ / ⌘⌥⏎ op de Mac |
+| De actieve cel ter plaatse bewerken                                                                                        | F2                  | F2                         |
+| Vet                                                                                                                        | Ctrl+B              | ⌘B                         |
+| Cursief                                                                                                                    | Ctrl+I              | ⌘I                         |
+| Onderstrepen                                                                                                               | Ctrl+U              | ⌘U                         |
+| Zoeken                                                                                                                     | Ctrl+F              | ⌘F                         |
+| Naar rechts invullen vanaf de meest linkse geselecteerde kolom                                                             | Ctrl+R              | ⌘R                         |
+| Een formuleverwijzing wisselen tussen relatief en absoluut                                                                 | F4                  | F4                         |
+| Een formuleverwijzing wisselen tussen relatief en absoluut (pariteit met Excel voor Mac, tijdens het bewerken van een cel) |                     | ⌘T                         |
+| Kopiëren                                                                                                                   | Ctrl+C              | ⌘C                         |
+| Knippen                                                                                                                    | Ctrl+X              | ⌘X                         |
+| Plakken                                                                                                                    | Ctrl+V              | ⌘V                         |
+| Alleen waarden plakken                                                                                                     | Ctrl+Shift+V        | ⌘⇧V                        |
+| Snel invullen op basis van het patroon erboven                                                                             | Ctrl+E              | ⌘E                         |
+| Ongedaan maken                                                                                                             | Ctrl+Z              | ⌘Z                         |
+| Opnieuw uitvoeren                                                                                                          | Ctrl+Shift+Z        | ⇧⌘Z                        |
+| Het hele werkblad selecteren                                                                                               | Ctrl+A              | ⌘A                         |
+| De datum van vandaag invoegen                                                                                              | Ctrl+;              | ⌘;                         |
+| De huidige tijd invoegen                                                                                                   | Ctrl+Shift+;        | ⌘⇧;                        |
+| De inhoud van elke geselecteerde cel wissen                                                                                | Backspace of Delete | ⌫ of ⌦                     |
 
 AutoSum bestaat alleen op macOS. Druk op ⌘⇧T.
 
 ### Opmaak
 
-| Actie                                                              | macOS | Windows / Linux |
-| ------------------------------------------------------------------ | ----- | --------------- |
-| Dialoogvenster Cellen opmaken                                      | ⌘1    | Ctrl+1          |
-| Doorhalen (met cellen geselecteerd)                                | ⌘5    | Ctrl+5          |
-| Tekengrootte vergroten (met cellen geselecteerd)                   | ⌘⇧.   | Ctrl+Shift+.    |
-| Tekengrootte verkleinen (met cellen geselecteerd)                  | ⌘⇧,   | Ctrl+Shift+,    |
-| Getalnotatie: Standaard                                            | ⌘⇧`   | Ctrl+Shift+`    |
-| Getalnotatie: getal met twee decimalen                             | ⌘⇧1   | Ctrl+Shift+1    |
-| Getalnotatie: tijd `h:mm AM/PM`                                    | ⌘⇧2   | Ctrl+Shift+2    |
-| Getalnotatie: datum `d-mmm-yy`                                     | ⌘⇧3   | Ctrl+Shift+3    |
-| Getalnotatie: valuta                                               | ⌘⇧4   | Ctrl+Shift+4    |
-| Getalnotatie: percentage                                           | ⌘⇧5   | Ctrl+Shift+5    |
-| Getalnotatie: wetenschappelijk                                     | ⌘⇧6   | Ctrl+Shift+6    |
-| Alle randen (met cellen geselecteerd)                              | ⌘⇧7   | Ctrl+Shift+7    |
-| Geen randen (met cellen geselecteerd)                              | ⌘⇧-   | Ctrl+Shift+-    |
-| Opmaakpainter annuleren (alleen terwijl de opmaakpainter aanstaat) | Esc   | Esc             |
+| Actie                                                              | Windows / Linux | macOS |
+| ------------------------------------------------------------------ | --------------- | ----- |
+| Dialoogvenster Cellen opmaken                                      | Ctrl+1          | ⌘1    |
+| Doorhalen (met cellen geselecteerd)                                | Ctrl+5          | ⌘5    |
+| Tekengrootte vergroten (met cellen geselecteerd)                   | Ctrl+Shift+.    | ⌘⇧.   |
+| Tekengrootte verkleinen (met cellen geselecteerd)                  | Ctrl+Shift+,    | ⌘⇧,   |
+| Getalnotatie: Standaard                                            | Ctrl+Shift+`    | ⌘⇧`   |
+| Getalnotatie: getal met twee decimalen                             | Ctrl+Shift+1    | ⌘⇧1   |
+| Getalnotatie: tijd `h:mm AM/PM`                                    | Ctrl+Shift+2    | ⌘⇧2   |
+| Getalnotatie: datum `d-mmm-yy`                                     | Ctrl+Shift+3    | ⌘⇧3   |
+| Getalnotatie: valuta                                               | Ctrl+Shift+4    | ⌘⇧4   |
+| Getalnotatie: percentage                                           | Ctrl+Shift+5    | ⌘⇧5   |
+| Getalnotatie: wetenschappelijk                                     | Ctrl+Shift+6    | ⌘⇧6   |
+| Alle randen (met cellen geselecteerd)                              | Ctrl+Shift+7    | ⌘⇧7   |
+| Geen randen (met cellen geselecteerd)                              | Ctrl+Shift+-    | ⌘⇧-   |
+| Opmaakpainter annuleren (alleen terwijl de opmaakpainter aanstaat) | Esc             | Esc   |
 
 ### Invoegen en verwijderen
 
-| Actie                                                                                                                   | macOS                           | Windows / Linux                    |
-| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------- |
-| Cellen invoegen — hele rijen of kolommen worden direct ingevoegd, alles andere opent het dialoogvenster Invoegen        | ⌘⇧=                             | Ctrl+Shift+=                       |
-| Cellen invoegen — numeriek toetsenblok `+`, hetzelfde dialoogvenster                                                    | ⌘ samen met het toetsenblok `+` | Ctrl samen met het toetsenblok `+` |
-| Cellen verwijderen — hele rijen of kolommen worden direct verwijderd, alles andere opent het dialoogvenster Verwijderen | ⌘-                              | Ctrl+-                             |
-| Cellen verwijderen — numeriek toetsenblok `-`, hetzelfde dialoogvenster                                                 | ⌘ samen met het toetsenblok `-` | Ctrl samen met het toetsenblok `-` |
-| De geselecteerde rijen verbergen                                                                                        | ⌘9                              | Ctrl+9                             |
-| De verborgen rijen in de selectie zichtbaar maken                                                                       | ⌘⇧9                             | Ctrl+Shift+9                       |
-| De geselecteerde kolommen verbergen                                                                                     | ⌘0                              | Ctrl+0                             |
-| De verborgen kolommen in de selectie zichtbaar maken                                                                    | ⌘⇧0                             | Ctrl+Shift+0                       |
+| Actie                                                                                                                   | Windows / Linux                    | macOS                           |
+| ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------- |
+| Cellen invoegen — hele rijen of kolommen worden direct ingevoegd, alles andere opent het dialoogvenster Invoegen        | Ctrl+Shift+=                       | ⌘⇧=                             |
+| Cellen invoegen — numeriek toetsenblok `+`, hetzelfde dialoogvenster                                                    | Ctrl samen met het toetsenblok `+` | ⌘ samen met het toetsenblok `+` |
+| Cellen verwijderen — hele rijen of kolommen worden direct verwijderd, alles andere opent het dialoogvenster Verwijderen | Ctrl+-                             | ⌘-                              |
+| Cellen verwijderen — numeriek toetsenblok `-`, hetzelfde dialoogvenster                                                 | Ctrl samen met het toetsenblok `-` | ⌘ samen met het toetsenblok `-` |
+| De geselecteerde rijen verbergen                                                                                        | Ctrl+9                             | ⌘9                              |
+| De verborgen rijen in de selectie zichtbaar maken                                                                       | Ctrl+Shift+9                       | ⌘⇧9                             |
+| De geselecteerde kolommen verbergen                                                                                     | Ctrl+0                             | ⌘0                              |
+| De verborgen kolommen in de selectie zichtbaar maken                                                                    | Ctrl+Shift+0                       | ⌘⇧0                             |
 
 ### Gegevens en controle
 
-| Actie                                                   | macOS | Windows / Linux |
-| ------------------------------------------------------- | ----- | --------------- |
-| Dialoogvenster Functie invoegen                         | ⇧F3   | Shift+F3        |
-| Naambeheer                                              | ⌃F3   | Ctrl+F3         |
-| Een notitie aan de actieve cel toevoegen of bewerken    | ⇧F2   | Shift+F2        |
-| Hyperlink invoegen                                      | ⌘K    | Ctrl+K          |
-| Voorgaanden traceren (de cel moet een formule bevatten) | ⌘[    | Ctrl+[          |
-| Volgende cellen traceren                                | ⌘]    | Ctrl+]          |
-| De geselecteerde rijen groeperen                        | ⌥⇧→   | Alt+Shift+→     |
-| De geselecteerde rijen groeperen opheffen               | ⌥⇧←   | Alt+Shift+←     |
-| De hele werkmap herberekenen                            | F9    | F9              |
-| Alleen het actieve werkblad herberekenen                | ⇧F9   | Shift+F9        |
-| Het filter op het geselecte bereik aan- of uitzetten    | ⌘⇧F   |                 |
+| Actie                                                   | Windows / Linux | macOS |
+| ------------------------------------------------------- | --------------- | ----- |
+| Dialoogvenster Functie invoegen                         | Shift+F3        | ⇧F3   |
+| Naambeheer                                              | Ctrl+F3         | ⌃F3   |
+| Een notitie aan de actieve cel toevoegen of bewerken    | Shift+F2        | ⇧F2   |
+| Hyperlink invoegen                                      | Ctrl+K          | ⌘K    |
+| Voorgaanden traceren (de cel moet een formule bevatten) | Ctrl+[          | ⌘[    |
+| Volgende cellen traceren                                | Ctrl+]          | ⌘]    |
+| De geselecteerde rijen groeperen                        | Alt+Shift+→     | ⌥⇧→   |
+| De geselecteerde rijen groeperen opheffen               | Alt+Shift+←     | ⌥⇧←   |
+| De hele werkmap herberekenen                            | F9              | F9    |
+| Alleen het actieve werkblad herberekenen                | Shift+F9        | ⇧F9   |
+| Het filter op het geselecte bereik aan- of uitzetten    |                 | ⌘⇧F   |
 
 De sneltoets voor filteren van Excel, Ctrl+Shift+L, doet niets op Windows of Linux. Druk op macOS op ⌘⇧F, of gebruik het filtercommando op de lint op elk platform.
 
 ### Venster
 
-| Actie                                                            | macOS        | Windows / Linux |
-| ---------------------------------------------------------------- | ------------ | --------------- |
-| De werkmap opslaan                                               | ⌘S           | Ctrl+S          |
-| Opslaan als                                                      | ⇧⌘S          | Ctrl+Shift+S    |
-| Een werkmap openen                                               | ⌘O           | Ctrl+O          |
-| Afdrukken                                                        | ⌘P           | Ctrl+P          |
-| De werkmap sluiten (macOS) / De app afsluiten (Windows en Linux) | ⌘W           | Ctrl+Q          |
-| De gebruikershandleiding openen                                  | F1           | F1              |
-| Inzoomen                                                         | ⌘=           | Ctrl+=          |
-| Zoomen met het muiswiel                                          | ⌘ + scrollen | Ctrl + scrollen |
-| Formules in de cellen tonen of verbergen                         | ⌘`           | Ctrl+`          |
-| De formulebalk uitvouwen of inklappen                            | ⌘⇧U          | Ctrl+Shift+U    |
+| Actie                                                            | Windows / Linux | macOS        |
+| ---------------------------------------------------------------- | --------------- | ------------ |
+| De werkmap opslaan                                               | Ctrl+S          | ⌘S           |
+| Opslaan als                                                      | Ctrl+Shift+S    | ⇧⌘S          |
+| Een werkmap openen                                               | Ctrl+O          | ⌘O           |
+| Afdrukken                                                        | Ctrl+P          | ⌘P           |
+| De werkmap sluiten (macOS) / De app afsluiten (Windows en Linux) | Ctrl+Q          | ⌘W           |
+| De gebruikershandleiding openen                                  | F1              | F1           |
+| Inzoomen                                                         | Ctrl+=          | ⌘=           |
+| Zoomen met het muiswiel                                          | Ctrl + scrollen | ⌘ + scrollen |
+| Formules in de cellen tonen of verbergen                         | Ctrl+`          | ⌘`           |
+| De formulebalk uitvouwen of inklappen                            | Ctrl+Shift+U    | ⌘⇧U          |
 
 ## Slides
 
@@ -297,31 +309,31 @@ GenOffice Slides is een presentatie-editor in de stijl van PowerPoint. De meeste
 
 ### Bestand en app
 
-| Actie                                       | macOS | Windows / Linux |
-| ------------------------------------------- | ----- | --------------- |
-| Opslaan                                     | ⌘S    | Ctrl+S          |
-| Opslaan als                                 | ⇧⌘S   | Ctrl+Shift+S    |
-| Openen                                      | ⌘O    | Ctrl+O          |
-| Huidig tabblad sluiten                      | ⌘W    | Ctrl+Q          |
-| Afdrukken                                   | ⌘P    | Ctrl+P          |
-| Ongedaan maken                              | ⌘Z    | Ctrl+Z          |
-| Opnieuw uitvoeren                           | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Opnieuw uitvoeren (alternatieve combinatie) | ⌘Y    | Ctrl+Y          |
+| Actie                                       | Windows / Linux | macOS |
+| ------------------------------------------- | --------------- | ----- |
+| Opslaan                                     | Ctrl+S          | ⌘S    |
+| Opslaan als                                 | Ctrl+Shift+S    | ⇧⌘S   |
+| Openen                                      | Ctrl+O          | ⌘O    |
+| Huidig tabblad sluiten                      | Ctrl+Q          | ⌘W    |
+| Afdrukken                                   | Ctrl+P          | ⌘P    |
+| Ongedaan maken                              | Ctrl+Z          | ⌘Z    |
+| Opnieuw uitvoeren                           | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Opnieuw uitvoeren (alternatieve combinatie) | Ctrl+Y          | ⌘Y    |
 
 Een tabblad sluiten is de enige plek waar de twee platformen volledig uit elkaar gaan: ⌘W op macOS, en op Windows en Linux Ctrl+Q, dat de hele app afsluit in plaats van het tabblad.
 
 ### Bewerken
 
-| Actie                                                    | macOS  | Windows / Linux |
-| -------------------------------------------------------- | ------ | --------------- |
-| Nieuwe dia                                               | ⇧⌘N    | Ctrl+M          |
-| Zoeken (niet tijdens het bewerken van tekst in een vorm) | ⌘F     | Ctrl+F          |
-| De selectie met AI annoteren (met vormen geselecteerd)   | ⌘K     | Ctrl+K          |
-| Inzoomen                                                 | ⌘=     | Ctrl+=          |
-| Uitzoomen                                                | ⌘-     | Ctrl+-          |
-| Werkelijke grootte (100%)                                | ⌘0     | Ctrl+0          |
-| Alles selecteren                                         | ⌘A     | Ctrl+A          |
-| Vormselectie vooruit / achteruit doorlopen               | ⇥ / ⇧⇥ | Tab / Shift+Tab |
+| Actie                                                    | Windows / Linux | macOS  |
+| -------------------------------------------------------- | --------------- | ------ |
+| Nieuwe dia                                               | Ctrl+M          | ⇧⌘N    |
+| Zoeken (niet tijdens het bewerken van tekst in een vorm) | Ctrl+F          | ⌘F     |
+| De selectie met AI annoteren (met vormen geselecteerd)   | Ctrl+K          | ⌘K     |
+| Inzoomen                                                 | Ctrl+=          | ⌘=     |
+| Uitzoomen                                                | Ctrl+-          | ⌘-     |
+| Werkelijke grootte (100%)                                | Ctrl+0          | ⌘0     |
+| Alles selecteren                                         | Ctrl+A          | ⌘A     |
+| Vormselectie vooruit / achteruit doorlopen               | Tab / Shift+Tab | ⇥ / ⇧⇥ |
 
 Nieuwe dia is de andere platformsplitsing. Elk platform heeft zijn eigen toets en de andere doet niets: ⇧⌘N op macOS, Ctrl+M op Windows en Linux. ⌘M kan dat op macOS niet doen omdat dat de systeemtoets voor Minimaliseren is.
 
@@ -331,39 +343,39 @@ Alles selecteren volgt de focus: met het miniatuurpaneel, overzichtspaneel of de
 
 Deze werken op de tekst van een geselecteerde vorm, of op de alinea van de caret wanneer je in het tekstvak zit.
 
-| Actie                                            | macOS | Windows / Linux |
-| ------------------------------------------------ | ----- | --------------- |
-| Vet                                              | ⌘B    | Ctrl+B          |
-| Cursief                                          | ⌘I    | Ctrl+I          |
-| Onderstrepen                                     | ⌘U    | Ctrl+U          |
-| Links uitlijnen                                  | ⌘L    | Ctrl+L          |
-| Centreren                                        | ⌘E    | Ctrl+E          |
-| Rechts uitlijnen                                 | ⌘R    | Ctrl+R          |
-| Uitvullen                                        | ⌘J    | Ctrl+J          |
-| Tekengrootte met 1 pt vergroten                  | ⌘]    | Ctrl+]          |
-| Tekengrootte met 1 pt verkleinen                 | ⌘[    | Ctrl+[          |
-| Lettertype naar de volgende grootte op de ladder | ⇧⌘>   | Ctrl+Shift+>    |
-| Lettertype naar de vorige grootte op de ladder   | ⇧⌘<   | Ctrl+Shift+<    |
+| Actie                                            | Windows / Linux | macOS |
+| ------------------------------------------------ | --------------- | ----- |
+| Vet                                              | Ctrl+B          | ⌘B    |
+| Cursief                                          | Ctrl+I          | ⌘I    |
+| Onderstrepen                                     | Ctrl+U          | ⌘U    |
+| Links uitlijnen                                  | Ctrl+L          | ⌘L    |
+| Centreren                                        | Ctrl+E          | ⌘E    |
+| Rechts uitlijnen                                 | Ctrl+R          | ⌘R    |
+| Uitvullen                                        | Ctrl+J          | ⌘J    |
+| Tekengrootte met 1 pt vergroten                  | Ctrl+]          | ⌘]    |
+| Tekengrootte met 1 pt verkleinen                 | Ctrl+[          | ⌘[    |
+| Lettertype naar de volgende grootte op de ladder | Ctrl+Shift+>    | ⇧⌘>   |
+| Lettertype naar de vorige grootte op de ladder   | Ctrl+Shift+<    | ⇧⌘<   |
 
 De toetsen van de lettertype-ladder nemen ook de toetsen . en , met Shift vast, voor de toetsenbordindelingen die die in plaats van de leestekentoetsen melden.
 
 ### Klembord en objecten
 
-| Actie                                                     | macOS       | Windows / Linux    |
-| --------------------------------------------------------- | ----------- | ------------------ |
-| Kopiëren                                                  | ⌘C          | Ctrl+C             |
-| Knippen                                                   | ⌘X          | Ctrl+X             |
-| Plakken                                                   | ⌘V          | Ctrl+V             |
-| Alleen opmaak plakken                                     | ⇧⌘V         | Ctrl+Shift+V       |
-| Alleen opmaak kopiëren (met vormen geselecteerd)          | ⇧⌘C         | Ctrl+Shift+C       |
-| Ter plaatse dupliceren (met vormen geselecteerd)          | ⌘D          | Ctrl+D             |
-| Selectie groeperen (met vormen geselecteerd)              | ⌘G          | Ctrl+G             |
-| Groepering opheffen (met vormen geselecteerd)             | ⇧⌘G         | Ctrl+Shift+G       |
-| Selectie verwijderen (met vormen geselecteerd)            | ⌫ / Delete  | Backspace / Delete |
-| Het geselecteerde hoekpunt verwijderen (in Punt bewerken) | ⌫ / Delete  | Backspace / Delete |
-| Selectie nudgen (met vormen geselecteerd)                 | ↑ ↓ ← →     | Arrow keys         |
-| Eén schermpixel nudgen                                    | ⌘↑ ⌘↓ ⌘← ⌘→ | Ctrl+Arrow keys    |
-| Schalen rond het midden                                   | ⇧↑ ⇧↓ ⇧← ⇧→ | Shift+Arrow keys   |
+| Actie                                                     | Windows / Linux    | macOS       |
+| --------------------------------------------------------- | ------------------ | ----------- |
+| Kopiëren                                                  | Ctrl+C             | ⌘C          |
+| Knippen                                                   | Ctrl+X             | ⌘X          |
+| Plakken                                                   | Ctrl+V             | ⌘V          |
+| Alleen opmaak plakken                                     | Ctrl+Shift+V       | ⇧⌘V         |
+| Alleen opmaak kopiëren (met vormen geselecteerd)          | Ctrl+Shift+C       | ⇧⌘C         |
+| Ter plaatse dupliceren (met vormen geselecteerd)          | Ctrl+D             | ⌘D          |
+| Selectie groeperen (met vormen geselecteerd)              | Ctrl+G             | ⌘G          |
+| Groepering opheffen (met vormen geselecteerd)             | Ctrl+Shift+G       | ⇧⌘G         |
+| Selectie verwijderen (met vormen geselecteerd)            | Backspace / Delete | ⌫ / Delete  |
+| Het geselecteerde hoekpunt verwijderen (in Punt bewerken) | Backspace / Delete | ⌫ / Delete  |
+| Selectie nudgen (met vormen geselecteerd)                 | Arrow keys         | ↑ ↓ ← →     |
+| Eén schermpixel nudgen                                    | Ctrl+Arrow keys    | ⌘↑ ⌘↓ ⌘← ⌘→ |
+| Schalen rond het midden                                   | Shift+Arrow keys   | ⇧↑ ⇧↓ ⇧← ⇧→ |
 
 In een tekstvak werken kopiëren, knippen en plakken op de tekst in plaats van op de vorm. Shift met de pijltjestoetsen schaalt elke vorm rond het eigen midden, laat verbinders met rust en bevestigt een meervoudige selectie als één stap van Ongedaan maken.
 
@@ -371,57 +383,57 @@ In een tekstvak werken kopiëren, knippen en plakken op de tekst in plaats van o
 
 Dia-opdrachten van het PowerPoint-soort werken alleen wanneer een van die drie panelen toetsenbordfocus heeft.
 
-| Actie                                           | macOS                         | Windows / Linux                               |
-| ----------------------------------------------- | ----------------------------- | --------------------------------------------- |
-| Vorige / volgende dia                           | ↑ ↓ (ook Page Up / Page Down) | ArrowUp / ArrowDown (ook Page Up / Page Down) |
-| Eerste / laatste dia                            | Home / End                    | Home / End                                    |
-| Selectie uitbreiden tot de eerste / laatste dia | ⇧Home / ⇧End                  | Shift+Home / Shift+End                        |
-| Alle dia's selecteren                           | ⌘A                            | Ctrl+A                                        |
-| Geselecteerde dia's verwijderen                 | ⌫ / Delete                    | Backspace / Delete                            |
-| Dia's kopiëren                                  | ⌘C                            | Ctrl+C                                        |
-| Dia's knippen                                   | ⌘X                            | Ctrl+X                                        |
+| Actie                                           | Windows / Linux                               | macOS                         |
+| ----------------------------------------------- | --------------------------------------------- | ----------------------------- |
+| Vorige / volgende dia                           | ArrowUp / ArrowDown (ook Page Up / Page Down) | ↑ ↓ (ook Page Up / Page Down) |
+| Eerste / laatste dia                            | Home / End                                    | Home / End                    |
+| Selectie uitbreiden tot de eerste / laatste dia | Shift+Home / Shift+End                        | ⇧Home / ⇧End                  |
+| Alle dia's selecteren                           | Ctrl+A                                        | ⌘A                            |
+| Geselecteerde dia's verwijderen                 | Backspace / Delete                            | ⌫ / Delete                    |
+| Dia's kopiëren                                  | Ctrl+C                                        | ⌘C                            |
+| Dia's knippen                                   | Ctrl+X                                        | ⌘X                            |
 
 Met de pijltjestoetsen tussen dia's bewegen is de uitzondering — dat werkt ook vanaf het vlak, zonder selectie. Dia's verwijderen werkt niet terwijl een pen-gereedschap actief is of in de **leesweergave**.
 
 ### In een tekstvak
 
-| Actie                                                                       | macOS                         | Windows / Linux                   |
-| --------------------------------------------------------------------------- | ----------------------------- | --------------------------------- |
-| Tekstbewerking starten in een geselecteerde tekstvorm                       | een afdrukbaar teken, ⏎ of F2 | een afdrukbaar teken, Enter of F2 |
-| De tekst bevestigen en de vorm opnieuw selecteren                           | Esc of F2                     | Esc of F2                         |
-| De tekst bevestigen en de vorm opnieuw selecteren (alternatieve combinatie) | ⌘⏎                            | Ctrl+⏎                            |
-| Naar de volgende plaatshouder springen                                      | ⌃⏎                            | Ctrl+⏎                            |
-| Lijstniveau verlagen / verhogen                                             | ⇥ / ⇧⇥                        | Tab / Shift+Tab                   |
-| Volgende / vorige tabelcel                                                  | ⇥ / ⇧⇥                        | Tab / Shift+Tab                   |
-| Zachte regeleinde                                                           | ⇧⏎                            | Shift+⏎                           |
+| Actie                                                                       | Windows / Linux                   | macOS                         |
+| --------------------------------------------------------------------------- | --------------------------------- | ----------------------------- |
+| Tekstbewerking starten in een geselecteerde tekstvorm                       | een afdrukbaar teken, Enter of F2 | een afdrukbaar teken, ⏎ of F2 |
+| De tekst bevestigen en de vorm opnieuw selecteren                           | Esc of F2                         | Esc of F2                     |
+| De tekst bevestigen en de vorm opnieuw selecteren (alternatieve combinatie) | Ctrl+⏎                            | ⌘⏎                            |
+| Naar de volgende plaatshouder springen                                      | Ctrl+⏎                            | ⌃⏎                            |
+| Lijstniveau verlagen / verhogen                                             | Tab / Shift+Tab                   | ⇥ / ⇧⇥                        |
+| Volgende / vorige tabelcel                                                  | Tab / Shift+Tab                   | ⇥ / ⇧⇥                        |
+| Zachte regeleinde                                                           | Shift+⏎                           | ⇧⏎                            |
 
 Tab betekent twee verschillende dingen: de volgende cel in een tabel, en het lijstniveau verlagen in een tekstvorm.
 
 ### Diavoorstelling
 
-| Actie                          | macOS                  | Windows / Linux                      |
-| ------------------------------ | ---------------------- | ------------------------------------ |
-| Vanaf het begin starten        | F5                     | F5                                   |
-| Vanaf de huidige dia starten   | ⇧F5 of ⌘⏎              | ⇧F5                                  |
-| Volgende dia                   | → ↓ ␣ ⏎ Page Down      | Right, Down, Space, Enter, Page Down |
-| Vorige dia                     | ← ↑ Page Up            | Left, Up, Page Up                    |
-| Eerste dia                     | Home                   | Home                                 |
-| Laatste dia                    | End                    | End                                  |
-| Naar dia N gaan                | typ N en daarna ⏎      | typ N en daarna Enter                |
-| Zwart scherm                   | B of .                 | B of .                               |
-| Wit scherm                     | W of ,                 | W of ,                               |
-| Herstellen na een zwart scherm | een willekeurige toets | een willekeurige toets               |
-| De voorstelling beëindigen     | Esc                    | Esc                                  |
+| Actie                          | Windows / Linux                      | macOS                  |
+| ------------------------------ | ------------------------------------ | ---------------------- |
+| Vanaf het begin starten        | F5                                   | F5                     |
+| Vanaf de huidige dia starten   | ⇧F5                                  | ⇧F5 of ⌘⏎              |
+| Volgende dia                   | Right, Down, Space, Enter, Page Down | → ↓ ␣ ⏎ Page Down      |
+| Vorige dia                     | Left, Up, Page Up                    | ← ↑ Page Up            |
+| Eerste dia                     | Home                                 | Home                   |
+| Laatste dia                    | End                                  | End                    |
+| Naar dia N gaan                | typ N en daarna Enter                | typ N en daarna ⏎      |
+| Zwart scherm                   | B of .                               | B of .                 |
+| Wit scherm                     | W of ,                               | W of ,                 |
+| Herstellen na een zwart scherm | een willekeurige toets               | een willekeurige toets |
+| De voorstelling beëindigen     | Esc                                  | Esc                    |
 
 Vanaf de huidige dia starten werkt op macOS met ⌘⏎ net zo goed als met ⇧F5. Op Windows blijft dezelfde toets gereserveerd voor het verplaatsen tussen plaatshouders.
 
 ### Leesweergave
 
-| Actie                 | macOS             | Windows / Linux                      |
-| --------------------- | ----------------- | ------------------------------------ |
-| Volgende dia          | → ↓ ␣ ⏎ Page Down | Right, Down, Space, Enter, Page Down |
-| Vorige dia            | ← ↑ Page Up       | Left, Up, Page Up                    |
-| Leesweergave verlaten | Esc               | Esc                                  |
+| Actie                 | Windows / Linux                      | macOS             |
+| --------------------- | ------------------------------------ | ----------------- |
+| Volgende dia          | Right, Down, Space, Enter, Page Down | → ↓ ␣ ⏎ Page Down |
+| Vorige dia            | Left, Up, Page Up                    | ← ↑ Page Up       |
+| Leesweergave verlaten | Esc                                  | Esc               |
 
 Druk op **Esc** om uit alles terug te keren wat je bezig was — een bijsnede, een vorm die je tekent, **Punt bewerken**, een groep, de pen, de markeerstift of de gummistift, de mediaspeler of de **leesweergave** — en om de selectie te wissen.
 
@@ -433,30 +445,30 @@ PDF heeft geen eigen menu, dus elke combinatie hieronder volgt het actieve tabbl
 
 ### Bestand en bewerken
 
-| Actie                       | macOS | Windows / Linux |
-| --------------------------- | ----- | --------------- |
-| Opslaan                     | ⌘S    | Ctrl+S          |
-| Ongedaan maken              | ⌘Z    | Ctrl+Z          |
-| Opnieuw uitvoeren           | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Zoeken (zoekvenster openen) | ⌘F    | Ctrl+F          |
-| Afdrukken                   | ⌘P    | Ctrl+P          |
+| Actie                       | Windows / Linux | macOS |
+| --------------------------- | --------------- | ----- |
+| Opslaan                     | Ctrl+S          | ⌘S    |
+| Ongedaan maken              | Ctrl+Z          | ⌘Z    |
+| Opnieuw uitvoeren           | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Zoeken (zoekvenster openen) | Ctrl+F          | ⌘F    |
+| Afdrukken                   | Ctrl+P          | ⌘P    |
 
 Ongedaan maken en Opnieuw uitvoeren lopen door de documentgeschiedenis; staan de cursor in een tekstveld, dan laten ze ⌘Z aan dat veld. ⌘P opent hetzelfde afdrukdialoogvenster in de app als de afdruknop op de werkbalk.
 
 ### Weergave
 
-| Actie                    | macOS          | Windows / Linux   |
-| ------------------------ | -------------- | ----------------- |
-| Inzoomen                 | ⌘=             | Ctrl+=            |
-| Uitzoomen                | ⌘-             | Ctrl+-            |
-| Passend maken op breedte | ⌘0             | Ctrl+0            |
-| Zoomen (doorlopend)      | ⌘ + scrollwiel | Ctrl + scrollwiel |
+| Actie                    | Windows / Linux   | macOS          |
+| ------------------------ | ----------------- | -------------- |
+| Inzoomen                 | Ctrl+=            | ⌘=             |
+| Uitzoomen                | Ctrl+-            | ⌘-             |
+| Passend maken op breedte | Ctrl+0            | ⌘0             |
+| Zoomen (doorlopend)      | Ctrl + scrollwiel | ⌘ + scrollwiel |
 
 Inzoomen reageert ook op ⌘+ en Ctrl++.
 
 ### Pagin navigeren
 
-| Actie                           | macOS             | Windows / Linux   |
+| Actie                           | Windows / Linux   | macOS             |
 | ------------------------------- | ----------------- | ----------------- |
 | Volgende pagina                 | →                 | →                 |
 | Vorige pagina                   | ←                 | ←                 |
@@ -471,7 +483,7 @@ Deze hebben geen modifier, dus beide platformen lezen hetzelfde. ↓ en ↑ zijn
 
 ### Selectie en bewerken
 
-| Actie                                    | macOS               | Windows / Linux     |
+| Actie                                    | Windows / Linux     | macOS               |
 | ---------------------------------------- | ------------------- | ------------------- |
 | De geselecteerde aantekening verwijderen | Delete of Backspace | Delete of Backspace |
 
@@ -479,21 +491,21 @@ Alleen actief wanneer een aantekening, stempel, redactie of afbeelding geselecte
 
 ### Miniatuurbalk
 
-| Actie                           | macOS               | Windows / Linux     |
+| Actie                           | Windows / Linux     | macOS               |
 | ------------------------------- | ------------------- | ------------------- |
-| Pagina’s één voor één kiezen    | ⌘ + klik            | Ctrl + klik         |
-| Een reeks pagina’s kiezen       | ⇧ + klik            | Shift + klik        |
-| Alle pagina’s kiezen            | ⌘A                  | Ctrl+A              |
+| Pagina’s één voor één kiezen    | Ctrl + klik         | ⌘ + klik            |
+| Een reeks pagina’s kiezen       | Shift + klik        | ⇧ + klik            |
+| Alle pagina’s kiezen            | Ctrl+A              | ⌘A                  |
 | De gekozen pagina’s verwijderen | Delete of Backspace | Delete of Backspace |
 
 Gekozen pagina’s zijn gekleurd. Klik met rechts op een ervan, of gebruik het tabblad Pagina, om ze samen te draaien, te verwijderen of te extraheren; sleep er een om ze allemaal te verplaatsen. Escape of een gewone klik op een pagina heft de keuze op. ⌘A en Delete werken als de balk de focus heeft.
 
 ### Escape en dialoogvensters
 
-| Actie                              | macOS  | Windows / Linux |
-| ---------------------------------- | ------ | --------------- |
-| De bovenste toestand annuleren     | Escape | Escape          |
-| Het open dialoogvenster bevestigen | Enter  | Enter           |
+| Actie                              | Windows / Linux | macOS  |
+| ---------------------------------- | --------------- | ------ |
+| De bovenste toestand annuleren     | Escape          | Escape |
+| Het open dialoogvenster bevestigen | Enter           | Enter  |
 
 Escape haalt één laag tegelijk weg — eerst een open dialoogvenster, dan de AI-popover, een tekstconcept, het zoekpaneel en ten slotte de selectie zelf. Met de cursor in het zoekvak springen Enter en ⇧Enter naar de volgende en vorige overeenkomst, en Escape sluit het paneel; met de cursor in een nieuwe tekstnotitie bevestigt ⌘⏎ die.
 
@@ -503,38 +515,38 @@ GenOffice Markdown bewerkt Markdown met een live preview ernaast.
 
 ### Bestand en weergave
 
-| Actie                     | macOS    | Windows / Linux  |
-| ------------------------- | -------- | ---------------- |
-| Opslaan                   | ⌘S       | Ctrl+S           |
-| Opslaan als               | ⇧⌘S      | Ctrl+Shift+S     |
-| Afdrukken                 | ⌘P       | Ctrl+P           |
-| Zoeken                    | ⌘F       | Ctrl+F           |
-| Bron / preview wisselen   | ⌘E       | Ctrl+E           |
-| Inzoomen                  | ⌘= of ⌘+ | Ctrl+= of Ctrl++ |
-| Uitzoomen                 | ⌘-       | Ctrl+-           |
-| Werkelijke grootte (100%) | ⌘0       | Ctrl+0           |
+| Actie                     | Windows / Linux  | macOS    |
+| ------------------------- | ---------------- | -------- |
+| Opslaan                   | Ctrl+S           | ⌘S       |
+| Opslaan als               | Ctrl+Shift+S     | ⇧⌘S      |
+| Afdrukken                 | Ctrl+P           | ⌘P       |
+| Zoeken                    | Ctrl+F           | ⌘F       |
+| Bron / preview wisselen   | Ctrl+E           | ⌘E       |
+| Inzoomen                  | Ctrl+= of Ctrl++ | ⌘= of ⌘+ |
+| Uitzoomen                 | Ctrl+-           | ⌘-       |
+| Werkelijke grootte (100%) | Ctrl+0           | ⌘0       |
 
 Uitzoomen werkt ook met ⌘_ en Ctrl+_. Knijpen op het trackpad, of ⌘ of Ctrl vasthouden en over het document scrollen, zoomt ook.
 
 ### Blokken
 
-| Actie                                                                        | macOS | Windows / Linux      |
-| ---------------------------------------------------------------------------- | ----- | -------------------- |
-| De geselecteerde blokken dupliceren                                          | ⌘D    | Ctrl+D               |
-| De geselecteerde blokken verwijderen                                         | ⇧⌘⌫   | Ctrl+Shift+Backspace |
-| Het geselecteerde blok omhoog verplaatsen                                    | ⇧⌘↑   | Ctrl+Shift+ArrowUp   |
-| Het geselecteerde blok omlaag verplaatsen                                    | ⇧⌘↓   | Ctrl+Shift+ArrowDown |
-| Een koppeling op de selectie invoegen                                        | ⌘K    | Ctrl+K               |
-| De koppeling verwijderen (nogmaals indrukken terwijl de koppeling actief is) | ⌘K    | Ctrl+K               |
+| Actie                                                                        | Windows / Linux      | macOS |
+| ---------------------------------------------------------------------------- | -------------------- | ----- |
+| De geselecteerde blokken dupliceren                                          | Ctrl+D               | ⌘D    |
+| De geselecteerde blokken verwijderen                                         | Ctrl+Shift+Backspace | ⇧⌘⌫   |
+| Het geselecteerde blok omhoog verplaatsen                                    | Ctrl+Shift+ArrowUp   | ⇧⌘↑   |
+| Het geselecteerde blok omlaag verplaatsen                                    | Ctrl+Shift+ArrowDown | ⇧⌘↓   |
+| Een koppeling op de selectie invoegen                                        | Ctrl+K               | ⌘K    |
+| De koppeling verwijderen (nogmaals indrukken terwijl de koppeling actief is) | Ctrl+K               | ⌘K    |
 
 ### In een wiskundeblok
 
 Deze gelden alleen terwijl de zwevende LaTeX-editor open is.
 
-| Actie                              | macOS | Windows / Linux |
-| ---------------------------------- | ----- | --------------- |
-| De formule toepassen               | ⌘⏎    | Ctrl+⏎          |
-| De editor sluiten zonder toepassen | Esc   | Esc             |
+| Actie                              | Windows / Linux | macOS |
+| ---------------------------------- | --------------- | ----- |
+| De formule toepassen               | Ctrl+⏎          | ⌘⏎    |
+| De editor sluiten zonder toepassen | Esc             | Esc   |
 
 Een lege formule toepassen verwijdert het blok in plaats daarvan. De editor sluit ook bij elke wijziging in het document, en klikken erbuiten sluit hem.
 
@@ -544,54 +556,54 @@ GenOffice HTML toont een code-editor naast een live preview. De toetsen die op e
 
 ### Bestand en bronweergave
 
-| Actie                                             | macOS    | Windows / Linux  |
-| ------------------------------------------------- | -------- | ---------------- |
-| Opslaan                                           | ⌘S       | Ctrl+S           |
-| Opslaan als                                       | ⇧⌘S      | Ctrl+Shift+S     |
-| Weergave wisselen (bewerken / splitsen / preview) | ⌘\       | Ctrl+\           |
-| Zoeken                                            | ⌘F       | Ctrl+F           |
-| Inzoomen                                          | ⌘= of ⌘+ | Ctrl+= of Ctrl++ |
-| Uitzoomen                                         | ⌘-       | Ctrl+-           |
-| Werkelijke grootte (100%)                         | ⌘0       | Ctrl+0           |
+| Actie                                             | Windows / Linux  | macOS    |
+| ------------------------------------------------- | ---------------- | -------- |
+| Opslaan                                           | Ctrl+S           | ⌘S       |
+| Opslaan als                                       | Ctrl+Shift+S     | ⇧⌘S      |
+| Weergave wisselen (bewerken / splitsen / preview) | Ctrl+\           | ⌘\       |
+| Zoeken                                            | Ctrl+F           | ⌘F       |
+| Inzoomen                                          | Ctrl+= of Ctrl++ | ⌘= of ⌘+ |
+| Uitzoomen                                         | Ctrl+-           | ⌘-       |
+| Werkelijke grootte (100%)                         | Ctrl+0           | ⌘0       |
 
 Uitzoomen werkt ook met ⌘_ en Ctrl+_.
 
 ### Opmaak en geschiedenis
 
-| Actie                                       | macOS | Windows / Linux |
-| ------------------------------------------- | ----- | --------------- |
-| Vet                                         | ⌘B    | Ctrl+B          |
-| Cursief                                     | ⌘I    | Ctrl+I          |
-| Ongedaan maken                              | ⌘Z    | Ctrl+Z          |
-| Opnieuw uitvoeren                           | ⇧⌘Z   | Ctrl+Shift+Z    |
-| Opnieuw uitvoeren (alternatieve combinatie) | ⌘Y    | Ctrl+Y          |
+| Actie                                       | Windows / Linux | macOS |
+| ------------------------------------------- | --------------- | ----- |
+| Vet                                         | Ctrl+B          | ⌘B    |
+| Cursief                                     | Ctrl+I          | ⌘I    |
+| Ongedaan maken                              | Ctrl+Z          | ⌘Z    |
+| Opnieuw uitvoeren                           | Ctrl+Shift+Z    | ⇧⌘Z   |
+| Opnieuw uitvoeren (alternatieve combinatie) | Ctrl+Y          | ⌘Y    |
 
 In de code-editor of een formulierveld nemen de eigen bewerkingsftoetsen van het veld het over.
 
 ### In het previewframe, met een element geselecteerd
 
-| Actie                                          | macOS      | Windows / Linux    |
-| ---------------------------------------------- | ---------- | ------------------ |
-| AI vragen over het element                     | ⌘K         | Ctrl+K             |
-| Het element verwijderen                        | ⌫ / Delete | Backspace / Delete |
-| Vorige broer                                   | ↑          | ArrowUp            |
-| Volgende broer                                 | ↓          | ArrowDown          |
-| Bovenliggend element selecteren                | ←          | ArrowLeft          |
-| Eerste kind selecteren                         | →          | ArrowRight         |
-| Het element omhoog in het document verplaatsen | ⌥↑         | Alt+ArrowUp        |
-| Het element omlaag in het document verplaatsen | ⌥↓         | Alt+ArrowDown      |
-| Selectie opheffen                              | Esc        | Esc                |
+| Actie                                          | Windows / Linux    | macOS      |
+| ---------------------------------------------- | ------------------ | ---------- |
+| AI vragen over het element                     | Ctrl+K             | ⌘K         |
+| Het element verwijderen                        | Backspace / Delete | ⌫ / Delete |
+| Vorige broer                                   | ArrowUp            | ↑          |
+| Volgende broer                                 | ArrowDown          | ↓          |
+| Bovenliggend element selecteren                | ArrowLeft          | ←          |
+| Eerste kind selecteren                         | ArrowRight         | →          |
+| Het element omhoog in het document verplaatsen | Alt+ArrowUp        | ⌥↑         |
+| Het element omlaag in het document verplaatsen | Alt+ArrowDown      | ⌥↓         |
+| Selectie opheffen                              | Esc                | Esc        |
 
 Elk van deze heeft al een geselecteerd element nodig; is er niets geselecteerd, dan doet de toets niets.
 
 ### In het previewframe, tekst ter plaatse bewerken
 
-| Actie                                             | macOS | Windows / Linux |
-| ------------------------------------------------- | ----- | --------------- |
-| De bewerking bevestigen                           | Esc   | Esc             |
-| De bewerking bevestigen (alternatieve combinatie) | ⌘⏎    | Ctrl+⏎          |
-| Het geselecteerde bereik vet maken                | ⌘B    | Ctrl+B          |
-| Het geselecteerde bereik cursief maken            | ⌘I    | Ctrl+I          |
+| Actie                                             | Windows / Linux | macOS |
+| ------------------------------------------------- | --------------- | ----- |
+| De bewerking bevestigen                           | Esc             | Esc   |
+| De bewerking bevestigen (alternatieve combinatie) | Ctrl+⏎          | ⌘⏎    |
+| Het geselecteerde bereik vet maken                | Ctrl+B          | ⌘B    |
+| Het geselecteerde bereik cursief maken            | Ctrl+I          | ⌘I    |
 
 Bevestigen behoudt wat je hebt getypt en brengt het element terug in de geselecteerde toestand.
 
@@ -601,147 +613,147 @@ Deze toetsen werken zolang het tabblad HWP/HWPX vooraan staat en het document fo
 
 ### Bestand
 
-| Actie          | macOS | Windows / Linux      |
-| -------------- | ----- | -------------------- |
-| Nieuw document |       | Alt+N                |
-| Openen…        | ⌘O    | Ctrl+O / Alt+O       |
-| Opslaan        | ⌘S    | Ctrl+S / Alt+S       |
-| Opslaan als…   | ⇧⌘S   | Ctrl+Shift+S / Alt+V |
-| Afdrukken      | ⌘P    | Ctrl+P / Alt+P       |
+| Actie          | Windows / Linux      | macOS |
+| -------------- | -------------------- | ----- |
+| Nieuw document | Alt+N                |       |
+| Openen…        | Ctrl+O / Alt+O       | ⌘O    |
+| Opslaan        | Ctrl+S / Alt+S       | ⌘S    |
+| Opslaan als…   | Ctrl+Shift+S / Alt+V | ⇧⌘S   |
+| Afdrukken      | Ctrl+P / Alt+P       | ⌘P    |
 
 ### Bewerken
 
-| Actie                  | macOS       | Windows / Linux              |
-| ---------------------- | ----------- | ---------------------------- |
-| Ongedaan maken         | ⌃Z          | Ctrl+Z                       |
-| Opnieuw uitvoeren      | ⌃⇧Z         | Ctrl+Shift+Z                 |
-| Regel verwijderen      | ⌃Y          | Ctrl+Y                       |
-| Knippen                | ⌃X          | Ctrl+X                       |
-| Kopiëren               | ⌃C          | Ctrl+C                       |
-| Plakken                | ⌃V          | Ctrl+V                       |
-| Verwijderen            | ⌃E          | Ctrl+E                       |
-| Alles selecteren       | ⌃A          | Ctrl+A                       |
-| Opmaak kopiëren        | ⌥C          | Alt+C                        |
-| Zoeken                 | ⌃F / ⌃Q, F  | Ctrl+F / Ctrl+Q, F           |
-| Zoeken en vervangen    | ⌃F2 / ⌃Q, A | Ctrl+H / Ctrl+F2 / Ctrl+Q, A |
-| Volgende zoeken        | ⌃L          | Ctrl+L                       |
-| Achterwaarts zoeken    | ⌃Q, L       | Ctrl+Q, L                    |
-| Ga naar                | ⌥G          | Alt+G                        |
-| Documenten vergelijken | ⌥⇧V         | Alt+Shift+V                  |
+| Actie                  | Windows / Linux              | macOS       |
+| ---------------------- | ---------------------------- | ----------- |
+| Ongedaan maken         | Ctrl+Z                       | ⌃Z          |
+| Opnieuw uitvoeren      | Ctrl+Shift+Z                 | ⌃⇧Z         |
+| Regel verwijderen      | Ctrl+Y                       | ⌃Y          |
+| Knippen                | Ctrl+X                       | ⌃X          |
+| Kopiëren               | Ctrl+C                       | ⌃C          |
+| Plakken                | Ctrl+V                       | ⌃V          |
+| Verwijderen            | Ctrl+E                       | ⌃E          |
+| Alles selecteren       | Ctrl+A                       | ⌃A          |
+| Opmaak kopiëren        | Alt+C                        | ⌥C          |
+| Zoeken                 | Ctrl+F / Ctrl+Q, F           | ⌃F / ⌃Q, F  |
+| Zoeken en vervangen    | Ctrl+H / Ctrl+F2 / Ctrl+Q, A | ⌃F2 / ⌃Q, A |
+| Volgende zoeken        | Ctrl+L                       | ⌃L          |
+| Achterwaarts zoeken    | Ctrl+Q, L                    | ⌃Q, L       |
+| Ga naar                | Alt+G                        | ⌥G          |
+| Documenten vergelijken | Alt+Shift+V                  | ⌥⇧V         |
 
 ### Teken
 
-| Actie                   | macOS    | Windows / Linux      |
-| ----------------------- | -------- | -------------------- |
-| Vet                     | ⌃B / ⌥⇧B | Ctrl+B / Alt+Shift+B |
-| Cursief                 | ⌃I / ⌥⇧I | Ctrl+I / Alt+Shift+I |
-| Onderstrepen            | ⌃U / ⌥⇧U | Ctrl+U / Alt+Shift+U |
-| Normale opmaak          | ⌥⇧C      | Alt+Shift+C          |
-| Superscript             | ⌥⇧P      | Alt+Shift+P          |
-| Subscript               | ⌥⇧S      | Alt+Shift+S          |
-| Tekenopmaak…            | ⌥L       | Alt+L                |
-| Tekengrootte vergroten  | ⌥⇧E / ⌃] | Alt+Shift+E / Ctrl+] |
-| Tekengrootte verkleinen | ⌥⇧R / ⌃[ | Alt+Shift+R / Ctrl+[ |
-| Tekenbreedte vergroten  | ⌥⇧K      | Alt+Shift+K          |
-| Tekenbreedte verkleinen | ⌥⇧J      | Alt+Shift+J          |
-| Tekenafstand vergroten  | ⌥⇧W      | Alt+Shift+W          |
-| Tekenafstand verkleinen | ⌥⇧N      | Alt+Shift+N          |
-| Zwarte tekst            | ⌃M, K    | Ctrl+M, K            |
-| Rode tekst              | ⌃M, R    | Ctrl+M, R            |
-| Blauwe tekst            | ⌃M, B    | Ctrl+M, B            |
-| Pruimkleurige tekst     | ⌃M, D    | Ctrl+M, D            |
-| Groene tekst            | ⌃M, G    | Ctrl+M, G            |
-| Gele tekst              | ⌃M, Y    | Ctrl+M, Y            |
-| Turquoise tekst         | ⌃M, C    | Ctrl+M, C            |
-| Witte tekst             | ⌃M, W    | Ctrl+M, W            |
+| Actie                   | Windows / Linux      | macOS    |
+| ----------------------- | -------------------- | -------- |
+| Vet                     | Ctrl+B / Alt+Shift+B | ⌃B / ⌥⇧B |
+| Cursief                 | Ctrl+I / Alt+Shift+I | ⌃I / ⌥⇧I |
+| Onderstrepen            | Ctrl+U / Alt+Shift+U | ⌃U / ⌥⇧U |
+| Normale opmaak          | Alt+Shift+C          | ⌥⇧C      |
+| Superscript             | Alt+Shift+P          | ⌥⇧P      |
+| Subscript               | Alt+Shift+S          | ⌥⇧S      |
+| Tekenopmaak…            | Alt+L                | ⌥L       |
+| Tekengrootte vergroten  | Alt+Shift+E / Ctrl+] | ⌥⇧E / ⌃] |
+| Tekengrootte verkleinen | Alt+Shift+R / Ctrl+[ | ⌥⇧R / ⌃[ |
+| Tekenbreedte vergroten  | Alt+Shift+K          | ⌥⇧K      |
+| Tekenbreedte verkleinen | Alt+Shift+J          | ⌥⇧J      |
+| Tekenafstand vergroten  | Alt+Shift+W          | ⌥⇧W      |
+| Tekenafstand verkleinen | Alt+Shift+N          | ⌥⇧N      |
+| Zwarte tekst            | Ctrl+M, K            | ⌃M, K    |
+| Rode tekst              | Ctrl+M, R            | ⌃M, R    |
+| Blauwe tekst            | Ctrl+M, B            | ⌃M, B    |
+| Pruimkleurige tekst     | Ctrl+M, D            | ⌃M, D    |
+| Groene tekst            | Ctrl+M, G            | ⌃M, G    |
+| Gele tekst              | Ctrl+M, Y            | ⌃M, Y    |
+| Turquoise tekst         | Ctrl+M, C            | ⌃M, C    |
+| Witte tekst             | Ctrl+M, W            | ⌃M, W    |
 
 ### Alinea
 
-| Actie                                    | macOS   | Windows / Linux |
-| ---------------------------------------- | ------- | --------------- |
-| Links uitlijnen                          | ⌃⇧L     | Ctrl+Shift+L    |
-| Centreren                                | ⌃⇧C     | Ctrl+Shift+C    |
-| Rechts uitlijnen                         | ⌃⇧R     | Ctrl+Shift+R    |
-| Uitvullen                                | ⌃⇧M     | Ctrl+Shift+M    |
-| Verdelen                                 | ⌃⇧T     | Ctrl+Shift+T    |
-| Regelafstand vergroten                   | ⌥⇧Z     | Alt+Shift+Z     |
-| Regelafstand verkleinen                  | ⌥⇧A     | Alt+Shift+A     |
-| Alinea-opmaak…                           | ⌥T      | Alt+T           |
-| Stijl…                                   | F6      | F6              |
-| Eerste tot en met tiende stijl toepassen | ⌃1 … ⌃0 | Ctrl+1 … Ctrl+0 |
-| Alineanummering                          | ⌃K, N   | Ctrl+K, N       |
+| Actie                                    | Windows / Linux | macOS   |
+| ---------------------------------------- | --------------- | ------- |
+| Links uitlijnen                          | Ctrl+Shift+L    | ⌃⇧L     |
+| Centreren                                | Ctrl+Shift+C    | ⌃⇧C     |
+| Rechts uitlijnen                         | Ctrl+Shift+R    | ⌃⇧R     |
+| Uitvullen                                | Ctrl+Shift+M    | ⌃⇧M     |
+| Verdelen                                 | Ctrl+Shift+T    | ⌃⇧T     |
+| Regelafstand vergroten                   | Alt+Shift+Z     | ⌥⇧Z     |
+| Regelafstand verkleinen                  | Alt+Shift+A     | ⌥⇧A     |
+| Alinea-opmaak…                           | Alt+T           | ⌥T      |
+| Stijl…                                   | F6              | F6      |
+| Eerste tot en met tiende stijl toepassen | Ctrl+1 … Ctrl+0 | ⌃1 … ⌃0 |
+| Alineanummering                          | Ctrl+K, N       | ⌃K, N   |
 
 ### Invoegen
 
-| Actie                              | macOS       | Windows / Linux    |
-| ---------------------------------- | ----------- | ------------------ |
-| Tabel invoegen                     | ⌃N, T       | Ctrl+N, T          |
-| Voetnoot                           | ⌃N, N       | Ctrl+N, N          |
-| Eindnoot                           | ⌃N, E       | Ctrl+N, E          |
-| Koptekst                           | ⌃N, H       | Ctrl+N, H          |
-| Paginanummer                       | ⌃N, P       | Ctrl+N, P          |
-| Afbeelding invoegen                | ⌃N, I       | Ctrl+N, I          |
-| Tekstvak                           | ⌃N, B       | Ctrl+N, B          |
-| Vergelijking                       | ⌃N, M       | Ctrl+N, M          |
-| Bijschrift invoegen                | ⌃N, C       | Ctrl+N, C          |
-| Hyperlink                          | ⌃K, H       | Ctrl+K, H          |
-| Bladwijzer                         | ⌃K, B       | Ctrl+K, B          |
-| Veld invoegen                      | ⌃K, E       | Ctrl+K, E          |
-| Datum-/tijdtekst                   | ⌃K, D       | Ctrl+K, D          |
-| Object, veld of tabel/cel bewerken | ⌃N, K       | Ctrl+N, K          |
-| Symbolen                           | ⌃F10 / ⌥F10 | Ctrl+F10 / Alt+F10 |
+| Actie                              | Windows / Linux    | macOS       |
+| ---------------------------------- | ------------------ | ----------- |
+| Tabel invoegen                     | Ctrl+N, T          | ⌃N, T       |
+| Voetnoot                           | Ctrl+N, N          | ⌃N, N       |
+| Eindnoot                           | Ctrl+N, E          | ⌃N, E       |
+| Koptekst                           | Ctrl+N, H          | ⌃N, H       |
+| Paginanummer                       | Ctrl+N, P          | ⌃N, P       |
+| Afbeelding invoegen                | Ctrl+N, I          | ⌃N, I       |
+| Tekstvak                           | Ctrl+N, B          | ⌃N, B       |
+| Vergelijking                       | Ctrl+N, M          | ⌃N, M       |
+| Bijschrift invoegen                | Ctrl+N, C          | ⌃N, C       |
+| Hyperlink                          | Ctrl+K, H          | ⌃K, H       |
+| Bladwijzer                         | Ctrl+K, B          | ⌃K, B       |
+| Veld invoegen                      | Ctrl+K, E          | ⌃K, E       |
+| Datum-/tijdtekst                   | Ctrl+K, D          | ⌃K, D       |
+| Object, veld of tabel/cel bewerken | Ctrl+N, K          | ⌃N, K       |
+| Symbolen                           | Ctrl+F10 / Alt+F10 | ⌃F10 / ⌥F10 |
 
 ### Tabel
 
-| Actie                 | macOS        | Windows / Linux        |
-| --------------------- | ------------ | ---------------------- |
-| Rij/kolom toevoegen   | ⌥⏎ / ⌥Insert | Alt+Enter / Alt+Insert |
-| Rij/kolom verwijderen | ⌥⌫           | Alt+Delete             |
-| Cel splitsen          | F5 → S       | F5 → S                 |
-| Cellen samenvoegen    | F5 → M       | F5 → M                 |
-| Bloksom               | F5 → ⇧⌘S     | F5 → Ctrl+Shift+S      |
-| Blokgemiddelde        | F5 → ⌃⇧A     | F5 → Ctrl+Shift+A      |
-| Blokproduct           | F5 → ⌃⇧P     | F5 → Ctrl+Shift+P      |
-| Tabel splitsen        | ⌃N, A        | Ctrl+N, A              |
-| Tabellen samenvoegen  | ⌃N, Z        | Ctrl+N, Z              |
-| Berekeningsformule    | ⌃N, F        | Ctrl+N, F              |
+| Actie                 | Windows / Linux        | macOS        |
+| --------------------- | ---------------------- | ------------ |
+| Rij/kolom toevoegen   | Alt+Enter / Alt+Insert | ⌥⏎ / ⌥Insert |
+| Rij/kolom verwijderen | Alt+Delete             | ⌥⌫           |
+| Cel splitsen          | F5 → S                 | F5 → S       |
+| Cellen samenvoegen    | F5 → M                 | F5 → M       |
+| Bloksom               | F5 → Ctrl+Shift+S      | F5 → ⇧⌘S     |
+| Blokgemiddelde        | F5 → Ctrl+Shift+A      | F5 → ⌃⇧A     |
+| Blokproduct           | F5 → Ctrl+Shift+P      | F5 → ⌃⇧P     |
+| Tabel splitsen        | Ctrl+N, A              | ⌃N, A        |
+| Tabellen samenvoegen  | Ctrl+N, Z              | ⌃N, Z        |
+| Berekeningsformule    | Ctrl+N, F              | ⌃N, F        |
 
 ### Tabelberekeningen
 
 Ze werken alleen als de cursor in een lege tabelcel staat. Er zijn aparte toetsen om met de cellen links en met de cellen erboven te rekenen.
 
-| Actie            | macOS | Windows / Linux |
-| ---------------- | ----- | --------------- |
-| Som links        | ⇧⌘H   | Ctrl+Shift+H    |
-| Som boven        | ⌃⇧V   | Ctrl+Shift+V    |
-| Gemiddelde links | ⌃⇧J   | Ctrl+Shift+J    |
-| Gemiddelde boven | ⌃⇧B   | Ctrl+Shift+B    |
-| Product links    | ⌃⇧K   | Ctrl+Shift+K    |
-| Product boven    | ⌃⇧N   | Ctrl+Shift+N    |
+| Actie            | Windows / Linux | macOS |
+| ---------------- | --------------- | ----- |
+| Som links        | Ctrl+Shift+H    | ⇧⌘H   |
+| Som boven        | Ctrl+Shift+V    | ⌃⇧V   |
+| Gemiddelde links | Ctrl+Shift+J    | ⌃⇧J   |
+| Gemiddelde boven | Ctrl+Shift+B    | ⌃⇧B   |
+| Product links    | Ctrl+Shift+K    | ⌃⇧K   |
+| Product boven    | Ctrl+Shift+N    | ⌃⇧N   |
 
 ### Pagina
 
-| Actie                   | macOS | Windows / Linux  |
-| ----------------------- | ----- | ---------------- |
-| Pagina-instelling       | F7    | F7               |
-| Pagina-einde            | ⌃⏎    | Ctrl+Enter       |
-| Kolomeinde              | ⌃⇧⏎   | Ctrl+Shift+Enter |
-| Einde kolominstellingen | ⌃⌥⏎   | Ctrl+Alt+Enter   |
-| Sectie-instellingen     | ⌃N, G | Ctrl+N, G        |
-| Pagina verbergen        | ⌃N, S | Ctrl+N, S        |
+| Actie                   | Windows / Linux  | macOS |
+| ----------------------- | ---------------- | ----- |
+| Pagina-instelling       | F7               | F7    |
+| Pagina-einde            | Ctrl+Enter       | ⌃⏎    |
+| Kolomeinde              | Ctrl+Shift+Enter | ⌃⇧⏎   |
+| Einde kolominstellingen | Ctrl+Alt+Enter   | ⌃⌥⏎   |
+| Sectie-instellingen     | Ctrl+N, G        | ⌃N, G |
+| Pagina verbergen        | Ctrl+N, S        | ⌃N, S |
 
 ### Beeld
 
-| Actie                                     | macOS | Windows / Linux |
-| ----------------------------------------- | ----- | --------------- |
-| Inzoomen                                  | ⌃=    | Ctrl+=          |
-| Uitzoomen                                 | ⌃-    | Ctrl+-          |
-| Aan pagina aanpassen                      | ⌃G, P | Ctrl+G, P       |
-| Aan breedte aanpassen                     | ⌃G, W | Ctrl+G, W       |
-| Zoomen naar 100%                          | ⌃G, Q | Ctrl+G, Q       |
-| Gereedschapskist in- of uitklappen        | ⌃F1   | Ctrl+F1         |
-| Alineamarkeringen tonen of verbergen      | ⌃G, T | Ctrl+G, T       |
-| Controletekens tonen of verbergen         | ⌃G, C | Ctrl+G, C       |
-| Naar het tabblad Start (buiten een tabel) | ⇧⌘H   | Ctrl+Shift+H    |
+| Actie                                     | Windows / Linux | macOS |
+| ----------------------------------------- | --------------- | ----- |
+| Inzoomen                                  | Ctrl+=          | ⌃=    |
+| Uitzoomen                                 | Ctrl+-          | ⌃-    |
+| Aan pagina aanpassen                      | Ctrl+G, P       | ⌃G, P |
+| Aan breedte aanpassen                     | Ctrl+G, W       | ⌃G, W |
+| Zoomen naar 100%                          | Ctrl+G, Q       | ⌃G, Q |
+| Gereedschapskist in- of uitklappen        | Ctrl+F1         | ⌃F1   |
+| Alineamarkeringen tonen of verbergen      | Ctrl+G, T       | ⌃G, T |
+| Controletekens tonen of verbergen         | Ctrl+G, C       | ⌃G, C |
+| Naar het tabblad Start (buiten een tabel) | Ctrl+Shift+H    | ⇧⌘H   |
 
 Een toets als `Ctrl+N,T` betekent: druk op Ctrl+N, laat los en druk dan op T. `F5 → S` betekent: selecteer met F5 een celblok en druk dan op S. `Ctrl+1 … Ctrl+0` staan voor de eerste tot en met tiende stijl van het document; `Ctrl+Alt+1 … Ctrl+Alt+0` passen dezelfde stijlen toe. Met een celblok geselecteerd is `Ctrl+Shift+S` (op macOS `⇧⌘S`) de bloksom; daarbuiten slaat die toets op onder een nieuwe naam.

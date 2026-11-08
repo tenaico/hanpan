@@ -10,6 +10,7 @@
     "./ai-panel-prefs": "./src/ai-panel-prefs.ts",
     "./ai-subscription-login-window": "./src/ai-subscription-login-window.ts",
     "./template-fonts": "./src/template-fonts.ts",
+    "./image-print": "./src/image-print.ts",
     "./tokens.css": "./src/tokens.css",
     "./screentip.css": "./src/screentip.css",
     "./color-picker.css": "./src/color-picker.css",
@@ -23,6 +24,7 @@
     "./ai-usage.css": "./src/ai-usage.css",
     "./image-dialogs.css": "./src/image-dialogs.css",
     "./image-viewer.css": "./src/image-viewer.css",
+    "./gongu-picker.css": "./src/gongu-picker.css",
     "./fonts/*": "./src/fonts/*",
     "./ai-model-picker.css": "./src/ai-model-picker.css"
   },
@@ -31,7 +33,8 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
@@ -39,6 +42,7 @@
     "vitest": "^4.1.11"
   },
   "dependencies": {
+    "@genoffice/hanpan-core": "*",
     "@genoffice/i18n": "*",
     "@genoffice/pptx-render": "*",
     "@genoffice/agent-core": "*",

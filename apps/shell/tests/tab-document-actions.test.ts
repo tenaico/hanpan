@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { WebContents } from 'electron'
 import type { TabKind, TabSummary } from '../src/shared/tabs-api'
-import { runTabDocumentAction, type TabDocumentActionDeps } from '../src/main/tab-document-actions'
+import {
+  runTabDocumentAction,
+  tabDocumentActionSupported,
+  type TabDocumentActionDeps,
+} from '../src/main/tab-document-actions'
 
 function fixture(kind: TabKind) {
   const selected = {
@@ -34,6 +38,13 @@ function fixture(kind: TabKind) {
     printMarkdown: vi.fn(),
     saveHtml: vi.fn(),
     printHtml: vi.fn(),
+    saveHwp: vi.fn(),
+    printHwp: vi.fn(),
+    saveMindmap: vi.fn(),
+    printMindmap: vi.fn(),
+    saveEpub: vi.fn(),
+    saveGraphics: vi.fn(),
+    printGraphics: vi.fn(),
   }
   return { deps, contents }
 }
@@ -110,5 +121,83 @@ describe('document actions from a background tab context menu', () => {
     runTabDocumentAction(deps, 'gone', 'saveAs')
     expect(contents.send).not.toHaveBeenCalled()
     expect(deps.tabs.activateTab).not.toHaveBeenCalled()
+  })
+
+  it('saves and prints the clicked AI 한글 tab through the hwp editor', () => {
+    const { deps, contents } = fixture('hwp')
+    for (const action of ['save', 'saveAs', 'print'] as const)
+      runTabDocumentAction(deps, 'clicked', action)
+    expect(deps.saveHwp).toHaveBeenNthCalledWith(1, contents, 'save')
+    expect(deps.saveHwp).toHaveBeenNthCalledWith(2, contents, 'saveAs')
+    expect(deps.printHwp).toHaveBeenCalledWith(contents)
+  })
+
+  it('saves and prints the clicked mind map', () => {
+    const { deps, contents } = fixture('mindmap')
+    for (const action of ['save', 'saveAs', 'print'] as const)
+      runTabDocumentAction(deps, 'clicked', action)
+    expect(deps.saveMindmap).toHaveBeenNthCalledWith(1, contents, 'save')
+    expect(deps.saveMindmap).toHaveBeenNthCalledWith(2, contents, 'saveAs')
+    expect(deps.printMindmap).toHaveBeenCalledWith(contents)
+  })
+
+  it.each(['photo', 'illust'] as const)('saves and prints the clicked %s tab', (kind) => {
+    const { deps, contents } = fixture(kind)
+    for (const action of ['save', 'saveAs', 'print'] as const)
+      runTabDocumentAction(deps, 'clicked', action)
+    expect(deps.saveGraphics).toHaveBeenNthCalledWith(1, contents, 'save')
+    expect(deps.saveGraphics).toHaveBeenNthCalledWith(2, contents, 'saveAs')
+    expect(deps.saveGraphics).toHaveBeenCalledTimes(2)
+    expect(deps.printGraphics).toHaveBeenCalledWith(contents)
+  })
+
+  it('saves the clicked book and never pretends to print it', () => {
+    const { deps, contents } = fixture('epub')
+    for (const action of ['save', 'saveAs', 'print'] as const)
+      runTabDocumentAction(deps, 'clicked', action)
+    expect(deps.saveEpub).toHaveBeenNthCalledWith(1, contents, 'save')
+    expect(deps.saveEpub).toHaveBeenNthCalledWith(2, contents, 'saveAs')
+    expect(deps.saveEpub).toHaveBeenCalledTimes(2)
+    expect(deps.printGraphics).not.toHaveBeenCalled()
+    expect(contents.send).not.toHaveBeenCalled()
+  })
+})
+
+describe('which tab kinds can save and print from the tab menu', () => {
+  it('lets every document kind save', () => {
+    for (const kind of [
+      'docs',
+      'sheets',
+      'slides',
+      'pdf',
+      'markdown',
+      'html',
+      'mindmap',
+      'hwp',
+      'epub',
+      'photo',
+      'illust',
+    ] as const) {
+      expect(tabDocumentActionSupported(kind, 'save')).toBe(true)
+      expect(tabDocumentActionSupported(kind, 'saveAs')).toBe(true)
+    }
+  })
+
+  it('prints only where the editor has a print workflow', () => {
+    for (const kind of [
+      'docs',
+      'sheets',
+      'slides',
+      'pdf',
+      'markdown',
+      'html',
+      'mindmap',
+      'hwp',
+      'photo',
+      'illust',
+    ] as const)
+      expect(tabDocumentActionSupported(kind, 'print')).toBe(true)
+    for (const kind of ['epub', 'home', 'help'] as const)
+      expect(tabDocumentActionSupported(kind, 'print')).toBe(false)
   })
 })

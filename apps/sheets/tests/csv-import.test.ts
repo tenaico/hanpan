@@ -1,3 +1,4 @@
+import { XMLValidator } from 'fast-xml-parser'
 import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
 
@@ -235,7 +236,8 @@ describe('csvToXlsxBuffer', () => {
     )
     expect(sheet).toContain('<c r="B2" t="inlineStr"><is><t xml:space="preserve">007</t></is></c>')
     expect(sheet).toContain('<c r="B3"><v>42</v></c>')
-    expect(await zip.file('xl/workbook.xml')?.async('text')).toContain('<sheet name="Sheet1"')
+    // a CSV opened as a new workbook starts in Korean like a blank one (0.17 #9)
+    expect(await zip.file('xl/workbook.xml')?.async('text')).toContain('<sheet name="시트1"')
   })
 
   it('rejects an empty file and escapes XML metacharacters', async () => {
@@ -312,9 +314,112 @@ describe('csvToXlsxBufferForOpen', () => {
 describe('blankXlsxBuffer', () => {
   it('produces a one-sheet workbook with an empty grid', async () => {
     const zip = await JSZip.loadAsync(await blankXlsxBuffer())
-    expect(await zip.file('xl/workbook.xml')?.async('text')).toContain('<sheet name="Sheet1"')
     const sheet = await zip.file('xl/worksheets/sheet1.xml')?.async('text')
     expect(sheet).toContain('<dimension ref="A1:A1"/><sheetData></sheetData>')
+  })
+
+  // 0.17 #9: a new workbook starts in Korean — first sheet 시트1, Normal font 맑은 고딕
+  it('names the first sheet 시트1 and sets the Normal font to 맑은 고딕', async () => {
+    const zip = await JSZip.loadAsync(await blankXlsxBuffer())
+    expect(await zip.file('xl/workbook.xml')?.async('text')).toContain('<sheet name="시트1"')
+    const styles = (await zip.file('xl/styles.xml')?.async('text')) ?? ''
+    const firstFont = styles.slice(styles.indexOf('<font>'), styles.indexOf('</font>'))
+    expect(firstFont).toContain('<name val="맑은 고딕"/>')
+    expect(firstFont).toContain('<charset val="129"/>')
+    // a scheme font would be replaced by the theme's Latin face (Calibri)
+    expect(firstFont).not.toContain('<scheme')
+  })
+
+  it('stays a well-formed package', async () => {
+    const zip = await JSZip.loadAsync(await blankXlsxBuffer())
+    for (const name of Object.keys(zip.files).filter((file) => /\.(xml|rels)$/.test(file))) {
+      expect(XMLValidator.validate(await zip.file(name)!.async('text')), name).toBe(true)
+    }
+    const types = await zip.file('[Content_Types].xml')!.async('text')
+    expect(types).toContain('PartName="/xl/styles.xml"')
+  })
+
+  it('keeps a name the caller gives', async () => {
+    const zip = await JSZip.loadAsync(await blankXlsxBuffer('Sheet1'))
+    expect(await zip.file('xl/workbook.xml')?.async('text')).toContain('<sheet name="Sheet1"')
+  })
+
+  // the first sheet's name and the Normal font follow the UI language
+  const firstFontOf = async (lang: string) => {
+    const zip = await JSZip.loadAsync(await blankXlsxBuffer(undefined, lang))
+    const styles = (await zip.file('xl/styles.xml')?.async('text')) ?? ''
+    return {
+      workbook: (await zip.file('xl/workbook.xml')?.async('text')) ?? '',
+      font: styles.slice(styles.indexOf('<font>'), styles.indexOf('</font>')),
+    }
+  }
+  it.each([
+    ['ko', '시트1', '맑은 고딕'],
+    ['vi', 'Trang tính1', 'Arial'],
+    ['ja', 'Sheet1', '游ゴシック'],
+    ['zh', 'Sheet1', '等线'],
+    ['zh-TW', '工作表1', '新細明體'],
+    ['en', 'Sheet1', 'Calibri'],
+    ['de', 'Sheet1', 'Calibri'],
+  ])('a %s UI starts with %s in %s', async (lang, sheet, font) => {
+    const { workbook, font: first } = await firstFontOf(lang)
+    expect(workbook).toContain(`<sheet name="${sheet}"`)
+    expect(first).toContain(`<name val="${font}"/>`)
+    expect(first).not.toContain('<scheme')
+  })
+})
+
+describe('the first sheet of a workbook made from CSV (0.17 #9)', () => {
+  const firstSheetName = async (buffer: Buffer) =>
+    /<sheet name="([^"]*)"/.exec(
+      (await (await JSZip.loadAsync(buffer)).file('xl/workbook.xml')?.async('text')) ?? '',
+    )?.[1]
+
+  it('is 시트1 when the caller names none, on the open path and the AI path', async () => {
+    expect(await firstSheetName((await csvToXlsxBufferForOpen('a,b\n1,2')).buffer)).toBe('시트1')
+    expect(await firstSheetName((await csvToXlsxBufferForOpen('')).buffer)).toBe('시트1')
+    expect(await firstSheetName(await sheetCsvToXlsxBuffer('a,b\r\n'))).toBe('시트1')
+  })
+
+  it('keeps a name the caller gives', async () => {
+    expect(await firstSheetName((await csvToXlsxBufferForOpen('a', 'Sheet1')).buffer)).toBe(
+      'Sheet1',
+    )
+    expect(await firstSheetName(await sheetCsvToXlsxBuffer('a', 'de'))).toBe('de')
+  })
+
+  // the UI language names the first sheet, as it does for a blank workbook
+  it.each([
+    ['vi', 'Trang tính1'],
+    ['zh-TW', '工作表1'],
+    ['en', 'Sheet1'],
+    ['ko', '시트1'],
+  ])('follows a %s UI with %s on the open path and the AI path', async (lang, sheet) => {
+    expect(
+      await firstSheetName(
+        (await csvToXlsxBufferForOpen('a,b\n1,2', undefined, undefined, lang)).buffer,
+      ),
+    ).toBe(sheet)
+    expect(
+      await firstSheetName((await csvToXlsxBufferForOpen('', undefined, undefined, lang)).buffer),
+    ).toBe(sheet)
+    expect(await firstSheetName(await sheetCsvToXlsxBuffer('a,b\r\n', undefined, lang))).toBe(sheet)
+    expect(await firstSheetName(await csvToXlsxBuffer('a,b\r\n1,2', undefined, lang))).toBe(sheet)
+  })
+
+  it('gets the UI language from the sheets main process on every new-workbook path', async () => {
+    const { readFileSync } = await import('node:fs')
+    const main = readFileSync(new URL('../src/main/sheets-main.ts', import.meta.url), 'utf8')
+    const calls =
+      main.match(/(?:csvToXlsxBufferForOpen|sheetCsvToXlsxBuffer)\([^;]*?\)\)?[;\n]/gs) ?? []
+    expect(calls.length).toBeGreaterThanOrEqual(4)
+    for (const call of calls) expect(call).toContain('getUiLang()')
+  })
+
+  it('is not hard-coded as Sheet1 by the sheets main process', async () => {
+    const { readFileSync } = await import('node:fs')
+    const main = readFileSync(new URL('../src/main/sheets-main.ts', import.meta.url), 'utf8')
+    expect(main).not.toMatch(/'Sheet1'/)
   })
 })
 

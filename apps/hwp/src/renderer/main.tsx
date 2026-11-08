@@ -12,10 +12,11 @@ import '@genoffice/ui/ai-scope-quote.css'
 import '@genoffice/ui/dropdown.css'
 import '@genoffice/ui/markdown.css'
 import '@genoffice/ui/ai-panel-prefs.css'
+import '@genoffice/ui/gongu-picker.css'
 import './styles.css'
 import './ai-panel.css'
 import './dialog-theme.css'
-import { applyAiPanelPrefs, installScreenTips } from '@genoffice/ui'
+import { applyAiPanelPrefs, applyKoreanDocFeatures, installScreenTips } from '@genoffice/ui'
 
 installScreenTips()
 
@@ -25,9 +26,10 @@ function applyTheme(theme: UiTheme): void {
 }
 
 void (async () => {
-  const [lang, theme] = await Promise.all([
+  const [lang, theme, koreanDocs] = await Promise.all([
     window.hwpApi.getLanguage().catch(() => 'zh' as const),
     window.hwpApi.getTheme().catch(() => 'system' as const),
+    window.hwpApi.getKoreanDocFeatures?.().catch(() => null) ?? null,
   ])
   document.documentElement.lang = htmlLang(lang as Lang)
   document.documentElement.dir = htmlDir(lang)
@@ -38,6 +40,9 @@ void (async () => {
     .then(applyAiPanelPrefs)
     .catch(() => {})
   window.hwpApi.onAiPanelPrefsChanged(applyAiPanelPrefs)
+  // Hanpan: the tools button follows the shell's Korean document features switch (decision 0091)
+  applyKoreanDocFeatures(koreanDocs)
+  window.hwpApi.onKoreanDocFeaturesChanged?.(applyKoreanDocFeatures)
   createRoot(document.getElementById('root')!).render(
     <LocaleProvider initial={lang}>
       <App />

@@ -152,3 +152,25 @@ export function insertOp(
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
 }
+
+/**
+ * 빈 새 웹 문서에는 삽입할 자리(<body>)가 없다. 리본 삽입이 그냥 실패하지 않도록
+ * 기본 뼈대를 돌려준다. 내용이 조금이라도 있으면 null(그대로 둔다).
+ */
+export function bodySkeletonFor(text: string, lang: string): string | null {
+  if (text.trim() !== '') return null
+  const safeLang = /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(lang) ? lang : 'en'
+  return [
+    '<!doctype html>',
+    `<html lang="${safeLang}">`,
+    '<head>',
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title></title>',
+    '</head>',
+    '<body>',
+    '</body>',
+    '</html>',
+    '',
+  ].join('\n')
+}

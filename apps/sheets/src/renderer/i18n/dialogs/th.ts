@@ -153,7 +153,8 @@ export const th = {
   dlgPivotAddValue: '+ เพิ่มฟิลด์ค่า',
   dlgPivotAddCalc: '+ เพิ่มฟิลด์จากการคำนวณ',
   dlgPivotTargetCell: 'เซลล์เริ่มต้นปลายทาง',
-  dlgPivotTargetPlaceholder: 'เช่น F1',
+  dlgPivotTargetPlaceholder: 'เช่น {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'ขณะแก้ไข เซลล์บนซ้ายของพื้นที่ผลลัพธ์จะไม่เปลี่ยน',
   dlgPivotNote:
     'สร้างเป็น OOXML PivotTable ของจริง หลังบันทึกแล้ว Excel/WPS สามารถจดจำและรีเฟรชได้ทันที',
@@ -634,6 +635,11 @@ export const th = {
   dlgPrintNextPage: 'หน้าถัดไป',
   dlgPrintZoomFit: 'พอดีหน้า',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'พอดีความกว้าง',
+  dlgPrintColumnsSplit: 'คอลัมน์ของ "{sheets}" กว้างเกินหนึ่งหน้า คอลัมน์ทางขวาจะพิมพ์ในหน้าถัดไป',
+  dlgPrintPastEdge: 'บางคอลัมน์เกินขอบขวาของหน้าและจะถูกตัดเมื่อพิมพ์',
+  dlgPrintClippedText:
+    'ข้อความบางส่วนในคอลัมน์ขวาสุดเกินพื้นที่พิมพ์และจะถูกตัด ขยายคอลัมน์นั้นหรือเปิดการตัดข้อความ',
   dlgPrintButton: 'พิมพ์',
   dlgPrintToPdf: 'พิมพ์เป็น PDF',
   dlgPrintPageSetup: 'ตั้งค่าหน้ากระดาษ…',

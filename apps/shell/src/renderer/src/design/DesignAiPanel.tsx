@@ -90,7 +90,7 @@ export function DesignAiPanel(p: {
               >
                 {FORMATS.map((f) => (
                   <option key={f.id} value={f.id}>
-                    {f.name}
+                    {w.formats[f.id] ?? f.name}
                   </option>
                 ))}
               </select>

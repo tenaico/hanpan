@@ -5,8 +5,23 @@
  * HTML) into one folder. The folder is the main process's choice: the opened file's
  * folder, or the one picked with "change".
  */
-import { useDeferredValue, useEffect, useMemo, useState, type DragEvent } from 'react'
-import { markdownToBlocks, type DocBlock } from '@genoffice/hanpan-core/renderer'
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type DragEvent,
+} from 'react'
+import {
+  DOC_THEMES,
+  markdownToBlocks,
+  type DocBlock,
+  type DocTheme,
+  type TextLook,
+  type ParaLook,
+} from '@genoffice/hanpan-core/renderer'
+import { useDialogKeys } from '../dialog-keys'
 import { useI18n } from '../locale'
 
 export type ConvertFormat = 'hwp' | 'hwpx' | 'docx' | 'odt' | 'pdf' | 'html'
@@ -67,28 +82,66 @@ export function headingName(markdown: string): string {
 
 const fileName = (path: string) => path.split(/[\\/]/).pop() ?? path
 
-function Preview(p: { blocks: DocBlock[] }) {
+/**
+ * What was typed stays for the rest of the run (0.17 리뷰 v2 shell #4): closing
+ * the converter with Esc or × used to throw the Markdown away without a word.
+ */
+let draft = { markdown: '', name: '' }
+
+/** tests start from an empty converter */
+export function resetConverterDraft(): void {
+  draft = { markdown: '', name: '' }
+}
+
+/** points on the page → pixels in the preview (report body 15pt ≈ 13.5px) */
+const PREVIEW_PX_PER_PT = 0.9
+
+/** the look a block gets in the written file, drawn in the preview */
+function lookStyle(look: TextLook & ParaLook): CSSProperties {
+  return {
+    fontFamily: `'${look.font}', 'Malgun Gothic', serif`,
+    fontSize: `${(look.size * PREVIEW_PX_PER_PT).toFixed(1)}px`,
+    fontWeight: look.bold ? 700 : undefined,
+    color: look.color,
+    textAlign: look.align,
+    lineHeight: look.lineSpacing ? look.lineSpacing / 100 : undefined,
+  }
+}
+
+function Preview(p: { blocks: DocBlock[]; theme: DocTheme }) {
+  const itemLook = (depth: number) =>
+    p.theme.items[Math.min(depth, p.theme.items.length - 1)] ?? p.theme.body
   return (
-    <div className="hp-conv-page">
+    <div className="hp-conv-page" data-theme={p.theme.id} style={lookStyle(p.theme.body)}>
       {p.blocks.map((b, i) => {
-        const indent = { paddingInlineStart: `${'depth' in b ? b.depth * 1.4 : 0}em` }
+        const indent = {
+          paddingInlineStart: `${'depth' in b ? b.depth * p.theme.indentStep * PREVIEW_PX_PER_PT : 0}px`,
+        }
         switch (b.kind) {
           case 'title':
-            return b.text ? <h1 key={i}>{b.text}</h1> : null
+            return b.text ? (
+              <h1 key={i} style={lookStyle(p.theme.title)}>
+                {b.text}
+              </h1>
+            ) : null
           case 'meta':
             return (
-              <p key={i} className="hp-conv-meta">
+              <p key={i} className="hp-conv-meta" style={lookStyle(p.theme.meta)}>
                 {b.text}
               </p>
             )
           case 'chapter':
-            return <h2 key={i}>{[b.label, b.text].filter(Boolean).join(' ')}</h2>
+            return (
+              <h2 key={i} style={lookStyle(p.theme.chapter)}>
+                {[b.label, b.text].filter(Boolean).join(' ')}
+              </h2>
+            )
           case 'item':
             return (
               <p
                 key={i}
                 className={b.marker ? 'hp-conv-item' : 'hp-conv-item is-head'}
-                style={indent}
+                style={{ ...lookStyle(itemLook(b.depth)), ...indent }}
               >
                 {b.marker && <span className="hp-conv-marker">{b.marker}</span>}
                 {b.text}
@@ -96,13 +149,17 @@ function Preview(p: { blocks: DocBlock[] }) {
             )
           case 'para':
             return (
-              <p key={i} className="hp-conv-para" style={indent}>
+              <p key={i} className="hp-conv-para" style={{ ...lookStyle(p.theme.body), ...indent }}>
                 {b.text}
               </p>
             )
           case 'reference':
             return (
-              <p key={i} className="hp-conv-ref" style={indent}>
+              <p
+                key={i}
+                className="hp-conv-ref"
+                style={{ ...lookStyle(p.theme.reference), ...indent }}
+              >
                 ※ {b.text}
               </p>
             )
@@ -138,12 +195,21 @@ function Preview(p: { blocks: DocBlock[] }) {
 
 export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): void }) {
   const { t } = useI18n()
-  const [markdown, setMarkdown] = useState('')
-  const [name, setName] = useState('')
+  const [markdown, setMarkdownState] = useState(draft.markdown)
+  const [name, setNameState] = useState(draft.name)
+  const setMarkdown = (next: string) => {
+    draft = { ...draft, markdown: next }
+    setMarkdownState(next)
+  }
+  const setName = (next: string) => {
+    draft = { ...draft, name: next }
+    setNameState(next)
+  }
   const [formats, setFormats] = useState<ConvertFormat[]>(storedFormats)
   const [theme, setTheme] = useState<ConvertTheme>('report')
   const [folder, setFolder] = useState('')
   const [busy, setBusy] = useState(false)
+  const dialogRef = useDialogKeys(p.onClose, { canClose: !busy })
   const [outcome, setOutcome] = useState<ConvertOutcome | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [dropping, setDropping] = useState(false)
@@ -222,7 +288,7 @@ export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): voi
         aria-modal="true"
         aria-label={t('hpConvTitle')}
         data-hanpan="md-converter"
-        onKeyDown={(e) => e.key === 'Escape' && !busy && p.onClose()}
+        ref={dialogRef}
       >
         <div className="hp-tpl-head">
           <h2>{t('hpConvTitle')}</h2>
@@ -262,6 +328,8 @@ export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): voi
               onChange={(e) => {
                 setMarkdown(e.target.value)
                 setOutcome(null)
+                // "put Markdown in first" no longer holds once there is text
+                if (e.target.value.trim() && notice === t('hpConvNeedText')) setNotice(null)
               }}
               onDragOver={(e) => {
                 if (!e.dataTransfer.types.includes('Files')) return
@@ -278,7 +346,7 @@ export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): voi
             </div>
             <div className="hp-conv-preview" data-hanpan="md-preview">
               {blocks.length > 0 ? (
-                <Preview blocks={blocks} />
+                <Preview blocks={blocks} theme={DOC_THEMES[theme] ?? DOC_THEMES.report!} />
               ) : (
                 <p className="hp-conv-empty">{t('hpConvPreviewEmpty')}</p>
               )}

@@ -292,8 +292,11 @@ describe('shortcuts and menu commands', () => {
     expect(await pageKey('f', { ctrlKey: true })).toBe(true)
     expect(container.querySelector('.epub-search-input')).not.toBeNull()
     expect(container.querySelector('.epub-replace-row')).toBeNull()
+    const findTitle = container.querySelector('.epub-side-title')!.textContent
     expect(await pageKey('h', { ctrlKey: true })).toBe(true)
     expect(container.querySelector('.epub-replace-row')).not.toBeNull()
+    // the pane says it is the replace pane, not only "find in book"
+    expect(container.querySelector('.epub-side-title')!.textContent).not.toBe(findTitle)
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
     const find = container.querySelector('.epub-search-input') as HTMLInputElement
     const replace = container.querySelector('.epub-replace-input') as HTMLInputElement

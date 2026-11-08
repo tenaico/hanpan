@@ -155,7 +155,8 @@ export const es = {
   dlgPivotAddValue: '+ Agregar campo de valores',
   dlgPivotAddCalc: '+ Agregar campo calculado',
   dlgPivotTargetCell: 'Celda de destino',
-  dlgPivotTargetPlaceholder: 'p. ej. F1',
+  dlgPivotTargetPlaceholder: 'p. ej. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'La celda superior izquierda del área de salida no cambia al editar',
   dlgPivotNote:
     'Crea una tabla dinámica OOXML real que Excel/WPS puede reconocer y actualizar después de guardar.',
@@ -641,6 +642,12 @@ export const es = {
   dlgPrintNextPage: 'Página siguiente',
   dlgPrintZoomFit: 'Ajustar página',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'Ajustar al ancho',
+  dlgPrintColumnsSplit:
+    'Las columnas de «{sheets}» no caben en el ancho de una página; las de la derecha se imprimen en páginas siguientes.',
+  dlgPrintPastEdge: 'Algunas columnas sobrepasan el borde derecho de la página y se cortarán.',
+  dlgPrintClippedText:
+    'Parte del texto de la última columna sobrepasa el área de impresión y se cortará. Amplíe esa columna o active Ajustar texto.',
   dlgPrintButton: 'Imprimir',
   dlgPrintToPdf: 'Imprimir en PDF',
   dlgPrintPageSetup: 'Configurar página…',

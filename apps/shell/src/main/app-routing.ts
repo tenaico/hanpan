@@ -1,4 +1,5 @@
 import type { DocumentTabKind } from '../shared/tabs-api'
+import { OPEN_EXTS } from '../../../graphics/src/shared/kinds'
 
 // shared by the open route, the open-dialog filter and the rename gate so they cannot drift
 const DOCX_RE = /\.docx$/i
@@ -11,10 +12,26 @@ const HTML_RE = /\.html?$/i
 const MINDMAP_RE = /\.xmind$/i
 const HWP_RE = /\.hwpx?$/i
 const EPUB_RE = /\.epub$/i
+// AI Photo and AI Illustration (decision 0093): the graphics editor's own format table
+const PHOTO_RE = new RegExp(`\\.(${OPEN_EXTS.photo.join('|')})$`, 'i')
+const ILLUST_RE = new RegExp(`\\.(${OPEN_EXTS.illust.join('|')})$`, 'i')
 
 const TEXT_RE = /\.(md|markdown|txt|json)$/i
 
-export { DOCX_RE, ODT_RE, XLSX_RE, PPTX_RE, PDF_RE, HTML_RE, MINDMAP_RE, HWP_RE, EPUB_RE, TEXT_RE }
+export {
+  DOCX_RE,
+  ODT_RE,
+  XLSX_RE,
+  PPTX_RE,
+  PDF_RE,
+  HTML_RE,
+  MINDMAP_RE,
+  HWP_RE,
+  EPUB_RE,
+  PHOTO_RE,
+  ILLUST_RE,
+  TEXT_RE,
+}
 
 export function appForPath(path: string): DocumentTabKind | undefined {
   if (DOCX_RE.test(path) || ODT_RE.test(path)) return 'docs'
@@ -26,7 +43,14 @@ export function appForPath(path: string): DocumentTabKind | undefined {
   if (MINDMAP_RE.test(path)) return 'mindmap'
   if (HWP_RE.test(path)) return 'hwp'
   if (EPUB_RE.test(path)) return 'epub'
+  if (PHOTO_RE.test(path)) return 'photo'
+  if (ILLUST_RE.test(path)) return 'illust'
   return undefined
+}
+
+function extOf(name: string): string {
+  const dot = name.lastIndexOf('.')
+  return dot < 0 ? '' : name.slice(dot + 1).toLowerCase()
 }
 
 /** A legal name in an extension no app routes to would turn an openable file into an unopenable one. */
@@ -36,5 +60,7 @@ export function renameStaysInApp(from: string, newName: string): boolean {
   // .docx and .odt share the Word tab but not the bytes: renaming one into the
   // other leaves a file the Word editor reads as corrupt
   if (current === 'docs' && ODT_RE.test(from) !== ODT_RE.test(newName)) return false
+  // a picture renamed to another format keeps its bytes: the app would read it as the wrong kind
+  if ((current === 'photo' || current === 'illust') && extOf(from) !== extOf(newName)) return false
   return appForPath(newName) === current
 }

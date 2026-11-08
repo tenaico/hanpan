@@ -500,6 +500,8 @@ html.genoffice-popover-open .ribbon-tabs {
 
 .ribbon-tab-file:hover,
 .ribbon-tab-file.open {
+  /* .ribbon-tab:hover가 글자를 강조색으로 바꾸면 강조색 바탕에 묻힌다: 흰 글자 유지 */
+  color: var(--docs-on-accent);
   background: var(--word-blue-dark);
 }
 
@@ -524,6 +526,9 @@ html.genoffice-popover-open .ribbon-tabs {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* labels never wrap: the menu widens to the longest item instead */
+  gap: 16px;
+  white-space: nowrap;
   width: 100%;
   border: none;
   background: none;
@@ -1951,7 +1956,13 @@ html.genoffice-popover-open .ribbon-tabs {
   font-family: 'Cambria Math', 'STIX Two Math', serif;
   font-size: 15px;
   max-width: 100%;
-  overflow-x: hidden;
+  /* overflow-x alone made each thumbnail a vertical scroll box (▲▼ arrows on
+     Windows); a wide formula is zoomed to fit by EquationGallery instead */
+  overflow: hidden;
+}
+
+.equation-gallery-formula {
+  display: inline-block;
 }
 
 .equation-gallery-custom {
@@ -2239,8 +2250,10 @@ th.cell-rev-del {
 }
 
 .layout-num > span:first-child {
-  width: 44px;
+  /* one line: "왼쪽 들여쓰기" folded into three clipped lines in a 44px box */
+  min-width: 44px;
   text-align: right;
+  white-space: nowrap;
   color: var(--text-dim);
 }
 
@@ -2301,6 +2314,126 @@ th.cell-rev-del {
   min-width: 0;
 }
 
+/* Home fits common laptop widths (measured, ko UI: the band needed 1551px, so
+   1280/1366 windows showed a scrollbar under the ribbon). Below 1600px the four
+   AI presets stack two by two as small rows (AI group 352 → 280px) and the style
+   gallery may give up its cards, keeping the expander and the Styles pane button
+   (259 → 105px). Below 1366px the presets keep only their icons; the tooltip
+   still names them. */
+@media (max-width: 1599px) {
+  .ribbon:not(.ribbon-compact) .ribbon-group-ai > .ribbon-group-items {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-auto-flow: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .ribbon:not(.ribbon-compact) .ribbon-group-ai .ai-entry:not(.ai-preset) {
+    grid-row: 1 / span 2;
+  }
+
+  .ribbon:not(.ribbon-compact) .ribbon-group-ai .ai-preset {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 2px 6px 2px 2px;
+  }
+
+  .ribbon:not(.ribbon-compact) .ribbon-group-ai .ai-preset .rb-big-icon {
+    flex: none;
+    min-height: 0;
+    margin: 0;
+    padding: 2px;
+  }
+
+  .ribbon:not(.ribbon-compact) .ribbon-group-ai .ai-preset svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .ribbon-group-styles {
+    min-width: 105px;
+  }
+
+  /* Insert: the Pages group stacks as three small rows (Word does the same when
+     narrow), so Equation at the end of the tab stays on screen at 1366 */
+  .ribbon:not(.ribbon-compact) .ribbon-group-pages > .ribbon-group-items {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 1px;
+  }
+
+  .ribbon:not(.ribbon-compact) .ribbon-group-pages .rb-big {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 5px;
+    width: 100%;
+    min-height: 0;
+    padding: 2px 8px 2px 4px;
+  }
+
+  .ribbon:not(.ribbon-compact) .ribbon-group-pages .rb-big-icon {
+    flex: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ribbon:not(.ribbon-compact) .ribbon-group-pages .rb-big-icon svg:first-child {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Table Layout (1514px at 1366): the AutoFit button drops its current-mode
+     line (the menu shows it) and the AI presets keep only their icons */
+  .ribbon:not(.ribbon-compact) .table-autofit-button .table-command-copy small {
+    display: none;
+  }
+
+  .ribbon:not(.ribbon-compact) .table-ribbon-body .ribbon-group-ai .ai-preset > span:last-child {
+    display: none;
+  }
+
+  .ribbon:not(.ribbon-compact) .table-ribbon-body .ribbon-group-ai .ai-preset {
+    padding: 2px;
+  }
+
+  /* Merge / Split / Split Table stack as three 20px rows, like Select / Gridlines / Properties */
+  .ribbon:not(.ribbon-compact) .table-tool-merge > .table-tool-row {
+    display: grid;
+    grid-template-rows: repeat(3, 20px);
+    align-content: center;
+    gap: 2px;
+  }
+
+  .ribbon:not(.ribbon-compact) .table-tool-merge > .table-tool-row > button {
+    min-height: 20px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 1365px) {
+  .ribbon:not(.ribbon-compact) .ribbon-group-ai .ai-preset > span:last-child {
+    display: none;
+  }
+
+  .ribbon:not(.ribbon-compact) .ribbon-group-ai .ai-preset {
+    padding: 2px;
+  }
+}
+
+/* The first card cannot wrap away, so a gallery narrower than one card would
+   show half of it: hide it instead (visibility keeps the overflow measurement,
+   so the expander stays) */
+@container style-gallery (max-width: 73px) {
+  .style-gallery > * {
+    visibility: hidden;
+  }
+}
+
 .style-gallery {
   display: flex;
   flex-wrap: wrap;
@@ -2309,6 +2442,7 @@ th.cell-rev-del {
   gap: 4px;
   flex: 1 1 0;
   min-width: 0;
+  container: style-gallery / inline-size;
   /* one card row tall: wrapped cards land on the hidden second row */
   height: 62px;
   overflow: hidden;
@@ -6982,6 +7116,20 @@ body.docs-crop-active .doc-protected[data-doc-protected='image'] .doc-img-wrap {
   font-family: 'Segoe UI', var(--ui-cjk), sans-serif;
 }
 
+/* The page preview and the print dialog show what prints: no editor-only type
+   chip, dashed box or chip fill (same as @media print; geometry stays because
+   pagination sliced the pages with these boxes in the flow) */
+.pagination-preview .doc-protected-label,
+.print-preview-zoom .doc-protected-label {
+  display: none !important;
+}
+
+.pagination-preview .doc-protected,
+.print-preview-zoom .doc-protected {
+  border-color: transparent !important;
+  background: none !important;
+}
+
 .doc-protected-preview {
   font-size: 12px;
   color: var(--text-dim);
@@ -9182,7 +9330,9 @@ body.docs-crop-active
   gap: 5px;
   height: 24px;
   padding: 0 10px;
-  flex-shrink: 0;
+  /* the model chip keeps its name readable; this pill gives way first */
+  flex-shrink: 1;
+  min-width: 0;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-30);
   background: none;
@@ -9191,6 +9341,18 @@ body.docs-crop-active
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
+}
+
+.ai-track-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-panel .ai-model-chip {
+  flex-shrink: 0;
+  max-width: 160px;
 }
 
 .ai-track-btn:hover {
@@ -9559,10 +9721,51 @@ body.docs-crop-active
   color: var(--accent);
 }
 
+/* 저장 안 된 변경 사항: 점 + 문구 (저장하면 사라진다) */
+.status-unsaved {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-unsaved::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.75;
+}
+
 .status-msg {
   opacity: 0.85;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 내보내기 뒤 상태줄의 [열기] [폴더 열기] */
+.status-export-actions {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.status-link-btn {
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 0 6px;
+  line-height: 16px;
+  cursor: pointer;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.status-link-btn:hover {
+  opacity: 1;
 }
 
 .status-right {
@@ -9707,6 +9910,8 @@ body.docs-crop-active
 }
 
 /* Modal footer buttons: secondary = bg-subtle, primary = black (#232425) */
+/* .modal-btn: the same button inside a dialog's body (chart type, + series) */
+.modal-btn,
 .modal-actions button {
   display: inline-flex;
   align-items: center;
@@ -9723,26 +9928,31 @@ body.docs-crop-active
   transition: all var(--transition-fast);
 }
 
+.modal-btn:hover:not(:disabled),
 .modal-actions button:hover:not(:disabled) {
   background: var(--color-bg-subtle);
   color: var(--color-text-primary);
 }
 
+.modal-btn:active:not(:disabled),
 .modal-actions button:active:not(:disabled) {
   filter: brightness(0.88);
   transform: scale(0.98);
 }
 
+.modal-btn:focus-visible,
 .modal-actions button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--docs-focus-ring);
 }
 
+.modal-btn:disabled,
 .modal-actions button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
+.modal-btn[aria-pressed='true'],
 .modal-actions button.primary,
 .modal-actions .btn-primary {
   border-color: var(--color-btn-primary);
@@ -9750,6 +9960,7 @@ body.docs-crop-active
   color: var(--color-btn-primary-text);
 }
 
+.modal-btn[aria-pressed='true']:hover:not(:disabled),
 .modal-actions button.primary:hover:not(:disabled),
 .modal-actions .btn-primary:hover:not(:disabled) {
   border-color: var(--color-btn-primary-hover);
@@ -12670,6 +12881,25 @@ tr > .page-gap-cut {
   width: min(620px, calc(100vw - 48px));
   max-height: calc(100vh - 64px);
   overflow-y: auto;
+}
+
+/* Tall dialogs at 1366x768: only the body scrolls, OK/Cancel stay pinned to the
+   bottom edge (the footer covers the modal's bottom padding while it sticks) */
+.table-properties-dialog > .modal-actions,
+.modal.protect-dialog > .modal-actions {
+  position: sticky;
+  bottom: -24px;
+  z-index: 1;
+  margin-bottom: -24px;
+  padding: 12px 0 24px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* Korean labels break between words, never mid-word ("배/치") */
+.table-properties-segment span {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .table-properties-header {

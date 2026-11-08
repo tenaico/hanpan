@@ -187,3 +187,27 @@ export function selectAiProvider(
     ...(state === 'error' && status?.error ? { detail: status.error } : {}),
   }
 }
+
+/**
+ * Hanpan: the account a default AI should run on, read the same for every
+ * editor — a subscription `auto` would land on (Claude Code, then ChatGPT,
+ * then Codex, as `auto` orders them), else a key provider the user filled in.
+ * A server entry (`custom`) is never an account: the PC model lives there.
+ * `checking` while a subscription check that would decide has not answered,
+ * null when nothing is signed in. The selection itself is not read: the
+ * caller decides whether the stored choice is still a default it may change.
+ */
+export function accountDefaultProvider(
+  settings: Pick<AiSettings, 'providers' | 'meteredAccepted'>,
+  statuses: AiSubscriptionStatuses,
+): AiProviderId | 'checking' | null {
+  const auto = selectAiProvider({ ...settings, provider: 'auto' }, statuses)
+  if (auto.connected) return auto.provider
+  if (AI_SUBSCRIPTION_PROVIDERS.some((id) => subscriptionStateOf(statuses, id) === 'checking')) {
+    return 'checking'
+  }
+  const key = AI_PROVIDERS.find(
+    (meta) => meta.id !== 'custom' && isKeyProviderConfigured(settings, meta.id),
+  )
+  return key?.id ?? null
+}

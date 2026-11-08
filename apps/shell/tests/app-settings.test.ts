@@ -116,3 +116,12 @@ describe('writeAppSettingThen', () => {
     expect(applied).toEqual([])
   })
 })
+
+describe('document page theme default (0.17 review v2 shell #37)', () => {
+  it('is paper-white until someone picks another', async () => {
+    const { documentThemeOf } = await import('../src/main/app-settings')
+    expect(documentThemeOf(undefined)).toBe('light')
+    expect(documentThemeOf('follow')).toBe('follow')
+    expect(documentThemeOf('dark')).toBe('dark')
+  })
+})

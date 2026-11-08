@@ -210,6 +210,16 @@ vi.mock('../../epub/src/main/epub-main', () => ({
   requestEpubClose: (...args: unknown[]) => requestEpubClose(...(args as [])),
 }))
 
+const createGraphicsView = vi.fn(() => makeFakeView())
+const graphicsIsDirty = vi.fn(() => false)
+const requestGraphicsClose = vi.fn(() => Promise.resolve(true))
+
+vi.mock('../../graphics/src/main/graphics-main', () => ({
+  createGraphicsView: (...args: unknown[]) => createGraphicsView(...(args as [])),
+  graphicsIsDirty: (...args: unknown[]) => graphicsIsDirty(...(args as [])),
+  requestGraphicsClose: (...args: unknown[]) => requestGraphicsClose(...(args as [])),
+}))
+
 import { helpTopicParam, helpViewUrl, TabManager } from '../src/main/tab-manager'
 import type { TabKind } from '../src/shared/tabs-api'
 
@@ -409,6 +419,36 @@ describe('opening tabs', () => {
     expect(manager.activeEpubTab()).toBeUndefined()
   })
 
+  it('opens photo and illustration tabs, with or without a file', () => {
+    const photo = manager.openPhotoTab('/tmp/cat.png')
+    expect(createGraphicsView).toHaveBeenLastCalledWith('photo', '/tmp/cat.png')
+    expect(manager.list().find((t) => t.id === photo)).toMatchObject({
+      kind: 'photo',
+      title: 'cat.png',
+      filePath: '/tmp/cat.png',
+      active: true,
+    })
+    expect(applyMenuFor).toHaveBeenLastCalledWith('photo')
+    expect(manager.findPhotoTabByPath('/tmp/cat.png')).toBe(photo)
+    expect(manager.activeGraphicsTab()).toMatchObject({ id: photo, kind: 'photo' })
+
+    const illust = manager.openIllustTab()
+    expect(createGraphicsView).toHaveBeenLastCalledWith('illust', undefined)
+    expect(manager.list().find((t) => t.id === illust)).toMatchObject({ kind: 'illust' })
+    expect(manager.findIllustTabByPath('/tmp/cat.png')).toBeUndefined()
+    manager.openSlidesTab()
+    expect(manager.activeGraphicsTab()).toBeUndefined()
+  })
+
+  it('lists changed graphics tabs for the close guard', () => {
+    manager.openIllustTab('/tmp/a.svg')
+    const view = lastCreatedView(createGraphicsView)
+    graphicsIsDirty.mockImplementation((id: number) => id === view.webContents.id)
+    expect(manager.dirtyGraphicsTabs().map((t) => t.webContents)).toEqual([view.webContents])
+    graphicsIsDirty.mockReset()
+    graphicsIsDirty.mockReturnValue(false)
+  })
+
   it('titles an untitled mind map with the name the shell supplies for that kind', () => {
     const named = new TabManager(
       shellWindow as never,
@@ -418,6 +458,46 @@ describe('opening tabs', () => {
     )
     const id = named.openMindmapTab()
     expect(named.list().find((t) => t.id === id)?.title).toBe('untitled:mindmap')
+  })
+
+  it('renames still-untitled tabs into the new UI language; saved files keep their names', () => {
+    const names: Record<string, Record<string, string>> = {
+      ko: { hwp: '제목 없는 한글 문서', docs: '제목 없는 문서' },
+      vi: { hwp: 'HWP chưa có tiêu đề', docs: 'Tài liệu chưa có tiêu đề' },
+    }
+    let lang = 'ko'
+    const named = new TabManager(
+      shellWindow as never,
+      () => onChanged(),
+      (kind) => applyMenuFor(kind),
+      (kind) => names[lang]![kind] ?? `untitled:${kind}`,
+    )
+    const hwp = named.openHwpTab()
+    const docs1 = named.openDocsTab()
+    const docs2 = named.openDocsTab()
+    const saved = named.openHwpTab('/tmp/보고서.hwp')
+    // an untitled document that named itself keeps that name
+    const self = named.openDocsTab()
+    named.setTabTitleFor(lastCreatedView(createDocsView).webContents.id, '회의 메모')
+    onChanged.mockClear()
+
+    lang = 'vi'
+    named.retitleUntitled((kind) => names.ko![kind] ?? `untitled:${kind}`)
+
+    const title = (id: string) => named.list().find((t) => t.id === id)?.title
+    expect(title(hwp)).toBe('HWP chưa có tiêu đề')
+    // "제목 없는 문서 2" is the strip numbering a repeated title, so both follow
+    expect(title(docs1)).toBe('Tài liệu chưa có tiêu đề')
+    expect(title(docs2)).toBe('Tài liệu chưa có tiêu đề')
+    expect(title(saved)).toBe('보고서.hwp')
+    expect(title(self)).toBe('회의 메모')
+    expect(title('home')).toBe('Hanpan')
+    expect(onChanged).toHaveBeenCalledTimes(1)
+
+    // nothing left to rename: no change is announced
+    onChanged.mockClear()
+    named.retitleUntitled((kind) => names.ko![kind] ?? `untitled:${kind}`)
+    expect(onChanged).not.toHaveBeenCalled()
   })
 
   it('assigns unique, monotonic tab ids', () => {
@@ -1001,6 +1081,24 @@ describe('file path bookkeeping', () => {
         return lastCreatedView(createEpubView)
       },
     },
+    {
+      kind: 'photo',
+      file: '/tmp/one.psd',
+      renamed: '/tmp/two.psd',
+      open: () => {
+        manager.openPhotoTab('/tmp/one.psd')
+        return lastCreatedView(createGraphicsView)
+      },
+    },
+    {
+      kind: 'illust',
+      file: '/tmp/one.svg',
+      renamed: '/tmp/two.svg',
+      open: () => {
+        manager.openIllustTab('/tmp/one.svg')
+        return lastCreatedView(createGraphicsView)
+      },
+    },
   ]
 
   it.each(RENAMABLE)('a rename reports the $kind view', (c) => {
@@ -1309,12 +1407,7 @@ describe('detach / attach (Open in New Window, tear-off, dock)', () => {
     const record = manager.detachTab(manager.openPdfTab('/tmp/scan.pdf'))!
     manager.openDocsTab('/tmp/b.docx')
     manager.attachTab(record)
-    expect(manager.list().map((t) => t.title)).toEqual([
-      'Hanpan',
-      'a.docx',
-      'b.docx',
-      'scan.pdf',
-    ])
+    expect(manager.list().map((t) => t.title)).toEqual(['Hanpan', 'a.docx', 'b.docx', 'scan.pdf'])
   })
 
   it('installs the HTML-fullscreen listeners once per view across detach and re-attach', () => {
@@ -1352,5 +1445,38 @@ describe('detach / attach (Open in New Window, tear-off, dock)', () => {
     expect(teardownDocsRenderer).toHaveBeenCalledWith(record.view.webContents)
     expect(record.view.webContents.close).not.toHaveBeenCalled()
     expect(manager.list()).toHaveLength(1)
+  })
+})
+
+describe('unsaved-changes dot (0.17 review #1)', () => {
+  it('lists a tab as dirty while its editor reports unsaved changes', async () => {
+    const { noteRendererDirty } = await import('../src/main/tab-dirty-mirror')
+    const docsId = manager.openDocsTab()
+    const slidesId = manager.openSlidesTab()
+    const markdownId = manager.openMarkdownTab()
+    const docsWc = lastCreatedView(createDocsView).webContents
+    expect(manager.list().some((t) => t.dirty)).toBe(false)
+
+    noteRendererDirty(docsWc.id, true)
+    slidesIsDirty.mockImplementation(() => true)
+    markdownIsDirty.mockImplementation(() => true)
+    const dirty = manager
+      .list()
+      .filter((t) => t.dirty)
+      .map((t) => t.id)
+    expect(dirty).toEqual([docsId, slidesId, markdownId])
+
+    noteRendererDirty(docsWc.id, false)
+    expect(manager.list().find((t) => t.id === docsId)?.dirty).toBeUndefined()
+  })
+
+  it('refreshDirty reports a change once, then stays quiet until the next change', () => {
+    manager.openSlidesTab()
+    expect(manager.refreshDirty()).toBe(false)
+    slidesIsDirty.mockImplementation(() => true)
+    expect(manager.refreshDirty()).toBe(true)
+    expect(manager.refreshDirty()).toBe(false)
+    slidesIsDirty.mockImplementation(() => false)
+    expect(manager.refreshDirty()).toBe(true)
   })
 })

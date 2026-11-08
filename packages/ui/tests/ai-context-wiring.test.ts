@@ -24,6 +24,7 @@ const TRANSPORTS = [
   'apps/mindmap/src/renderer/ai/transport.ts',
   'apps/hwp/src/renderer/ai/transport.ts',
   'apps/epub/src/renderer/ai/transport.ts',
+  'apps/graphics/src/renderer/ai/transport.ts',
   'apps/shell/src/renderer/src/KbAskPanel.tsx',
   'apps/epub/src/renderer/translate/model-call.ts',
 ] as const
@@ -40,6 +41,7 @@ const LOOPS = [
   'apps/mindmap/src/renderer/ai/AiPanel.tsx',
   'apps/hwp/src/renderer/ai/AiPanel.tsx',
   'apps/epub/src/renderer/ai/AiPanel.tsx',
+  'apps/graphics/src/renderer/ai/AiPanel.tsx',
   'apps/shell/src/renderer/src/KbAskPanel.tsx',
 ] as const
 
@@ -54,6 +56,7 @@ const NOTICE_PANELS = [
   'apps/mindmap/src/renderer/ai/AiPanel.tsx',
   'apps/hwp/src/renderer/ai/AiPanel.tsx',
   'apps/epub/src/renderer/ai/AiPanel.tsx',
+  'apps/graphics/src/renderer/ai/AiPanel.tsx',
   'apps/shell/src/renderer/src/KbAskPanel.tsx',
 ] as const
 

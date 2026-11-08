@@ -937,6 +937,88 @@ export const DIALOG_THEME_CSS = `
   }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Menu items that are on (0.17 UI/UX review v2, hwp-design #29):
+   보기 > 조판 부호·문단 부호·투명 선·잘림 보기·격자 보기 and 도구 상자. rhwp marks
+   them .active or aria-checked but drew them like a hovered item; Hangul shows a
+   pressed box at the icon, and a check where an item has no icon.
+   ───────────────────────────────────────────────────────────── */
+:root[${DIALOG_THEME_ATTRIBUTE}] .menu-dropdown .md-item:is(.active, [aria-checked="true"]) > .md-icon {
+  outline: 1px solid var(--ieum-dialog-accent);
+  outline-offset: 1px;
+  border-radius: 2px;
+  background-color: var(--ieum-dialog-accent-soft);
+}
+
+:root[${DIALOG_THEME_ATTRIBUTE}] .menu-dropdown .md-item:is(.active, [aria-checked="true"]) > .md-icon:not([class*="icon-"])::after,
+:root[${DIALOG_THEME_ATTRIBUTE}] .menu-dropdown .md-item[aria-checked="true"]:not(:has(> .md-icon))::before {
+  content: '\\2713';
+  color: var(--ieum-dialog-accent);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+:root[${DIALOG_THEME_ATTRIBUTE}] .menu-dropdown .md-item:is(.active, [aria-checked="true"]) > .md-icon:not([class*="icon-"])::after {
+  display: block;
+  text-align: center;
+}
+
+:root[${DIALOG_THEME_ATTRIBUTE}] .menu-dropdown .md-item[aria-checked="true"]:not(:has(> .md-icon))::before {
+  position: absolute;
+  left: 8px;
+  width: 16px;
+  text-align: center;
+}
+
+/* the document history's note while nothing is saved is not an entry to choose (0.17 UX v2 #4) */
+:root[${DIALOG_THEME_ATTRIBUTE}] .history-list .history-empty {
+  border: 0;
+  background: none;
+  color: var(--ieum-dialog-ink-muted);
+  cursor: default;
+}
+
+/* 글자 모양·문단 모양 (0.17 UX v2 #27): 확인/취소 at the bottom as in every other dialog,
+   not in a column on the right */
+:where(:root[${DIALOG_THEME_ATTRIBUTE}]) :is(.cs-dialog, .ps-dialog) > .cs-main-row {
+  flex-direction: column;
+}
+
+:where(:root[${DIALOG_THEME_ATTRIBUTE}]) :is(.cs-dialog, .ps-dialog) > .cs-main-row > .cs-right-col {
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  border-left: 0;
+  border-top: 1px solid var(--ieum-dialog-line);
+}
+
+/* the paragraph shape dialog takes the focus so Esc reaches it (#10): no ring around it */
+:root[${DIALOG_THEME_ATTRIBUTE}] .ps-dialog:focus {
+  outline: none;
+}
+
+/* 편집 용지 at 1366 (0.17 UX v2 #26): the three binding cards stay on one row */
+:where(:root[${DIALOG_THEME_ATTRIBUTE}]) .page-setup-sections > .dialog-section:first-child {
+  flex: 0 0 auto;
+}
+
+:where(:root[${DIALOG_THEME_ATTRIBUTE}]) .page-setup-sections > .dialog-section:last-child .dialog-icon-radio-group {
+  flex-wrap: nowrap;
+}
+
+/* the ▾ of a split button (찾기) read as a dot at 8px in a muted grey (0.17 UX v2 #12) */
+:root[${DIALOG_THEME_ATTRIBUTE}] #icon-toolbar .tb-split-arrow .tb-arrow-icon {
+  font-size: 11px;
+  color: var(--ieum-dialog-ink-muted);
+}
+
+/* in dark, the text colour button's bar shows the colour (black) on a dark bar: a light edge
+   keeps it in sight (0.17 UX v2 #14) */
+:root[${DIALOG_THEME_ATTRIBUTE}][data-theme-effective='dark'] #color-bar {
+  box-shadow: 0 0 0 1px var(--ieum-dialog-line);
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root[${DIALOG_THEME_ATTRIBUTE}] .modal-overlay,
   :root[${DIALOG_THEME_ATTRIBUTE}] .dialog-wrap {
@@ -996,4 +1078,68 @@ export function installDialogTheme(doc = globalThis.document) {
     doc.__ieumDialogThemeObserver = observer
   }
   return on
+}
+
+/**
+ * The editor's icon toolbar scrolls sideways when it does not fit (1366 wide with the AI panel
+ * out), and showed the buttons at its edges cut in half: "꼬리말" as "꼬리", "조판 부호" as
+ * "판호" (0.17 UI/UX review v2, hwp-design #12). A button not wholly inside the visible part,
+ * between the « and » buttons, is hidden until a scroll brings it in whole. A split button
+ * (찾기 with its ▾) counts as one.
+ *
+ * @param {Document} doc
+ * @returns {number} how many buttons are hidden
+ */
+export function markClippedToolbarButtons(doc = globalThis.document) {
+  const viewport = doc?.querySelector('#icon-toolbar .tb-scroll-viewport')
+  if (!viewport) return 0
+  const view = viewport.getBoundingClientRect()
+  let left = view.left
+  let right = view.right
+  const style = doc.defaultView?.getComputedStyle?.bind(doc.defaultView)
+  for (const nav of doc.querySelectorAll('#icon-toolbar .tb-scroll-nav')) {
+    if (nav.hidden || (style && style(nav).visibility === 'hidden')) continue
+    const box = nav.getBoundingClientRect()
+    if (box.width === 0) continue
+    if (box.left < view.left + view.width / 2) left = Math.max(left, box.right)
+    else right = Math.min(right, box.left)
+  }
+  let hidden = 0
+  const items = viewport.querySelectorAll('.tb-scroll-track .tb-btn, .tb-scroll-track .tb-split')
+  for (const item of items) {
+    if (item.classList.contains('tb-btn') && item.closest('.tb-split')) continue
+    const box = item.getBoundingClientRect()
+    const cut = box.width > 0 && (box.left < left - 0.5 || box.right > right + 0.5)
+    item.style.visibility = cut ? 'hidden' : ''
+    if (cut) hidden += 1
+  }
+  return hidden
+}
+
+/**
+ * Keeps markClippedToolbarButtons current: after a scroll (the « » buttons and the wheel), a
+ * resize of the toolbar (the AI or memo panel opening) and the end of the « » buttons' fade.
+ *
+ * @param {Document} doc
+ * @returns {boolean} whether it is installed
+ */
+export function installToolbarClipGuard(doc = globalThis.document) {
+  const viewport = doc?.querySelector('#icon-toolbar .tb-scroll-viewport')
+  const win = doc?.defaultView
+  if (!viewport || !win) return false
+  if (doc.__ieumToolbarClipGuard) return true
+  doc.__ieumToolbarClipGuard = true
+  let frame = 0
+  const schedule = () => {
+    win.cancelAnimationFrame?.(frame)
+    frame = win.requestAnimationFrame
+      ? win.requestAnimationFrame(() => markClippedToolbarButtons(doc))
+      : (markClippedToolbarButtons(doc), 0)
+  }
+  viewport.addEventListener('scroll', schedule, { passive: true })
+  doc.querySelector('#icon-toolbar')?.addEventListener('transitionend', schedule)
+  win.addEventListener('resize', schedule)
+  if (typeof win.ResizeObserver === 'function') new win.ResizeObserver(schedule).observe(viewport)
+  schedule()
+  return true
 }

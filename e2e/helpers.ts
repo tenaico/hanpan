@@ -72,6 +72,9 @@ export async function launchShell(options: LaunchOptions): Promise<LaunchedApp> 
     await writeFile(
       join(userDataDir, 'app-settings.json'),
       JSON.stringify({
+        // Hanpan: the specs drive the Korean cards (HWP, templates, design) on an English UI,
+        // so the Korean document features switch starts on (decision 0091); a spec can pass false
+        koreanDocFeatures: true,
         ...(options.onboardingSeen ? { onboardingSeen: true } : {}),
         ...options.settings,
       }),
@@ -267,4 +270,24 @@ export async function stubAiReady(app: ElectronApplication): Promise<void> {
       if (!wc.isDestroyed()) realSend.call(wc, 'ai:subscription-changed', statuses)
     }
   })
+}
+
+/**
+ * Why the AI Photo and AI Illustration web builds cannot start in `page`, or null when they can.
+ * Both draw through WebGPU or WebGL2 ("A browser with WebGPU or WebGL2 is required"); with
+ * neither (the Linux CI runner: no GPU, launched with --disable-gpu) the app never answers its
+ * page API, so a graphics spec would only time out. Ask the tab's own page: it runs with the
+ * same switches as the web app's frame.
+ */
+export async function graphicsGpuMissing(page: Page): Promise<string | null> {
+  const found = await page.evaluate(async () => {
+    const gpu = (navigator as { gpu?: { requestAdapter(): Promise<unknown> } }).gpu
+    const webgpu = await Promise.resolve(gpu?.requestAdapter())
+      .then(Boolean)
+      .catch(() => false)
+    const webgl2 = Boolean(document.createElement('canvas').getContext('webgl2'))
+    return { webgpu, webgl2 }
+  })
+  if (found.webgpu || found.webgl2) return null
+  return 'no WebGPU adapter and no WebGL2 context here (no GPU): the graphics web apps cannot start'
 }

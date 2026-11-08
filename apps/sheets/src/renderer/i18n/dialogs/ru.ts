@@ -156,7 +156,8 @@ export const ru = {
   dlgPivotAddValue: '+ Добавить поле значений',
   dlgPivotAddCalc: '+ Добавить вычисляемое поле',
   dlgPivotTargetCell: 'Начальная ячейка назначения',
-  dlgPivotTargetPlaceholder: 'напр. F1',
+  dlgPivotTargetPlaceholder: 'напр. {cell}',
+  dlgPivotTargetEmptyHint: 'Leave it empty to place the PivotTable at {cell}, right of the source.',
   dlgPivotTargetLocked: 'При редактировании левая верхняя ячейка области вывода не меняется',
   dlgPivotNote:
     'Создаёт настоящую сводную таблицу OOXML, которую Excel/WPS распознаёт и может обновлять после сохранения.',
@@ -643,6 +644,12 @@ export const ru = {
   dlgPrintNextPage: 'Следующая страница',
   dlgPrintZoomFit: 'По размеру страницы',
   dlgPrintZoomActual: '100%',
+  dlgPrintZoomWidth: 'По ширине',
+  dlgPrintColumnsSplit:
+    'Столбцы листа «{sheets}» не помещаются по ширине страницы; правые столбцы печатаются на следующих страницах.',
+  dlgPrintPastEdge: 'Некоторые столбцы выходят за правый край страницы и будут обрезаны.',
+  dlgPrintClippedText:
+    'Часть текста в крайнем правом столбце выходит за область печати и будет обрезана. Расширьте столбец или включите перенос текста.',
   dlgPrintButton: 'Печать',
   dlgPrintToPdf: 'Печать в PDF',
   dlgPrintPageSetup: 'Параметры страницы…',

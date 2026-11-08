@@ -10,14 +10,7 @@ import {
   type AgentSkill,
   type AgentTransport,
 } from '@genoffice/agent-core'
-import {
-  getProviderAdapter,
-  localModelCapabilities,
-  modelLacksVision,
-  selectAiProvider,
-  type AiSettings,
-  type AiSubscriptionStatuses,
-} from '@genoffice/ai-provider/browser'
+import { localModelCapabilities, type AiSettings } from '@genoffice/ai-provider/browser'
 import { auditSlideLayout } from '@genoffice/pipelines/slides/layout-audit'
 import { createSlidesSkill, formatSlideDump, type DeckAccess } from './slides-skill'
 import qcVisualPrompt from './prompts/qc-visual.md?raw'
@@ -53,24 +46,8 @@ export function isQcEnabled(): boolean {
 /** Cost ceiling per generation run — beyond this the tail pages are skipped (reported to the user) */
 export const QC_MAX_PAGES = 20
 
-/**
- * Unknown providers are treated as text-only: omitting an image is safer than a user-visible 400.
- * `auto` is judged by the subscription provider it resolves to, so `statuses` must be the live
- * ones; with nothing connected there is no provider to send a picture to.
- */
-export function settingsSupportVision(
-  settings: Pick<AiSettings, 'provider' | 'providers' | 'meteredAccepted'>,
-  statuses: AiSubscriptionStatuses = {},
-): boolean {
-  try {
-    const provider = selectAiProvider(settings, statuses).provider
-    if (!provider) return false
-    if (!getProviderAdapter(provider).capabilities.vision) return false
-    return !modelLacksVision(settings.providers?.[provider]?.model ?? '')
-  } catch {
-    return false
-  }
-}
+// shared with the graphics tabs' canvas picture
+export { settingsSupportVision } from '@genoffice/ai-provider/browser'
 
 /** Custom/OpenAI-compatible endpoints can still reject images despite optimistic metadata. */
 export function isUnsupportedImageInputError(error: string): boolean {

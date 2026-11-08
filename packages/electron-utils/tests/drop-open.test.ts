@@ -153,6 +153,12 @@ describe('partitionDropPayload', () => {
     expect(KNOWN_UNSUPPORTED_DOC_RE.test('a.odt')).toBe(false)
   })
 
+  it('routes dropped pictures and vector art as openable (decision 0093)', () => {
+    const result = partitionDropPayload(['/p/cat.png', '/p/CAT.PSD', '/p/logo.svg', '/p/logo.ai'])
+    expect(result.supported).toEqual(['/p/cat.png', '/p/CAT.PSD', '/p/logo.svg', '/p/logo.ai'])
+    expect(result.unsupportedExts).toEqual([])
+  })
+
   it('routes dropped .epub files as openable', () => {
     const result = partitionDropPayload(['/books/novel.epub', '/books/NOVEL2.EPUB'])
     expect(result.supported).toEqual(['/books/novel.epub', '/books/NOVEL2.EPUB'])
@@ -249,7 +255,7 @@ describe('installDropOpenBridge', () => {
     electronMocks.getPathForFile.mockImplementation((f: { name: string }) => `/tmp/${f.name}`)
     const win = install()
     try {
-      const ev = fileDrag(['report.docx', 'plan.md', 'photo.png'])
+      const ev = fileDrag(['report.docx', 'plan.md', 'clip.mp4'])
       win.fire('drop', ev)
       await vi.waitFor(() =>
         expect(electronMocks.send).toHaveBeenCalledWith(DROP_OPEN_CHANNEL, [

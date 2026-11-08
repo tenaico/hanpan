@@ -58,6 +58,10 @@ vi.mock('../../epub/src/main/epub-main', () => ({
   requestEpubClose: (...args: unknown[]) => requestEpubClose(...(args as [])),
 }))
 
+vi.mock('../../graphics/src/main/graphics-main', () => ({
+  requestGraphicsClose: vi.fn(() => Promise.resolve(true)),
+}))
+
 interface TabStub {
   id: string
   webContents: { id: number }
@@ -103,7 +107,16 @@ class FakeWindow {
 }
 
 type DirtyKinds =
-  'sheets' | 'pdf' | 'markdown' | 'html' | 'mindmap' | 'hwp' | 'epub' | 'slides' | 'docs'
+  | 'sheets'
+  | 'pdf'
+  | 'markdown'
+  | 'html'
+  | 'mindmap'
+  | 'hwp'
+  | 'epub'
+  | 'graphics'
+  | 'slides'
+  | 'docs'
 
 function fakeManager(dirty: Partial<Record<DirtyKinds, TabStub[]>> = {}) {
   return {
@@ -118,6 +131,7 @@ function fakeManager(dirty: Partial<Record<DirtyKinds, TabStub[]>> = {}) {
     dirtyHwpTabs: () => dirty.hwp ?? [],
     dirtyOrMemoHwpTabs: () => dirty.hwp ?? [],
     dirtyEpubTabs: () => dirty.epub ?? [],
+    dirtyGraphicsTabs: () => dirty.graphics ?? [],
     dirtySlidesTabs: () => dirty.slides ?? [],
     docsTabs: () => dirty.docs ?? [],
   }

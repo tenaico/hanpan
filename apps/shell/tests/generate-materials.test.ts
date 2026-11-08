@@ -59,6 +59,16 @@ describe('inspectMaterial', () => {
     expect(status.sizeBytes).toBeUndefined()
   })
 
+  it('takes Hangul, ODT and EPUB files as materials (0.17 review v2 shell #6)', async () => {
+    for (const name of ['표샘플.hwp', 'plan.hwpx', 'memo.odt', 'book.epub']) {
+      const path = write(name, 'x')
+      const status = await inspectMaterial(path, {
+        parse: async () => ({ ok: true, kind: 'text', text: '본문' }),
+      })
+      expect(status.problem).toBeUndefined()
+    }
+  })
+
   it('marks a type the reader cannot read as unsupported, without reading it', async () => {
     const path = write('clip.mp4', 'not really a video')
     let parsed = false

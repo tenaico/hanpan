@@ -6,6 +6,9 @@
 
 export const ONBOARDING_STEPS = ['welcome', 'connect', 'done'] as const
 
+/** Settings → General "show the first-run guide again" asks the frame to open it */
+export const SHOW_ONBOARDING_EVENT = 'hanpan:show-onboarding'
+
 export type OnboardingStepId = (typeof ONBOARDING_STEPS)[number]
 
 /** the step where the subscription connection is offered */

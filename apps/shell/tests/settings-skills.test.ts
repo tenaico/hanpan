@@ -648,6 +648,51 @@ describe('Settings → Skills screen', () => {
     })
   })
 
+  it('names builtins in the UI language and folds skills of other programs away (0.17 review v2 #8)', async () => {
+    await renderPane(bridge([codex, plugin, claude, mine, builtin]))
+    expect(row(builtin.id).querySelector('.skl-row-title')?.textContent).toBe('회의록 정리')
+    expect(row(builtin.id).textContent).toContain('meeting-minutes')
+    for (const id of ['user', 'plugin', 'codex']) {
+      const group = host.querySelector<HTMLDetailsElement>(`details[data-group="${id}"]`)
+      expect(group, id).not.toBeNull()
+      expect(group!.open, id).toBe(false)
+    }
+    expect(host.querySelector('details[data-group="builtin"]')).toBeNull()
+  })
+
+  it('takes a Korean name for a new skill as its shown title', async () => {
+    const api = bridge([])
+    await renderPane(api)
+    await click(buttonWithText(ko('create')))
+    const dialog = document.querySelector('[role="dialog"]')!
+    const fields = [
+      ...dialog.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea'),
+    ]
+    const set = async (el: HTMLInputElement | HTMLTextAreaElement, value: string) => {
+      await act(async () => {
+        const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement : HTMLInputElement
+        Object.getOwnPropertyDescriptor(proto.prototype, 'value')!.set!.call(el, value)
+        el.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+    }
+    await set(fields[0]!, '주간 보고')
+    await set(fields[1]!, '주간 보고를 쓴다')
+    await set(fields[2]!, '본문')
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 400))
+    })
+    await flush()
+    expect(api.checkName).not.toHaveBeenCalled()
+    const save = buttonWithText(ko('save'), dialog)!
+    expect(save.disabled).toBe(false)
+    await click(save)
+    expect(api.save).toHaveBeenCalledWith({
+      title: '주간 보고',
+      description: '주간 보고를 쓴다',
+      body: '본문',
+    })
+  })
+
   it('shows a skill read-only with its files and a folder button', async () => {
     const api = bridge([claude])
     await renderPane(api)

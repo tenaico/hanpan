@@ -276,9 +276,12 @@ export async function requestMindmapClose(
   // no map, nothing to save: a view whose file did not open closes without a question
   if (!mayWrite(contents.id)) return true
   if (!dirtyByWc.has(contents.id) || contents.isDestroyed()) return true
+  // name the map: closing the window asks once per dirty tab, and "this
+  // document" alone does not say which one is asking
+  const fileName = basename(savePathByWc.get(contents.id) ?? '')
   const options = {
     type: 'warning' as const,
-    message: tm('closeUnsavedMsg'),
+    message: fileName ? tm('closeUnsavedNamedMsg', { name: fileName }) : tm('closeUnsavedMsg'),
     detail: tm('closeUnsavedDetail'),
     buttons: [tm('btnSave'), tm('btnDontSave'), tm('btnCancel')],
     defaultId: 0,

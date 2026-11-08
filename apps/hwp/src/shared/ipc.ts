@@ -2,7 +2,7 @@ import type { GonguAiAnswer } from '@genoffice/hanpan-core/renderer'
 import type { AiSettings, AiStreamChunk, AiStreamRequest } from '@genoffice/ai-provider'
 import type { AiToolCapabilities } from '@genoffice/ai-search'
 import type { Lang } from '@genoffice/i18n'
-import type { AiPanelPrefs, AutoSaveDefault } from '@genoffice/ui'
+import type { AiPanelPrefs, AutoSaveDefault, GonguPickerApi } from '@genoffice/ui'
 import type { SubscriptionApi } from './subscription-api'
 
 export const HWP_CHANNELS = {
@@ -19,6 +19,17 @@ export const HWP_CHANNELS = {
   printRequest: 'hwp:print-request',
   fileCommand: 'hwp:file-command',
   printPages: 'hwp:print-pages',
+  /** invoke(PngExport) → PrintResult: page pictures drawn by the renderer, written (0.17) */
+  savePngs: 'hwp:save-pngs',
+  /** invoke(html) → PrintResult: the document's HTML written as a Word file (0.17) */
+  exportDocx: 'hwp:export-docx',
+  /**
+   * invoke(path, 'open' | 'folder') → boolean: the export or save notice's buttons open a file
+   * this tab wrote in the app, or show it in its folder (0.17 UI/UX review v2)
+   */
+  revealOutput: 'hwp:reveal-output',
+  /** send(): the About box asks for the app's open-source licence list (0.17 UI/UX review v2) */
+  openLicenses: 'hwp:open-licenses',
   dirtyChanged: 'hwp:dirty-changed',
   closeSaveRequest: 'hwp:close-save-request',
   closeSaveResult: 'hwp:close-save-result',
@@ -69,6 +80,9 @@ export const HWP_CHANNELS = {
   getAiPanelPrefs: 'app:get-ai-panel-prefs',
   setAiPanelPrefs: 'app:set-ai-panel-prefs',
   aiPanelPrefsChanged: 'app:ai-panel-prefs-changed',
+  /** Hanpan: the stored Korean document features switch (true, false, or null when never set) */
+  getKoreanDocFeatures: 'app:get-korean-doc-features',
+  koreanDocFeaturesChanged: 'app:korean-doc-features-changed',
 } as const
 
 /**
@@ -95,10 +109,22 @@ export type UiTheme = 'light' | 'dark' | 'system'
 export type SaveMode = 'save' | 'saveAs'
 
 /** What the editor's File menu asks for (see the plugin's FILE_COMMAND_EVENT). */
-export type FileCommand = SaveMode | PrintMode
+export type FileCommand = 'open' | SaveMode | ExportCommand
 
-/** Where the pages go: a PDF file, or the printer through the system print dialog. */
-export type PrintMode = 'pdf' | 'print'
+/** What a print request asks the tab for: pages (see PrintMode), or the document as Word. */
+export type ExportCommand = PrintMode | 'docx'
+
+/**
+ * Where the pages go: a PDF file, the printer through the system print dialog (after the
+ * app's own preview), PNG files of every page in a folder, or one PNG of the current page.
+ */
+export type PrintMode = 'pdf' | 'print' | 'png' | 'pngPage'
+
+/** Pages drawn as PNG by the renderer: every page ('png') or the current one ('pngPage'). */
+export interface PngExport {
+  mode: 'png' | 'pngPage'
+  pngs: Uint8Array[]
+}
 
 /** One page as the editor draws it for printing: SVG, and its size in CSS pixels. */
 export interface PrintPage {
@@ -320,6 +346,9 @@ export interface HwpApi {
   setDirty(dirty: boolean): void
   /** Hanpan: run a document tool (tidy, check, tone, review) on the open document (absent in an older preload) */
   hanpanTool?(request: HanpanToolRequest): Promise<HanpanToolResult>
+  /** Hanpan: the stored Korean document features switch (decision 0091), null when never set (absent in an older preload) */
+  getKoreanDocFeatures?(): Promise<boolean | null>
+  onKoreanDocFeaturesChanged?(handler: (stored: boolean | null) => void): () => void
   /** Hanpan sync: the main process hands updated bytes for the open document (absent in an older preload) */
   onHanpanReplace?(handler: (bytes: Uint8Array) => void): () => void
   onSaveRequest(handler: (mode: SaveMode) => void): () => void
@@ -329,9 +358,17 @@ export interface HwpApi {
    */
   requestFileCommand(command: FileCommand): void
   /** the File menu or Ctrl+P asks for a PDF or a print */
-  onPrintRequest(handler: (mode: PrintMode) => void): () => void
+  onPrintRequest(handler: (mode: ExportCommand) => void): () => void
   /** make the PDF (asking where) or open the print dialog for these pages */
   printPages(job: PrintJob): Promise<PrintResult>
+  /** the document's HTML (agentBridge.exportHtml) written as a .docx where the user picks */
+  exportDocx(html: string): Promise<PrintResult>
+  /** pictures of the pages, drawn here, written where the user picks */
+  savePngs(request: PngExport): Promise<PrintResult>
+  /** open a file this tab saved or exported in the app ('open'), or show it in its folder */
+  revealOutput(path: string, how: 'open' | 'folder'): Promise<boolean>
+  /** the About box's licence button: the app's open-source licence list */
+  openLicenses(): void
   onCloseSaveRequest(handler: () => void): () => void
   sendCloseSaveResult(ok: boolean): void
   /** the memo editor opened or closed in this tab: main holds back save, close and quit */
@@ -407,6 +444,9 @@ export interface HwpApi {
   imageSearch(query: string, maxResults?: number): Promise<ImageSearchResult>
   /** Hanpan: Gongu pictures for the AI, on the key saved in Settings (docs/plans/gongu-images.md) */
   gonguImageSearch(query: string, maxResults?: number): Promise<GonguAiAnswer>
+  /** Hanpan: the Gongu picker of the Picture choice (the Word editor's picker, @genoffice/ui) */
+  gonguSearch: GonguPickerApi['gonguSearch']
+  gonguPicture: GonguPickerApi['gonguPicture']
   /** AI image generation (hwp-owned channel; the main process picks the backend) */
   generateImage(op: { prompt: string; aspectRatio?: string }): Promise<{
     url?: string

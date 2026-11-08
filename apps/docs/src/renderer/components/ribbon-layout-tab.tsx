@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { type SectionSettings, type TextboxDisplay } from '@genoffice/docx-engine'
 import { WRAP_OPTIONS } from './ContextMenu'
-import { MarginDialog, marginsFitPage, type PageMargins } from './MarginDialog'
+import { MarginDialog, marginsFitPage, type PageMargins, type PageSetup } from './MarginDialog'
 import { LengthInput } from './LengthInput'
 import { PaperSizeDialog } from './PaperSizeDialog'
 import { insertColumnBreak, insertTextWrappingBreak } from '../editor/page-break'
@@ -122,6 +122,19 @@ export const PAPER_SIZES: ReadonlyArray<{ key: string; name: string; w: number; 
   { key: 'envc5', name: 'Envelope C5', w: 9185, h: 12983 },
 ]
 
+/** Letter-first is the US gallery; every other UI language starts from A4 (the ISO sizes lead) */
+export function paperSizesFor(lang: string): typeof PAPER_SIZES {
+  if (lang === 'en') return PAPER_SIZES
+  const iso = PAPER_SIZES.filter((p) => /^(a\d|b\d)$/.test(p.key))
+  const a4First = [...iso.filter((p) => p.key === 'a4'), ...iso.filter((p) => p.key !== 'a4')]
+  return [...a4First, ...PAPER_SIZES.filter((p) => !iso.includes(p))]
+}
+
+/** the margins gallery for the UI language: "Office 2003 default" means nothing to a Korean office */
+export function marginPresetsFor(lang: string): typeof MARGIN_PRESETS {
+  return lang === 'ko' ? MARGIN_PRESETS.filter((m) => m.key !== 'office2003') : MARGIN_PRESETS
+}
+
 export function paperSizeCaption(
   wTwips: number,
   hTwips: number,
@@ -165,7 +178,7 @@ export function LayoutTab({
   mirrorMargins,
   onMirrorMargins,
 }: LayoutTabProps) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   /** ODT document: the features ODT switches off are disabled (odt-gate.ts) */
   const odtOff = useOdtSession()
   const { format } = useMeasurement()
@@ -177,11 +190,19 @@ export function LayoutTab({
   const marginCaption = (m: PageMargins & { mirror?: true }) =>
     `${t('ribbonMarginTop')} ${format(m.top)} · ${t('ribbonMarginBottom')} ${format(m.bottom)} · ${t(m.mirror ? 'ribbonMarginInside' : 'ribbonMarginLeft')} ${format(m.left)} · ${t(m.mirror ? 'ribbonMarginOutside' : 'ribbonMarginRight')} ${format(m.right)}`
 
-  const applyMargins = (m: PageMargins, mirror?: boolean) => {
-    if (!section || !marginsFitPage(m, section.pageWidth, section.pageHeight)) return
+  const applyMargins = (m: PageMargins, mirror?: boolean, page?: PageSetup) => {
+    const target = page ?? section
+    if (!section || !target || !marginsFitPage(m, target.pageWidth, target.pageHeight)) return
     // a user-set value is an ordinary margin, not the file's header-proof fixed one
     onSection({
       ...section,
+      ...(page
+        ? {
+            pageWidth: page.pageWidth,
+            pageHeight: page.pageHeight,
+            orientation: page.orientation,
+          }
+        : {}),
       marginTop: m.top,
       marginRight: m.right,
       marginBottom: m.bottom,
@@ -383,7 +404,7 @@ export function LayoutTab({
                           <span>{marginCaption(lastCustom)}</span>
                         </button>
                       )}
-                      {MARGIN_PRESETS.map((m) => (
+                      {marginPresetsFor(lang).map((m) => (
                         <button
                           key={m.key}
                           className={marginsActive(m) ? 'active' : ''}
@@ -459,7 +480,7 @@ export function LayoutTab({
               <div data-rb-panel="" className="layout-menu layout-menu-scroll">
                 {(() => {
                   const activeKey = paperSizeKeyOf(section.pageWidth, section.pageHeight)
-                  return PAPER_SIZES.map((p) => (
+                  return paperSizesFor(lang).map((p) => (
                     <button
                       key={p.key}
                       className={activeKey === p.key ? 'active' : ''}
@@ -707,8 +728,9 @@ export function LayoutTab({
           mirrorOff={odtOff}
           pageWidth={section.pageWidth}
           pageHeight={section.pageHeight}
-          onApply={(m, mirror) => {
-            applyMargins(m, mirror)
+          orientation={section.orientation}
+          onApply={(m, mirror, page) => {
+            applyMargins(m, mirror, page)
             localStorage.setItem(LAST_CUSTOM_MARGINS_KEY, JSON.stringify(m))
           }}
           onClose={() => setMarginDialog(false)}

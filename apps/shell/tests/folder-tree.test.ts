@@ -61,7 +61,7 @@ describe('listFolder', () => {
     mkdirSync(join(root, 'node_modules'))
     touch('report.docx')
     touch('notes.md')
-    touch('image.png')
+    touch('archive.zip')
     touch('~$report.docx')
     touch('.DS_Store')
     touch('Thumbs.db')
@@ -109,7 +109,7 @@ describe('listFolder', () => {
     touch('notes.md')
     touch('notes.txt')
     touch('data.json')
-    touch('photo.png')
+    touch('clip.mp4')
 
     expect(
       listFolder(root, new Set())
@@ -122,7 +122,7 @@ describe('listFolder', () => {
   it('lists mind map files', () => {
     touch('plan.xmind')
     touch('PLAN2.XMIND')
-    touch('photo.png')
+    touch('clip.mp4')
 
     expect(
       listFolder(root, new Set())
@@ -135,7 +135,7 @@ describe('listFolder', () => {
   it('lists books', () => {
     touch('novel.epub')
     touch('NOVEL2.EPUB')
-    touch('photo.png')
+    touch('archive.zip')
 
     expect(
       listFolder(root, new Set())
@@ -143,6 +143,19 @@ describe('listFolder', () => {
         .sort(),
     ).toEqual(['NOVEL2.EPUB', 'novel.epub'])
     expect(isSupportedTreeFile('novel.epub')).toBe(true)
+  })
+
+  it('lists photos and illustrations (decision 0093)', () => {
+    touch('cat.PNG')
+    touch('cat.psd')
+    touch('logo.svg')
+    touch('logo.vectorcraft')
+    touch('archive.zip')
+    expect(
+      listFolder(root, new Set())
+        .files.map((f) => f.name)
+        .sort(),
+    ).toEqual(['cat.PNG', 'cat.psd', 'logo.svg', 'logo.vectorcraft'])
   })
 })
 

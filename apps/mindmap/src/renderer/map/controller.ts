@@ -143,8 +143,19 @@ export interface TopicInfo {
 const ZOOM_MIN = 0.2
 const ZOOM_MAX = 3
 const ZOOM_STEP = 0.1
+/** How much of the screen a presented map or branch may take. */
+const PRESENT_FILL = 0.9
 /** How long the map is left alone before a change nobody reported is looked for. */
 const QUIET_SYNC_DELAY_MS = 300
+/** Room kept between a topic brought into view and the edge of the map, in screen pixels. */
+const VIEW_MARGIN = 24
+/** The library's steps after which the topic they made or named is brought into view. */
+const REVEALED_OPERATIONS: ReadonlySet<string> = new Set([
+  'addChild',
+  'insertSibling',
+  'insertParent',
+  'finishEdit',
+])
 
 export class MapController {
   readonly mind: MindElixirInstance
@@ -1084,6 +1095,57 @@ export class MapController {
     this.mind.scaleFit()
   }
 
+  /** Back to the zoom the map had before a presentation, with the map in the middle. */
+  restoreView(scale: number): void {
+    this.mind.scale(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, scale)))
+    this.mind.toCenter()
+  }
+
+  /** How many steps a presentation of this sheet has after the whole map: one per main topic. */
+  get presentSteps(): number {
+    return this.mind.nodeData.children?.length ?? 0
+  }
+
+  /**
+   * One step of a presentation. Step 0 is the whole map, made as large as the
+   * screen allows (the library's fit only ever makes a map smaller, so on a
+   * large screen the map stood small in the middle). Step n is the n-th main
+   * topic with everything under it, made as large as the screen allows and
+   * brought to the middle.
+   */
+  presentStep(step: number): void {
+    const mind = this.mind
+    mind.scaleFit()
+    const view = mind.container
+    const fill = (width: number, height: number): number =>
+      Math.min(
+        ZOOM_MAX,
+        PRESENT_FILL * Math.min(view.clientWidth / width, view.clientHeight / height),
+      )
+    if (step <= 0 || view.clientWidth === 0) {
+      const whole = mind.nodes
+      if (whole.offsetWidth === 0 || whole.offsetHeight === 0) return
+      const scale = fill(whole.offsetWidth, whole.offsetHeight)
+      if (scale > mind.scaleVal) mind.scale(scale)
+      return
+    }
+    const main = mind.nodeData.children?.[step - 1]
+    const branch = main ? this.#element(main.id)?.closest('me-wrapper') : null
+    if (!branch) return
+    const before = branch.getBoundingClientRect()
+    if (before.width === 0 || before.height === 0) return
+    // the rectangle is on screen, at the scale the map has now
+    mind.scale(
+      Math.max(ZOOM_MIN, fill(before.width / mind.scaleVal, before.height / mind.scaleVal)),
+    )
+    const at = branch.getBoundingClientRect()
+    const box = view.getBoundingClientRect()
+    mind.move(
+      box.left + box.width / 2 - (at.left + at.width / 2),
+      box.top + box.height / 2 - (at.top + at.height / 2),
+    )
+  }
+
   /** The texts changed (another language): new topics, new summaries and the context menu follow. */
   setStrings(strings: MapStrings): void {
     this.#strings = strings
@@ -1383,14 +1445,71 @@ export class MapController {
     }
   }
 
+  /**
+   * Both sides: the main topics stand as reopening the file draws them
+   * (`viewToMind`: the first half to the right, the rest to the left, in file
+   * order). The library puts a new main topic on whichever side has fewer and
+   * a sibling on its neighbour's side, so without this a map came back from
+   * its file with branches on the other side. The topics are moved, not drawn
+   * again, so a topic being named keeps its edit box.
+   */
+  /**
+   * A topic just added or being named stands wholly inside the map: the map is
+   * moved just enough, with a margin. The library only moves when a topic is
+   * almost all outside, so a new topic half under the AI panel stayed there.
+   */
+  #keepInView(topicId: string): void {
+    const topic = this.#element(topicId)
+    if (!topic) return
+    const box = this.mind.container.getBoundingClientRect()
+    const at = topic.getBoundingClientRect()
+    if (box.width === 0 || box.height === 0) return
+    const shift = (start: number, end: number, from: number, to: number): number => {
+      if (end - start > to - from - 2 * VIEW_MARGIN) return 0
+      if (end > to - VIEW_MARGIN) return to - VIEW_MARGIN - end
+      if (start < from + VIEW_MARGIN) return from + VIEW_MARGIN - start
+      return 0
+    }
+    const dx = shift(at.left, at.right, box.left, box.right)
+    const dy = shift(at.top, at.bottom, box.top, box.bottom)
+    if (dx !== 0 || dy !== 0) this.mind.move(dx, dy)
+  }
+
+  #balanceSides(): void {
+    const mind = this.mind
+    if (mind.direction !== 2 || this.#structure !== 'map') return
+    const lhs = mind.map.querySelector('.lhs')
+    const rhs = mind.map.querySelector('.rhs')
+    if (!lhs || !rhs) return
+    const mains = mind.nodeData.children ?? []
+    const right = Math.ceil(mains.length / 2)
+    const wrappers = mains.map((main) => this.#element(main.id)?.closest('me-wrapper') ?? null)
+    if (wrappers.some((wrapper) => wrapper === null)) return
+    const want = (side: number) => wrappers.filter((_w, at) => (at < right ? 1 : 0) === side)
+    const same = (box: Element, list: (Element | null)[]) =>
+      box.children.length === list.length && list.every((w, at) => box.children[at] === w)
+    mains.forEach((main, at) => {
+      main.direction = at < right ? 1 : 0
+    })
+    if (same(rhs, want(1)) && same(lhs, want(0))) return
+    for (const wrapper of want(1)) rhs.appendChild(wrapper!)
+    for (const wrapper of want(0)) lhs.appendChild(wrapper!)
+    mind.linkDiv()
+  }
+
   #onOperation = (operation: Operation): void => {
     // Opening the edit box changes nothing yet, and the library records no step for it.
     if (operation.name === 'beginEdit') {
       this.#dressEditBox(operation.obj.id)
+      this.#keepInView(operation.obj.id)
       return
     }
     // The session recorded this step and the screen was drawn from it: nothing to reconcile.
     if (this.#recordedBySession) return
+    this.#balanceSides()
+    if (REVEALED_OPERATIONS.has(operation.name) && 'obj' in operation && operation.obj) {
+      this.#keepInView((operation.obj as { id: string }).id)
+    }
     const cut = this.#cutPending
     this.#cutPending = null
     if (operation.name === 'removeSummary') this.#removedSummaries.add(operation.obj.id)

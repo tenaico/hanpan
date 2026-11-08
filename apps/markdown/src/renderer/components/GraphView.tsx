@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactElement } from 'react'
 import { useI18n } from '../i18n/locale'
+import { useEscapeClose } from './use-escape-close'
 import { layoutGraph, type LayoutPoint } from './graph-layout'
 import type { WikiGraph } from '../../shared/ipc'
 
@@ -35,6 +36,8 @@ export function GraphView({
   onOpen: (path: string) => void
 }): ReactElement {
   const { t } = useI18n()
+  const overlayRef = useRef<HTMLDivElement>(null)
+  useEscapeClose(onClose, overlayRef)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const drawRef = useRef<() => void>(() => {})
@@ -227,7 +230,14 @@ export function GraphView({
   }
 
   return (
-    <div className="graph-overlay" role="dialog" aria-label={t('graph')}>
+    <div
+      className="graph-overlay"
+      ref={overlayRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('graph')}
+    >
       <div className="graph-head">
         <span className="graph-title">{t('graph')}</span>
         {graph?.truncated === true && (

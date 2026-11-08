@@ -151,7 +151,7 @@ describe('the reveal entry', () => {
     const reveal = index.indexOf('app.exit(await runRevealEntry(secretCodec))')
     expect(reveal).toBeGreaterThan(0)
     expect(reveal).toBeLessThan(index.indexOf('app.requestSingleInstanceLock('))
-    expect(reveal).toBeLessThan(index.indexOf('installRendererProtocol({'))
+    expect(reveal).toBeLessThan(index.indexOf('installRendererProtocol('))
     expect(index.indexOf('setAiSecretCodec(secretCodec)')).toBeLessThan(reveal)
   })
 })

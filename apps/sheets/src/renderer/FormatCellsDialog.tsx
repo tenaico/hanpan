@@ -7,7 +7,7 @@ import { draftFromSelection, formatCellsCommands, type FormatCellsDraft } from '
 import { useI18n, type StringKey } from './i18n/locale'
 import {
   clampDecimals,
-  CURRENCY_SYMBOLS,
+  currencySymbolsFor,
   datePatterns,
   FRACTION_PATTERNS,
   NEGATIVE_STYLES,
@@ -147,7 +147,7 @@ export function FormatCellsDialog({
     setDraft((previous) => ({ ...previous, [key]: value }))
 
   const [numOptions, setNumOptions] = useState<NumfmtOptions>(() =>
-    numfmtOptionsOf(initial.pattern),
+    numfmtOptionsOf(initial.pattern, lang),
   )
   const updateNumfmt = (patch: Partial<NumfmtOptions>): void => {
     const next = { ...numOptions, ...patch }
@@ -253,7 +253,7 @@ export function FormatCellsDialog({
                           value={numOptions.symbol}
                           options={[
                             { value: '', label: t('dlgFcSymbolNone') },
-                            ...CURRENCY_SYMBOLS.map((symbol) => ({
+                            ...currencySymbolsFor(lang).map((symbol) => ({
                               value: symbol,
                               label: symbol,
                             })),
@@ -301,7 +301,7 @@ export function FormatCellsDialog({
                   <div className="numfmt-field">
                     {t('dlgFcTypeLabel')}
                     <div className="numfmt-list" role="listbox" aria-label={t('dlgFcTypeLabel')}>
-                      {(numOptions.category === 'date' ? datePatterns() : TIME_PATTERNS).map(
+                      {(numOptions.category === 'date' ? datePatterns(lang) : TIME_PATTERNS).map(
                         (candidate) => {
                           const key = numOptions.category === 'date' ? 'datePattern' : 'timePattern'
                           return (

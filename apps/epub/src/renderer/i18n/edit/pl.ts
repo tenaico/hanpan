@@ -6,6 +6,7 @@ export const pl = {
   editBold: 'Pogrubienie',
   editItalic: 'Kursywa',
   editReplace: 'Zamień',
+  editFindReplaceTitle: 'Znajdź i zamień',
   editReplaceWith: 'Zamień na',
   editReplaceOne: 'Zamień',
   editReplaceAll: 'Zamień wszystko',

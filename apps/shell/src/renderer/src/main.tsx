@@ -9,7 +9,7 @@ import '@genoffice/ui/dropdown.css'
 import '@genoffice/ui/ai-usage.css'
 import './home.css'
 import './tabbar.css'
-import { installScreenTips } from '@genoffice/ui'
+import { applyKoreanDocFeatures, installScreenTips } from '@genoffice/ui'
 
 installScreenTips()
 
@@ -27,7 +27,11 @@ void Promise.all([
   // if the flag is unreadable, skip onboarding rather than block the home screen
   window.aiOffice.onboardingSeen().catch(() => true),
   window.aiOffice.getTheme().catch(() => 'system' as const),
-]).then(([lang, onboardingSeen, theme]) => {
+  // Hanpan: the Korean document features switch, applied before Home's first paint
+  window.aiOffice.getKoreanDocFeatures?.().catch(() => null) ?? null,
+]).then(([lang, onboardingSeen, theme, koreanDocs]) => {
+  applyKoreanDocFeatures(koreanDocs)
+  window.aiOffice.onKoreanDocFeaturesChanged?.(applyKoreanDocFeatures)
   document.documentElement.lang = htmlLang(lang)
   document.documentElement.dir = htmlDir(lang)
   // the window (taskbar) title follows the page title

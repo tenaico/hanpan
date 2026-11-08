@@ -75,6 +75,8 @@ export const cs = {
   usageWindowFiveHour: '5hodinový limit',
   usageWindowSevenDay: '7denní limit',
   noticeTitle: 'Než začnete AI používat s předplatným',
+  noticeSummary: 'Dokumenty a konverzace se odesílají do Anthropic nebo OpenAI pod vaším účtem.',
+  noticeMore: 'Podrobnosti',
   noticeSend:
     'Obsah dokumentu a konverzace se odesílají společnosti Anthropic nebo OpenAI pod vaším vlastním účtem. Každý požadavek nese také název, nadpis a popis každé dovednosti s nastavením „Rozhoduje AI“; odesílají se také použité dovednosti a soubory dovedností, které AI přečte.',
   noticeTraining:

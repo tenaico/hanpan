@@ -57,7 +57,8 @@ export const ar = {
     'نسخ التنسيق (انقر لنسخ التنسيق وتطبيقه؛ ⌘⇧C نسخ التنسيق / ⌘⇧V لصق التنسيق)',
   ribbonGroupSlides: 'شرائح',
   ribbonNewSlide: 'شريحة جديدة',
-  ribbonNewSlideTip: 'شريحة فارغة جديدة (تحتفظ بخلفية تخطيط الشريحة الحالية)',
+  ribbonNewSlideTip:
+    "New slide (Title and Content after a title slide, otherwise the current slide's layout)",
   ribbonChooseLayout: 'اختيار التخطيط',
   ribbonChooseLayoutNew: 'شريحة جديدة بتخطيط',
   ribbonChooseLayoutChange: 'تغيير تخطيط الشريحة الحالية',
@@ -774,4 +775,8 @@ export const ar = {
   ribbonZoomSectionItem: 'الشريحة {n} المقطع {k}: {name}',
   ribbonZoomSelectedSlides: 'تم تحديد {n} شرائح',
   ribbonZoomSelectedSections: 'تم تحديد {n} مقاطع',
+  ribbonTabCollapseTip: 'Double-click to collapse the ribbon ({key})',
+  ribbonAnimSelectFirst: 'First select the object to animate',
+  ribbonSpellCheckStarted:
+    'Spell check started in the AI pane. It reports "No errors found" or "N fixed" when done.',
 } satisfies Record<keyof typeof zh, string>

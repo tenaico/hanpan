@@ -12,6 +12,8 @@ const handlers = new Map<string, Handler>()
 const webContents = { id: 7, setWindowOpenHandler: vi.fn() }
 
 vi.mock('electron', () => ({
+  app: { getPath: () => '/home/me/Documents' },
+  screen: { getPrimaryDisplay: () => ({ workArea: { x: 0, y: 0, width: 1920, height: 1040 } }) },
   BrowserWindow: class {
     webContents = webContents
     isDestroyed = () => false
