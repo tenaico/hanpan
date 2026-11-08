@@ -250,3 +250,28 @@ describe("the shell's ☰ menu for hwp tabs", () => {
     expect(menu.indexOf("'pdf'")).toBeLessThan(menu.indexOf("'docx'"))
   })
 })
+
+describe('the preview page picture', () => {
+  /**
+   * 0.17 점검 #30: nested-form.hwp의 "합계" 칸에 빨간 세로 표시가 보였다. 쪽 SVG에는 검은
+   * 글자뿐이고(커서·조판 부호는 인쇄용 그림에 없다), 그 색은 Windows가 불투명한 층에 글자를
+   * 그릴 때 쓰는 LCD(서브픽셀) 다듬기가 "계"의 세로획 옆에 남긴 붉은·푸른 테두리였다. 쪽 그림을
+   * 따로 합성되는 층에 두면 회색 다듬기로 그려진다(빌드한 앱에서 색 섞인 점 8154 → 251, 남은
+   * 것은 글자 밖).
+   */
+  it('is drawn on its own layer, so its text is not tinted by subpixel smoothing', () => {
+    const css = readFileSync(join(here, '..', 'src', 'renderer', 'styles.css'), 'utf8')
+    const rule = /\.hwp-preview-page\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+    expect(rule).toMatch(/will-change:\s*transform/)
+  })
+
+  it('carries no caret or control marks: only the document is drawn', () => {
+    const doc = fixture('nested-form.hwp')
+    doc.setShowControlCodes(true)
+    doc.setShowParagraphMarks(true)
+    doc.setShowTransparentBorders(true)
+    const svg = doc.renderPageSvgWithProfile(0, 'print')
+    const colors = new Set(svg.match(/(?:fill|stroke)="#[0-9a-fA-F]{6}"/g))
+    expect([...colors].sort()).toEqual(['fill="#000000"', 'fill="#ffffff"', 'stroke="#000000"'])
+  })
+})
