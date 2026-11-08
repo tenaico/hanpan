@@ -784,6 +784,35 @@ for lang, (_title, _intro, sections) in T.items():
     # right after sending a map, before keeping map and document in step
     sections.insert(1, (heading, 'ul', [item.format(**labels) for item in items]))
 
+# PowerPoint with the AI: the slides are written in the chosen style (slide-writer.ts)
+SLIDE_AI = {
+ 'ko': 'PPT에서 **AI가 스타일에 맞춰 슬라이드 글 쓰기**를 고르면 고른 스타일의 말투로 제목, 화면 문장, 근거 줄, 발표자 노트를 써 줍니다. **청중**을 적으면 그 사람들에게 맞춥니다. 마인드맵에 없는 숫자나 이름은 지어내지 않고, 확인할 것은 발표자 노트에 남깁니다.',
+ 'en': 'For PowerPoint, **Let the AI write the slides in this style** writes the titles, slide lines, supporting lines and speaker notes in the chosen style; fill in **Audience** to aim them at the people you will present to. Figures and names the map does not hold are never made up, and what needs checking goes to the speaker notes.',
+ 'zh': '发送到 PPT 时选择 **由 AI 按此风格撰写幻灯片内容**，AI 会按所选风格撰写标题、页面文字、依据和演讲者备注；填写 **听众** 可让内容面向这些人。导图中没有的数字和名称不会被编造，需要核实的内容放在演讲者备注里。',
+ 'zh-TW': '傳送到 PPT 時選擇 **由 AI 依此風格撰寫投影片內容**，AI 會依所選風格撰寫標題、頁面文字、依據和演講者備忘稿；填寫 **聽眾** 可讓內容針對這些人。心智圖中沒有的數字和名稱不會被編造，需要確認的內容放在演講者備忘稿裡。',
+ 'ja': 'PPT で **AI がこのスタイルでスライドの文章を書く** を選ぶと、選んだスタイルの口調でタイトル・スライドの文・根拠・発表者ノートを書きます。**聞き手** を入れるとその人たちに合わせます。マップにない数字や名前は作らず、確認が必要なことは発表者ノートに残します。',
+ 'fr': "Pour PowerPoint, **Laisser l'IA rédiger les diapositives dans ce style** écrit les titres, les lignes, les justifications et les notes de l'orateur dans le style choisi ; remplissez **Public** pour viser les personnes devant qui vous présentez. Les chiffres et les noms absents de la carte ne sont jamais inventés, et ce qui doit être vérifié va dans les notes.",
+ 'de': 'Bei PowerPoint schreibt **Die KI schreibt die Folien in diesem Stil** Titel, Folienzeilen, Belege und Sprechernotizen im gewählten Stil; tragen Sie unter **Publikum** ein, für wen Sie präsentieren. Zahlen und Namen, die nicht in der Karte stehen, werden nie erfunden, und was zu prüfen ist, steht in den Sprechernotizen.',
+ 'es': 'En PowerPoint, **Que la IA escriba las diapositivas en este estilo** redacta los títulos, las líneas, los argumentos y las notas del orador en el estilo elegido; rellena **Público** para dirigirlos a quienes vas a presentar. Nunca inventa cifras ni nombres que no estén en el mapa, y lo que hay que comprobar va a las notas del orador.',
+ 'it': "Per PowerPoint, **Lascia che l'IA scriva le slide in questo stile** scrive titoli, righe, motivazioni e note del relatore nello stile scelto; compila **Pubblico** per rivolgerle alle persone a cui presenterai. Numeri e nomi che la mappa non contiene non vengono mai inventati, e ciò che va verificato finisce nelle note del relatore.",
+ 'pt': 'No PowerPoint, **Deixar a IA escrever os slides neste estilo** escreve títulos, linhas, justificativas e notas do apresentador no estilo escolhido; preencha **Público** para direcioná-los a quem vai assistir. Números e nomes que o mapa não tem nunca são inventados, e o que precisa ser conferido vai para as notas do apresentador.',
+ 'nl': "Bij PowerPoint schrijft **Laat de AI de dia’s in deze stijl schrijven** de titels, dia-regels, onderbouwing en sprekersnotities in de gekozen stijl; vul **Publiek** in om ze op uw toehoorders af te stemmen. Cijfers en namen die niet in de kaart staan worden nooit verzonnen, en wat gecontroleerd moet worden komt in de sprekersnotities.",
+ 'pl': 'W PowerPoincie **Niech AI napisze slajdy w tym stylu** pisze tytuły, wiersze slajdów, uzasadnienia i notatki prelegenta w wybranym stylu; wpisz **Odbiorcy**, aby dopasować je do słuchaczy. Liczby i nazwy, których nie ma na mapie, nigdy nie są wymyślane, a to, co trzeba sprawdzić, trafia do notatek prelegenta.',
+ 'cs': 'U PowerPointu **Nechat AI napsat snímky v tomto stylu** napíše nadpisy, řádky snímků, zdůvodnění a poznámky řečníka ve zvoleném stylu; vyplňte **Publikum**, aby byly psané pro vaše posluchače. Čísla a jména, která v mapě nejsou, se nikdy nevymýšlejí, a co je třeba ověřit, jde do poznámek řečníka.',
+ 'id': 'Untuk PowerPoint, **Biarkan AI menulis slide dengan gaya ini** menulis judul, baris slide, alasan, dan catatan pembicara dalam gaya yang dipilih; isi **Audiens** agar ditujukan kepada orang yang akan Anda ajak bicara. Angka dan nama yang tidak ada di peta tidak pernah dikarang, dan hal yang perlu diperiksa masuk ke catatan pembicara.',
+ 'ms': 'Untuk PowerPoint, **Biar AI menulis slaid dalam gaya ini** menulis tajuk, baris slaid, sokongan dan nota penceramah dalam gaya yang dipilih; isi **Penonton** supaya ia ditujukan kepada orang yang akan mendengar. Angka dan nama yang tiada dalam peta tidak pernah direka, dan perkara yang perlu disemak dimasukkan ke dalam nota penceramah.',
+ 'vi': 'Với PowerPoint, **Để AI viết nội dung trang chiếu theo phong cách này** sẽ viết tiêu đề, dòng chữ trên trang, lý lẽ và ghi chú cho người trình bày theo phong cách đã chọn; điền **Người nghe** để nội dung hướng tới đúng người. Số liệu và tên không có trong sơ đồ sẽ không bao giờ được bịa ra, còn điều cần kiểm tra được ghi vào ghi chú người trình bày.',
+ 'ru': 'Для PowerPoint вариант **Пусть ИИ напишет слайды в этом стиле** пишет заголовки, строки слайдов, обоснования и заметки докладчика в выбранном стиле; заполните **Аудитория**, чтобы текст был обращён к вашим слушателям. Чисел и имён, которых нет в карте, ИИ не придумывает, а то, что нужно проверить, попадает в заметки докладчика.',
+ 'ar': 'في PowerPoint، يكتب خيار **دع الذكاء الاصطناعي يكتب الشرائح بهذا الأسلوب** العناوين وأسطر الشرائح والحجج وملاحظات المتحدث بالأسلوب المختار؛ املأ **الجمهور** ليُوجَّه الكلام إلى من ستعرض أمامهم. لا تُختلق أرقام أو أسماء ليست في الخريطة، وما يحتاج إلى تحقق يُوضع في ملاحظات المتحدث.',
+ 'he': 'ב-PowerPoint, האפשרות **לתת ל-AI לכתוב את השקופיות בסגנון הזה** כותבת כותרות, שורות שקופית, נימוקים והערות דובר בסגנון שנבחר; מלאו את **קהל** כדי לכוון אותן לאנשים שמולם תציגו. מספרים ושמות שאינם במפה לעולם לא מומצאים, ומה שצריך לבדוק נכנס להערות הדובר.',
+ 'hi': 'PowerPoint में **AI से इस शैली में स्लाइड लिखवाएँ** चुनी गई शैली में शीर्षक, स्लाइड की पंक्तियाँ, आधार और वक्ता नोट्स लिखता है; **श्रोता** भरें ताकि सामग्री उन्हीं लोगों के लिए हो। जो संख्याएँ और नाम मैप में नहीं हैं वे कभी गढ़े नहीं जाते, और जिसे जाँचना है वह वक्ता नोट्स में जाता है।',
+ 'th': 'สำหรับ PowerPoint ตัวเลือก **ให้ AI เขียนสไลด์ในสไตล์นี้** จะเขียนชื่อสไลด์ ข้อความบนสไลด์ เหตุผลสนับสนุน และบันทึกผู้บรรยายตามสไตล์ที่เลือก กรอก **ผู้ฟัง** เพื่อให้เนื้อหาเหมาะกับคนที่คุณจะนำเสนอ ตัวเลขและชื่อที่ไม่มีในแผนที่จะไม่ถูกแต่งขึ้น และสิ่งที่ต้องตรวจสอบจะอยู่ในบันทึกผู้บรรยาย',
+}
+assert set(SLIDE_AI) == set(T), set(T) ^ set(SLIDE_AI)
+for lang, (_title, _intro, sections) in T.items():
+    # the send steps: the second one is where the content is chosen
+    sections[0][2][1] += ' ' + SLIDE_AI[lang]
+
 for lang, (title, intro, sections) in T.items():
     lines = [f'# {title}', '', intro, '']
     for heading, kind, items in sections:

@@ -5,7 +5,7 @@ Hanpan invia ciò che hai organizzato in una mappa mentale a un rapporto Hangul 
 ## Inviare una mappa mentale a un documento
 
 1. Nella barra della mappa premi **Invia a un documento** e scegli un rapporto HWP, PowerPoint o un rapporto Word.
-2. Scegli il layout (rapporto a punti, rapporto a capitoli, numerazione da lettera ufficiale), la data e l’ufficio, e se inviare **il testo della mappa così com’è** o **far scrivere le frasi all’IA**.
+2. Scegli il layout (rapporto a punti, rapporto a capitoli, numerazione da lettera ufficiale), la data e l’ufficio, e se inviare **il testo della mappa così com’è** o **far scrivere le frasi all’IA**. Per PowerPoint, **Lascia che l'IA scriva le slide in questo stile** scrive titoli, righe, motivazioni e note del relatore nello stile scelto; compila **Pubblico** per rivolgerle alle persone a cui presenterai. Numeri e nomi che la mappa non contiene non vengono mai inventati, e ciò che va verificato finisce nelle note del relatore.
 3. Premi **Invia**: il documento si apre in una nuova scheda della stessa finestra. Il primo salvataggio chiede dove salvarlo.
 
 ## Modificare la mappa mentale

@@ -5,7 +5,7 @@ Hanpan schickt, was Sie in einer Mindmap geordnet haben, als Hangul-Bericht (HWP
 ## Eine Mindmap an ein Dokument senden
 
 1. Drücken Sie in der Mindmap-Werkzeugleiste **An ein Dokument senden** und wählen Sie HWP-Bericht, PowerPoint oder Word-Bericht.
-2. Wählen Sie das Layout (Stichpunktbericht, Bericht mit Kapiteln, Nummerierung amtlicher Schreiben), Datum und Abteilung sowie **genau den Text der Karte** oder **die KI die Sätze schreiben lassen**.
+2. Wählen Sie das Layout (Stichpunktbericht, Bericht mit Kapiteln, Nummerierung amtlicher Schreiben), Datum und Abteilung sowie **genau den Text der Karte** oder **die KI die Sätze schreiben lassen**. Bei PowerPoint schreibt **Die KI schreibt die Folien in diesem Stil** Titel, Folienzeilen, Belege und Sprechernotizen im gewählten Stil; tragen Sie unter **Publikum** ein, für wen Sie präsentieren. Zahlen und Namen, die nicht in der Karte stehen, werden nie erfunden, und was zu prüfen ist, steht in den Sprechernotizen.
 3. Drücken Sie **Senden**: Das Dokument öffnet sich in einem neuen Tab desselben Fensters. Beim ersten Speichern wird nach dem Ort gefragt.
 
 ## Die Mindmap bearbeiten

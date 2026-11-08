@@ -5,7 +5,7 @@ Hanpan mengirim apa yang Anda susun di peta pikiran ke laporan Hangul (HWP), pre
 ## Mengirim peta pikiran ke dokumen
 
 1. Di bilah alat peta, tekan **Kirim ke dokumen** lalu pilih laporan HWP, PowerPoint, atau laporan Word.
-2. Pilih tata letak (laporan poin, laporan berbab, penomoran surat resmi), tanggal dan bagian, serta apakah mengirim **persis teks di peta** atau **membiarkan AI menulis kalimat**.
+2. Pilih tata letak (laporan poin, laporan berbab, penomoran surat resmi), tanggal dan bagian, serta apakah mengirim **persis teks di peta** atau **membiarkan AI menulis kalimat**. Untuk PowerPoint, **Biarkan AI menulis slide dengan gaya ini** menulis judul, baris slide, alasan, dan catatan pembicara dalam gaya yang dipilih; isi **Audiens** agar ditujukan kepada orang yang akan Anda ajak bicara. Angka dan nama yang tidak ada di peta tidak pernah dikarang, dan hal yang perlu diperiksa masuk ke catatan pembicara.
 3. Tekan **Kirim**: dokumen terbuka di tab baru pada jendela yang sama. Penyimpanan pertama menanyakan lokasinya.
 
 ## Mengedit peta pikiran

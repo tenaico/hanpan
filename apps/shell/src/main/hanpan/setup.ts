@@ -25,6 +25,7 @@ import {
   type MarkdownPicture,
   type SlidePlan,
   type SlideStyleId,
+  type StyledDeckOptions,
 } from '@genoffice/hanpan-core'
 import type { Op } from '@genoffice/pptx-ops'
 import { createXmindDocumentFromOutline } from '@genoffice/xmind-engine'
@@ -159,8 +160,9 @@ export function loadHwpEngine(): Promise<HwpEngine> {
 export async function buildHanpanDeck(
   slides: SlidePlan[],
   style?: SlideStyleId,
+  options?: StyledDeckOptions,
 ): Promise<Uint8Array> {
-  if (style) return buildDeck(styledDeckOps(slides, style) as Op[])
+  if (style) return buildDeck(styledDeckOps(slides, style, options) as Op[])
   const ops: Op[] = outlineToOps(
     slides.map((s) => ({
       title: s.title,

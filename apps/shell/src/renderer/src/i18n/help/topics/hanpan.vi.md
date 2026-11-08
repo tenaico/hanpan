@@ -5,7 +5,7 @@ Hanpan gửi những gì bạn sắp xếp trong sơ đồ tư duy thành báo c
 ## Gửi sơ đồ tư duy sang tài liệu
 
 1. Trên thanh công cụ của sơ đồ, nhấn **Gửi sang tài liệu** rồi chọn báo cáo HWP, PowerPoint hoặc báo cáo Word.
-2. Chọn bố cục (báo cáo gạch đầu dòng, báo cáo có chương, đánh số công văn), ngày và bộ phận, rồi chọn gửi **đúng chữ trong sơ đồ** hay **để AI viết câu**.
+2. Chọn bố cục (báo cáo gạch đầu dòng, báo cáo có chương, đánh số công văn), ngày và bộ phận, rồi chọn gửi **đúng chữ trong sơ đồ** hay **để AI viết câu**. Với PowerPoint, **Để AI viết nội dung trang chiếu theo phong cách này** sẽ viết tiêu đề, dòng chữ trên trang, lý lẽ và ghi chú cho người trình bày theo phong cách đã chọn; điền **Người nghe** để nội dung hướng tới đúng người. Số liệu và tên không có trong sơ đồ sẽ không bao giờ được bịa ra, còn điều cần kiểm tra được ghi vào ghi chú người trình bày.
 3. Nhấn **Gửi**: tài liệu mở trong một thẻ mới của cùng cửa sổ. Lần lưu đầu tiên sẽ hỏi nơi lưu.
 
 ## Chỉnh sửa sơ đồ tư duy

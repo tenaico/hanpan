@@ -5,7 +5,7 @@ Hanpan menghantar apa yang anda susun dalam peta minda ke laporan Hangul (HWP), 
 ## Menghantar peta minda ke dokumen
 
 1. Dalam bar alat peta, tekan **Hantar ke dokumen** dan pilih laporan HWP, PowerPoint atau laporan Word.
-2. Pilih susun atur (laporan berpoin, laporan berbab, penomboran surat rasmi), tarikh dan bahagian, serta sama ada menghantar **teks peta seadanya** atau **membiarkan AI menulis ayat**.
+2. Pilih susun atur (laporan berpoin, laporan berbab, penomboran surat rasmi), tarikh dan bahagian, serta sama ada menghantar **teks peta seadanya** atau **membiarkan AI menulis ayat**. Untuk PowerPoint, **Biar AI menulis slaid dalam gaya ini** menulis tajuk, baris slaid, sokongan dan nota penceramah dalam gaya yang dipilih; isi **Penonton** supaya ia ditujukan kepada orang yang akan mendengar. Angka dan nama yang tiada dalam peta tidak pernah direka, dan perkara yang perlu disemak dimasukkan ke dalam nota penceramah.
 3. Tekan **Hantar**: dokumen dibuka dalam tab baharu tetingkap yang sama. Simpanan pertama bertanya di mana hendak menyimpannya.
 
 ## Menyunting peta minda

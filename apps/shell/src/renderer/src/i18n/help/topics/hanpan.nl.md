@@ -5,7 +5,7 @@ Hanpan stuurt wat u in een mindmap hebt geordend naar een Hangul-rapport (HWP), 
 ## Een mindmap naar een document sturen
 
 1. Druk in de werkbalk van de kaart op **Naar een document sturen** en kies een HWP-rapport, PowerPoint of een Word-rapport.
-2. Kies de opmaak (puntsgewijs rapport, rapport met hoofdstukken, nummering van een officiële brief), de datum en de afdeling, en of u **precies de tekst van de kaart** stuurt of **de AI de zinnen laat schrijven**.
+2. Kies de opmaak (puntsgewijs rapport, rapport met hoofdstukken, nummering van een officiële brief), de datum en de afdeling, en of u **precies de tekst van de kaart** stuurt of **de AI de zinnen laat schrijven**. Bij PowerPoint schrijft **Laat de AI de dia’s in deze stijl schrijven** de titels, dia-regels, onderbouwing en sprekersnotities in de gekozen stijl; vul **Publiek** in om ze op uw toehoorders af te stemmen. Cijfers en namen die niet in de kaart staan worden nooit verzonnen, en wat gecontroleerd moet worden komt in de sprekersnotities.
 3. Druk op **Sturen**: het document opent in een nieuw tabblad van hetzelfde venster. Bij de eerste keer opslaan wordt gevraagd waar.
 
 ## De mindmap bewerken

@@ -219,8 +219,14 @@ function groupsOf(plan: SlidePlan): Group[] {
 
 const childLines = (g: Group, max = 3): string[] => g.children.filter((c) => c.depth === 1).slice(0, max).map((c) => c.text)
 
-/** A figure with a unit — 30%, 2배, 4.5점, 120명 — never a date such as 3월 or 2026년. */
-const FIGURE = /(?<![\d.])(\d[\d,]*(?:\.\d+)?)\s?(%|배|억|만|천|명|건|개|원|점|회|곳|시간|x|X)(?![가-힣A-Za-z])/
+/**
+ * A figure with a unit — 30%, 2배, 4.5점, 120명 — never a date such as 3월 or
+ * 2026년. A particle may follow it as in a written sentence (30%가, 4.5점을, 2배로).
+ */
+const FIGURE =
+  /(?<![\d.])(\d[\d,]*(?:\.\d+)?)\s?(%|배|억|만|천|명|건|개|원|점|회|곳|시간|x|X)(?=(?:으로|로|가|이|을|를|의|은|는|에|도|와|과|만)?(?![가-힣A-Za-z]))/
+/** The particle right after a figure, left out of the figure's label. */
+const LEADING_PARTICLE = /^(?:으로|로|가|이|을|를|의|은|는|에|도|와|과|만)(?![가-힣A-Za-z])/
 
 interface Figure {
   value: string
@@ -230,7 +236,8 @@ interface Figure {
 function figureIn(text: string): Figure | undefined {
   const m = FIGURE.exec(text)
   if (!m) return undefined
-  const label = (text.slice(0, m.index) + ' ' + text.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim()
+  const after = text.slice(m.index + m[0].length).replace(LEADING_PARTICLE, '')
+  const label = (text.slice(0, m.index) + ' ' + after).replace(/\s+/g, ' ').trim()
   return { value: m[0].replace(/\s/g, ''), label: label || text }
 }
 
@@ -279,6 +286,10 @@ interface Ctx {
   /** this content slide's section, 1-based */
   section: number
   notes: string
+  /** the closing slide's message (the AI's), shown in place of its usual line */
+  closing?: string | undefined
+  /** the AI's takeaway; '' when the AI wrote the slide without one, so no takeaway box shows */
+  takeaway?: string | undefined
 }
 
 /** What the shared layouts (section divider, single statement, long list) need of a style. */
@@ -308,7 +319,8 @@ interface Style {
   closing: (c: Ctx) => Op[]
 }
 
-const firstNote = (c: Ctx): string => c.notes.split('\n').map((l) => l.trim()).find(Boolean) ?? ''
+/** The slide's takeaway: the AI's when it wrote the slide (none when it gave none), else the notes' first line. */
+const firstNote = (c: Ctx): string => c.takeaway ?? c.notes.split('\n').map((l) => l.trim()).find(Boolean) ?? ''
 const pageNo = (c: Ctx): string => String(c.slide + 1)
 
 /** Columns across a band: each column's x and width. */
@@ -436,7 +448,7 @@ const jobs: Style = {
   closing: (c) => [
     background(c.slide, JOBS.bg),
     tb(c.slide, 1, 2.35, PW - 2, 1.5, [para(run('감사합니다.', 72, JOBS.ink, { bold: true, spacing: -2 }), { align: 'center' })], 'b'),
-    tb(c.slide, 1, 4.1, PW - 2, 0.6, [para(run(c.title, 18, JOBS.gray), { align: 'center' })]),
+    tb(c.slide, 1, 4.1, PW - 2, 0.6, [para(run(c.closing ?? c.title, c.closing ? fit(c.closing, 18, 12, PW - 2, 2) : 18, JOBS.gray), { align: 'center' })]),
   ],
 }
 
@@ -539,7 +551,7 @@ const mckinsey: Style = {
       background(s, MCK.navy),
       box(s, 0.9, 2.75, 0.9, 0.06, MCK.blue),
       tb(s, 0.9, 3.0, PW - 1.8, 1.1, [para(run('감사합니다', 46, '#FFFFFF', { bold: true, font: SERIF }))]),
-      tb(s, 0.9, 4.2, PW - 1.8, 0.5, [para(run(c.title, 16, '#A9B8C6'))]),
+      tb(s, 0.9, 4.2, PW - 1.8, 0.5, [para(run(c.closing ?? c.title, c.closing ? fit(c.closing, 16, 12, PW - 1.8, 2) : 16, '#A9B8C6'))]),
     ]
   },
 }
@@ -639,7 +651,7 @@ const toss: Style = {
       background(s, '#FFFFFF'),
       dot(s, PW / 2 - 0.45, 1.9, 0.9, TOSS.blue, { paras: [para(run('✓', 30, '#FFFFFF', { bold: true }), { align: 'center' })] }),
       tb(s, 1, 3.05, PW - 2, 1.1, [para(run('감사합니다', 56, TOSS.ink, { bold: true, spacing: -1.5 }), { align: 'center' })], 'ctr'),
-      tb(s, 1, 4.3, PW - 2, 0.6, [para(run('궁금한 점은 언제든 편하게 물어봐 주세요', 22, TOSS.grey600), { align: 'center' })]),
+      tb(s, 1, 4.3, PW - 2, 0.6, [para(run(c.closing ?? '궁금한 점은 언제든 편하게 물어봐 주세요', c.closing ? fit(c.closing, 22, 12, PW - 2, 2) : 22, TOSS.grey600), { align: 'center' })]),
     ]
   },
 }
@@ -806,7 +818,7 @@ const bcg: Style = {
       ...bcgMotif(s, 1.2, 2.45, 1.1),
       tb(s, 5.4, 2.6, PW - 6.1, 1.2, [para(run('감사합니다', 48, BCG.ink, { bold: true, spacing: -1 }))], 'b'),
       box(s, 5.4, 4.0, 0.8, 0.07, BCG.green),
-      tb(s, 5.4, 4.25, PW - 6.1, 0.6, [para(run(c.title, 16, BCG.gray))]),
+      tb(s, 5.4, 4.25, PW - 6.1, 0.6, [para(run(c.closing ?? c.title, c.closing ? fit(c.closing, 16, 12, PW - 6.1, 2) : 16, BCG.gray))]),
     ]
   },
 }
@@ -877,7 +889,7 @@ const ted: Style = {
       background(s, TED.from, TED.to, 90),
       tb(s, 1, 2.3, PW - 2, 1.5, [para(run('감사합니다', 64, TED.ink, { bold: true, spacing: -1.5 }), { align: 'center' })], 'b'),
       box(s, PW / 2 - 0.5, 4.05, 1.0, 0.07, TED.red),
-      tb(s, 1, 4.35, PW - 2, 0.6, [para(run(c.title, 18, TED.gray), { align: 'center' })]),
+      tb(s, 1, 4.35, PW - 2, 0.6, [para(run(c.closing ?? c.title, c.closing ? fit(c.closing, 18, 12, PW - 2, 2) : 18, TED.gray), { align: 'center' })]),
     ]
   },
 }
@@ -979,7 +991,7 @@ const material: Style = {
       background(s, '#FFFFFF'),
       ...MAT.colors.map((col, k) => dot(s, PW / 2 - 0.69 + k * 0.38, 2.25, 0.24, col)),
       tb(s, 1, 2.75, PW - 2, 1.2, [para(run('감사합니다', 56, MAT.ink, { bold: true, spacing: -1 }), { align: 'center' })], 'ctr'),
-      tb(s, 1, 4.1, PW - 2, 0.6, [para(run(c.title, 18, MAT.sub), { align: 'center' })]),
+      tb(s, 1, 4.1, PW - 2, 0.6, [para(run(c.closing ?? c.title, c.closing ? fit(c.closing, 18, 12, PW - 2, 2) : 18, MAT.sub), { align: 'center' })]),
     ]
   },
 }
@@ -1104,7 +1116,7 @@ const notion: Style = {
       tb(s, 1.2, 2.05, 1.2, 1.0, [para(run('🙌', 48, NOTION.ink))], 'ctr'),
       tb(s, 1.2, 3.15, PW - 2.4, 1.0, [para(run('감사합니다', 44, NOTION.ink, { bold: true, spacing: -1 }))], 'ctr'),
       box(s, 1.2, 4.4, 0.05, 0.55, NOTION.ink),
-      tb(s, 1.45, 4.4, PW - 2.6, 0.55, [para(run(c.title, 18, NOTION.gray))], 'ctr'),
+      tb(s, 1.45, 4.4, PW - 2.6, 0.55, [para(run(c.closing ?? c.title, c.closing ? fit(c.closing, 18, 12, PW - 2.6, 2) : 18, NOTION.gray))], 'ctr'),
     ]
   },
 }
@@ -1193,7 +1205,7 @@ const airbnb: Style = {
       background(s, AIR.warm),
       dot(s, PW / 2 - 0.18, 2.1, 0.36, AIR.rausch),
       tb(s, 1, 2.65, PW - 2, 1.3, [para(run('감사합니다', 56, AIR.ink, { bold: true, font: WARM }), { align: 'center' })], 'ctr'),
-      tb(s, 1, 4.15, PW - 2, 0.6, [para(run(c.title, 18, AIR.gray), { align: 'center' })]),
+      tb(s, 1, 4.15, PW - 2, 0.6, [para(run(c.closing ?? c.title, c.closing ? fit(c.closing, 18, 12, PW - 2, 2) : 18, AIR.gray), { align: 'center' })]),
     ]
   },
 }
@@ -1302,7 +1314,7 @@ const canva: Style = {
       dot(s, 0.6, 4.5, 2.2, '#FFFFFF1A'),
       dot(s, 2.4, 1.0, 0.6, '#FFFFFF33'),
       tb(s, 1, 2.5, PW - 2, 1.4, [para(run('감사합니다', 60, '#FFFFFF', { bold: true, spacing: -1.5 }), { align: 'center' })], 'ctr'),
-      tb(s, 1, 4.1, PW - 2, 0.6, [para(run(c.title, 20, '#F1EEFF'), { align: 'center' })]),
+      tb(s, 1, 4.1, PW - 2, 0.6, [para(run(c.closing ?? c.title, c.closing ? fit(c.closing, 20, 12, PW - 2, 2) : 20, '#F1EEFF'), { align: 'center' })]),
     ]
   },
 }
@@ -1423,7 +1435,7 @@ const pitch: Style = {
       background(s, PITCH.navy),
       tb(s, 0.8, 2.3, PW - 1.6, 1.3, [para(run('감사합니다', 60, '#FFFFFF', { bold: true, spacing: -1.5 }))], 'b'),
       box(s, 0.8, 3.85, 1.0, 0.08, PITCH.orange),
-      tb(s, 0.8, 4.15, PW - 1.6, 0.6, [para(run(`${c.title}  ·  Q&A`, 18, '#94A3B8'))]),
+      tb(s, 0.8, 4.15, PW - 1.6, 0.6, [para(run(c.closing ?? `${c.title}  ·  Q&A`, c.closing ? fit(c.closing, 18, 12, PW - 1.6, 2) : 18, '#94A3B8'))]),
     ]
   },
 }
@@ -1435,11 +1447,23 @@ const STYLE: Record<SlideStyleId, Style> = { jobs, mckinsey, toss, bcg, ted, mat
  * one and there are three or more sections, one slide per plan entry and a
  * closing slide. Speaker notes go with their slides.
  */
-export function styledDeckOps(slides: readonly SlidePlan[], style: SlideStyleId): Op[] {
+export interface StyledDeckOptions {
+  /** the closing slide's line under its thanks; the deck title when absent */
+  closing?: string | undefined
+}
+
+/** The branch a slide belongs to, as the contents slide names it. */
+const sectionOf = (plan: SlidePlan): string => plan.section ?? plan.title.replace(/ \(계속\)$/, '')
+
+export function styledDeckOps(
+  slides: readonly SlidePlan[],
+  style: SlideStyleId,
+  options: StyledDeckOptions = {},
+): Op[] {
   const draw = STYLE[style]
   const [cover, ...body] = slides
   if (!cover) return []
-  const sections = [...new Set(body.map((p) => p.title.replace(/ \(계속\)$/, '')))]
+  const sections = [...new Set(body.map(sectionOf))]
   type Page = { kind: 'cover' | 'agenda' | 'content' | 'closing'; plan?: SlidePlan }
   const pages: Page[] = [
     { kind: 'cover', plan: cover },
@@ -1455,9 +1479,11 @@ export function styledDeckOps(slides: readonly SlidePlan[], style: SlideStyleId)
       slide,
       total: pages.length,
       title: cover.title,
+      ...(page.kind === 'closing' && options.closing?.trim() ? { closing: options.closing.trim() } : {}),
       sections,
-      section: plan ? Math.max(1, sections.indexOf(plan.title.replace(/ \(계속\)$/, '')) + 1) : 0,
+      section: plan ? Math.max(1, sections.indexOf(sectionOf(plan)) + 1) : 0,
       notes: plan?.notes ?? '',
+      ...(plan?.takeaway !== undefined ? { takeaway: plan.takeaway } : {}),
     }
     if (page.kind === 'cover') ops.push(...draw.cover(c))
     else if (page.kind === 'agenda') ops.push(...draw.agendaSlide(c))

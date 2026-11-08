@@ -5,7 +5,7 @@ Hanpan envoie ce que vous avez organisé dans une carte mentale vers un rapport 
 ## Envoyer une carte mentale vers un document
 
 1. Dans la barre d'outils de la carte, appuyez sur **Envoyer vers un document** et choisissez un rapport HWP, PowerPoint ou un rapport Word.
-2. Choisissez la mise en page (rapport à puces, rapport en chapitres, numérotation de lettre officielle), la date et le service, puis **le texte de la carte tel quel** ou **laisser l'IA rédiger les phrases**.
+2. Choisissez la mise en page (rapport à puces, rapport en chapitres, numérotation de lettre officielle), la date et le service, puis **le texte de la carte tel quel** ou **laisser l'IA rédiger les phrases**. Pour PowerPoint, **Laisser l'IA rédiger les diapositives dans ce style** écrit les titres, les lignes, les justifications et les notes de l'orateur dans le style choisi ; remplissez **Public** pour viser les personnes devant qui vous présentez. Les chiffres et les noms absents de la carte ne sont jamais inventés, et ce qui doit être vérifié va dans les notes.
 3. Appuyez sur **Envoyer** : le document s'ouvre dans un nouvel onglet de la même fenêtre. Le premier enregistrement demande où le ranger.
 
 ## Modifier la carte mentale

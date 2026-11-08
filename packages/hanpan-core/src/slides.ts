@@ -21,6 +21,17 @@ export interface SlidePlan {
   key: string
   paragraphs: SlidePlanParagraph[]
   notes: string
+  /**
+   * The branch's own words, when the title is not them (the AI wrote the title):
+   * what the contents slide lists and what the slide's section is found by
+   */
+  section?: string | undefined
+  /**
+   * The AI's takeaway for the slide, which some styles set in a box. '' when the
+   * AI wrote the slide without one; absent when it did not write the slide (the
+   * styles then take the first line of the notes).
+   */
+  takeaway?: string | undefined
 }
 
 /** A slide holds this many bullet lines before the rest go to a continuation slide. */

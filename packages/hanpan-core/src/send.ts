@@ -5,6 +5,7 @@
 import type { MarkerStyle } from './numbering'
 import type { PanOutline } from './outline'
 import { isSlideStyleId, type SlideStyleId } from './slide-styles'
+import { SLIDE_LINE_MAX, type SlideWriting } from './slide-writer'
 
 export type SendTarget = 'hwp' | 'slides' | 'docx'
 
@@ -20,6 +21,8 @@ export interface SendRequest {
   includeNotes: boolean
   /** slides only: one of the ten slide styles; the plain deck when absent */
   slideStyle?: SlideStyleId | undefined
+  /** slides only: what the AI wrote for the slides, keyed by topic */
+  slideWriting?: SlideWriting | undefined
   /** the map file, when it has one: recorded in the link so the two can find each other */
   mapPath: string | null
   /** the sheet the outline came from */
@@ -42,6 +45,52 @@ function text(value: unknown, what: string, optional = false): string | undefine
   }
   if (typeof value !== 'string' || value.length > MAX_TEXT) throw new Error(`${what} is not text`)
   return value
+}
+
+const MAX_WRITTEN = 5000
+const MAX_DETAILS = 4
+/** Longest speaker notes taken for one slide (the parser keeps far less). */
+const MAX_NOTES = 2000
+
+/** One slide line: text, not blank, on one line, no longer than `max`. */
+const isLine = (v: unknown, max: number): v is string =>
+  typeof v === 'string' && v.trim() !== '' && v.length <= max && !/[\r\n]/.test(v)
+
+/** A map of topic key → text; what is not text of the right size is left out. */
+function textMap(value: unknown, what: string, ok: (v: unknown) => v is string): Record<string, string> {
+  if (value === undefined || value === null) return {}
+  if (typeof value !== 'object' || Array.isArray(value)) throw new Error(`bad ${what}`)
+  const entries = Object.entries(value as Record<string, unknown>)
+  if (entries.length > MAX_WRITTEN) throw new Error(`bad ${what}`)
+  return Object.fromEntries(entries.filter((e): e is [string, string] => ok(e[1])))
+}
+
+/** The AI's slide text as the shell may use it: unknown fields dropped, over-long text left out. */
+function checkSlideWriting(value: unknown): SlideWriting | undefined {
+  if (value === undefined || value === null) return undefined
+  if (typeof value !== 'object' || Array.isArray(value)) throw new Error('bad slide writing')
+  const w = value as Record<string, unknown>
+  const details: Record<string, string[]> = {}
+  if (w.details !== undefined && w.details !== null) {
+    if (typeof w.details !== 'object' || Array.isArray(w.details)) throw new Error('bad details')
+    const entries = Object.entries(w.details as Record<string, unknown>)
+    if (entries.length > MAX_WRITTEN) throw new Error('bad details')
+    for (const [key, list] of entries) {
+      if (!Array.isArray(list)) continue
+      const lines = list.slice(0, MAX_DETAILS * 4).filter((l) => isLine(l, SLIDE_LINE_MAX)).slice(0, MAX_DETAILS)
+      if (lines.length) Object.defineProperty(details, key, { value: lines, enumerable: true, writable: true, configurable: true })
+    }
+  }
+  const line = (v: unknown): v is string => isLine(v, SLIDE_LINE_MAX)
+  const notes = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '' && v.length <= MAX_NOTES
+  return {
+    titles: textMap(w.titles, 'titles', line),
+    lines: textMap(w.lines, 'lines', line),
+    details,
+    takeaways: textMap(w.takeaways, 'takeaways', line),
+    notes: textMap(w.notes, 'notes', notes),
+    ...(line(w.closing) ? { closing: w.closing } : {}),
+  }
 }
 
 /**
@@ -93,6 +142,7 @@ export function checkSendRequest(value: unknown): SendRequest {
     department: text(r.department, 'department', true),
     includeNotes: r.includeNotes !== false,
     slideStyle: isSlideStyleId(r.slideStyle) ? r.slideStyle : undefined,
+    slideWriting: r.target === 'slides' ? checkSlideWriting(r.slideWriting) : undefined,
     mapPath: text(r.mapPath, 'map path', true) ?? null,
     sheetId: text(r.sheetId, 'sheet', true) ?? '',
     outline: {

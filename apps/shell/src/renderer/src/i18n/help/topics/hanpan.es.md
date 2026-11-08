@@ -5,7 +5,7 @@ Hanpan envía lo que ordenaste en un mapa mental a un informe Hangul (HWP), una 
 ## Enviar un mapa mental a un documento
 
 1. En la barra del mapa, pulsa **Enviar a un documento** y elige un informe HWP, PowerPoint o un informe de Word.
-2. Elige el formato (informe por puntos, informe con capítulos, numeración de carta oficial), la fecha y el departamento, y si enviar **el texto del mapa tal cual** o **dejar que la IA escriba las frases**.
+2. Elige el formato (informe por puntos, informe con capítulos, numeración de carta oficial), la fecha y el departamento, y si enviar **el texto del mapa tal cual** o **dejar que la IA escriba las frases**. En PowerPoint, **Que la IA escriba las diapositivas en este estilo** redacta los títulos, las líneas, los argumentos y las notas del orador en el estilo elegido; rellena **Público** para dirigirlos a quienes vas a presentar. Nunca inventa cifras ni nombres que no estén en el mapa, y lo que hay que comprobar va a las notas del orador.
 3. Pulsa **Enviar**: el documento se abre en una pestaña nueva de la misma ventana. El primer guardado pregunta dónde guardarlo.
 
 ## Editar el mapa mental

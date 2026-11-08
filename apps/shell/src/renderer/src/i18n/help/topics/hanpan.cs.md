@@ -5,7 +5,7 @@ Hanpan pošle to, co jste uspořádali v myšlenkové mapě, do zprávy Hangul (
 ## Odeslání myšlenkové mapy do dokumentu
 
 1. Na panelu nástrojů mapy stiskněte **Odeslat do dokumentu** a vyberte zprávu HWP, PowerPoint nebo zprávu Word.
-2. Vyberte rozvržení (zpráva v bodech, zpráva s kapitolami, číslování úředního dopisu), datum a oddělení a zda poslat **přesně text mapy**, nebo **nechat věty napsat AI**.
+2. Vyberte rozvržení (zpráva v bodech, zpráva s kapitolami, číslování úředního dopisu), datum a oddělení a zda poslat **přesně text mapy**, nebo **nechat věty napsat AI**. U PowerPointu **Nechat AI napsat snímky v tomto stylu** napíše nadpisy, řádky snímků, zdůvodnění a poznámky řečníka ve zvoleném stylu; vyplňte **Publikum**, aby byly psané pro vaše posluchače. Čísla a jména, která v mapě nejsou, se nikdy nevymýšlejí, a co je třeba ověřit, jde do poznámek řečníka.
 3. Stiskněte **Odeslat**: dokument se otevře na nové kartě stejného okna. Při prvním uložení se zeptá, kam jej uložit.
 
 ## Úpravy myšlenkové mapy

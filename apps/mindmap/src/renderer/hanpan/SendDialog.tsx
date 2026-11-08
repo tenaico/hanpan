@@ -4,6 +4,9 @@
  * sentences for them; the shell makes the document and opens it in a new tab,
  * linked to this map.
  *
+ * For slides, the AI writes each slide in the chosen style (slide-writer.ts):
+ * its title, its lines, supporting lines, a takeaway and the speaker notes.
+ *
  * The AI is whatever the person chose in Settings: a local model (Ollama,
  * LM Studio, vLLM) when one is set up. If it does not answer, the map is sent
  * as it is and the dialog says why; nothing is sent anywhere else instead.
@@ -12,14 +15,21 @@ import { useRef, useState } from 'react'
 import { streamText } from '@genoffice/agent-core'
 import {
   applyBodies,
+  emptySlideWriting,
   fleshOutJobs,
   koreanDate,
   parseFleshOut,
+  parseSlideWriting,
+  wroteSlide,
+  slideWriterJobs,
+  topicTitles,
   SLIDE_STYLES,
   type SlideStyleId,
   type MarkerStyle,
   type PanOutline,
   type SendTarget,
+  type SlideWriting,
+  type SlideWritingStyle,
 } from '@genoffice/hanpan-core/renderer'
 import type { AiSettings } from '@genoffice/ai-provider'
 import { Modal } from '../components/dialogs'
@@ -73,6 +83,61 @@ async function fleshOut(
   return { outline: applyBodies(outline, bodies), error: bodies.size ? null : (lastError ?? 'no sentences') }
 }
 
+interface SlidesOutcome {
+  writing: SlideWriting | undefined
+  /** why the AI stopped, or wrote nothing; null when every slide came back */
+  error: string | null
+  /** slides the AI wrote, of those it was asked for */
+  done: number
+  total: number
+}
+
+/** The slides' text, one request per main branch; what came back before a failure is kept. */
+async function writeSlides(
+  outline: PanOutline,
+  style: SlideWritingStyle,
+  options: { audience: string; includeNotes: boolean },
+  settings: AiSettings,
+  lang: () => import('@genoffice/i18n').Lang,
+  signal: AbortSignal,
+  progress: (done: number, total: number) => void,
+): Promise<SlidesOutcome> {
+  let lastError: string | null = null
+  const transport = createElectronTransport(() => settings, {
+    getLang: lang,
+    onStreamError: (error) => {
+      lastError = error.message
+    },
+    onSubscriptionUsage: () => {},
+    onInputTruncated: () => {},
+  })
+  const jobs = slideWriterJobs(outline, style, options)
+  const titles = topicTitles(outline)
+  const writing = emptySlideWriting()
+  const done = () => jobs.filter((job) => wroteSlide(writing, job.branchKey)).length
+  const result = (error: string | null): SlidesOutcome => {
+    const n = done()
+    return { writing: n ? writing : undefined, error: n ? error : (error ?? lastError ?? 'no slide text'), done: n, total: jobs.length }
+  }
+  for (let i = 0; i < jobs.length; i++) {
+    progress(i, jobs.length)
+    const job = jobs[i]!
+    const outcome = await streamText({
+      transport,
+      system: job.system,
+      user: job.user,
+      signal,
+      maxChars: MAX_ANSWER_CHARS,
+      extract: (raw) => ({ text: raw }),
+    })
+    if (outcome.status === 'empty') return result(outcome.error ?? lastError ?? 'no answer')
+    parseSlideWriting(outcome.text, job, titles, writing)
+    if (signal.aborted) break
+  }
+  progress(jobs.length, jobs.length)
+  return result(null)
+}
+
 export function SendDialog(p: {
   target: SendTarget
   session: DocumentSession
@@ -91,6 +156,7 @@ export function SendDialog(p: {
   const [date, setDate] = useState(() => koreanDate(new Date()))
   const [department, setDepartment] = useState('')
   const [slideStyle, setSlideStyle] = useState<SlideStyleId | 'plain'>('mckinsey')
+  const [audience, setAudience] = useState('')
   const styleInfo = SLIDE_STYLES.find((st) => st.id === slideStyle)
   const ko = lang === 'ko'
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' })
@@ -112,7 +178,33 @@ export function SendDialog(p: {
     }
     let outline = mapOutline
     let warning: string | null = null
-    if (ai) {
+    let slideWriting: SlideWriting | undefined
+    if (ai && !isDocument) {
+      const controller = new AbortController()
+      abort.current = controller
+      const settings = await window.mindmapApi.getAiSettings?.().catch(() => null)
+      if (!settings) {
+        warning = t('sendAiFallback', { error: 'AI settings' })
+      } else {
+        const result = await writeSlides(
+          outline,
+          slideStyle,
+          { audience: audience.trim(), includeNotes: notes },
+          settings,
+          () => lang,
+          controller.signal,
+          (done, total) => setPhase({ kind: 'ai', done, total }),
+        )
+        if (controller.signal.aborted) return
+        slideWriting = result.writing
+        if (result.error) {
+          // some slides came back before the AI stopped: those are kept, and the message says so
+          warning = result.done
+            ? t('sendAiPartial', { done: result.done, total: result.total, error: result.error })
+            : t('sendAiFallback', { error: result.error })
+        }
+      }
+    } else if (ai) {
       const controller = new AbortController()
       abort.current = controller
       const settings = await window.mindmapApi.getAiSettings?.().catch(() => null)
@@ -137,6 +229,7 @@ export function SendDialog(p: {
       department: isDocument && department.trim() ? department.trim() : undefined,
       includeNotes: notes,
       slideStyle: !isDocument && slideStyle !== 'plain' ? slideStyle : undefined,
+      slideWriting,
       mapPath: p.mapPath,
       sheetId,
     })
@@ -209,9 +302,25 @@ export function SendDialog(p: {
             <input type="radio" name="hp-content" checked={!ai} disabled={busy} onChange={() => setAi(false)} /> {t('sendAsIs')}
           </label>
           <label>
-            <input type="radio" name="hp-content" checked={ai} disabled={busy} onChange={() => setAi(true)} /> {t('sendFleshOut')}
+            <input type="radio" name="hp-content" checked={ai} disabled={busy} onChange={() => setAi(true)} />{' '}
+            {isDocument ? t('sendFleshOut') : t('sendSlideWrite')}
           </label>
         </div>
+        {!isDocument && (
+          <label className="hp-send-row">
+            <span>{t('sendAudience')}</span>
+            <input
+              className="mm-field"
+              type="text"
+              value={audience}
+              maxLength={200}
+              disabled={busy || !ai}
+              data-field="slide-audience"
+              placeholder={t('sendAudienceHint')}
+              onChange={(e) => setAudience(e.target.value)}
+            />
+          </label>
+        )}
         <label className="hp-send-check">
           <input type="checkbox" checked={notes} disabled={busy} onChange={(e) => setNotes(e.target.checked)} /> {t('sendNotes')}
         </label>

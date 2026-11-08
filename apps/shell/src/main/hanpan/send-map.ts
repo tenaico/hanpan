@@ -6,6 +6,7 @@
  * edits on either side can be carried across (link store, `links.ts`).
  */
 import {
+  applySlideWriting,
   blocksToDocx,
   blocksToHwp,
   checkSendRequest,
@@ -21,6 +22,7 @@ import {
   type SendResult,
   type SlidePlan,
   type SlideStyleId,
+  type StyledDeckOptions,
 } from '@genoffice/hanpan-core'
 import { join } from 'node:path'
 import type { TabContents } from './link-store'
@@ -29,7 +31,7 @@ export type CopyEditor = 'hwp' | 'slides' | 'docs' | 'mindmap' | 'mindmap'
 
 export interface SendMapDeps {
   loadHwpEngine(): Promise<HwpEngine>
-  buildDeck(slides: SlidePlan[], style?: SlideStyleId): Promise<Uint8Array>
+  buildDeck(slides: SlidePlan[], style?: SlideStyleId, options?: StyledDeckOptions): Promise<Uint8Array>
   makeCopyDir(): Promise<string>
   writeFile(path: string, bytes: Uint8Array): Promise<void>
   removeDir(dir: string): Promise<void>
@@ -59,9 +61,12 @@ export async function documentBytesFor(
   deps: Pick<SendMapDeps, 'loadHwpEngine' | 'buildDeck'>,
 ): Promise<Uint8Array> {
   if (request.target === 'slides') {
+    const slides = outlineToSlides(request.outline, { includeNotes: request.includeNotes })
+    const writing = request.slideWriting
     return deps.buildDeck(
-      outlineToSlides(request.outline, { includeNotes: request.includeNotes }),
+      writing ? applySlideWriting(slides, writing) : slides,
       request.slideStyle,
+      writing?.closing ? { closing: writing.closing } : undefined,
     )
   }
   const blocks = outlineToBlocks(request.outline, {

@@ -5,7 +5,7 @@ Hanpan wysyła to, co uporządkowałeś na mapie myśli, do raportu Hangul (HWP)
 ## Wysyłanie mapy myśli do dokumentu
 
 1. Na pasku narzędzi mapy naciśnij **Wyślij do dokumentu** i wybierz raport HWP, PowerPoint lub raport Word.
-2. Wybierz układ (raport w punktach, raport z rozdziałami, numeracja pisma urzędowego), datę i dział oraz to, czy wysłać **dokładnie tekst z mapy**, czy **pozwolić AI napisać zdania**.
+2. Wybierz układ (raport w punktach, raport z rozdziałami, numeracja pisma urzędowego), datę i dział oraz to, czy wysłać **dokładnie tekst z mapy**, czy **pozwolić AI napisać zdania**. W PowerPoincie **Niech AI napisze slajdy w tym stylu** pisze tytuły, wiersze slajdów, uzasadnienia i notatki prelegenta w wybranym stylu; wpisz **Odbiorcy**, aby dopasować je do słuchaczy. Liczby i nazwy, których nie ma na mapie, nigdy nie są wymyślane, a to, co trzeba sprawdzić, trafia do notatek prelegenta.
 3. Naciśnij **Wyślij**: dokument otworzy się w nowej karcie tego samego okna. Przy pierwszym zapisie pojawi się pytanie o miejsce.
 
 ## Edycja mapy myśli
