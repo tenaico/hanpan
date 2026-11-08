@@ -2,7 +2,7 @@ import type { GonguAiAnswer } from '@genoffice/hanpan-core/renderer'
 import type { AiSettings, AiStreamChunk, AiStreamRequest } from '@genoffice/ai-provider'
 import type { AiToolCapabilities } from '@genoffice/ai-search'
 import type { Lang } from '@genoffice/i18n'
-import type { AiPanelPrefs, AutoSaveDefault } from '@genoffice/ui'
+import type { AiPanelPrefs, AutoSaveDefault, GonguPickerApi } from '@genoffice/ui'
 import type { SubscriptionApi } from './subscription-api'
 
 export const HWP_CHANNELS = {
@@ -444,6 +444,9 @@ export interface HwpApi {
   imageSearch(query: string, maxResults?: number): Promise<ImageSearchResult>
   /** Hanpan: Gongu pictures for the AI, on the key saved in Settings (docs/plans/gongu-images.md) */
   gonguImageSearch(query: string, maxResults?: number): Promise<GonguAiAnswer>
+  /** Hanpan: the Gongu picker of the Picture choice (the Word editor's picker, @genoffice/ui) */
+  gonguSearch: GonguPickerApi['gonguSearch']
+  gonguPicture: GonguPickerApi['gonguPicture']
   /** AI image generation (hwp-owned channel; the main process picks the backend) */
   generateImage(op: { prompt: string; aspectRatio?: string }): Promise<{
     url?: string

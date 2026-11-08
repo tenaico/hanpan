@@ -13,6 +13,7 @@ export const th = {
   fileExportDocx: 'ส่งออกเป็นเอกสาร Word…',
   fileExportPng: 'ส่งออกเป็นรูปภาพ (ทุกหน้า)…',
   fileExportPngPage: 'ส่งออกหน้านี้เป็นรูปภาพ…',
+  pictureFromPc: 'จากพีซีเครื่องนี้…',
   previewTitle: 'ตัวอย่างก่อนพิมพ์',
   previewPages: '{count} หน้า',
   previewPrint: 'พิมพ์',

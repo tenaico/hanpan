@@ -13,6 +13,7 @@ export const cs = {
   fileExportDocx: 'Exportovat jako dokument Word…',
   fileExportPng: 'Exportovat jako obrázky (všechny stránky)…',
   fileExportPngPage: 'Exportovat tuto stránku jako obrázek…',
+  pictureFromPc: 'Z tohoto počítače…',
   previewTitle: 'Náhled tisku',
   previewPages: 'Stránky: {count}',
   previewPrint: 'Tisk',

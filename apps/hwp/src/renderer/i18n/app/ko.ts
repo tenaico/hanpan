@@ -13,6 +13,7 @@ export const ko = {
   fileExportDocx: 'Word 문서로 내보내기…',
   fileExportPng: '이미지로 내보내기(모든 쪽)…',
   fileExportPngPage: '이미지로 내보내기(지금 쪽)…',
+  pictureFromPc: '이 PC에서 고르기…',
   previewTitle: '인쇄 미리 보기',
   previewPages: '{count}쪽',
   previewPrint: '인쇄',

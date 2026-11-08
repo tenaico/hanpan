@@ -13,6 +13,7 @@ export const hi = {
   fileExportDocx: 'Word दस्तावेज़ के रूप में निर्यात करें…',
   fileExportPng: 'छवियों के रूप में निर्यात करें (सभी पृष्ठ)…',
   fileExportPngPage: 'इस पृष्ठ को छवि के रूप में निर्यात करें…',
+  pictureFromPc: 'इस पीसी से…',
   previewTitle: 'प्रिंट पूर्वावलोकन',
   previewPages: '{count} पृष्ठ',
   previewPrint: 'प्रिंट करें',

@@ -13,6 +13,7 @@ export const ar = {
   fileExportDocx: 'تصدير كمستند Word…',
   fileExportPng: 'تصدير كصور (كل الصفحات)…',
   fileExportPngPage: 'تصدير هذه الصفحة كصورة…',
+  pictureFromPc: 'من هذا الكمبيوتر…',
   previewTitle: 'معاينة الطباعة',
   previewPages: '{count} صفحة',
   previewPrint: 'طباعة',

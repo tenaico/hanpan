@@ -13,6 +13,7 @@ export const vi = {
   fileExportDocx: 'Xuất thành tài liệu Word…',
   fileExportPng: 'Xuất thành hình ảnh (tất cả trang)…',
   fileExportPngPage: 'Xuất trang này thành hình ảnh…',
+  pictureFromPc: 'Từ máy tính này…',
   previewTitle: 'Xem trước khi in',
   previewPages: '{count} trang',
   previewPrint: 'In',

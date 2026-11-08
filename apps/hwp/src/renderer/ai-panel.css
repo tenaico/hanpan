@@ -1312,17 +1312,10 @@
   display: none;
 }
 
-/* 0.17 UI/UX review v2 #13: at 1366 with the AI panel out, the memo column took the editor
- * under the studio's 768px phone layout (status bar run together, toolbar on two rows). Below
- * 1500px, while the AI panel is out, the column floats over the document's edge: it gives its
- * width back to the editor and casts a shadow there. */
-@media (max-width: 1500px) {
-  .app-main:has(> .ai-dock:not(.collapsed)) > .memo-side:not(.collapsed) {
-    z-index: 30;
-    margin-inline-end: calc(-1 * var(--memo-width));
-    box-shadow: 6px 0 18px var(--hwp-shadow-soft);
-  }
-}
+/* 0.17 UI/UX review v2 #13 and 0.17.1 #21: the column never floats over the document (that hid
+ * the start of every line and the editor's menu bar at 1366). When the window cannot hold the AI
+ * panel, the column and an editor wide enough, the one opened last stays out and the other folds
+ * (sidesShown in MemoSide.tsx). */
 
 /* drag handle on the edge toward the document */
 .memo-side-resizer {

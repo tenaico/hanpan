@@ -13,6 +13,7 @@ export const ru = {
   fileExportDocx: 'Экспорт в документ Word…',
   fileExportPng: 'Экспорт в изображения (все страницы)…',
   fileExportPngPage: 'Экспорт этой страницы в изображение…',
+  pictureFromPc: 'С этого компьютера…',
   previewTitle: 'Предварительный просмотр',
   previewPages: 'Страниц: {count}',
   previewPrint: 'Печать',

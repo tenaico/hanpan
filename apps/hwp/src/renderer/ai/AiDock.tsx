@@ -34,6 +34,13 @@ export interface HwpAiDockProps {
   filePath: string | null
   /** the document while it can go along as a skill's template (spec 5.7) */
   templateDocument?: TemplateDocument | null
+  /**
+   * folded to the rail while open: the window has room for the memo column or this panel,
+   * and the memo column was opened last (sidesShown in MemoSide.tsx)
+   */
+  folded?: boolean
+  /** a click on the rail of a folded panel: bring it out again */
+  onUnfold?(): void
 }
 
 /** The panel at the right end, or its rail while collapsed; the panel stays mounted either way. */
@@ -43,10 +50,12 @@ export function HwpAiDock({
   bridge,
   filePath,
   templateDocument,
+  folded = false,
+  onUnfold,
 }: HwpAiDockProps): ReactElement {
   const { lang, t } = useI18n()
   const { role, requestFocus } = useSplitPaneRole()
-  const shown = effectiveAiPanelOpen(open, role)
+  const shown = effectiveAiPanelOpen(open, role) && !folded
   return (
     <div className={`ai-dock${shown ? '' : ' collapsed'}`}>
       {!shown && (
@@ -55,7 +64,11 @@ export function HwpAiDock({
           className="ai-rail ai-entry"
           data-tip={t('aiOpenAssistant')}
           aria-label={aiSubscriptionText(lang, 'aiAssistant')}
-          onClick={() => onAiRailClick(role, open, setOpen, requestFocus)}
+          onClick={() =>
+            folded && open && role !== 'secondary'
+              ? onUnfold?.()
+              : onAiRailClick(role, open, setOpen, requestFocus)
+          }
         >
           <AiMark size={22} />
         </button>

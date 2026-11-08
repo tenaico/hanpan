@@ -12,6 +12,7 @@ export const zh = {
   fileExportDocx: '导出为 Word 文档…',
   fileExportPng: '导出为图片（所有页）…',
   fileExportPngPage: '将当前页导出为图片…',
+  pictureFromPc: '从这台电脑…',
   previewTitle: '打印预览',
   previewPages: '共 {count} 页',
   previewPrint: '打印',

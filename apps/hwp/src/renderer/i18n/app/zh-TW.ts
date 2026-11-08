@@ -13,6 +13,7 @@ export const zhTW = {
   fileExportDocx: '匯出為 Word 文件…',
   fileExportPng: '匯出為圖片（所有頁）…',
   fileExportPngPage: '將目前頁面匯出為圖片…',
+  pictureFromPc: '從這台電腦…',
   previewTitle: '預覽列印',
   previewPages: '共 {count} 頁',
   previewPrint: '列印',
