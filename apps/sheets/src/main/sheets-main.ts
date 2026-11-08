@@ -5446,7 +5446,7 @@ async function prepareWorkbookForOpen(
         }
         const converted = await csvToXlsxBufferForOpen(
           decodeCsvBuffer(await readFile(path), legacyCsvCharset()),
-          // Excel names a CSV's sheet after the file (X19)
+          // X19: Excel names a CSV's sheet after the file
           sheetNameFromFileStem(basename(path).replace(/\.[^.]+$/, '')),
           copyExtension === 'tsv' ? '\t' : undefined,
           getUiLang(),
@@ -5492,7 +5492,7 @@ async function prepareWorkbookForOpen(
       if (csvStat.size > MAX_DELIMITED_IMPORT_BYTES) throw new Error(tm('errFileTooLarge'))
       const converted = await csvToXlsxBufferForOpen(
         decodeCsvBuffer(await readFile(path), legacyCsvCharset()),
-        // Excel names a CSV's sheet after the file (X19)
+        // X19: Excel names a CSV's sheet after the file
         sheetNameFromFileStem(stem),
         // A .tsv's delimiter is declared by its extension, and sniffing by
         // frequency can get it wrong: annotation-heavy exports (gene
