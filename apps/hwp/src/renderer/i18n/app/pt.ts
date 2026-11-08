@@ -13,6 +13,7 @@ export const pt = {
   fileExportDocx: 'Exportar como documento do Word…',
   fileExportPng: 'Exportar como imagens (todas as páginas)…',
   fileExportPngPage: 'Exportar esta página como imagem…',
+  pictureFromPc: 'Deste computador…',
   previewTitle: 'Visualizar impressão',
   previewPages: '{count} páginas',
   previewPrint: 'Imprimir',

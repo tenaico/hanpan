@@ -19,7 +19,7 @@ import {
   UnderlineType,
 } from 'docx'
 import { bookmarkName } from './bookmarks'
-import { runFont } from './fonts'
+import { hangulFace, runFont } from './fonts'
 
 // An unloaded image measures 0, which would emit an invalid wp:extent.
 function finitePx(value) {
@@ -87,9 +87,10 @@ function makeRuns(context, runs, images: any = {}) {
       // (and flags as "GB") on Mac Word, which lacks that font.
       font: r.emoji
         ? undefined
-        : r.symbol
+        : r.symbol && !hangulFace(r.fontFamily)
           ? 'Arial Unicode MS'
-          : runFont(r.fontFamily, r.mono, r.text),
+          : // Hangul faces hold the KS X 1001 shapes and arrows (○ □ ※ →)
+            runFont(r.fontFamily, r.mono, r.text),
       characterSpacing: r.letterSpacing > 0.5 ? context.pxToTwips(r.letterSpacing) : undefined,
       superScript: r.superscript || undefined,
       subScript: r.subscript || undefined,

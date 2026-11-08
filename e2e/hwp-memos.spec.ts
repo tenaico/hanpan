@@ -74,9 +74,9 @@ async function openMemoPanel(page: Page): Promise<void> {
 const memoCards = (page: Page) => page.locator('.memo-card')
 
 /**
- * A point on the body's first line, near the top of the page. Below 1500px with the AI panel out
- * the open memo column floats over the document's left edge (0.17 review v2 hwp #13), so the
- * point moves right of the column when the column would take the press.
+ * A point on the body's first line, near the top of the page. The open memo column sits left of
+ * the editor (on a narrow window the AI panel folds for it, 0.17.1 #21), so the point moves right
+ * of the column when the column would take the press.
  */
 async function firstLinePoint(page: Page): Promise<{ x: number; y: number }> {
   const box = (await page.locator('.hwp-editor-host iframe').boundingBox())!

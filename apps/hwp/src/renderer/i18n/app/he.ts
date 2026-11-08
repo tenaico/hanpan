@@ -13,6 +13,7 @@ export const he = {
   fileExportDocx: 'ייצוא כמסמך Word…',
   fileExportPng: 'ייצוא כתמונות (כל העמודים)…',
   fileExportPngPage: 'ייצוא עמוד זה כתמונה…',
+  pictureFromPc: 'מהמחשב הזה…',
   previewTitle: 'תצוגה מקדימה להדפסה',
   previewPages: '{count} עמודים',
   previewPrint: 'הדפסה',

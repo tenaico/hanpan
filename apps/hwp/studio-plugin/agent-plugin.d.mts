@@ -501,6 +501,8 @@ export declare function documentHtml(doc: never): string
 
 /** The event those items fire on the editor's window; `detail` is the AgentFileCommand. */
 export declare const FILE_COMMAND_EVENT: 'ieum:file-command'
+/** Fired on the editor's window when the person asks for a Gongu picture (0.17.1 #15). */
+export declare const GONGU_PICTURE_EVENT: 'ieum:gongu-picture'
 
 /** The event the About box's licence button fires on the editor's window. */
 export declare const OPEN_LICENSES_EVENT: 'ieum:open-licenses'
@@ -804,6 +806,18 @@ export interface AgentPluginSurface {
     /** one line put under the picture, small and centred (a picture's credit line) */
     caption?: string,
   ): AgentPictureResult
+  /**
+   * insertPicture right after the paragraph the editor's caret is in (body, cell or text
+   * box), or at the end of the document when the caret has no such place.
+   */
+  insertPictureAtCaret(
+    base64: string,
+    widthPt: number,
+    naturalWidthPx: number,
+    naturalHeightPx: number,
+    extension: 'png' | 'jpg' | 'gif',
+    caption?: string,
+  ): AgentPictureResult
   formatText(
     find: string,
     occurrence: number | null,
@@ -848,6 +862,8 @@ export interface AgentPluginSurface {
   ): AgentRemoveLinesResult
   deleteTable(table: number, options?: AgentChangeOptions): AgentDeleteTableResult
   installFileMenu(labels: Record<AgentFileCommand, string>): { ok: boolean }
+  /** the Picture button's "this PC / Gongu" choice and the Insert menu's Gongu item */
+  installPictureChoice(labels: { fromPc: string; gongu: string }): { ok: boolean }
   reveal(place: AgentPlace): { ok: boolean }
   selection(): AgentSelectionResult
   replaceSelection(

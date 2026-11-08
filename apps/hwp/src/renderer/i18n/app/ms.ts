@@ -13,6 +13,7 @@ export const ms = {
   fileExportDocx: 'Eksport sebagai Dokumen Word…',
   fileExportPng: 'Eksport sebagai Imej (Semua Halaman)…',
   fileExportPngPage: 'Eksport Halaman Ini sebagai Imej…',
+  pictureFromPc: 'Dari PC ini…',
   previewTitle: 'Pratonton Cetakan',
   previewPages: '{count} halaman',
   previewPrint: 'Cetak',

@@ -13,6 +13,7 @@ export const ja = {
   fileExportDocx: 'Word 文書としてエクスポート…',
   fileExportPng: '画像としてエクスポート（全ページ）…',
   fileExportPngPage: 'このページを画像としてエクスポート…',
+  pictureFromPc: 'この PC から…',
   previewTitle: '印刷プレビュー',
   previewPages: '{count} ページ',
   previewPrint: '印刷',

@@ -249,6 +249,16 @@ const api: HwpApi = {
     ipcRenderer
       .invoke(AI_CHANNELS.gonguImageSearch, query, maxResults)
       .catch(() => ({ ok: false, error: 'service' })),
+  // Hanpan: the Gongu picker of the Picture choice (0.17.1 #15), registered by the shell main
+  // (apps/shell/src/main/hanpan/gongu-pictures.ts); on its own the editor reads a service error
+  gonguSearch: (query, page) =>
+    ipcRenderer
+      .invoke('hanpan:gongu-pictures-search', query, page)
+      .catch(() => ({ ok: false, error: 'service' })),
+  gonguPicture: (workId) =>
+    ipcRenderer
+      .invoke('hanpan:gongu-pictures-picture', workId)
+      .catch(() => ({ ok: false, error: 'service' })),
   generateImage: (op) => ipcRenderer.invoke(HWP_CHANNELS.aiGenerateImage, op),
   fetchImage: (url) => ipcRenderer.invoke(HWP_CHANNELS.fetchImage, url),
   aiToolCapabilities: () => ipcRenderer.invoke(AI_CHANNELS.toolCapabilities),

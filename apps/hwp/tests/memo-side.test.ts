@@ -17,11 +17,14 @@ import {
   MEMO_WIDTH_MAX,
   MEMO_WIDTH_MIN,
   MemoSide,
+  EDITOR_MIN_WIDTH,
   MemoToggle,
   clampMemoWidth,
   loadMemoWidth,
   memoPanelInitiallyOpen,
+  memoToggleNext,
   rememberMemoPanelOpen,
+  sidesShown,
 } from '../src/renderer/MemoSide'
 import type { HwpApi } from '../src/shared/ipc'
 
@@ -199,20 +202,63 @@ describe('the memo column on screen', () => {
 
 // 0.17 UI/UX review v2, hwp-design #13: at 1366 with the AI panel out, the memo column took the
 // editor under the studio's 768px phone layout (its status bar ran together: "1 / 2 쪽구역: 1 /
-// 1삽입", its toolbar went to two rows). There the column floats over the document's edge.
+// 1삽입", its toolbar went to two rows). The first fix floated the column over the document's
+// edge, and then it hid the start of every line and the editor's menu bar (0.17.1 #21). Now, when
+// the window is too narrow for the AI panel, the memo column and an editor wide enough, only the
+// one opened last is out; the other folds without forgetting that it was open, so a wider window
+// brings both back.
 describe('the memo column on a narrow window', () => {
+  const wide = { windowWidth: 1920, aiWidth: 360, memoWidth: 300 }
+  const narrow = { windowWidth: 1366, aiWidth: 360, memoWidth: 300 }
+
   it('tells the style sheet its width', async () => {
     await mountSide(true)
     const side = container.querySelector<HTMLElement>('.memo-side')!
     expect(side.style.getPropertyValue('--memo-width')).toBe(`${MEMO_WIDTH_DEFAULT}px`)
   })
 
-  it('floats over the document while the AI panel is out, below 1500px', () => {
+  it('leaves both out when the editor keeps its room', () => {
+    expect(sidesShown({ ...wide, aiOpen: true, memoOpen: true, last: 'memo' })).toEqual({
+      ai: true,
+      memo: true,
+    })
+    expect(1920 - 360 - 300).toBeGreaterThanOrEqual(EDITOR_MIN_WIDTH)
+  })
+
+  it('keeps only the one opened last out when it does not', () => {
+    expect(sidesShown({ ...narrow, aiOpen: true, memoOpen: true, last: 'memo' })).toEqual({
+      ai: false,
+      memo: true,
+    })
+    expect(sidesShown({ ...narrow, aiOpen: true, memoOpen: true, last: 'ai' })).toEqual({
+      ai: true,
+      memo: false,
+    })
+    // one alone is never folded
+    expect(sidesShown({ ...narrow, aiOpen: false, memoOpen: true, last: 'ai' })).toEqual({
+      ai: false,
+      memo: true,
+    })
+    expect(sidesShown({ ...narrow, aiOpen: true, memoOpen: false, last: 'memo' })).toEqual({
+      ai: true,
+      memo: false,
+    })
+  })
+
+  it('never floats the column over the document', () => {
     const css = readFileSync(join(__dirname, '..', 'src', 'renderer', 'ai-panel.css'), 'utf8')
-    const block = css.slice(css.indexOf('@media (max-width: 1500px)'))
-    expect(block).toContain(
-      '.app-main:has(> .ai-dock:not(.collapsed)) > .memo-side:not(.collapsed)',
-    )
-    expect(block).toContain('margin-inline-end: calc(-1 * var(--memo-width))')
+    expect(css).not.toContain('margin-inline-end: calc(-1 * var(--memo-width))')
+  })
+
+  it('brings a folded column out on the top-bar button instead of closing it', () => {
+    expect(memoToggleNext({ memoOpen: true, memoShown: false })).toEqual({
+      open: true,
+      last: 'memo',
+    })
+    expect(memoToggleNext({ memoOpen: true, memoShown: true })).toEqual({ open: false })
+    expect(memoToggleNext({ memoOpen: false, memoShown: false })).toEqual({
+      open: true,
+      last: 'memo',
+    })
   })
 })
