@@ -1,7 +1,7 @@
 import type { zh } from './zh'
 
 export const vi = {
-  gonguTitle: 'Hình ảnh Gongu',
+  gonguTitle: 'Ảnh công cộng (Gongu)',
   gonguDesc:
     'Khóa dùng để tìm hình ảnh đã hết hạn bản quyền trong Gongu, thư viện tác phẩm tự do của Ủy ban Bản quyền Hàn Quốc. Bạn nhận khóa miễn phí từ Cổng dữ liệu công Hàn Quốc (data.go.kr).',
   gonguHowTo:
@@ -35,7 +35,7 @@ export const vi = {
   gpMore: 'Xem thêm',
   gpInsert: 'Chèn',
   gpInserting: 'Đang chèn…',
-  gpNoKey: 'Chưa có khóa Gongu. Hãy nhập khóa trong Cài đặt → Tích hợp → "Hình ảnh Gongu".',
+  gpNoKey: 'Chưa có khóa Gongu. Hãy nhập khóa trong Cài đặt → Tích hợp → "Ảnh công cộng (Gongu)".',
   gpFooter:
     'Tác phẩm Gongu do Ủy ban Bản quyền Hàn Quốc cung cấp. Nguồn của hình được chèn sẽ được ghi tự động.',
   gpPictureFailed: 'Không lấy được hình ảnh. Hãy thử lại sau giây lát.',

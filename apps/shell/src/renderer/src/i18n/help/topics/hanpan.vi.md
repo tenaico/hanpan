@@ -47,7 +47,7 @@ Hanpan gửi những gì bạn sắp xếp trong sơ đồ tư duy thành báo c
 
 ## Tìm ảnh trên Gongu
 
-- Tìm tranh cổ và ảnh đã hết hạn bản quyền trong Gongu, thư viện của Ủy ban Bản quyền Hàn Quốc, rồi chèn vào. Bạn nhận khóa miễn phí ở Cổng dữ liệu công (data.go.kr) bằng cách đăng ký dịch vụ tác phẩm hết hạn của Ủy ban, nhập khóa vào thẻ **Hình ảnh Gongu** trong **Cài đặt › Tích hợp** rồi bấm **Kiểm tra**. Mỗi ngày tìm được tới 1.000 lần.
+- Tìm tranh cổ và ảnh đã hết hạn bản quyền trong Gongu, thư viện của Ủy ban Bản quyền Hàn Quốc, rồi chèn vào. Bạn nhận khóa miễn phí ở Cổng dữ liệu công (data.go.kr) bằng cách đăng ký dịch vụ tác phẩm hết hạn của Ủy ban, nhập khóa vào thẻ **Ảnh công cộng (Gongu)** trong **Cài đặt › Tích hợp** rồi bấm **Kiểm tra**. Mỗi ngày tìm được tới 1.000 lần.
 - Trong cửa sổ thiết kế, gõ tên tác phẩm hoặc tên tác giả vào **Tìm trong Gongu** ở thẻ **Elements**, chọn một ảnh thu nhỏ rồi bấm **Chèn**: một dòng ghi nguồn sẽ nằm dưới ảnh. Khi xuất, để bật **Thêm danh sách nguồn hình ảnh** để có danh sách nguồn ở cuối, và dùng **Kiểm tra nguồn** để tìm ảnh chưa có nguồn.
 - Trong trình soạn HWP và sơ đồ tư duy, hãy nhờ AI kiểu như "tìm một bức tranh con hổ trên Gongu và chèn vào". Người ghi nguồn là Hanpan, không phải AI: với tài liệu HWP là dưới ảnh và trong danh sách "nguồn ảnh" ở cuối, với sơ đồ tư duy là trong ghi chú của chủ đề.
 - **Hanpan tools › Kiểm tra nguồn ảnh** ở thẻ HWP và **Send to a document (HWP, PPT, Word) › Kiểm tra nguồn ảnh** trong sơ đồ tư duy liệt kê các ảnh chưa có nguồn hoặc có điều kiện sử dụng.
