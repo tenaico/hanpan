@@ -15,6 +15,24 @@ const LOWER_LATIN = /^(?=\p{Script=Latin})\p{Ll}/u
 
 export const lineText = (line: Line): string => line.spans.map((s) => s.text).join('')
 
+/**
+ * A list number or bullet opening a line: "1.", "1)", "(1)", "1-1.", "3.2.1 ",
+ * circled numbers, Korean "가." items and bullet glyphs. Plain "2 apples"
+ * and four-digit years are not markers.
+ */
+const LIST_MARKER =
+  /^\s*(?:\(\d{1,3}\)|\d{1,3}(?:[.-]\d{1,3})*[.)]|\d{1,3}(?:[.-]\d{1,3})+\s|[①-⑳]|[가나다라마바사아자차카타파하][.)]\s|\([가나다라마바사아자차카타파하]\)|[•·▪◦‣∙●○■□]|[-–]\s)/
+
+/**
+ * Two numbered lines in a row are list items laid out one per line (P5): a
+ * block pdf2docx kept together ("1-1. …", "1-2. …") must not read as one
+ * run of prose. Wrapped prose rarely starts two lines in a row with a list
+ * number, so a lone marker keeps joining.
+ */
+export function isNumberedLinePair(prev: Line, next: Line): boolean {
+  return LIST_MARKER.test(lineText(prev)) && LIST_MARKER.test(lineText(next))
+}
+
 /** `#_pdfpageN` in-document targets become `#page=N` in original numbering */
 function mapHref(
   href: string,
@@ -98,7 +116,7 @@ export function linesToRuns(
       const prevTail = prev.spans[prev.spans.length - 1]
       const nextHead = line.spans[0]
       const seam = seams.has(i)
-      if (line.hardBreakBefore && !seam) {
+      if ((line.hardBreakBefore || isNumberedLinePair(prev, line)) && !seam) {
         runs.push({ kind: 'lineBreak' })
       } else if (prev.endsWithHyphen || (seam && isSeamHyphenation(prev, line))) {
         if (last) last.text = last.text.replace(/\s+$/, '').replace(TRAILING_HYPHEN, '')

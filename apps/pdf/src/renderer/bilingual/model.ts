@@ -474,3 +474,11 @@ export function shouldAskToCollapse(state: {
   if (state.asked || state.collapsed) return false
   return state.pageAreaWidth < (state.threshold ?? BILINGUAL_NARROW_PAGE_PX)
 }
+
+/** a shown fold question still applies: the page area is still narrow */
+export function collapseAskStillFits(
+  pageAreaWidth: number,
+  threshold = BILINGUAL_NARROW_PAGE_PX,
+): boolean {
+  return pageAreaWidth < threshold
+}
