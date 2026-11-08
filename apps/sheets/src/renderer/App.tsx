@@ -34,6 +34,7 @@ import {
 } from './univer-sync'
 import { installGridGrowth } from './grid-growth'
 import { installAltEnterWrap } from './alt-enter-wrap'
+import { installEntryAutoWiden } from './entry-autowiden'
 import {
   pollUntilReady,
   runHeadlessRendererExport,
@@ -2282,6 +2283,8 @@ export function App({
     // Arrows on a multi-cell selection collapse to the active cell first,
     // then move one step (Excel), instead of stepping past the range edge.
     const arrowCollapseDisposable = installArrowCollapse(runtime)
+    // A typed number or date that shows #### widens its column, like Excel (X9).
+    const entryAutoWidenDisposable = installEntryAutoWiden(runtime)
     // Alt+Enter starts a new line inside the cell and, like Excel, turns on
     // Wrap Text so the new line is visible after the edit commits.
     const altEnterWrapDisposable = installAltEnterWrap(runtime, {
@@ -3677,6 +3680,7 @@ export function App({
       selectionWrapGuardDisposable.dispose()
       arrowCollapseDisposable.dispose()
       altEnterWrapDisposable.dispose()
+      entryAutoWidenDisposable.dispose()
       sheetProtectionDisposable.dispose()
       ctrlDragFillDisposable.dispose()
       contextSubmenuReopenDisposable.dispose()
