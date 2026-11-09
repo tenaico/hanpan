@@ -25,8 +25,9 @@
 - 화면 문구를 두는 곳:
   - 카드 몸통의 글(모든 앱, 트렌드 카드 글, 앱 한 줄 설명, 예시 칩, '전체 N개'): `apps/shell/src/renderer/src/hanpan/home-strings.json`(11개 언어: ko, en, zh, zh-TW, ja, th, ru, ar, he, hi, vi). `node tools/hanpan-add-block-strings.mjs apps/shell/src/renderer/src/strings.ts hpManualTip apps/shell/src/renderer/src/hanpan/home-strings.json`로 `strings.ts`에 넣는다. JSON에 없는 10개 언어에는 영어가 들어간다(지금 방식).
   - 카드 이름, 홈 꾸미기, 왼쪽 메뉴: `apps/shell/src/renderer/src/i18n/strings-home-custom.ts`(21개 언어).
-  - Task 2~8은 새 키를 ko, en, vi로 쓴다. home-custom의 나머지 18개 언어 칸에는 잠시 영어를 둔다. 값을 바꾸는 키도 같다: ko, en, vi는 새 값으로, 나머지 18개 언어는 새 영어로 바꿔 둔다(옛 뜻의 번역이 남으면 Task 10의 시험이 잡지 못한다). Task 10이 한국어 원문을 사용자에게 확정받은 뒤 나머지 언어를 채운다. home-strings의 새 키는 `tests/hanpan-vi-strings.test.ts` 때문에 처음부터 vi가 있어야 한다.
-  - 이미 있는 키의 값을 바꾸면 위 도구가 `strings.ts`에 반영하지 않는다(영어 자리표시만 바꾼다). 그래서 예시 칩은 새 키 `hbExample1~3`으로 만든다. 쓰지 않게 된 키(`hpExample1~3`, `hpFlow*`, `hpMoreTools`, `mainCards`, `appCards`)는 지우지 않는다.
+  - **Task 1이 아래 문구 표의 모든 키를 ko, en, vi로 미리 등록한다(Ruling R22).** home-custom의 나머지 18개 언어 칸에는 잠시 영어를 둔다. 값을 바꾸는 키도 같다: ko, en, vi는 새 값으로, 나머지 18개 언어는 새 영어로 바꿔 둔다(옛 뜻의 번역이 남으면 Task 10의 시험이 잡지 못한다). Task 2~9는 문구 파일(`home-strings.json`, `strings.ts`, `strings-home-custom.ts`)을 건드리지 않는다. Task 10이 나머지 언어를 채운다. home-strings의 새 키는 `tests/hanpan-vi-strings.test.ts` 때문에 처음부터 vi가 있어야 한다.
+  - 이미 있는 키의 값을 바꾸면 위 도구가 `strings.ts`에 반영하지 않는다(영어 자리표시만 바꾼다. `tools/hanpan-strings-core.mjs`의 `replacePlaceholders`). 그래서 예시 칩은 새 키 `hbExample1~3`으로 만든다. 쓰지 않게 된 키는 지우지 않는다: home-strings의 `hpExample1~3`, `hpFlow*`, `hpMoreTools`와 home-custom의 `mainCards`, `appCards`.
+- **Ruling R22 (문구 선등록):** 문구를 쓰는 작업(Task 2~8)이 저마다 같은 세 파일에 키를 더하면 병렬로 둘 수 없다(JSON과 21개 언어 블록에서 같은 자리에 줄이 끼어 합치기 충돌이 난다). 문구는 이미 이 표로 정해져 있으므로 Task 1이 한 번에 등록하고, 나머지 작업은 키 이름만 쓴다. 대가는 Task 1이 조금 커지는 것뿐이다.
 
 ### 명령
 
@@ -83,38 +84,42 @@
 - 검사: `schema`가 1이 아니면 응답 전체를 버린다. `fields`는 12개까지만 읽는다. `key`는 `ai`, `opensource`, `local-ai`, `ai-safety`, `stocks`, `economy`, `semiconductor`, `realestate`, `fx`, `crypto`만 받는다. `s`가 −2~2 정수가 아니면 '정보 없음'(`null`)이다. 글자 수는 `title` 20, `label` 10, `head` 80, `line` 80자이고 넘으면 잘라 낸다. `path`는 `/`로 시작하는 단순한 경로만 받고 `//`, `:`, `\`가 들어 있으면 버린다.
 - 링크: 앱에 박아 둔 `https://trend.tenai.kr` + `path` + `?utm_source=hanpan&utm_medium=home&utm_campaign=forecast`. 열기 직전에 주소가 `https://trend.tenai.kr/`로 시작하는지 다시 확인한다.
 - 화면 CSP(`apps/shell/src/renderer/index.html`)의 `connect-src 'self' ws://localhost:*`는 그대로다.
+- **분야별 병합(Ruling R24).** 기상도 주소는 이미 열려 있다(2026-11-09 확인: `schema` 1, 분야 10개, `X-Vercel-Cache: HIT`). 서버는 원본을 다 받은 답은 CDN에 30분, 일부만 받은 답(값이 있는 분야 5~9개, 나머지는 `s: null`)은 1분만 저장하고, 4개 이하면 503 `no-store`를 준다. 한판은 6시간에 한 번 받으므로 일부만 받은 답을 그대로 저장하면 그 분야가 6시간 동안 '정보 없음'으로 남는다. 그래서 새 답에서 `s`가 `null`인 분야는 이전 저장본의 같은 `key`에 값이 있고 그 값이 48시간 안의 것이면 그 값(`s`, `label`, `head`)으로 채우고, 그 분야에 `asOf`(값을 계산한 시각)를 함께 저장한다. 새 답에 없는 분야는 더하지 않는다(분야 목록은 새 답이 정한다). 화면 규칙은 Task 8(R25).
+- **잘라 내기(Ruling R26).** 글자 수를 넘는 글은 `max − 1`자 뒤에 `…`를 붙여 `max`자로 만든다. 실제 응답의 `head`는 60~120자라 80자에서 그냥 자르면 문장 중간에서 끊긴 것처럼 보인다. 길이 제한은 스펙 그대로다.
 
-**문구.** 아래 표의 한국어를 쓴다. '스펙'은 스펙이 정한 글이고, '초안'은 Task 10에서 사용자에게 확정받는다.
+**문구.** 아래 표의 한국어와 영어를 쓴다. '스펙'은 스펙이 정한 글이고, '확정'은 스펙이 만드는 사람에게 맡긴 글을 이 계획이 정한 것이다(Ruling R27). Task 1이 이 표 전부를 ko·en·vi로 등록한다(R22). vi는 Task 1이 초벌을 쓰고 Task 10이 다듬는다.
 
-| 파일 | 키 | 한국어 | |
-|---|---|---|---|
-| home-strings | `hbExample1`, `hbExample2`, `hbExample3` | 11월 시설 점검 결과 보고 / 입주사 안내문 / 주간 업무 보고 | 스펙 예시 |
-| home-strings | `hbAllApps` | 모든 앱 | 스펙 |
-| home-strings | `hbAllAppsSearch` | 앱 이름이나 하는 일로 찾기 | 초안 |
-| home-strings | `hbRecentApps` | 최근에 쓴 앱 | 스펙 |
-| home-strings | `hbGroupDocs`, `hbGroupPdf`, `hbGroupGraphics`, `hbGroupFile` | 문서 만들기 / PDF · 변환 / 그림 / 파일 | 스펙 |
-| home-strings | `hbNewApp` | 새 앱 | 스펙 |
-| home-strings | `hbSearchNoApps` | 맞는 앱이 없습니다 | 초안 |
-| home-strings | `hbAppDocxSub`, `hbAppXlsxSub`, `hbAppMdSub`, `hbAppHtmlSub`, `hbAppPdfSub`, `hbAppOpenSub` | 보고서·기안문 같은 워드 문서 / 표와 계산이 들어가는 엑셀 문서 / 마크다운으로 가볍게 쓰는 글 / 안내 페이지 같은 웹 문서 / PDF에 메모하고 가리고 글 넣기 / 이 컴퓨터에 있는 파일 열기 | 초안 |
-| home-strings | `hbRecentAll` | 전체 {n}개 | 스펙 |
-| home-strings | `hbTrendTitle` | 트렌드 레이더 · 오늘의 기상도 | 스펙 |
-| home-strings | `hbTrendLine`, `hbTrendMore` | 오늘의 한 줄 / 자세히 | 스펙 |
-| home-strings | `hbTrendAsOf` | {when} 기준 | 스펙("11월 8일 기준") |
-| home-strings | `hbTrendOffline` | 인터넷에 연결되면 오늘의 트렌드가 나옵니다 | 스펙 |
-| home-strings | `hbTrendNoData` | 정보 없음 | 스펙 |
-| home-custom | `navHome` | 홈 | 스펙 |
-| home-custom | `cardStart`, `cardApps` | 시작 / 새로 만들기 | 스펙 |
-| home-custom | `cardTrend`, `descTrend` | 트렌드 레이더 / 트렌드레이더의 오늘의 기상도를 보여 줍니다. | 초안 |
-| home-custom | `widgetRecent` (값을 바꾼다) | 이어서 하기 | 스펙 |
-| home-custom | `descFavorites`, `favoritesEmpty` (값을 바꾼다) | 별표한 파일. / 파일에 별표를 하면 여기에 모입니다. | 7.7: "앱을 고정하면"을 뺀다 |
-| home-custom | `pin`, `unpin` (값을 바꾼다) | 홈에 고정 / 홈에서 빼기 | 초안 |
-| home-custom | `sizeOption` | 가로 {w}칸 × 세로 {h}줄 | 초안 |
-| home-custom | `customizeHint` | 카드를 끌어서 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다. | 스펙 |
-| home-custom | `addCard`, `resetBoard`, `listView` | 카드 추가 / 기본 배치로 / 목록으로 정리 | 스펙 ('완료'는 있는 `done`) |
-| home-custom | `resetBoardAsk` | 기본 카드의 순서와 크기, 홈에 보이는 앱을 처음 상태로 되돌릴까요? 직접 더한 카드는 그대로 남습니다. | 초안 |
-| home-custom | `cardMenu`, `removeCard`, `unpinApp`, `dragHandle`, `resizeCorner` | {name} 메뉴 / {name} 빼기 / {name} 홈에서 빼기 / {name} 옮기기 / {name} 크기 바꾸기 | 초안 |
-| home-custom | `addAppSlot` | 앱 추가 | 스펙 |
-| home-custom | `boardCards`, `boardApps`, `boardFull` | 카드 / 홈에 보이는 앱 / 카드는 24장까지 둘 수 있습니다. | 초안 |
+| 파일 | 키 | 한국어 | 영어 | |
+|---|---|---|---|---|
+| home-strings | `hbExample1`, `hbExample2`, `hbExample3` | 시설 점검 결과 보고 / 입주사 안내문 / 주간 업무 보고 | Facility inspection report / Notice to tenants / Weekly work report | 확정(스펙 예시에서 '11월'을 뺐다, R27) |
+| home-strings | `hbAllApps` | 모든 앱 | All apps | 스펙 |
+| home-strings | `hbAllAppsSearch` | 앱 이름이나 하는 일로 찾기 | Search by app name or what it does | 확정 |
+| home-strings | `hbRecentApps` | 최근에 쓴 앱 | Recently used apps | 스펙 |
+| home-strings | `hbGroupDocs`, `hbGroupPdf`, `hbGroupGraphics`, `hbGroupFile` | 문서 만들기 / PDF · 변환 / 그림 / 파일 | Create documents / PDF · Convert / Graphics / Files | 스펙 |
+| home-strings | `hbNewApp` | 새 앱 | New | 스펙 |
+| home-strings | `hbSearchNoApps` | 맞는 앱이 없습니다 | No matching apps | 확정 |
+| home-strings | `hbAppDocxSub`, `hbAppXlsxSub`, `hbAppMdSub`, `hbAppHtmlSub`, `hbAppPdfSub`, `hbAppOpenSub` | 보고서·기안문 같은 워드 문서 / 표와 계산이 들어가는 엑셀 문서 / 마크다운으로 가볍게 쓰는 글 / 안내 페이지 같은 웹 문서 / PDF에 메모하고 가리고 글 넣기 / 이 컴퓨터에 있는 파일 열기 | Word documents such as reports and memos / Excel sheets with tables and formulas / Light writing in Markdown / Web pages such as notices / Annotate, redact and add text to a PDF / Open a file on this computer | 확정 |
+| home-strings | `hbRecentAll` | 전체 {n}개 | All {n} | 스펙 |
+| home-strings | `hbTrendTitle` | 트렌드 레이더 · 오늘의 기상도 | Trend Radar · Today's forecast | 스펙 |
+| home-strings | `hbTrendLine`, `hbTrendMore` | 오늘의 한 줄 / 자세히 | Today's line / Details | 스펙 |
+| home-strings | `hbTrendAsOf` | {when} 기준 | as of {when} | 스펙("11월 8일 기준") |
+| home-strings | `hbTrendOffline` | 인터넷에 연결되면 오늘의 트렌드가 나옵니다 | Today's trends appear once you are online | 스펙 |
+| home-strings | `hbTrendNoData` | 정보 없음 | No data | 스펙 |
+| home-custom | `navHome` | 홈 | Home | 스펙 |
+| home-custom | `cardStart`, `cardApps` | 시작 / 새로 만들기 | Start / New | 스펙 |
+| home-custom | `cardTrend`, `descTrend` | 트렌드 레이더 / 트렌드 레이더의 오늘의 기상도를 보여 줍니다. | Trend Radar / Shows today's forecast from Trend Radar. | 확정(제목과 같게 '트렌드 레이더'로 띄어 쓴다) |
+| home-custom | `widgetRecent` (값을 바꾼다) | 이어서 하기 | Continue | 스펙 |
+| home-custom | `descFavorites`, `favoritesEmpty` (값을 바꾼다) | 별표한 파일. / 파일에 별표를 하면 여기에 모입니다. | Starred files. / Star a file to see it here. | 7.7: "앱을 고정하면"을 뺀다 |
+| home-custom | `pin`, `unpin` (값을 바꾼다) | 홈에 고정 / 홈에서 빼기 | Pin to Home / Remove from Home | 확정 |
+| home-custom | `sizeOption` | 가로 {w}칸 × 세로 {h}줄 | {w} columns × {h} rows | 확정 |
+| home-custom | `customizeHint` | 카드를 끌어서 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다. | Drag a card to move it; drag its bottom-right corner to resize it. | 스펙 |
+| home-custom | `addCard`, `resetBoard`, `listView` | 카드 추가 / 기본 배치로 / 목록으로 정리 | Add card / Default layout / Arrange as a list | 스펙 ('완료'는 있는 `done`) |
+| home-custom | `resetBoardAsk` | 기본 카드의 순서와 크기, 홈에 보이는 앱을 처음 상태로 되돌릴까요? 직접 더한 카드는 그대로 남습니다. | Put the default cards' order and size, and the apps shown on Home, back to how they started? Cards you added stay. | 확정 |
+| home-custom | `cardMenu`, `removeCard`, `unpinApp`, `dragHandle`, `resizeCorner` | {name} 메뉴 / {name} 빼기 / {name} 홈에서 빼기 / {name} 옮기기 / {name} 크기 바꾸기 | {name} menu / Remove {name} / Remove {name} from Home / Move {name} / Resize {name} | 확정 |
+| home-custom | `addAppSlot` | 앱 추가 | Add app | 스펙 |
+| home-custom | `boardCards`, `boardApps`, `boardFull` | 카드 / 홈에 보이는 앱 / 카드는 24장까지 둘 수 있습니다. | Cards / Apps shown on Home / Home holds up to 24 cards. | 확정 |
+
+- **Ruling R27 (한국어 원문 확정):** 스펙 11절은 한국어 원문을 사용자에게 보여 확정하라고 했지만, 사용자가 "문제 있으면 알아서 판단해서 진행"하라고 정했다(2026-11-09). 그래서 위 '확정' 글을 이 계획이 정하고, 구현을 마친 최종 보고에 '정한 문구' 목록으로 남긴다. 바꾼 것 둘: `hbExample1`에서 '11월'을 뺐다(달이 지나면 낡는 글이고, 스펙은 "사무실에서 실제로 쓰는 문서 이름"만 요구한다). `descTrend`의 '트렌드레이더'를 제목(`hbTrendTitle`)과 같이 '트렌드 레이더'로 띄어 썼다(한 화면에 두 표기가 같이 보이지 않게). 되돌릴 수 있는 결정이다: 보고 뒤 사용자가 바꾸면 ko부터 고치고 Task 10의 번역을 다시 한다.
 
 ### 선택자 약속
 
@@ -127,9 +132,26 @@ e2e와 단위 시험이 기대는 이름이다. 작업마다 이 이름을 그�
 - 모든 앱: `[data-all-apps]`, 검색 `[data-all-apps-search]`, 최근 줄 `[data-all-apps-recent] [data-recent-app="<열쇠>"]`, 묶음 `[data-app-group="<id>"]`, 항목 `[data-all-apps] [data-new="<열쇠>"]`, 핀 `[data-app-pin="<열쇠>"][aria-pressed]`, 새 앱 `[data-app-new]`.
 - 시작 카드는 지금 그대로: `[data-hanpan="start-board"|"start-topic"|"start-go"|"start-guide"|"start-note"]`.
 - 이어서 하기: 줄 `[data-recent-file="<경로>"]`, '전체 N개' `[data-recent-all]`.
-- 트렌드: 분야 `[data-trend-field="<key>"]`, '정보 없음' `[data-trend-nodata]`, 기준 시각 `[data-trend-asof]`, 한 줄 `[data-trend-line]`, 자세히 `[data-trend-more]`, 오프라인 `[data-trend-offline]`.
+- 트렌드: 분야 `[data-trend-field="<key>"]`, '정보 없음' `[data-trend-nodata]`, 기준 시각 `[data-trend-asof]`, 한 줄 `[data-trend-line]`, 자세히 `[data-trend-more]`, 오프라인 `[data-trend-offline]`, 이전 저장본에서 채운 분야 `[data-trend-carried="<YYYY-MM-DD>"]`(R25).
 - 위젯 카드 안쪽은 0.17 그대로: `[data-widget-settings]`, `[data-widget-form]`, `[data-widget-done]`, `input[name="title"]`, `select[name="kind"]`, `select[name="size"]`, `[data-shortcut-open]`, `[data-clock-time]`, `[data-widget-setup]`, `[data-pick]`.
 - 왼쪽 메뉴 '홈': `button.nav-item[data-nav="home"]`.
+
+## 실행 순서와 병렬
+
+작업마다 따로 작업 폴더(`git worktree add .claude/worktrees/home-board-t<번호> -b feat/home-board-t<번호> feat/home-board`)에서 구현하고, 한 묶음이 끝나면 `feat/home-board`에 차례로 합친(`git merge --no-ff`) 뒤 다음 묶음을 시작한다. 같은 묶음 안의 작업은 서로 다른 파일만 고치고 Task 1의 형과 이름만 공유한다. 한 묶음을 합친 뒤에는 `npm run typecheck -w @genoffice/shell`과 그 묶음의 단위 시험을 한 번 더 돌린다.
+
+| 차례 | 동시에 하는 작업 | 각 작업이 만들거나 고치는 파일 | 기다리는 것 |
+|---|---|---|---|
+| 0 | **Task 1** (혼자) | `shared/home-apps.ts`, `shared/home-board.ts`, `shared/trend-forecast.ts`(상수), `main/home-board.ts`, `main/trend/trend-config.ts`, `renderer/src/home-board/useHomeBoard.ts`, `renderer/src/home-board/TrendCard.tsx`(빈 카드), `shared/home-api.ts`, `preload/index.ts`, `main/index.ts`, `HomeWidgets.tsx`(`HomeAppCard.sub` 한 줄), 문구 파일 셋(R22) | 없음 |
+| A | **Task 2** ‖ **Task 3** ‖ **Task 7** | 2: `renderer/src/home-board/{home-apps.tsx, AppsCard.tsx, AllApps.tsx, apps-card.css}`, `shared/home-apps.ts`, `tests/{home-apps.test.ts, home-apps-ui.test.ts, home-dialog-keys.test.ts}` · 3: `renderer/src/home-board/{RecentCard.tsx, board-geometry.ts}`, `shared/home-board-edit.ts`, `hanpan/StartBoard.tsx`, `hanpan/hanpan.css`(341-400), `Home.tsx`(3568-3572 다섯 줄), `HomeWidgets.tsx`, `tests/{hanpan-start-board, home-cards-ui, board-geometry, home-board-edit, home-widgets}.test.ts` · 7: `shared/trend-api.ts`, `shared/trend-forecast.ts`, `main/trend/{trend-service.ts, trend-ipc.ts, trend-config.ts}`, `preload/index.ts`(끝에 더함), `main/index.ts`(10162·10672 근처), `shared/home-layout.ts`(1-8), `docs/security.md`, `PRIVACY.md`, `tests/{trend-forecast, trend-service, preload-trend, renderer-csp}.test.ts` | Task 1 |
+| B | **Task 4** ‖ **Task 8** ‖ **Task 11**(파일 고치기만) | 4: `Home.tsx`, `HomeWidgets.tsx`, `home-board/{BoardGrid.tsx, board-geometry.ts, home-board.css}`, `hanpan/hanpan.css`(405-524), `main/index.ts`(6729-6733), `preload/index.ts`(440-445), `shared/home-api.ts`, `main/home-layout.ts` 삭제, `tests/{home-widgets, home-korean-cards, home-navigation, home-subscription-entry, home-layout, board-geometry}.test.ts` · 8: `home-board/{TrendCard.tsx, trend-card.css}`, `shared/trend-forecast.ts`, `tests/{trend-forecast, home-trend-card}.test.ts` · 11: `e2e/**`만 | 묶음 A |
+| C | **Task 5 → Task 6 → Task 9**(한 폴더에서 차례로) ‖ **Task 10** | 5·6·9: `shared/home-board-edit.ts`, `shared/home-layout.ts`(187-292), `home-board/{BoardGrid.tsx, AppsCard.tsx, board-geometry.ts, home-board.css}`, `HomeWidgets.tsx`, `Home.tsx`, `hanpan/hanpan.css`(259-336), `tests/{home-board-edit, home-customize, home-dialog-keys, home-layout, board-geometry, home-board-columns}.test.ts` · 10: 문구 파일 셋(나머지 언어), `i18n/help/topics/{hanpan, home-screen}.*.md`, `docs/manual/한판-사용설명서.md`, `tests/home-board-strings.test.ts` | 묶음 B |
+| D | **Task 12** (혼자) | `e2e/home-board.spec.ts`, 결정 기록, `AGENTS.md`, 설명서 그림. 빌드와 e2e 실행 | 묶음 C |
+
+- Task 5, 6, 9는 모두 `BoardGrid.tsx`와 `home-board.css`를 고치므로 동시에 두지 않는다. Task 10은 문구 파일과 문서만 고치므로 그 옆에서 돈다.
+- Task 11은 `e2e/` 파일만 고치므로 묶음 B에서 쓰기를 마쳐 두고, 실행은 Task 12가 한다(그 전에는 빌드가 보드를 담지 않는다).
+- Task 2와 Task 3이 같은 파일을 건드리지 않도록 Task 1에서 미리 빼 둔 것(R21): `HomeAppCard.sub`, 문구 등록, `TrendCard.tsx` 빈 카드, `main/index.ts`의 `onHomeBoardChanged` 훅(R23).
+- **Ruling R21 (병렬을 위한 파일 나누기):** 보드를 고치는 순수 함수는 두 파일로 나눈다. `shared/home-board.ts`는 형, 상수, 정리(`normalize*`, `migrate*`, `resolve*`, `default*`)만 두고(Task 1만 고친다), 편집 함수(`updateCard`, `moveCard`, Task 5의 `addCard`·`removeCard`·`resizeCard`… )는 `shared/home-board-edit.ts`에 둔다(Task 3이 만들고 Task 5가 더한다). 핀·최근 앱·본 앱을 고치는 세 함수(`setPinned`, `recordAppLaunch`, `markAppsSeen`)는 `shared/home-apps.ts`에 둔다(`HomeBoard`는 `import type`으로만 쓰므로 순환 참조가 생기지 않는다). 단위 시험도 `home-board.test.ts`(Task 1), `home-apps.test.ts`(Task 2), `home-board-edit.test.ts`(Task 3·5)로 나눈다. 스펙 8절은 `home-board.test.ts` 한 파일을 적었지만 사례는 모두 그대로이고 파일만 나뉜다. CSS도 `apps-card.css`(Task 2), `home-board.css`(Task 4), `trend-card.css`(Task 8)로 나누고 각 부품 파일이 자기 CSS를 `import`한다(`Home.tsx`가 `./hanpan/hanpan.css`를 들여오는 방식). 이유: Task 2·3, Task 4·8을 서로 다른 작업 폴더에서 동시에 할 수 있다. 대가는 import 줄이 몇 개 는다.
 
 ## Review Focus
 
@@ -138,6 +160,7 @@ e2e와 단위 시험이 기대는 이름이다. 작업마다 이 이름을 그�
 3. **한국 문서 기능이나 화면 언어를 바꿀 때.** 감춰진 앱(hwp, templates, design)의 핀은 지우지 않고, 다시 켜면 제자리에 나온다. 한국어로 바꾸면 트렌드 카드가 기본 자리에 한 번 들어오고, 사용자가 뺀 뒤에는 다시 들어오지 않는다. → Task 1 `normalizeHomeBoard`, Task 2 `appSlots` 시험.
 4. **메모를 쓰는 중에 다른 저장(앱 실행 기록, 핀)이 겹칠 때.** 두 변경이 모두 남는다. 나중 저장이 앞 변경을 덮지 않는다. → Task 1 `useHomeBoard` 시험.
 5. **한국 자정 직후.** 어제 날짜의 기상도에 오늘 시각을 붙이지 않는다. 기상도의 한국 날짜가 오늘(한국 시각)일 때만 'HH:MM 기준'이고, 아니면 'M월 D일 기준'이다. → Task 8 `trendAsOfText` 시험.
+6. **일부만 받은 답.** 서버가 분야 일부만 계산한 답(`s: null` 섞임, CDN 1분)을 6시간에 한 번 받으면, 이전 저장본에 있던 그 분야 값이 '정보 없음'으로 덮이면 안 된다. 분야별로 병합하고(48시간 안의 값만), 채운 분야는 그 값의 시각을 함께 저장해 다른 날 값이면 화면에 날짜를 붙인다. → Task 7 `mergeTrendForecast`·`createTrendService` 시험, Task 8 `[data-trend-carried]` 시험.
 
 ---
 
@@ -146,8 +169,8 @@ e2e와 단위 시험이 기대는 이름이다. 작업마다 이 이름을 그�
 ### Task 1: 보드 저장 형식과 0.18 옮겨 오기
 
 **Files:**
-- Create: `apps/shell/src/shared/home-apps.ts`, `apps/shell/src/shared/home-board.ts`, `apps/shell/src/shared/trend-forecast.ts`(이 작업에서는 주소 상수만), `apps/shell/src/main/home-board.ts`, `apps/shell/src/main/trend/trend-config.ts`, `apps/shell/src/renderer/src/home-board/useHomeBoard.ts`
-- Modify: `apps/shell/src/shared/home-api.ts:368-371, 628-629`(메서드와 채널을 더한다), `apps/shell/src/preload/index.ts:440-445`(더한다), `apps/shell/src/main/index.ts:6729-6733`(처리기를 더한다. 옛 `getHomeLayout`·`setHomeLayout`은 Task 4에서 지운다)
+- Create: `apps/shell/src/shared/home-apps.ts`, `apps/shell/src/shared/home-board.ts`, `apps/shell/src/shared/trend-forecast.ts`(이 작업에서는 주소 상수만), `apps/shell/src/main/home-board.ts`, `apps/shell/src/main/trend/trend-config.ts`, `apps/shell/src/renderer/src/home-board/useHomeBoard.ts`, `apps/shell/src/renderer/src/home-board/TrendCard.tsx`(빈 카드. 제목 `hbTrendTitle`과 `[data-trend-offline]` `hbTrendOffline`만. Task 8이 채운다, R21)
+- Modify: `apps/shell/src/shared/home-api.ts:368-371, 628-629`(메서드와 채널을 더한다), `apps/shell/src/preload/index.ts:440-445`(더한다), `apps/shell/src/main/index.ts:6729-6733`(처리기를 더한다. 옛 `getHomeLayout`·`setHomeLayout`은 Task 4에서 지운다), `apps/shell/src/renderer/src/HomeWidgets.tsx:40-45`(`HomeAppCard`에 `sub?: string` 한 줄. Task 2가 쓴다), 문구 파일 셋 `apps/shell/src/renderer/src/hanpan/home-strings.json`, `apps/shell/src/renderer/src/strings.ts`(도구로), `apps/shell/src/renderer/src/i18n/strings-home-custom.ts`(Global Constraints 문구 표 전부, R22)
 - Test: `apps/shell/tests/home-board.test.ts`, `apps/shell/tests/home-board-storage.test.ts`, `apps/shell/tests/trend-config.test.ts`, `apps/shell/tests/use-home-board.test.ts`, `apps/shell/tests/preload-home-board.test.ts`
 
 **Interfaces:**
@@ -248,7 +271,10 @@ export function useHomeBoard(input: { korean: boolean; koreanDocs: boolean }): {
 - `boardContextFrom(lang, stored, url)` = `{ korean: lang === 'ko', koreanDocs: koreanDocFeaturesOn(stored, lang), trend: url !== null }`.
 - `trendForecastUrl(env)`: `HANPAN_TREND_URL`이 없으면(`undefined`) `TREND_FORECAST_URL`. 빈 값이면 `null`. `http:`, `https:`, `file:` 주소면 `new URL(값).href`. 그 밖은 `null`.
 - **Ruling R10:** `HANPAN_TREND_URL`은 시험과 개발용이다. 빈 값은 "기상도 주소가 비어 있는 빌드"(7.10)이고, `file:` 주소는 고정 파일을 읽는다(Task 7). 개발 빌드와 정식 빌드의 기본 주소는 같다.
-- `index.ts` `registerHomeIpc`: 모듈에서 `const TREND_URL = trendForecastUrl(process.env)`를 한 번 구한다. `boardContext()` = `boardContextFrom(currentLang(), readKoreanDocFeatures(APP_SETTINGS_PATH()), TREND_URL)`. `getHomeBoard` → `{ board: readHomeBoard(APP_SETTINGS_PATH(), boardContext()), trendAvailable: TREND_URL !== null }`. `setHomeBoard(raw)` → `writeHomeBoard(APP_SETTINGS_PATH(), raw, boardContext())`.
+- `index.ts` `registerHomeIpc`: 모듈에서 `const TREND_URL = trendForecastUrl(process.env)`를 한 번 구한다. `boardContext()` = `boardContextFrom(currentLang(), readKoreanDocFeatures(APP_SETTINGS_PATH()), TREND_URL)`. `getHomeBoard` → `{ board: readHomeBoard(APP_SETTINGS_PATH(), boardContext()), trendAvailable: TREND_URL !== null }`. `setHomeBoard(raw)` → `writeHomeBoard(APP_SETTINGS_PATH(), raw, boardContext())`. 두 처리기는 끝에서 `onHomeBoardChanged()`를 부른다. 모듈 변수 `let onHomeBoardChanged: () => void = () => {}`를 `driveService` 선언(831줄) 옆에 둔다.
+- **Ruling R23 (`onHomeBoardChanged` 훅):** Task 7의 트렌드 서비스는 보드가 바뀔 때 `boardChanged()`를 알아야 한다. Task 7이 보드 처리기 안을 고치면 Task 4(바로 위 6729-6733줄의 옛 처리기를 지운다)와 같은 자리를 건드려 합치기 충돌이 난다. 그래서 Task 1이 빈 훅을 두고, Task 7은 `registerTrendIpc`를 부른 자리(10162줄 근처)에서 `onHomeBoardChanged = () => trendService?.boardChanged()`로 바꿔 끼운다.
+- 문구 등록(R22): Global Constraints 문구 표의 home-strings 키를 `home-strings.json`에 ko·en·vi로 쓰고 `node tools/hanpan-add-block-strings.mjs apps/shell/src/renderer/src/strings.ts hpManualTip apps/shell/src/renderer/src/hanpan/home-strings.json`를 돌린다. home-custom 키는 `strings-home-custom.ts`의 21개 언어 블록 모두에 넣되(`zh`가 키 집합을 정하므로 `zh`에도 넣는다), ko·en·vi는 표의 값, 나머지 18개 언어는 영어 값이다. 값을 바꾸는 다섯 키(`widgetRecent`, `descFavorites`, `favoritesEmpty`, `pin`, `unpin`)도 같은 규칙이다. `tests/hanpan-vi-strings.test.ts`, `tests/i18n-key-parity.test.ts`, `tests/strings.test.ts`가 통과해야 한다.
+- `TrendCard.tsx` 빈 카드: `export function TrendCard(_props: { now?: () => Date } = {}): ReactElement`. `section` 안에 `h2.hb-card-title`(`t('hbTrendTitle')`)과 `<p data-trend-offline>{t('hbTrendOffline')}</p>`만 둔다. 인자 형은 Task 8과 같게 두어 Task 4가 호출을 고치지 않게 한다.
 - preload: `getHomeBoard()`는 `{ board: r?.board ?? null, trendAvailable: r?.trendAvailable === true }`를 돌려준다. `setHomeBoard(board)`는 그대로 보낸다.
 - `useHomeBoard`:
   - 처음에 `window.aiOffice.getHomeBoard?.()`를 한 번 부른다. 답이 객체가 아니면(옛 preload, 시험의 가짜) `{ board: null, trendAvailable: false }`로 본다.
@@ -324,20 +350,20 @@ it('lays out six cards on a Korean screen (7.1)', () => {
   - Run: `cd apps/shell && npx vitest run tests/home-board.test.ts tests/home-board-storage.test.ts tests/trend-config.test.ts tests/use-home-board.test.ts tests/preload-home-board.test.ts`
   - Expected: FAIL. 모듈을 찾지 못한다.
 
-- [ ] **Step 3: 위 Interfaces와 규칙대로 구현한다.** `index.ts`는 처리기 둘만 더하고, 옛 처리기는 Task 4까지 둔다.
+- [ ] **Step 3: 위 Interfaces와 규칙대로 구현한다.** `index.ts`는 처리기 둘과 `onHomeBoardChanged` 훅만 더하고, 옛 처리기는 Task 4까지 둔다. 문구 등록(R22), `HomeAppCard.sub`, `TrendCard.tsx` 빈 카드도 이 단계에서 한다. 문구를 넣은 뒤 `npm run format`을 돌린다.
 
 - [ ] **Step 4: 통과를 확인한다.**
-  - Run: Step 2의 명령, 그다음 `npm run typecheck -w @genoffice/shell`
+  - Run: Step 2의 명령, `cd apps/shell && npx vitest run tests/hanpan-vi-strings.test.ts tests/i18n-key-parity.test.ts tests/strings.test.ts`, 그다음 `npm run typecheck -w @genoffice/shell`
   - Expected: 모두 PASS. 형 오류가 없다.
 
-- [ ] **Step 5: 커밋한다.** 메시지: `feat(shell): store the home board and migrate the 0.18 layout`
+- [ ] **Step 5: 커밋한다.** 두 번 나눠 커밋한다. 첫째 `feat(shell): store the home board and migrate the 0.18 layout`(저장·IPC·훅·빈 카드), 둘째 `feat(shell): register the home board strings in ko, en and vi`(문구 파일 셋과 `HomeAppCard.sub`).
 
 ### Task 2: 새로 만들기 카드와 '모든 앱'
 
 **Files:**
-- Create: `apps/shell/src/renderer/src/home-board/home-apps.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/home-board/AllApps.tsx`, `apps/shell/src/renderer/src/home-board/home-board.css`(타일과 대화상자 부분)
-- Modify: `apps/shell/src/shared/home-apps.ts`, `apps/shell/src/shared/home-board.ts`, `apps/shell/src/renderer/src/HomeWidgets.tsx:39-45`(`HomeAppCard`에 `sub?: string`), `apps/shell/src/renderer/src/hanpan/home-strings.json`, `apps/shell/src/renderer/src/strings.ts`(도구로), `apps/shell/src/renderer/src/i18n/strings-home-custom.ts`(`cardApps`)
-- Test: `apps/shell/tests/home-board.test.ts`(더함), `apps/shell/tests/home-apps-ui.test.ts`, `apps/shell/tests/home-dialog-keys.test.ts:63-92`(AllApps 사례를 더함)
+- Create: `apps/shell/src/renderer/src/home-board/home-apps.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/home-board/AllApps.tsx`, `apps/shell/src/renderer/src/home-board/apps-card.css`(타일과 '모든 앱' 대화상자. `AppsCard.tsx`와 `AllApps.tsx`가 `import './apps-card.css'`로 들여온다, R21)
+- Modify: `apps/shell/src/shared/home-apps.ts`만. (`HomeAppCard.sub`와 문구는 Task 1이 끝냈다. `shared/home-board.ts`, `HomeWidgets.tsx`, 문구 파일은 건드리지 않는다. Task 3과 동시에 돌기 위해서다.)
+- Test: `apps/shell/tests/home-apps.test.ts`(새 파일, 순수 함수), `apps/shell/tests/home-apps-ui.test.ts`, `apps/shell/tests/home-dialog-keys.test.ts:63-92`(AllApps 사례를 더함)
 
 **Interfaces:**
 - Consumes: Task 1의 `AppKey`, `APP_GROUPS`, `APP_KEYS`, `HomeBoard`, `CardSize`. `apps/shell/src/renderer/src/dialog-keys.ts`의 `useDialogKeys`. `locale.tsx`의 `useI18n`, `StringKey`.
@@ -351,8 +377,7 @@ export function appSlots(pinned: readonly string[], available: ReadonlySet<strin
 export const RECENT_APPS_MAX = 8
 export function withRecentApp(recent: readonly string[], key: AppKey): AppKey[]
 export function unseenApps(seen: readonly string[], available: ReadonlySet<string>): AppKey[] // APP_KEYS 순서
-
-// shared/home-board.ts
+// 같은 파일. HomeBoard는 `import type { HomeBoard } from './home-board'`로만 쓴다(R21)
 export function recordAppLaunch(board: HomeBoard, key: AppKey): HomeBoard
 export function markAppsSeen(board: HomeBoard, available: ReadonlySet<string>): HomeBoard
 export function setPinned(board: HomeBoard, key: AppKey, on: boolean): HomeBoard // 켜면 끝에, 끄면 뺀다
@@ -406,18 +431,18 @@ export function AllApps(props: {
   - 타일은 `<button class="quick-card hb-app" data-new={key} data-tip={sub}>`이고, templates·design·md-convert에는 `data-hanpan`(값은 열쇠)을 더 붙인다. 안에는 아이콘과 이름만 둔다. 'AI' 표시는 없다. xmind에는 `<span class="hp-start-badge">{t('hpStartBadge')}</span>`을 둔다. 그림(`img`)에는 `draggable={false}`.
   - 마지막 앱 다음 칸에 `<button class="hb-all-apps" data-all-apps-open>`(이름 `hbAllApps`)을 둔다. `more` > 0이면 `<span data-all-apps-more>+{more}</span>`, `unseen` > 0이면 `<span data-all-apps-new>{t('hbNewApp')}</span>`.
   - 칸마다 `data-app-slot="<번호>"` 감싸개를 둔다(Task 6이 쓴다). 빈 칸은 평소에 비운다.
-- **Ruling R5:** 타일에 `quick-card` 클래스와 templates·design·md-convert의 `data-hanpan`을 그대로 붙인다. 이유: e2e 48개 파일이 `.quick-card[data-new=…]`나 글자로 `.quick-card`를 집고, 12개 파일이 `[data-hanpan="design"]`이나 `[data-hanpan="templates"]`를 누른다. 스펙 8절은 `[data-new="docx"]`, `[data-new="xlsx"]` 시험이 그대로 통과해야 한다고 적었다. 옛 `.quick-card` 모양은 `home-board.css`가 `.hb-apps .quick-card.hb-app`으로 덮는다(`home.css`는 손대지 않는다).
+- **Ruling R5:** 타일에 `quick-card` 클래스와 templates·design·md-convert의 `data-hanpan`을 그대로 붙인다. 이유: e2e 50개 파일이 `.quick-card[data-new=…]`나 글자로 `.quick-card`를 집고, 12개 파일이 `[data-hanpan="design"]`이나 `[data-hanpan="templates"]`를 누른다. 스펙 8절은 `[data-new="docx"]`, `[data-new="xlsx"]` 시험이 그대로 통과해야 한다고 적었다. 옛 `.quick-card` 모양은 `apps-card.css`가 `.hb-apps .quick-card.hb-app`으로 덮는다(`home.css`는 손대지 않는다).
 - AllApps는 `useDialogKeys`를 쓰는 `div[role="dialog"][data-all-apps]`다. 위에서부터:
   1. 검색 칸 `input[data-all-apps-search]`(안내 `hbAllAppsSearch`). 이름과 한 줄 설명을 대소문자 없이 거른다.
   2. 검색어가 없을 때만 '최근에 쓴 앱' 줄 `[data-all-apps-recent]`. 쓸 수 있는 것 중 최신 3개를 `button[data-recent-app=<열쇠>]`로 둔다.
   3. 묶음 `section[data-app-group=<id>]`(제목 `hbGroupDocs` 등). 항목은 `button[data-new=<열쇠>]`(`quick-card` 클래스 없음; 아이콘, 이름, 한 줄 설명, `newKeys`에 있으면 `[data-app-new]` '새 앱')과 핀 단추 `button[data-app-pin=<열쇠>][aria-pressed]`(이름 `pin`/`unpin`)다.
   - 맞는 앱이 없으면 `hbSearchNoApps`. 항목이나 최근 줄을 누르면 `onLaunch(key)` 뒤 `onClose()`.
 - **Ruling R6:** '모든 앱' 안에서 `data-new`는 묶음 항목에만 붙이고, 최근 줄은 `data-recent-app`을 쓴다. 이유: 같은 열쇠가 두 번 나오면 Playwright의 엄격한 선택자(`[data-all-apps] [data-new="md"]`)가 둘을 잡아 실패한다.
-- 문구: home-strings에 `hbAllApps`, `hbAllAppsSearch`, `hbRecentApps`, `hbGroupDocs`, `hbGroupPdf`, `hbGroupGraphics`, `hbGroupFile`, `hbNewApp`, `hbSearchNoApps`, `hbAppDocxSub`, `hbAppXlsxSub`, `hbAppMdSub`, `hbAppHtmlSub`, `hbAppPdfSub`, `hbAppOpenSub`(ko, en, vi). home-custom에 `cardApps`.
+- 문구: 쓰는 키는 home-strings의 `hbAllApps`, `hbAllAppsSearch`, `hbRecentApps`, `hbGroupDocs`, `hbGroupPdf`, `hbGroupGraphics`, `hbGroupFile`, `hbNewApp`, `hbSearchNoApps`, `hbAppDocxSub`, `hbAppXlsxSub`, `hbAppMdSub`, `hbAppHtmlSub`, `hbAppPdfSub`, `hbAppOpenSub`와 home-custom의 `cardApps`. 모두 Task 1이 등록했다(R22). 이 작업은 문구 파일을 고치지 않는다.
 
 - [ ] **Step 1: 실패하는 시험을 쓴다.**
 
-`tests/home-board.test.ts`에 더한다:
+`tests/home-apps.test.ts`(새 파일):
 
 ```ts
 const ALL = new Set(APP_KEYS)
@@ -459,13 +484,13 @@ it('makes the last slot All apps with +N when pins overflow', () => {
 `tests/home-dialog-keys.test.ts`의 `cases`에 `['all apps', (onClose) => createElement(AllApps, {…, onClose})]`를 더한다(열리면 초점, 본문에 초점이 빠져도 Esc로 닫힘).
 
 - [ ] **Step 2: 실패를 확인한다.**
-  - Run: `cd apps/shell && npx vitest run tests/home-board.test.ts tests/home-apps-ui.test.ts tests/home-dialog-keys.test.ts`
+  - Run: `cd apps/shell && npx vitest run tests/home-apps.test.ts tests/home-apps-ui.test.ts tests/home-dialog-keys.test.ts`
   - Expected: FAIL. 새 함수와 부품이 없다.
 
-- [ ] **Step 3: 구현한다.** 문구는 JSON에 쓰고 Global Constraints의 도구 명령으로 `strings.ts`에 넣은 뒤 `npm run format`을 돌린다.
+- [ ] **Step 3: 구현한다.**
 
 - [ ] **Step 4: 통과를 확인한다.**
-  - Run: Step 2의 명령, `cd apps/shell && npx vitest run tests/hanpan-vi-strings.test.ts tests/i18n-key-parity.test.ts tests/strings.test.ts`, `npm run typecheck -w @genoffice/shell`
+  - Run: Step 2의 명령, `npm run typecheck -w @genoffice/shell`, `npm run check:theme-colors`
   - Expected: 모두 PASS.
 
 - [ ] **Step 5: 커밋한다.** 메시지: `feat(shell): add the New card and the All apps list`
@@ -473,9 +498,9 @@ it('makes the last slot All apps with +N when pins overflow', () => {
 ### Task 3: 시작 카드, 이어서 하기 카드, 위젯 카드 몸통
 
 **Files:**
-- Create: `apps/shell/src/renderer/src/home-board/RecentCard.tsx`, `apps/shell/src/renderer/src/home-board/board-geometry.ts`
-- Modify: `apps/shell/src/renderer/src/hanpan/StartBoard.tsx:10-45, 77-88, 130-149`, `apps/shell/src/renderer/src/hanpan/hanpan.css:341-400`(흐름 그림 규칙을 지운다), `apps/shell/src/renderer/src/Home.tsx:3568-3572`(`korean` 인자를 뺀다), `apps/shell/src/renderer/src/HomeWidgets.tsx:148-159, 214-247, 457-665, 698-728`, `apps/shell/src/shared/home-board.ts`, 문구 파일 둘
-- Test: `apps/shell/tests/hanpan-start-board.test.ts`(다시 쓴다), `apps/shell/tests/home-cards-ui.test.ts`, `apps/shell/tests/board-geometry.test.ts`, `apps/shell/tests/home-board.test.ts`(더함), `apps/shell/tests/home-widgets.test.ts:221-229`
+- Create: `apps/shell/src/renderer/src/home-board/RecentCard.tsx`, `apps/shell/src/renderer/src/home-board/board-geometry.ts`, `apps/shell/src/shared/home-board-edit.ts`(보드 편집 함수. Task 5가 더한다, R21)
+- Modify: `apps/shell/src/renderer/src/hanpan/StartBoard.tsx:10-45, 77-88, 130-149`, `apps/shell/src/renderer/src/hanpan/hanpan.css:341-400`(흐름 그림 규칙을 지운다), `apps/shell/src/renderer/src/Home.tsx:3568-3572`(`korean` 인자를 뺀다. 이 다섯 줄만), `apps/shell/src/renderer/src/HomeWidgets.tsx:148-159, 214-247, 457-665, 698-728`. 문구 파일과 `shared/home-board.ts`는 건드리지 않는다(Task 1이 끝냈다).
+- Test: `apps/shell/tests/hanpan-start-board.test.ts`(다시 쓴다), `apps/shell/tests/home-cards-ui.test.ts`, `apps/shell/tests/board-geometry.test.ts`, `apps/shell/tests/home-board-edit.test.ts`(새 파일), `apps/shell/tests/home-widgets.test.ts:221-229`
 
 **Interfaces:**
 - Consumes: Task 1의 `HomeBoard`, `BoardCard`, `CARD_SIZES`, `sizeKey`, `parseSizeKey`. Task 2의 `HomeAppCard`(sub 포함).
@@ -485,7 +510,7 @@ it('makes the last slot All apps with +N when pins overflow', () => {
 // hanpan/StartBoard.tsx
 export function StartBoard(props: { greeting: string; t: (key: string) => string }): ReactElement   // korean 인자와 flowGeometry를 없앤다
 
-// shared/home-board.ts
+// shared/home-board-edit.ts (R21; home-board.ts의 정리 함수를 가져다 쓴다)
 export function updateCard(board: HomeBoard, id: string, patch: Record<string, unknown>): HomeBoard   // id·type 유지, 카드 정리 규칙 그대로
 export function moveCard(board: HomeBoard, id: string, delta: -1 | 1): HomeBoard
 
@@ -524,12 +549,13 @@ export function WidgetBody(props: {
   - 처음 그릴 때와 `reloadKey`가 바뀔 때 `window.aiOffice.recents({ limit: rows })`를 부른다.
   - 머리에 제목과 `button[data-recent-all]`(`t('hbRecentAll', { n: total })`, 누르면 `onShowAll`)을 둔다.
   - 줄은 `button[data-recent-file=<경로>]`이고 안에 `iconFor(ext)`, `.hb-recent-name`(파일 이름, `title`에 전체 이름, 말줄임), 위치, 고친 때가 있다. 누르면 `window.aiOffice.openPath(경로)`. `missing`이면 `disabled`.
-  - 비었으면 `recentEmpty`.
+  - 비었으면 `homeCustomText(lang, 'recentEmpty')`(ko '최근 문서가 없습니다.'). 이 키는 `strings.ts`가 아니라 `strings-home-custom.ts`에 있으므로 `useI18n()`의 `lang`을 쓴다. `t('hbRecentAll', { n })`은 `strings.ts`(`useI18n().t`)다.
+  - `describe`는 Home.tsx의 `locationLabel(path, roots)`(311줄)과 `formatModified(mtimeMs, i18n)`(252줄)로 만든다. 둘 다 모듈 함수라 Task 4가 그대로 넘긴다.
 - HomeWidgets:
   - `WidgetForm`은 0.17 화면을 그대로 두고, 바꾸는 일만 콜백으로 받는다. 옛 위젯 줄(Task 4까지 남는다)은 small·wide 두 개를 넘기고, `WidgetBody`는 `CARD_SIZES[type]`을 `{ value: sizeKey(s), label: homeCustomText(lang, 'sizeOption', s) }`로 넘긴다.
   - `WidgetBody`는 머리 `header.hw-head`에 `h2.hw-title`과 `button[data-widget-settings]`(이름 `` `${title} ${text('settings')}` ``, `aria-pressed={editing}`)을 두고, 편집 중이면 `WidgetForm`, 아니면 0.17 몸통을 그린다. 바꾸기는 `update((b) => updateCard(b, id, values))`, 크기는 `updateCard(b, id, parseSizeKey(value))`, 옮기기는 `moveCard`.
   - `FavoritesBody`는 별표한 파일만 보인다. `pinned` 인자와 `[data-fav-app]` 단추를 지운다(7.7). 옛 `HomeWidgets` 줄의 호출도 맞춘다.
-- 문구: home-strings에 `hbExample1~3`, `hbRecentAll`. home-custom에 `sizeOption`을 새로 두고, `widgetRecent`, `descFavorites`, `favoritesEmpty`의 ko·en·vi 값을 Global Constraints 표대로 바꾼다.
+- 문구: 쓰는 키는 home-strings의 `hbExample1~3`, `hbRecentAll`과 home-custom의 `sizeOption`, `widgetRecent`, `descFavorites`, `favoritesEmpty`, `recentEmpty`. 모두 Task 1이 등록하거나 바꿨다(R22).
 
 - [ ] **Step 1: 실패하는 시험을 쓴다.**
   - `tests/hanpan-start-board.test.ts`(다시 쓴다):
@@ -537,7 +563,7 @@ export function WidgetBody(props: {
     - `'shows F1 on the guide button and opens Hanpan\'s guide'`: `[data-hanpan="start-guide"] kbd`의 글자가 `'F1'`이고 `data-tip`이 `'hpManualTip'`이다. 누르면 `window.aiOffice.openHelp`가 `'hanpan'`으로 불린다.
     - `'offers office examples that start a map'`: 칩 글자가 `['hbExample1', 'hbExample2', 'hbExample3']`이고, 첫 칩을 누르면 `window.hanpanApi.newMap('hbExample1')`.
   - `tests/board-geometry.test.ts`: `recentRows(3)` = 6, `recentRows(2)` = 3.
-  - `tests/home-board.test.ts`: `updateCard`는 제목 61자를 60자로 자르고 id·type은 바꾸지 않는다. 허용되지 않은 크기 `{w:5,h:2}`를 준 memo는 6×2가 된다. `moveCard`는 한 칸 옮기고 양 끝에서는 그대로다.
+  - `tests/home-board-edit.test.ts`(새 파일): `updateCard`는 제목 61자를 60자로 자르고 id·type은 바꾸지 않는다. 허용되지 않은 크기 `{w:5,h:2}`를 준 memo는 6×2가 된다. `moveCard`는 한 칸 옮기고 양 끝에서는 그대로다.
   - `tests/home-cards-ui.test.ts`(jsdom, `LocaleProvider` 'ko'):
     - RecentCard(`rows` 6, `total` 12): `recents`가 `{ limit: 6 }`으로 불린다. 줄마다 이름·위치·고친 때가 보인다. 줄을 누르면 `openPath(경로)`. `[data-recent-all]`의 글자가 `'전체 12개'`이고 누르면 `onShowAll`. 목록이 비면 '최근 문서가 없습니다.'.
     - WidgetBody 메모: 글을 바꾸고 focusout하면 `update`가 불리고, 그 결과 보드의 메모 글이 바뀐다.
@@ -546,13 +572,13 @@ export function WidgetBody(props: {
   - `tests/home-widgets.test.ts:221-229`: 이름을 `'lists starred files in the favorites widget'`로 바꾸고 `[data-fav-app]`를 기대하지 않는다.
 
 - [ ] **Step 2: 실패를 확인한다.**
-  - Run: `cd apps/shell && npx vitest run tests/hanpan-start-board.test.ts tests/board-geometry.test.ts tests/home-board.test.ts tests/home-cards-ui.test.ts tests/home-widgets.test.ts`
+  - Run: `cd apps/shell && npx vitest run tests/hanpan-start-board.test.ts tests/board-geometry.test.ts tests/home-board-edit.test.ts tests/home-cards-ui.test.ts tests/home-widgets.test.ts`
   - Expected: 새 시험이 FAIL이다.
 
 - [ ] **Step 3: 구현한다.**
 
 - [ ] **Step 4: 통과를 확인한다.**
-  - Run: Step 2의 명령, `cd apps/shell && npx vitest run tests/hanpan-vi-strings.test.ts tests/i18n-key-parity.test.ts tests/strings.test.ts`, `npm run typecheck -w @genoffice/shell`
+  - Run: Step 2의 명령, `npm run typecheck -w @genoffice/shell`
   - Expected: 모두 PASS.
 
 - [ ] **Step 5: 커밋한다.** 메시지: `feat(shell): card bodies for the start, recent and widget cards`
@@ -560,13 +586,13 @@ export function WidgetBody(props: {
 ### Task 4: 보드 화면, 왼쪽 메뉴의 '홈', 머리 줄 검색
 
 **Files:**
-- Create: `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/TrendCard.tsx`(이 작업에서는 제목과 오프라인 안내만)
+- Create: `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/home-board.css`(격자·카드 틀·머리 줄. `BoardGrid.tsx`가 `import './home-board.css'`, R21). `TrendCard.tsx` 빈 카드는 Task 1이 만들었으므로 들여오기만 한다.
 - Modify:
   - `apps/shell/src/renderer/src/Home.tsx`: 1161(`view`), 1338-1392(`reload`), 1655-1663(`changeView`), 2041-2403(옛 카드와 위젯 묶음을 바꾼다), 3422-3433(폴더 보기의 빠른 시작), 3551-3738(`renderGlobalContent`를 나눈다), 3788-3821(왼쪽 메뉴), 3913-3932(본문 고르기), 대화상자는 루트로
   - `apps/shell/src/renderer/src/HomeWidgets.tsx`: 66-124(`useHomeLayout`, `addWidgetTo`, `arrangeCards`를 지운다. `configuresOnAdd`는 Task 5가 쓰므로 남긴다), 667-829(`HomeWidgets` 줄을 지운다), `boardCardName`을 더한다
-  - `apps/shell/src/renderer/src/home-board/board-geometry.ts`, `apps/shell/src/renderer/src/home-board/home-board.css`, `apps/shell/src/renderer/src/hanpan/hanpan.css:405-524`(옛 카드 규칙을 지운다. 441-452의 `.hp-start-badge`는 남긴다)
-  - `apps/shell/src/main/index.ts:6729-6733`, `apps/shell/src/preload/index.ts:440-445`, `apps/shell/src/shared/home-api.ts:368-371, 628-629`(옛 `getHomeLayout`·`setHomeLayout`을 지운다)
-  - 문구 파일 둘
+  - `apps/shell/src/renderer/src/home-board/board-geometry.ts`, `apps/shell/src/renderer/src/hanpan/hanpan.css:405-524`(옛 카드 규칙을 지운다. 441-452의 `.hp-start-badge`는 남긴다)
+  - `apps/shell/src/main/index.ts:6729-6733`, `apps/shell/src/preload/index.ts:440-445`, `apps/shell/src/shared/home-api.ts:368-371, 628-629`(옛 `getHomeLayout`·`setHomeLayout`을 지운다. Task 1이 더한 `getHomeBoard`·`setHomeBoard`와 `onHomeBoardChanged` 훅은 그대로 둔다)
+  - 문구 파일은 건드리지 않는다(`hbTrendTitle`, `hbTrendOffline`, `navHome`, `cardStart`, `cardTrend`는 Task 1이 등록했다, R22)
 - Delete: `apps/shell/src/main/home-layout.ts`
 - Test: `apps/shell/tests/home-widgets.test.ts`, `apps/shell/tests/home-korean-cards.test.ts`, `apps/shell/tests/home-navigation.test.ts`, `apps/shell/tests/home-subscription-entry.test.ts:196`, `apps/shell/tests/home-layout.test.ts:219-246`(저장 시험을 지운다), `apps/shell/tests/board-geometry.test.ts`
 
@@ -588,8 +614,7 @@ export function BoardGrid(props: {
   renderCard: (card: BoardCard) => ReactElement
 }): ReactElement
 
-// home-board/TrendCard.tsx (Task 8이 채운다)
-export function TrendCard(): ReactElement   // 제목 hbTrendTitle, 본문 [data-trend-offline] hbTrendOffline
+// home-board/TrendCard.tsx: Task 1의 빈 카드를 그대로 쓴다. `<TrendCard />`로 부른다(Task 8이 안을 채운다)
 
 // HomeWidgets.tsx
 export function boardCardName(card: BoardCard, lang: Lang, apps: readonly HomeAppCard[]): string
@@ -612,13 +637,13 @@ export function boardCardName(card: BoardCard, lang: Lang, apps: readonly HomeAp
   - recent → `<RecentCard title={boardCardName(…)} rows={recentRows(card.h)} total={recentAll} reloadKey={widgetTick} onShowAll={() => changeView('recent')} describe={…} iconFor={(ext) => <FileBadge ext={ext} size={24} />} />`(`describe`는 `locationLabel`과 `formatModified`로 만든다)
   - 그 밖 → `<WidgetBody …/>`
 - **Ruling R7:** 스펙은 폴더 보기를 말하지 않는다. 0.18에서는 폴더 보기 위의 카드로 만든 새 파일이 그 폴더에 저장된다(`newFileOpts`, `e2e/home-folders.spec.ts`). 이 기능을 잃지 않으려고 폴더 보기의 `section.quick-start`에 `<AppsCard size={{ w: 7, h: 2 }} customizing={false} …/>`를 둔다(12칸, 꾸미기 없음).
-- 앱 목록은 그릴 때마다 `buildHomeApps({ t, koreanDocs, offers: { templates: !!window.hanpanApi, design: !!window.hanpanApi?.openDesign, converter: converterApi !== null }, iconFor, actions, onLaunch: (key) => updateBoard((b) => recordAppLaunch(b, key)) })`로 만든다. `actions`는 지금 `quickCardDefs`의 action을 열쇠별로 옮긴 것이다(`pdf-tools` = `window.aiOfficePdfToolsHome.open()`, `md-convert` = 변환기 열기, `templates` = 양식 열기, `design` = `openDesign()`, `open` = `browse()`, 새 문서는 `newFileOpts`).
+- 앱 목록은 그릴 때마다 `buildHomeApps({ t, koreanDocs, offers: { templates: !!window.hanpanApi, design: !!window.hanpanApi?.openDesign, converter: converterApi !== null }, iconFor, actions, onLaunch: (key) => updateBoard((b) => recordAppLaunch(b, key)) })`로 만든다. `actions`는 지금 `quickCardDefs`(2085-2225줄)의 action을 열쇠별로 옮긴 것이다(`pdf-tools` = `window.aiOfficePdfToolsHome.open()`, `md-convert` = `setConverterOpen(true)`, `templates` = `setTemplatesOpen(true)`, `design` = `window.hanpanApi?.openDesign?.()`, `open` = `window.aiOffice.browse()`, 새 문서는 `made(ext).action`, 곧 `newFileOpts`). `recordAppLaunch`, `setPinned`, `markAppsSeen`은 `shared/home-apps`에서 들여온다(R21).
 - **Ruling R18:** '최근에 쓴 앱'은 홈을 거친 실행만 센다(보드 타일, 모든 앱, 폴더 보기 카드, 앱 바로가기 위젯). 탭 줄의 "+" 메뉴와 파일 메뉴의 새로 만들기는 메인 프로세스에서 바로 열려 보드를 지나지 않는다. 스펙의 "앱을 실행할 때마다"를 홈의 실행으로 읽는다.
 - 대화상자는 본문 밖(루트)에 둔다: `TemplatePicker`, `MarkdownConverter`, `AllApps`. `AllApps`를 열 때 `newKeys = new Set(unseenApps(board.seenApps, available))`를 잡아 두고 `updateBoard((b) => markAppsSeen(b, available))`를 부른다. 핀 단추는 `setPinned`.
 - `reload`: `view === 'home'`이면 두 목록을 `limit: 0`으로 물어 왼쪽 메뉴의 수와 `recentAll`만 채운다.
 - 왼쪽 메뉴 맨 위에 `button.nav-item[data-nav="home"]`(집 그림, 이름 `homeCustomText(lang, 'navHome')`, 수 없음)을 둔다. `activeNav`가 `'home'`이면 선택된다.
 - 지운다: `quickCardDefs`, `homeAppCards`, `renderQuickCards`, `renderCustomizePanel`, `renderWidgets`, `useHomeLayout` 사용, `.hp-cards` 표시, HomeWidgets의 `HomeWidgets`·`useHomeLayout`·`addWidgetTo`·`arrangeCards`, 메인·preload·`HomeApi`의 `getHomeLayout`·`setHomeLayout`, `main/home-layout.ts`. `HomeCustomizePanel`과 `WidgetGallery`는 Task 5가 보드용으로 바꿀 때까지 둔다.
-- 문구: home-strings에 `hbTrendTitle`, `hbTrendOffline`. home-custom에 `navHome`, `cardStart`, `cardTrend`.
+- 문구: 쓰는 키는 home-strings의 `hbTrendTitle`, `hbTrendOffline`과 home-custom의 `navHome`, `cardStart`, `cardTrend`. Task 1이 등록했다(R22).
 - **Ruling R19:** 스펙 7.12는 '새로 만들기', '이어서 하기'를 홈 카드 제목(11개 언어)으로 묶었다. 같은 이름이 홈 꾸미기(카드 고르기, 목록 창)에도 나오고, 스펙은 그것을 21개 언어로 번역한다. 그래서 카드 종류 이름(`cardStart`, `cardApps`, `cardTrend`, `widgetRecent`)은 `strings-home-custom.ts` 한 곳(21개 언어)에 둔다. 번역 범위가 줄지 않고, 같은 낱말을 두 번 번역하지 않는다.
 
 - [ ] **Step 1: 시험을 먼저 고친다.**
@@ -657,15 +682,15 @@ export function boardCardName(card: BoardCard, lang: Lang, apps: readonly HomeAp
 ### Task 5: 홈 꾸미기 (키보드로 다 되는 부분)
 
 **Files:**
-- Modify: `apps/shell/src/shared/home-board.ts`, `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/HomeWidgets.tsx:831-1107`(카드 고르기와 목록 창을 보드용으로), `apps/shell/src/renderer/src/Home.tsx`(꾸미기 상태, 머리 줄 단추, 안내 줄, 대화상자, Esc), `apps/shell/src/renderer/src/home-board/home-board.css`, `apps/shell/src/renderer/src/i18n/strings-home-custom.ts`, `apps/shell/src/shared/home-layout.ts:187-292`(쓰지 않게 된 편집 함수를 지운다)
-- Test: `apps/shell/tests/home-board.test.ts`(편집 동작), `apps/shell/tests/home-customize.test.ts`, `apps/shell/tests/home-dialog-keys.test.ts:70-92`, `apps/shell/tests/home-layout.test.ts:146-217`(지운 함수의 시험을 지운다)
+- Modify: `apps/shell/src/shared/home-board-edit.ts`(R21), `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/HomeWidgets.tsx:831-1107`(카드 고르기와 목록 창을 보드용으로), `apps/shell/src/renderer/src/Home.tsx`(꾸미기 상태, 머리 줄 단추, 안내 줄, 대화상자, Esc), `apps/shell/src/renderer/src/home-board/home-board.css`, `apps/shell/src/shared/home-layout.ts:187-292`(쓰지 않게 된 편집 함수를 지운다). 문구 파일은 건드리지 않는다(R22).
+- Test: `apps/shell/tests/home-board-edit.test.ts`(편집 동작), `apps/shell/tests/home-customize.test.ts`, `apps/shell/tests/home-dialog-keys.test.ts:70-92`, `apps/shell/tests/home-layout.test.ts:146-217`(지운 함수의 시험을 지운다)
 
 **Interfaces:**
 - Consumes: Task 1~4의 것. `@genoffice/ui`의 `useDismissablePopover`.
 - Produces:
 
 ```ts
-// shared/home-board.ts
+// shared/home-board-edit.ts (R21)
 export function isRemovable(type: BoardCardType): boolean            // start, apps만 거짓
 export function canAddCard(board: HomeBoard, type: BoardCardType): boolean
 export function addCard(board: HomeBoard, type: BoardCardType): { board: HomeBoard; id: string | null } // 끝에 DEFAULT_SIZE로
@@ -683,7 +708,7 @@ lang: Lang
 onEdit: (id: string | null) => void
 
 // HomeWidgets.tsx
-export function WidgetGallery(props: { board: HomeBoard; lang: Lang; onPick: (type: BoardCardType) => void; onClose: () => void }): ReactElement
+export function WidgetGallery(props: { board: HomeBoard; trendAvailable: boolean; lang: Lang; onPick: (type: BoardCardType) => void; onClose: () => void }): ReactElement
 export function HomeCustomizePanel(props: {
   board: HomeBoard; update: (change: (prev: HomeBoard) => HomeBoard) => void
   apps: readonly HomeAppCard[]; lang: Lang; cardName: (card: BoardCard) => string
@@ -704,7 +729,8 @@ export function HomeCustomizePanel(props: {
   - 카드 몸통에는 `inert`를 붙인다. 새로 만들기 카드만 빼고.
 - **Ruling R16:** 꾸미기 상태에서는 새로 만들기 카드를 뺀 카드 몸통이 반응하지 않는다(`inert`). 새로 만들기 카드의 타일도 앱을 열지 않고, ×와 끌기(Task 6)만 받는다. 이유: 실패 조건 "앱을 누르려다 끌려서 배치가 바뀌는 것"의 반대쪽, 곧 배치를 고치다 앱이 열리는 일을 막는다. 평소 상태에는 영향이 없다.
 - AppsCard 꾸미기: 타일마다 `button[data-app-unpin=<열쇠>]`(이름 `unpinApp`, 누르면 `onUnpin`)를 둔다. 빈 칸마다 점선 `button[data-app-slot-add]`('앱 추가')를 두고 누르면 `onOpenAll`이다.
-- 카드 고르기(`WidgetGallery`, '카드 추가'): 순서는 `shortcut`, `memo`, `folder`, `clock`, `recent`, `favorites`, `trend`. 이름은 0.17 이름과 `widgetRecent`, `cardTrend`, 설명은 0.17 설명과 `descTrend`. `canAddCard`가 거짓이면 `disabled`이고 설명 자리에 `already`를 둔다. 24장이면 목록 위에 `boardFull`. 고르면 `addCard`를 하고, `memo`·`shortcut`·`folder`는 바로 설정 폼을 연다(`configuresOnAdd`).
+- 카드 고르기(`WidgetGallery`, '카드 추가'): 순서는 `shortcut`, `memo`, `folder`, `clock`, `recent`, `favorites`, `trend`. 이름은 0.17 이름과 `widgetRecent`, `cardTrend`, 설명은 0.17 설명과 `descTrend`. `canAddCard`가 거짓이면 `disabled`이고 설명 자리에 `already`를 둔다. 24장이면 목록 위에 `boardFull`. 고르면 `addCard`를 하고, `memo`·`shortcut`·`folder`는 바로 설정 폼을 연다(`configuresOnAdd`). `trendAvailable`(= `context.trend`)이 거짓이면 `trend` 항목을 아예 두지 않는다.
+- **Ruling R29 (주소 없는 빌드의 트렌드 카드 추가):** 스펙 7.6은 다른 언어 화면에서 '카드 추가'로 트렌드 카드를 넣을 수 있다고 했다. 그러나 기상도 주소가 비어 있는 빌드(`HANPAN_TREND_URL=''`, e2e 기본)에서는 넣어 봐야 늘 오프라인 안내만 보인다. 그래서 주소가 있을 때만 고르기에 보인다. 정식 빌드는 주소가 있으므로(6절) 스펙의 동작은 그대로다.
 - '기본 배치로'는 `useDialogKeys`를 쓰는 `div[role="dialog"][data-reset-confirm]`(글 `resetBoardAsk`, `button[data-reset="yes"]` = `resetYes`, `button[data-reset="no"]` = `cancel`)을 띄운다. '예'를 누르면 `resetHomeBoard(board, context)`.
 - **Ruling R17:** `resetHomeBoard`는 카드를 지우지 않는다. 기본 카드(`defaultCardTypes(ctx)`)를 기본 순서·기본 크기로 앞에 두고(없으면 다시 넣고, 있으면 제목과 기본 메모 `memo`의 글을 남긴다), 나머지 카드는 지금 순서대로 뒤에 둔다. `pinned`는 `defaultPins(ctx.koreanDocs)`, `introduced`에는 기본 종류를 더하고, `seenApps`와 `recentApps`는 그대로다. 테마는 건드리지 않는다. 이유: 스펙 7.8은 "기본 카드 6장의 순서와 크기, 기본 핀만 되돌린다"고 적었다. 0.17의 되돌리기처럼 테마를 바꾸거나 카드를 지우면 그 말을 어긴다. 목록 창에는 되돌리기 단추를 두지 않는다(안내 줄 한 곳).
 - 목록 창(`HomeCustomizePanel`, `data-home-custom="panel"`):
@@ -712,10 +738,10 @@ export function HomeCustomizePanel(props: {
   - '홈에 보이는 앱'(`boardApps`) 묶음: 쓸 수 있는 앱마다 `li[data-custom-card=<열쇠>]`에 체크 칸(켜짐 = 핀)과 핀일 때만 `MoveButtons`(`moveApp`). 핀은 핀 순서로 먼저, 나머지는 `APP_KEYS` 순서로 뒤에 둔다.
   - 테마 고르기는 그대로. 닫기 `[data-home-custom="close"]`.
 - `home-layout.ts`에서 지운다: `canAddWidget`, `addWidget`, `removeWidget`, `updateWidget`, `moveWidget`, `moveWidgetTo`, `moveKey`, `toggleKey`, `resetHomeLayout`과 그 안에서만 쓰던 `newWidgetId`. `arrangeKeys`(Task 1이 쓴다), `normalizeHomeLayout`, 형, 상수는 남긴다.
-- 문구(home-custom, ko·en·vi): `customizeHint`, `addCard`, `resetBoard`, `listView`, `resetBoardAsk`, `cardMenu`, `removeCard`, `addAppSlot`, `unpinApp`, `boardCards`, `boardApps`, `boardFull`, `descTrend`. `pin`, `unpin`의 값을 바꾼다.
+- 문구: 쓰는 키는 home-custom의 `customizeHint`, `addCard`, `resetBoard`, `listView`, `resetBoardAsk`, `cardMenu`, `removeCard`, `addAppSlot`, `unpinApp`, `boardCards`, `boardApps`, `boardFull`, `descTrend`, `pin`, `unpin`(값이 바뀐 것). Task 1이 등록했다(R22).
 
 - [ ] **Step 1: 실패하는 시험을 쓴다.**
-  - `tests/home-board.test.ts`(스펙 8절 '편집 동작'):
+  - `tests/home-board-edit.test.ts`(스펙 8절 '편집 동작'):
     - `removeCard(board, 'start')`, `removeCard(board, 'apps')`는 같은 보드를 돌려준다. memo는 빠진다.
     - `addCard`로 trend를 두 번 넣어도 하나다(두 번째 `id`는 `null`). memo를 두 번 넣으면 id가 다른 둘이 된다. 24장이면 `id`가 `null`이다.
     - `resizeCard`: memo `{w:5,h:2}` → 6×2, trend `{w:9,h:2}` → 12×2, trend `{w:8,h:3}` → 5×3, clock `{w:6,h:2}` → 3×2.
@@ -727,14 +753,14 @@ export function HomeCustomizePanel(props: {
     - × 단추는 start, apps에 없고 memo에 있다. 누르면 카드가 빠지고 `setHomeBoard`의 마지막 값에도 없다.
     - memo의 카드 메뉴에는 `3x2`, `6x2`가 있고 지금 크기에 `aria-checked="true"`. `3x2`를 고르면 `data-size`가 `3x2`.
     - 새로 만들기 카드의 photo ×를 누르면 `.quick-card[data-new="photo"]`가 사라진다. 빈 칸 `[data-app-slot-add]`는 꾸미기 상태에만 있고 누르면 `[data-all-apps]`가 열린다. 꾸미기 중에 타일을 눌러도 앱 action이 불리지 않는다.
-    - '카드 추가'의 trend는 이미 있으면 `disabled`. memo를 고르면 끝에 memo가 생기고 설정 폼이 열린다.
+    - '카드 추가'의 trend는 이미 있으면 `disabled`. memo를 고르면 끝에 memo가 생기고 설정 폼이 열린다. `getHomeBoard`가 `trendAvailable: false`를 주면 고르기에 `[data-add-type="trend"]`가 없다(R29).
     - '기본 배치로'는 먼저 묻는다. '아니요'면 그대로, '예'면 기본 카드가 앞에 오고 `setTheme`은 불리지 않는다.
     - 목록 창: 첫 카드 줄의 위 단추는 `disabled`. 둘째 줄의 위 단추를 누르면 보드의 첫 두 카드가 바뀐다. html 체크를 끄면 `.quick-card[data-new="html"]`가 사라진다. 테마 'dark'를 고르면 `setTheme('dark')`.
-  - `tests/home-dialog-keys.test.ts`: 카드 고르기와 목록 창 사례에 `board: defaultHomeBoard(KO)`를 넘기는 모양으로 바꾼다.
+  - `tests/home-dialog-keys.test.ts`: 카드 고르기와 목록 창 사례에 `board: defaultHomeBoard(KO)`(고르기에는 `trendAvailable: true`도)를 넘기는 모양으로 바꾼다.
   - `tests/home-layout.test.ts`: 146-217줄의 'widget helpers', 'ordering helpers'(`arrangeKeys` 시험은 남긴다), 되돌리기 시험을 지운다.
 
 - [ ] **Step 2: 실패를 확인한다.**
-  - Run: `cd apps/shell && npx vitest run tests/home-board.test.ts tests/home-customize.test.ts tests/home-dialog-keys.test.ts tests/home-layout.test.ts`
+  - Run: `cd apps/shell && npx vitest run tests/home-board-edit.test.ts tests/home-customize.test.ts tests/home-dialog-keys.test.ts tests/home-layout.test.ts`
   - Expected: 새 시험이 FAIL이다.
 
 - [ ] **Step 3: 구현한다.**
@@ -748,7 +774,7 @@ export function HomeCustomizePanel(props: {
 ### Task 6: 홈 꾸미기 (끌기와 크기 모서리)
 
 **Files:**
-- Modify: `apps/shell/src/renderer/src/home-board/board-geometry.ts`, `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/home-board/home-board.css`, `apps/shell/src/renderer/src/i18n/strings-home-custom.ts`(`dragHandle`, `resizeCorner`)
+- Modify: `apps/shell/src/renderer/src/home-board/board-geometry.ts`, `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/home-board/home-board.css`. 문구 `dragHandle`, `resizeCorner`는 Task 1이 등록했다(R22).
 - Test: `apps/shell/tests/board-geometry.test.ts`, `apps/shell/tests/home-customize.test.ts`(끌기 묶음)
 
 **Interfaces:**
@@ -807,7 +833,7 @@ export function sizeFromDrag(start: CardSize, dx: number, dy: number, colPx: num
 - Modify:
   - `apps/shell/src/shared/trend-forecast.ts`(검사와 링크), `apps/shell/src/main/trend/trend-config.ts`(`forecastRequestUrl`)
   - `apps/shell/src/preload/index.ts`(873-905의 `hanpanApi` 다음에 `aiOfficeTrend`)
-  - `apps/shell/src/main/index.ts`(10162의 `registerDriveIpc` 다음에 등록, 보드 처리기 둘에 `boardChanged()`, 10672의 `will-quit`에 `stop()`)
+  - `apps/shell/src/main/index.ts`(10162의 `registerDriveIpc` 다음에 등록하고 Task 1의 `onHomeBoardChanged` 훅을 바꿔 끼운다(R23), 10672의 `will-quit`에 `stop()`. 보드 처리기 안은 고치지 않는다)
   - `apps/shell/src/shared/home-layout.ts:1-8`(머리말), `docs/security.md`(새 절), `PRIVACY.md`(표 한 줄과 첫 단락)
 - Test: `apps/shell/tests/trend-forecast.test.ts`, `apps/shell/tests/trend-service.test.ts`, `apps/shell/tests/preload-trend.test.ts`, `apps/shell/tests/renderer-csp.test.ts`
 
@@ -822,10 +848,14 @@ export const TREND_FIELD_KEYS = ['ai', 'opensource', 'local-ai', 'ai-safety', 's
 export type TrendFieldKey = (typeof TREND_FIELD_KEYS)[number]
 export type TrendSignal = -2 | -1 | 0 | 1 | 2
 export type TrendScale = 'weather' | 'market'
-export interface TrendField { key: TrendFieldKey; title: string; scale: TrendScale; s: TrendSignal | null; label: string; head: string; path: string }
+export interface TrendField { key: TrendFieldKey; title: string; scale: TrendScale; s: TrendSignal | null; label: string; head: string; path: string; asOf?: string }
+// asOf: 저장본에만 있다. 이 분야 값을 계산한 시각(ISO). 없으면 TrendForecast.asOf와 같다(R24)
 export interface TrendForecast { schema: 1; asOf: string; date: string; fields: TrendField[]; line: string }
 export const TREND_TEXT_MAX = { title: 20, label: 10, head: 80, line: 80 } as const
 export const TREND_FIELDS_MAX = 12
+export const TREND_CARRY_MAX_MS = 48 * 60 * 60 * 1000   // R24
+export function cutText(text: string, max: number): string   // R26: max 안이면 그대로, 넘으면 (max − 1)자 + '…'
+export function mergeTrendForecast(fresh: TrendForecast, stored: TrendForecast | null): TrendForecast   // R24
 export function trendPath(raw: unknown): string | null
 export function parseTrendForecast(raw: unknown): TrendForecast | null
 export function trendLinkUrl(path: string | null): string | null   // null이면 첫 화면
@@ -869,15 +899,20 @@ export function registerTrendIpc(deps: {
 - `parseTrendForecast(raw)`:
   - 객체가 아니거나 `schema !== 1`이면 `null`.
   - `asOf`가 `Date.parse`로 읽히지 않거나 `date`가 `YYYY-MM-DD` 꼴이 아니면 `null`.
-  - `fields`는 배열의 앞 12개만 읽는다. 항목마다: `key`가 목록에 없거나 이미 나온 key면 버린다. `title`은 글자를 20자에서 자르고, 비면 버린다. `path`는 `trendPath`가 `null`이면 버린다. `scale`은 `'market'`이 아니면 `'weather'`. `s`는 `Number.isInteger`이고 −2~2일 때만, 아니면 `null`. `label` 10자, `head` 80자에서 자르고, 글자가 아니면 ''.
-  - 남은 분야가 0개면 `null`. `line`은 80자에서 자른다.
+  - `fields`는 배열의 앞 12개만 읽는다. 항목마다: `key`가 목록에 없거나 이미 나온 key면 버린다. `title`은 글자를 `cutText`로 20자에서 자르고, 비면 버린다. `path`는 `trendPath`가 `null`이면 버린다. `scale`은 `'market'`이 아니면 `'weather'`. `s`는 `Number.isInteger`이고 −2~2일 때만, 아니면 `null`. `label` 10자, `head` 80자에서 `cutText`로 자르고, 글자가 아니면 ''. `asOf`는 글자이고 `Date.parse`로 읽히면 그대로, 아니면 뺀다(저장본을 다시 읽을 때 쓴다. 서버는 보내지 않는다).
+  - 남은 분야가 0개면 `null`. `line`은 `cutText`로 80자에서 자른다. 모든 자르기는 R26대로 끝에 `…`를 붙여 정확히 `max`자로 만든다.
 - **Ruling R11:** 스펙이 정하지 않은 검사를 이렇게 정한다. 경로가 틀린 분야는 분야째 버린다(스펙의 "검사를 통과하지 못한 분야는 버리고"). 겹친 key는 처음 것만 둔다. `asOf`·`date`가 깨졌거나 남은 분야가 없으면 "응답 전체가 깨졌다"로 보고 이전 저장본을 쓴다.
+- `mergeTrendForecast(fresh, stored)` (R24):
+  - `stored`가 `null`이면 `fresh` 그대로(분야 `asOf` 없음).
+  - `fresh.fields`를 순서대로 돈다. 분야 `f`의 `s`가 `null`이 아니면 `f`에서 `asOf`를 뺀 것. `null`이면 `stored.fields`에서 같은 `key`인 `p`를 찾아, `p.s !== null`이고 `Date.parse(fresh.asOf) − Date.parse(p.asOf ?? stored.asOf)`가 0 이상 `TREND_CARRY_MAX_MS` 이하이면 `{ ...f, s: p.s, label: p.label, head: p.head, asOf: p.asOf ?? stored.asOf }`, 아니면 `f` 그대로(`asOf` 없음).
+  - `fresh`에 없는 분야는 더하지 않는다. `asOf`, `date`, `line`, `schema`는 `fresh` 것이다.
+- **Ruling R24 (분야별 병합):** 트렌드레이더 API는 원본 일부를 못 받으면 그 분야를 `s: null`로 주고 그 답을 1분만 CDN에 둔다. 한판은 6시간마다 받으므로 그 1분에 걸리면 저장본의 멀쩡한 값이 '정보 없음'으로 덮여 6시간 남는다. 분야별로 병합하면 사이트가 1분 뒤 다시 계산한 값과 어긋날 수 있지만, 어긋남은 '정보 없음' 대신 '몇 시간 전 값'이고 그 시각을 저장해 화면이 날짜를 붙인다(R25). 48시간을 넘은 값은 하루 단위 기상도로서 낡았으므로 채우지 않는다. 스펙의 "검사를 통과하지 못한 분야는 버리고, 응답 전체가 깨졌으면 이전 저장본을 쓴다"의 분야 단위 판이다.
 - `trendLinkUrl(path)`: `path`가 `null`이면 `` `${TREND_SITE}/?${TREND_UTM}` ``. `trendPath(path)`가 맞으면 `` `${TREND_SITE}${path}?${TREND_UTM}` ``, 아니면 `null`.
 - `forecastRequestUrl(base, version)`: `http:`, `https:`면 `URL`의 `searchParams`에 `client=hanpan`, `v=<version>`을 넣은 주소. `file:`이면 `base` 그대로.
 - `createTrendService`:
   - `start()`는 3초 뒤 첫 차례를 돌리고, 그 뒤 6시간마다 돌린다.
   - 한 차례: `url`이 없거나 `wanted()`가 거짓이면 아무것도 하지 않는다. 받는 중이면 겹치지 않는다. 받기 직전에 마지막 시도 시각을 적는다. `AbortController`로 5초 뒤에 끊는다.
-  - `load(forecastRequestUrl(url, version), signal)`가 성공하고 `parseTrendForecast`가 통과하면 `writeStored`, 메모리의 지금 값 교체, `broadcast(snapshot())`. 실패, 시간 초과, 검사 탈락이면 아무것도 바꾸지 않는다.
+  - `load(forecastRequestUrl(url, version), signal)`가 성공하고 `parseTrendForecast`가 통과하면 `merged = mergeTrendForecast(parsed, 메모리의 지금 값)`(R24)을 `writeStored`, 메모리의 지금 값 교체, `broadcast(snapshot())`. 실패, 시간 초과, 검사 탈락이면 아무것도 바꾸지 않는다.
   - `boardChanged()`: 첫 차례 시각이 지났고, 이번 실행에서 한 번도 받으려 한 적이 없고, `wanted()`가 참이면 지금 한 번 받는다. 첫 실행에서 보드 저장이 3초보다 늦었을 때와 트렌드 카드를 나중에 넣었을 때를 위해서다.
   - `snapshot()` = `{ available: url !== null, forecast }`. `forecast`는 처음에 `parseTrendForecast(readStored())`로 읽는다.
   - `stop()`은 타이머를 지우고 받는 중이면 끊는다.
@@ -887,14 +922,18 @@ export function registerTrendIpc(deps: {
   - 저장 파일은 `join(userData(), 'trend-forecast.json')`. 읽기 실패는 `null`, 쓰기는 JSON 한 번에.
   - `broadcast`는 `window()?.webContents.send(TREND_CHANNELS.changed, snapshot)`.
   - `ipcMain.handle(get)` → `snapshot()`. `ipcMain.handle(open, (_e, path))`: `path`가 `null`도 글자도 아니면 무시한다. `trendLinkUrl(path)`가 `null`이 아니고 `https://trend.tenai.kr/`로 시작하고 `safeExternalUrl`을 통과하면 `shell.openExternal(url).catch(() => {})`. `shell`은 객체로 불러 부른다. e2e가 `shell.openExternal`을 바꿔 끼운다.
-  - `index.ts`: `trendService = registerTrendIpc({ userData: () => app.getPath('userData'), settingsPath: APP_SETTINGS_PATH, url: TREND_URL, version: app.getVersion(), window: () => shellWindow })` 다음에 `trendService.start()`. 보드 읽기·쓰기 처리기 끝에 `trendService?.boardChanged()`. `will-quit`에 `trendService?.stop()`.
+  - `index.ts`: `trendService = registerTrendIpc({ userData: () => app.getPath('userData'), settingsPath: APP_SETTINGS_PATH, url: TREND_URL, version: app.getVersion(), window: () => shellWindow })` 다음에 `onHomeBoardChanged = () => trendService?.boardChanged()`(Task 1의 훅, R23)와 `trendService.start()`. `will-quit`에 `trendService?.stop()`. `let trendService: TrendService | null = null`은 `driveService` 옆에 둔다.
 - preload `aiOfficeTrend`: `get()`은 `parseTrendSnapshot(await invoke(get))`. `onChanged`는 받은 값을 `parseTrendSnapshot`으로 걸러 넘긴다. `open(path)`는 `path === null || typeof path === 'string'`일 때만 보낸다.
 - 문서:
   - `home-layout.ts` 1-8줄 머리말의 "No widget fetches anything from the network."를 영어로 고친다: `Only the trend card shows data from the network: the forecast the main process fetched (src/main/trend, docs/security.md).`
   - **Ruling R13:** 스펙은 머리말 뜻을 한국어로 적었지만 `docs/standards.md`가 주석을 영어로 정한다. 뜻은 같다.
   - `docs/security.md`: `## Google 드라이브 …` 절과 `## 실행해 둔 프로그램은 앱보다 오래 살지 않는다` 사이에 `## 트렌드 소식 (홈의 트렌드 카드, 결정 0097)`을 둔다. 받는 곳(메인 프로세스의 `net.fetch`, 화면 CSP는 그대로), 언제(3초 뒤, 6시간마다, 보드에 트렌드 카드가 있을 때만), 보내는 것(`client`, `v`, `User-Agent`, 서버가 보는 IP, 네트워크 계층이 붙이는 일반 머리. 쿠키·저장소 없음), 검사(위 규칙), 저장(`trend-forecast.json`, 검사를 통과한 것만), 링크(박아 둔 주소 + 경로 + UTM, 열기 직전 확인), 끄는 법(트렌드 카드 빼기, 스위치는 열린 문제 3), 시험용 `HANPAN_TREND_URL`을 적는다.
-  - `PRIVACY.md`: 'What leaves your PC' 표에 한 줄을 더한다(When: the Home screen has the Trend Radar card; What: the app version and a `Hanpan/<version>` user agent, no account, device or file information, no cookies; Where: trend.tenai.kr, TenAI's Trend Radar). 첫 단락의 "nothing is sent to IeumOffice or to its maintainers" 뒤에 이 예외를 적는다.
-  - **Ruling R14:** 스펙 7.11은 `docs/security.md`만 적었지만, 저장소 안내는 `PRIVACY.md`를 "무엇이 어디로 전송되는지 전체 목록"으로 둔다. 그래서 거기에도 더한다. 이 파일은 바깥에 내놓는 약속이므로, 커밋하기 전에 바뀐 부분을 사용자에게 보여 확인받는다.
+  - `PRIVACY.md`(영어, 다음 글 그대로. R28):
+    - 'What leaves your PC' 표의 마지막 줄 다음에 한 줄. When: `When the Home screen shows the Trend Radar card (on by default on a Korean UI; remove the card in Customize Home to stop it)`. What is sent: `A request for today's forecast about 3 seconds after launch and every 6 hours: the app version (client=hanpan&v=<version>) and a Hanpan/<version> user agent. No account, device or file information, no cookies. The answer is kept in trend-forecast.json on your PC.` Where it goes: `trend.tenai.kr (TenAI's Trend Radar)`.
+    - 첫 단락의 "and the app has no usage analytics or telemetry." 뒤에 문장 하나: `The one exception is Hanpan's Trend Radar card on the Home screen, which fetches a public forecast from trend.tenai.kr (see the table); removing the card stops those requests.`
+    - 'Last updated'를 커밋하는 날로 바꾼다.
+  - **Ruling R14:** 스펙 7.11은 `docs/security.md`만 적었지만, 저장소 안내는 `PRIVACY.md`를 "무엇이 어디로 전송되는지 전체 목록"으로 둔다. 그래서 거기에도 더한다.
+  - **Ruling R28 (PRIVACY.md 확정):** 이 파일은 바깥에 내놓는 약속이라 원래 커밋 전에 사용자 확인을 받으려 했다. 사용자가 "알아서 판단해서 진행"하라고 정했으므로(2026-11-09) 위 글로 정해 커밋하고, 최종 보고에 바뀐 글을 그대로 실어 사후 확인을 받는다. 되돌릴 수 있다(push 전이고, 글만 고치면 된다). 사이트의 개인정보처리방침(열린 문제 4)은 이 파일과 별개로 배포 전에 사용자가 게시한다.
 
 - [ ] **Step 1: 실패하는 시험을 쓴다.**
   - `tests/trend-forecast.test.ts`(스펙 8절):
@@ -905,6 +944,13 @@ export function registerTrendIpc(deps: {
     - `title` 25자 → 20자, `label` 15자 → 10자, `head` 100자 → 80자, `line` 100자 → 80자.
     - `trendLinkUrl('/stocks')` → `'https://trend.tenai.kr/stocks?utm_source=hanpan&utm_medium=home&utm_campaign=forecast'`. `trendLinkUrl(null)` → `'https://trend.tenai.kr/?utm_source=hanpan&utm_medium=home&utm_campaign=forecast'`. `'//evil.example'`이나 `'https://evil.example/x'`는 `null`.
     - 더하는 것: 분야 13개 → 앞 12개만 읽는다. 겹친 key는 처음 것. `asOf` `'yesterday'`는 `null`. 분야가 모두 탈락하면 `null`. `s` `1.5`와 `'1'`은 `null`.
+    - `cutText('a'.repeat(25), 20)`는 길이 20이고 끝이 `'…'`다. 20자는 그대로다(R26).
+    - `mergeTrendForecast`(R24). `FULL` = 분야 10개가 모두 값이 있는 기상도(`asOf` `'2026-11-09T00:30:00Z'`), `PARTIAL` = 같은 분야에서 `local-ai`와 `fx`만 `s: null`(`asOf` `'2026-11-09T06:30:00Z'`):
+      - `mergeTrendForecast(PARTIAL, FULL)`: `local-ai`와 `fx`의 `s`·`label`·`head`가 FULL 값이고 `asOf`가 `'2026-11-09T00:30:00Z'`. 나머지 8개는 PARTIAL 값이고 `asOf`가 없다. 결과의 `asOf`·`date`·`line`은 PARTIAL 것이다.
+      - FULL의 `asOf`가 PARTIAL보다 49시간 앞이면 `local-ai`는 `null` 그대로다.
+      - FULL에서도 `local-ai`가 `null`이면 `null`이다. `stored`가 `null`이면 PARTIAL과 `toEqual`이다.
+      - PARTIAL에 `crypto`가 없고 FULL에 있으면 결과에도 없다.
+      - 저장본 되읽기: `parseTrendForecast(JSON.parse(JSON.stringify(merged)))`가 `merged`와 `toEqual`이다(분야 `asOf`가 남는다). 분야 `asOf`가 `'x'`이면 그 분야의 `asOf`만 빠진다.
   - `tests/trend-service.test.ts`(`vi.useFakeTimers()`):
     - `forecastRequestUrl('https://trend.tenai.kr/api/forecast', '0.19.0')` → `'https://trend.tenai.kr/api/forecast?client=hanpan&v=0.19.0'`. `file:` 주소는 그대로.
     - `'fetches 3 s after start and every 6 hours'`: 2,999ms에 0번, 3,000ms에 1번(인자는 위 주소), 3,000ms + 6시간에 2번.
@@ -914,6 +960,7 @@ export function registerTrendIpc(deps: {
     - `'does not fetch while the board has no trend card'`: `wanted` 거짓이면 3초에 부르지 않는다. 그 뒤 `wanted`를 참으로 바꾸고 `boardChanged()`를 부르면 한 번 부른다. 다시 `boardChanged()`를 불러도 더 부르지 않는다.
     - `'boardChanged before the first turn waits for it'`: 1초에 `boardChanged()`를 불러도 부르지 않고, 3초에 한 번 부른다.
     - `'no address: nothing is fetched'`: `url` `null`이면 `snapshot().available`이 거짓이고 `load`를 부르지 않는다.
+    - `'fills a null field from the stored forecast'`(R24, Review Focus 6): `readStored`가 FULL을, `load`가 PARTIAL을 주면 `writeStored` 인자와 `broadcast` 인자의 `local-ai`가 FULL 값에 `asOf` `'2026-11-09T00:30:00Z'`이고, `snapshot().forecast.asOf`는 PARTIAL 것이다.
   - `tests/preload-trend.test.ts`(`tests/preload-recovery-list.test.ts`처럼): `aiOfficeTrend`가 있다. `get()`은 `trend:get`을 부르고, `forecast`가 깨졌으면 `{ available: true, forecast: null }`. `open('/fx')`는 `trend:open`에 `'/fx'`를 싣는다. `open(3 as never)`는 보내지 않는다.
   - `tests/renderer-csp.test.ts`: `apps/shell/src/renderer/index.html`의 CSP에서 `connect-src`가 정확히 `'self' ws://localhost:*`다. 화면이 바깥 주소에서 받지 않는다는 약속을 고정한다.
 
@@ -921,7 +968,7 @@ export function registerTrendIpc(deps: {
   - Run: `cd apps/shell && npx vitest run tests/trend-forecast.test.ts tests/trend-service.test.ts tests/preload-trend.test.ts tests/renderer-csp.test.ts`
   - Expected: CSP 시험만 PASS, 나머지는 FAIL(함수가 없다).
 
-- [ ] **Step 3: 구현하고 문서를 쓴다.** `PRIVACY.md`의 바뀐 부분을 사용자에게 보여 확인받는다.
+- [ ] **Step 3: 구현하고 문서를 쓴다.** `PRIVACY.md`는 R28의 글 그대로 쓰고, 바뀐 부분을 최종 보고에 옮길 수 있게 커밋 메시지 본문에도 적어 둔다.
 
 - [ ] **Step 4: 통과를 확인한다.**
   - Run: Step 2의 명령, `npm run test -w @genoffice/shell`, `npm run typecheck -w @genoffice/shell`, `npm run lint`, `npm run check:english-comments`
@@ -936,7 +983,8 @@ export function registerTrendIpc(deps: {
 ### Task 8: 트렌드 카드
 
 **Files:**
-- Modify: `apps/shell/src/renderer/src/home-board/TrendCard.tsx`(채운다), `apps/shell/src/shared/trend-forecast.ts`, `apps/shell/src/renderer/src/home-board/home-board.css`, home-strings와 `strings.ts`(`hbTrendLine`, `hbTrendMore`, `hbTrendAsOf`, `hbTrendNoData`)
+- Create: `apps/shell/src/renderer/src/home-board/trend-card.css`(`TrendCard.tsx`가 `import`한다, R21)
+- Modify: `apps/shell/src/renderer/src/home-board/TrendCard.tsx`(Task 1의 빈 카드를 채운다), `apps/shell/src/shared/trend-forecast.ts`. 문구 `hbTrendLine`, `hbTrendMore`, `hbTrendAsOf`, `hbTrendNoData`는 Task 1이 등록했다(R22). `home-board.css`는 건드리지 않는다(Task 4가 같은 때에 만든다).
 - Test: `apps/shell/tests/trend-forecast.test.ts`(더함), `apps/shell/tests/home-trend-card.test.ts`
 
 **Interfaces:**
@@ -963,6 +1011,8 @@ export function TrendCard(props: { now?: () => Date }): ReactElement   // window
   - 머리: 제목 `hbTrendTitle`, 오른쪽에 `[data-trend-asof]`(`t('hbTrendAsOf', { when })`)와 `button[data-trend-more]`(`hbTrendMore`, 누르면 `open(null)`).
   - 분야마다 `button[data-trend-field=<key>]`. 아이콘 자리에는 `s`가 `null`이면 `<span data-trend-nodata>{t('hbTrendNoData')}</span>`, 아니면 선으로 그린 SVG `WeatherIcon`(`data-glyph`, 해는 `stroke: var(--hp-chalk)`). 그다음 이름(`.hb-trend-name`, 말줄임)과 `s`가 있을 때 받은 `label`.
   - 분야 단추의 `data-tip`은 `head`가 있으면 `` `${title}: ${head}` ``, 없으면 `title`. 이름은 `` `${title} ${label 또는 정보 없음}` ``. 누르면 `open(path)`.
+  - 이전 저장본에서 채운 분야(R25): 분야에 `asOf`가 있고 `kstDate(new Date(asOf)) !== forecast.date`이면 단추에 `data-trend-carried="<kstDate(asOf)>"`를 붙이고, `data-tip` 끝에 `` ` · ${t('hbTrendAsOf', { when })}` ``를 더한다. `when`은 그 날짜를 `Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', timeZone: 'Asia/Seoul' })`로 쓴 것(ko '11월 8일'). 아이콘과 날씨 말은 채운 값으로 평소처럼 그린다. 같은 한국 날짜의 값이면 아무 표시도 없다.
+- **Ruling R25 (채운 분야의 표시):** 머리 줄의 기준 시각은 새 답의 `asOf`(R12)를 그대로 두고, 날짜가 다른 분야만 그 분야에 날짜를 붙인다. 같은 날 몇 시간 전 값은 하루 단위 기상도에서 '오늘 값'이므로 표시하지 않는다. 카드에 글을 더 두지 않아 좁은 화면 규칙(7.9)을 건드리지 않는다.
   - 아래에 `[data-trend-line]`: `hbTrendLine` + `line`.
   - 분야 묶음은 `container-type: inline-size`이고 `@container (min-width: 360px)`에서 두 칸, 그보다 좁으면 한 칸이다(7.9).
   - 저장본이 없으면 분야와 한 줄 대신 `[data-trend-offline]` `hbTrendOffline`.
@@ -978,6 +1028,7 @@ export function TrendCard(props: { now?: () => Date }): ReactElement   // window
     - 저장본 없음 → `[data-trend-offline]`의 글자가 '인터넷에 연결되면 오늘의 트렌드가 나옵니다'이고 `[data-trend-field]`가 없다.
     - 분야 10개짜리 기상도 → `[data-trend-field]` 10개, 순서가 기상도 순서. `s` `null`인 분야에 `[data-trend-nodata]` '정보 없음'. realestate(market, s 1)의 `data-glyph`는 `'up'`. 받은 `label`이 글자로 보인다.
     - stocks를 누르면 `open('/stocks')`, 자세히를 누르면 `open(null)`.
+    - `local-ai`가 `{ s: 0, label: '흐림', asOf: '2026-11-08T00:30:00Z' }`이고 기상도 `date`가 `'2026-11-09'`이면 `[data-trend-field="local-ai"]`에 `data-trend-carried="2026-11-08"`, `data-glyph` `'cloud'`, `data-tip`에 `'11월 8일 기준'`이 들어 있다. `asOf`가 `'2026-11-09T00:30:00Z'`이면 `data-trend-carried`가 없다(R25).
     - `onChanged`로 새 기상도가 오면 다시 그린다.
     - `now`를 같은 한국 날짜로 주면 기준 시각이 `'09:30 기준'`, 다른 날이면 `'11월 9일 기준'`.
 
@@ -988,7 +1039,7 @@ export function TrendCard(props: { now?: () => Date }): ReactElement   // window
 - [ ] **Step 3: 구현한다.**
 
 - [ ] **Step 4: 통과를 확인한다.**
-  - Run: Step 2의 명령, `cd apps/shell && npx vitest run tests/hanpan-vi-strings.test.ts tests/strings.test.ts`, `npm run typecheck -w @genoffice/shell`, `npm run check:theme-colors`
+  - Run: Step 2의 명령, `npm run typecheck -w @genoffice/shell`, `npm run check:theme-colors`
   - Expected: 모두 PASS.
 
 - [ ] **Step 5: 커밋한다.** 메시지: `feat(shell): draw today's forecast on the trend card`
@@ -1038,7 +1089,7 @@ export function TrendCard(props: { now?: () => Date }): ReactElement   // window
 - Consumes: Task 2~8이 더하거나 바꾼 키(Global Constraints의 문구 표 전부).
 
 **정하는 규칙:**
-- 번역하기 전에 한국어 원문 표(문구 표의 모든 키, 지금 값)를 사용자에게 보여 확정받는다(스펙 11절). 바뀌면 ko부터 고친다.
+- 한국어 원문은 Global Constraints 문구 표로 확정됐다(R27). 사용자에게 다시 묻지 않는다. 표와 코드의 ko 값이 다르면 표에 맞춘다.
 - home-strings의 `hb*` 키는 11개 언어를 모두 채운다. 도구는 영어 자리표시를 그 언어 글로 바꾼다. home-custom의 새 키와 값을 바꾼 키(`widgetRecent`, `descFavorites`, `favoritesEmpty`, `pin`, `unpin`)는 21개 언어를 모두 채운다. 영어를 그대로 복사하지 않는다. 자리표시(`{n}`, `{when}`, `{w}`, `{h}`, `{name}`)는 모든 언어에 그대로 둔다.
 - **Ruling R20:** 스펙 7.12는 `docs/manual`만 적었다. 그러나 `apps/shell/AGENTS.md`는 한국어 도움말이 소개 사이트 질문 도우미의 지식이라 "기능을 바꾸면 도움말도 같이 고친다"고 정한다. 그래서 앱 안 도움말 `hanpan`과 `home-screen` 주제도 고친다. 21개 언어 모두 같은 구조를 유지한다(`npm run check:help-langs`).
   - `home-screen`: 첫 단락을 보드로 고친다. '사이드바 탐색' 목록 맨 위에 '홈' 항목을 하나 더한다. '빠른 시작 카드' 절의 제목을 '새로 만들기와 모든 앱'으로 바꾸고, 첫 단락에 핀·모든 앱·최근에 쓴 앱을 적는다. 앱별 목록은 그대로 둔다. '검색' 절에 "보드 맨 위 줄"을 적는다. 새 절 '## 홈 꾸미기'(끌기, 크기, 카드 추가, 기본 배치로, 목록으로 정리)를 '검색' 다음에 더한다.
@@ -1048,7 +1099,7 @@ export function TrendCard(props: { now?: () => Date }): ReactElement   // window
   - 5장 "홈 화면의 **한판 양식** 카드" → "홈의 **새로 만들기**에서 **한판 양식**". "홈 화면의 **마크다운 변환기** 카드" → "홈의 **모든 앱**에서 **마크다운 변환기**". 6장 "홈 화면의 **디자인** 카드" → "홈의 **새로 만들기**에서 **디자인**".
   - 그림 `images/01-home.png`는 Task 12에서 다시 찍는다.
 
-- [ ] **Step 1: 한국어 원문을 확정받는다.** 문구 표를 사용자에게 보여 주고 답을 받는다. 답대로 ko를 고친다.
+- [ ] **Step 1: 한국어 원문을 표와 맞춘다.** `home-strings.json`과 `strings-home-custom.ts`의 ko 값이 Global Constraints 문구 표와 글자까지 같은지 본다(R27). 다르면 표에 맞춘다. 표 전체는 Task 12의 최종 보고에 '정한 문구'로 싣는다.
 
 - [ ] **Step 2: 실패하는 시험을 쓴다.** `apps/shell/tests/home-board-strings.test.ts`:
   - `'every hb key in home-strings is written in all 11 languages and shown as written'`: `home-strings.json`에서 `hb`로 시작하는 키마다 11개 언어가 있고, en이 아닌 값은 en과 다르다(`SAME_OK` = `/^[A-Za-z0-9 .()+:·{}-]{1,12}$/`는 예외). `strings.ts`의 그 11개 언어 값이 JSON과 같다.
@@ -1102,7 +1153,7 @@ export async function startTrendServer(body: string): Promise<TrendServer>
 | `e2e/crash-recovery.spec.ts` | 373줄, 728줄 → `openFromAllApps(shell, 'md')`. |
 | `e2e/hanpan-md-convert.spec.ts` | 42줄 → `openFromAllApps(page, 'md-convert')`. |
 | `e2e/rtl-document-direction.spec.ts` | 51줄: 모든 형식을 `openFromAllApps(launched.page, format)`로 연다(15줄의 "홈 배치와 언어에 기대지 않는다"에 맞다). |
-| `e2e/pdf-tools-window.spec.ts` | `openToolsWindow`(105-110줄)의 `home.getByRole('button', { name: card })`를 `openFromAllApps(home, 'pdf-tools')`로. `card` 인자를 지우고 부르는 곳 7곳을 고친다. 24줄 주석을 'All apps'로. |
+| `e2e/pdf-tools-window.spec.ts` | `openToolsWindow`(105-110줄)의 `home.getByRole('button', { name: card })`를 `openFromAllApps(home, 'pdf-tools')`로. `card` 인자를 지우고 부르는 곳 9곳(138, 245, 327, 371, 429, 478, 607, 672, 755줄)을 고친다. 24줄 주석을 'All apps'로. |
 | `e2e/hanpan-manual-tour.spec.ts` | `startTrendServer(고정 기상도)`를 띄우고 `env: { HANPAN_TREND_URL: server.url }`로 연다. 01-home을 찍기 전에 `[data-trend-field]` 10개를 기다린다. 끝에 서버를 닫는다. |
 
 - 그대로 통과해야 하는 것(고치지 않는다): `.quick-card[data-new="docx"|"xlsx"]`와 글자로 집는 'AI Docs'·'AI Sheets'·'AI Slides'·'AI HTML'·'AI PDF'·'Mind Map', photo·illust·hwp·xmind 타일, `[data-hanpan="design"|"templates"]`(디자인 시험 10개, `hanpan-templates`, `hanpan-official-forms`), 폴더 보기의 `home-folders`·`text-source`(R7), 즐겨찾기 보기의 `generate-window`, 메뉴를 글자로 집는 `kb-ask-group`, 시작판을 보는 `onboarding`, 어긋남을 넘기는 `menu-user-guide`.
@@ -1188,7 +1239,7 @@ export async function startTrendServer(body: string): Promise<TrendServer>
 
 - [ ] **Step 6: 실제 기상도 주소가 열렸으면 사이트와 견준다(완료 기준 3).** `npm run shell`을 한국어 화면으로 띄우고, 트렌드 카드의 10개 날씨 말과 `https://trend.tenai.kr/`의 홈 화면 10줄을 같은 때에 비교한다. 아직 안 열렸으면 0.19.0을 막는 일로 보고에 남긴다.
 
-- [ ] **Step 7: 커밋한다.** 메시지: `test(e2e): cover the home board, and record decision 0097`
+- [ ] **Step 7: 커밋하고 최종 보고를 쓴다.** 메시지: `test(e2e): cover the home board, and record decision 0097`. 보고에는 ① 완료 기준 1~5 대비 상태, ② 사용자 확인 없이 정한 것 — R27의 문구 표(한국어 전체)와 R28의 `PRIVACY.md` 바뀐 글, 그리고 R24·R29처럼 스펙에 없던 동작, ③ 남은 일(push·CI·배포는 사용자 허락 뒤)과 그 뒤 가능해지는 것을 적는다.
 
 - [ ] **Step 8: 사용자가 push를 허락하면 CI의 전체 e2e로 확인한다.** `git push -u origin feat/home-board` 뒤 `gh workflow run ci.yml --ref feat/home-board`. CI e2e의 실패가 11/8 CI의 10건(그림·디자인 보드·설명서 둘러보기)과 같거나 그 일부여야 한다(완료 기준 5). 늘어난 실패가 있으면 고친다.
 
@@ -1208,8 +1259,9 @@ export async function startTrendServer(body: string): Promise<TrendServer>
 | 7.9 좁은 화면 | Task 9, Task 12의 e2e 7 |
 | 7.10 저장과 옮겨 오기 | Task 1, Task 12의 e2e 6 |
 | 7.11 한판 쪽(받기, 검사, 저장, 화면, 링크, 문서) | Task 7, Task 8 |
-| 7.12 문구, 번역, 설명서 | Task 2~8(ko·en·vi), Task 10, Task 12(그림) |
-| 8절 단위 시험 | `home-board.test.ts`(Task 1·2·3·5), `trend-forecast.test.ts`(Task 7·8) |
+| 보강: 일부만 받은 답의 분야별 병합과 표시(스펙에는 없음) | Task 7(R24), Task 8(R25), Review Focus 6 |
+| 7.12 문구, 번역, 설명서 | Task 1(ko·en·vi 등록, R22), Task 10, Task 12(그림) |
+| 8절 단위 시험 | `home-board.test.ts`(Task 1), `home-apps.test.ts`(Task 2), `home-board-edit.test.ts`(Task 3·5) — 셋으로 나눈 이유는 R21, `trend-forecast.test.ts`(Task 7·8) |
 | 8절 새 e2e 1~9 | Task 12 |
 | 8절 고칠 기존 e2e | Task 11 |
 | 2절 완료 기준 5(e2e) | Task 12 Step 2·3·8 |
@@ -1220,6 +1272,6 @@ export async function startTrendServer(body: string): Promise<TrendServer>
 |---|---|---|---|
 | 기상도 API를 팀 Vercel에 배포하고 `trend.tenai.kr` 연결(계획 1, 스펙 9절 2·4) | 혁준(PR 확인·합치기·DNS) | 11/13 | 0.19.0 배포, Task 12 Step 6 |
 | 열린 문제 3: '홈에서 트렌드 소식 받기' 설정을 둘지 | 대표님 | 11/17 | 둔다면 `wanted()`에 조건 하나와 설정 줄을 더하는 후속 작업. 그때까지는 R9(카드를 빼면 받지 않음)가 끄는 법이다 |
-| 열린 문제 4: 개인정보처리방침의 '트렌드 소식 받기' 문구, 그리고 Task 7의 `PRIVACY.md` 바뀐 부분 확인 | 혁준(Claude 초안) | 0.19.0 배포 전 | 0.19.0 배포 |
+| 열린 문제 4: 사이트 개인정보처리방침의 '트렌드 소식 받기' 문구 | 혁준(Claude 초안) | 0.19.0 배포 전 | 0.19.0 배포 |
+| 최종 보고의 '정한 문구'(R27)와 `PRIVACY.md` 바뀐 글(R28) 사후 확인 | 혁준 | PR 전 | 바꾸면 ko를 고치고 Task 10 번역을 다시 한다 |
 | 열린 문제 5: 한국어가 아닌 화면에서 트렌드 카드를 기본에서 뺄지(이 계획은 스펙대로 뺀다) | 혁준 | 11/17 | 넣기로 하면 `defaultCardTypes`의 조건 하나를 바꾼다 |
-| Task 10 Step 1의 한국어 원문 확정 | 혁준 | Task 10 시작 때 | 번역 |
