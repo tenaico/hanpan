@@ -23,7 +23,7 @@
     },
     {
       "key": "local-ai",
-      "title": "로컬 AI",
+      "title": "내 PC AI",
       "scale": "weather",
       "s": null,
       "label": "정보 없음",
@@ -86,7 +86,7 @@
     },
     {
       "key": "crypto",
-      "title": "암호화폐",
+      "title": "블록체인",
       "scale": "weather",
       "s": -2,
       "label": "폭우",
