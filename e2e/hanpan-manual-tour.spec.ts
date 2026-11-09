@@ -54,6 +54,36 @@ async function helpPage(app: ElectronApplication): Promise<Page> {
   throw new Error('no help page')
 }
 
+/**
+ * The sidebar's account row reads the Claude and Codex programs of the machine
+ * taking the pictures, so a signed-in developer's plan would end up in the
+ * committed figures. Answer "not installed" for both, stop the real checker's
+ * pushes, and tell the window, so the row reads the same on every machine.
+ */
+async function hideAiAccount(app: ElectronApplication): Promise<void> {
+  await app.evaluate(({ ipcMain, webContents }) => {
+    const proto = Object.getPrototypeOf(webContents.getAllWebContents()[0]) as {
+      send: (channel: string, ...args: unknown[]) => void
+    }
+    const realSend = proto.send
+    proto.send = function (this: unknown, channel: string, ...args: unknown[]) {
+      if (channel === 'ai:subscription-changed') return
+      return realSend.call(this, channel, ...args)
+    }
+    const statuses = {
+      'claude-code': { provider: 'claude-code', state: 'not-installed', meteredAccepted: false },
+      codex: { provider: 'codex', state: 'not-installed', meteredAccepted: false },
+    }
+    for (const channel of ['ai:subscription-statuses', 'ai:subscription-recheck']) {
+      ipcMain.removeHandler(channel)
+      ipcMain.handle(channel, () => statuses)
+    }
+    for (const wc of webContents.getAllWebContents()) {
+      if (!wc.isDestroyed()) realSend.call(wc, 'ai:subscription-changed', statuses)
+    }
+  })
+}
+
 const OUTLINE =
   '# 보고\n\n- 2026년 AI 연수 계획\n  - 추진 배경\n    - 교원 AI 활용 수요 증가\n    - 업무 경감 필요\n  - 추진 내용\n    - 기초 연수 (3월)\n    - 심화 연수 (5월)\n  - 기대 효과\n'
 
@@ -87,6 +117,7 @@ async function tour(trendUrl: string): Promise<void> {
   })
   const { app, page } = launched
   try {
+    await hideAiAccount(app)
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]?.setSize(1440, 900))
     // the app asks for the forecast 3 seconds after it starts
     await expect(page.locator('[data-trend-field]')).toHaveCount(10, { timeout: 30_000 })
@@ -186,6 +217,6 @@ async function tour(trendUrl: string): Promise<void> {
     await help.waitForTimeout(1500)
     await shot(help, '09-help')
   } finally {
-    await closeAndSaveVideo(launched)
+    await closeAndSaveVideo(launched, 'hanpan-tour')
   }
 }

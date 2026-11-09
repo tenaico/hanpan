@@ -144,9 +144,10 @@ test.describe('mind map editor in the shell', () => {
       // ── the Home card
       const card = page.locator('.quick-card[data-new="xmind"]')
       await expect(card).toHaveCount(1)
-      await expect(card.locator('.quick-sub')).toHaveText('Organise ideas, send them to documents')
+      // the board's tile shows the name; its one-line description is the hover tip (0.19)
+      await expect(card).toHaveAttribute('data-tip', 'Organise ideas, send them to documents')
       // the card is named for the editor, never after another product
-      await expect(card.locator('.quick-title')).toHaveText('Mind Map')
+      await expect(card.locator('.hb-app-name')).toHaveText('Mind Map')
       await expect(card.locator('img')).toBeVisible()
       const cardIconSrc = await card.locator('img').getAttribute('src')
       await page.screenshot({ path: screenshotPath('mindmap-home-card') })
