@@ -427,3 +427,31 @@
   cursor: grab;
   touch-action: none;
 }
+
+/* ---- narrow windows (spec 7.9) ---- */
+
+/* the board never pushes Home wider than the window: no sideways scroll from 900px */
+.hb-content,
+.hb-board,
+.hb-card-body {
+  min-width: 0;
+}
+
+.hb-card {
+  overflow-wrap: anywhere;
+}
+
+/* the head row wraps the customize button under the search on a narrow window */
+.hb-head {
+  flex-wrap: wrap;
+}
+
+/* a card title wraps to two lines at most; the full title shows on hover */
+.hb-card-title,
+.hb-card .hw-head .hw-title {
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: normal;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

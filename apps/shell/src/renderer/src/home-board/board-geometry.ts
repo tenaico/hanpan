@@ -11,6 +11,16 @@ export const BOARD_GAP_PX = 14
 
 export type BoardColumns = 12 | 6 | 1
 
+/**
+ * The columns a board this wide uses (spec 7.9): twelve from 960px (a 1366
+ * window's board is about 1,060px), six from 700px, else one column of cards.
+ */
+export function boardColumns(width: number): BoardColumns {
+  if (width >= 960) return 12
+  if (width >= 700) return 6
+  return 1
+}
+
 /** the columns a card `w` wide spans on a board of `cols` columns; its stored size stays */
 export function cardSpan(w: number, cols: BoardColumns): number {
   if (cols === 12) return w

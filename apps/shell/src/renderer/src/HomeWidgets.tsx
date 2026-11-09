@@ -673,7 +673,10 @@ export function WidgetBody({
   return (
     <>
       <header className="hw-head">
-        <h2 className="hw-title">{title}</h2>
+        {/* two lines at most on a narrow card (spec 7.9); the whole title on hover */}
+        <h2 className="hw-title" title={title}>
+          {title}
+        </h2>
         <button
           type="button"
           className="hw-icon-btn"

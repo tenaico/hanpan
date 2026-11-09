@@ -25,6 +25,7 @@ import {
 } from '../../../shared/home-board-edit'
 import { homeCustomText } from '../i18n/strings-home-custom'
 import {
+  boardColumns,
   cardPixels,
   cardSpan,
   columnPixels,
@@ -77,9 +78,20 @@ export function BoardGrid(props: {
   onEdit: (id: string | null) => void
 }): ReactElement {
   const { customizing, update, lang } = props
-  // the narrow layouts measure the board later (plan Task 9); twelve columns until then
-  const cols: BoardColumns = 12
   const boardRef = useRef<HTMLElement | null>(null)
+  /** the columns the board's width allows (spec 7.9); the stored sizes never change for it */
+  const [cols, setCols] = useState<BoardColumns>(12)
+  useEffect(() => {
+    const el = boardRef.current
+    // no ResizeObserver (tests): twelve columns
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[entries.length - 1]?.contentRect.width
+      if (width !== undefined && width > 0) setCols(boardColumns(width))
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
   /** the card whose menu is open */
   const [menuFor, setMenuFor] = useState<string | null>(null)
   const menuToolsRef = useRef<HTMLDivElement | null>(null)
@@ -91,7 +103,10 @@ export function BoardGrid(props: {
   const resizingRef = useRef<Resizing | null>(null)
   resizingRef.current = resizing
 
-  // the menu and a resize go with customizing
+  // the menu and a resize go with customizing; a resize also with twelve columns (R15)
+  useEffect(() => {
+    if (cols !== 12) setResizing(null)
+  }, [cols])
   useEffect(() => {
     if (!customizing) {
       setMenuFor(null)

@@ -257,14 +257,17 @@
   letter-spacing: -0.025em;
 }
 
+/* the box and the button share a line while they fit; the button goes under the
+   box on a narrow start card (spec 7.9) */
 .hp-start {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   max-width: 620px;
 }
 
 .hp-start-input {
-  flex: 1;
+  flex: 1 1 16rem;
   min-width: 0;
   height: 46px;
   padding: 0 16px;
@@ -282,7 +285,7 @@
 }
 
 .hp-start-go {
-  flex: none;
+  flex: 0 0 auto;
   height: 46px;
   padding: 0 20px;
   border: none;
