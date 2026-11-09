@@ -61,10 +61,63 @@
   overflow: hidden;
 }
 
+/* the chalkboard fits two rows (206px): a tighter frame, a one-line title, and
+   the hint line only when it has something to say (an empty box, a failure),
+   then in place of the examples */
 .hb-card[data-card-type='start'] .hp-board {
   flex: 1;
+  align-content: center;
   margin: 0;
-  padding: 22px 28px;
+  padding: 16px 24px;
+}
+
+.hb-card[data-card-type='start'] .hp-board-head {
+  margin-bottom: 4px;
+}
+
+.hb-card[data-card-type='start'] .hp-board-title {
+  margin-bottom: 12px;
+  overflow: hidden;
+  font-size: 24px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hb-card[data-card-type='start'] .hp-start-input,
+.hb-card[data-card-type='start'] .hp-start-go {
+  height: 42px;
+}
+
+/* one row of examples: a chip that would wrap to a second row stays out of sight
+   (longer languages on a narrow card show two of the three) */
+.hb-card[data-card-type='start'] .hp-start-examples {
+  /* 4px around the row keeps a chip's focus ring inside the clip */
+  max-height: 38px;
+  margin: 6px -4px -4px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.hb-card[data-card-type='start'] .hp-start-note:not([role='alert']) {
+  display: none;
+}
+
+.hb-card[data-card-type='start'] .hp-board:has(.hp-start-note[role='alert']) .hp-start-examples {
+  display: none;
+}
+
+.hb-card[data-card-type='start'] .hp-start-note[role='alert'] {
+  margin-top: 10px;
+}
+
+/* the card's handle (and, while customizing, its menu) sit at the top right:
+   the guide button keeps clear of them */
+.hb-card[data-card-type='start'] .hp-board-head {
+  padding-right: 22px;
+}
+
+.hb-board[data-customizing='true'] .hb-card[data-card-type='start'] .hp-board-head {
+  padding-right: 52px;
 }
 
 .hb-card[data-card-type='start'] .home-hero {

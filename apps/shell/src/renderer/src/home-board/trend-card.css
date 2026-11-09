@@ -57,7 +57,7 @@
 .hb-trend-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 2px 12px;
+  gap: 1px 12px;
 }
 
 @container (min-width: 360px) {
@@ -71,7 +71,8 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  padding: 3px 6px;
+  /* five 22px rows: the ten fields fit the default 5×2 card with the head and the line */
+  padding: 2px 6px;
   border: 0;
   border-radius: 6px;
   background: none;
@@ -88,8 +89,8 @@
 }
 
 .hb-trend-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex: none;
 }
 

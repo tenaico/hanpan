@@ -61,7 +61,9 @@ export function StartBoard({ greeting, t }: { greeting: string; t: (key: string)
             <kbd className="hp-guide-key">F1</kbd>
           </button>
         </div>
-        <h1 className="hp-board-title">{t('hpHeroLine')}</h1>
+        <h1 className="hp-board-title" title={t('hpHeroLine')}>
+          {t('hpHeroLine')}
+        </h1>
         <form className="hp-start" onSubmit={submit}>
           <input
             className="hp-start-input"
