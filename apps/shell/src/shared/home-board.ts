@@ -1,4 +1,4 @@
-import { APP_KEYS, defaultPins, isAppKey, type AppKey } from './home-apps'
+import { APP_KEYS, RECENT_APPS_MAX, defaultPins, isAppKey, type AppKey } from './home-apps'
 import {
   arrangeKeys,
   HOME_MEMO_MAX,
@@ -131,7 +131,6 @@ export interface HomeBoardSource {
 
 const CARD_ID = /^[a-z0-9][a-z0-9-]{0,39}$/
 const PATH_MAX = 4096
-const RECENT_APPS_MAX = 8
 
 export function sizeKey(value: CardSize): string {
   return `${value.w}x${value.h}`
