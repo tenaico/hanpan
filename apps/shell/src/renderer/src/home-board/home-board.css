@@ -173,3 +173,177 @@
 .hb-recent-when {
   white-space: nowrap;
 }
+
+/* ---- 홈 꾸미기 (spec 7.8) ---- */
+
+.hb-head .home-custom-open {
+  margin-left: auto;
+  flex: none;
+}
+
+.hb-head .home-custom-open[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* the bar under the head row: the hint, then add, default layout, list, done */
+.hb-customize-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 14px;
+  padding: 8px 12px;
+  border: 1px dashed var(--accent);
+  border-radius: 10px;
+  background: var(--accent-soft);
+}
+
+.hb-customize-hint {
+  flex: 1 1 16rem;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.hb-card {
+  position: relative;
+}
+
+/* every card shows its frame dashed while customizing */
+.hb-board[data-customizing='true'] .hb-card {
+  border: 1px dashed var(--accent);
+}
+
+/* the card tools sit at the top right, above the body */
+.hb-card-tools {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+}
+
+.hb-tool {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hb-tool:hover,
+.hb-tool[aria-expanded='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hb-card-menu {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  z-index: 3;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-menu);
+}
+
+.hb-card-menu-label {
+  margin: 4px 8px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.hb-card-menu button {
+  padding: 6px 8px 6px 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hb-card-menu button:hover,
+.hb-card-menu button:focus-visible {
+  background: var(--bg-hover);
+  outline: none;
+}
+
+.hb-card-menu button[aria-checked='true'] {
+  position: relative;
+  color: var(--accent);
+}
+
+.hb-card-menu button[aria-checked='true']::before {
+  content: '✓';
+  position: absolute;
+  left: 8px;
+}
+
+/* the new card while customizing: an × on each tile, "앱 추가" in blank slots */
+.hb-app-slot {
+  position: relative;
+}
+
+.hb-app-unpin {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hb-app-unpin:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hb-app-add {
+  flex: 1;
+  min-width: 0;
+  padding: 6px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hb-app-add:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

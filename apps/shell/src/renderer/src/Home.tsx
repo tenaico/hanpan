@@ -8,7 +8,15 @@ import logoLockup from './assets/genoffice-logo.svg'
 import { KbAskPanel } from './KbAskPanel'
 import { TemplatePicker } from './hanpan/TemplatePicker'
 import { StartBoard } from './hanpan/StartBoard'
-import { WidgetBody, boardCardName, type HomeAppCard } from './HomeWidgets'
+import {
+  HomeCustomizePanel,
+  ResetBoardDialog,
+  WidgetBody,
+  WidgetGallery,
+  boardCardName,
+  configuresOnAdd,
+  type HomeAppCard,
+} from './HomeWidgets'
 import { useHomeBoard } from './home-board/useHomeBoard'
 import { BoardGrid } from './home-board/BoardGrid'
 import { AppsCard } from './home-board/AppsCard'
@@ -25,6 +33,7 @@ import {
   type AppKey,
 } from '../../shared/home-apps'
 import type { BoardCard, CardSize } from '../../shared/home-board'
+import { addCard, moveApp, resetHomeBoard } from '../../shared/home-board-edit'
 import { homeCustomText } from './i18n/strings-home-custom'
 import { MarkdownConverter, type MarkdownConverterApi } from './hanpan/MarkdownConverter'
 import './hanpan/hanpan.css'
@@ -2062,9 +2071,19 @@ export function Home({
     [],
   )
   // 0.19: the home board (spec 7), stored under `homeBoard`
-  const { board, update: updateBoard } = useHomeBoard({ korean: lang === 'ko', koreanDocs })
+  const {
+    board,
+    context: boardContext,
+    update: updateBoard,
+  } = useHomeBoard({ korean: lang === 'ko', koreanDocs })
   /** the widget card whose settings are open */
   const [editingWidget, setEditingWidget] = useState<string | null>(null)
+  /** "홈 꾸미기" (spec 7.8): the bar, the card tools, the new card's × and blank slots */
+  const [customizing, setCustomizing] = useState(false)
+  /** the dialogs customizing opens: "카드 추가", "목록으로 정리", "기본 배치로" */
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  const [boardListOpen, setBoardListOpen] = useState(false)
+  const [resetAsk, setResetAsk] = useState(false)
   /** "모든 앱" with the apps that were new when it opened, or closed */
   const [allApps, setAllApps] = useState<{ newKeys: ReadonlySet<string> } | null>(null)
   const [converterOpen, setConverterOpen] = useState(false)
@@ -2149,6 +2168,28 @@ export function Home({
     })
   }
 
+  // Esc ends customizing when no dialog or card menu is open (those take Esc first)
+  useEffect(() => {
+    if (!customizing || galleryOpen || boardListOpen || resetAsk || allApps) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !event.defaultPrevented) setCustomizing(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [customizing, galleryOpen, boardListOpen, resetAsk, allApps])
+
+  /** "카드 추가": the new card goes last; a memo, shortcut or folder opens its settings */
+  const addBoardCard = (type: Parameters<typeof configuresOnAdd>[0]) => {
+    setGalleryOpen(false)
+    let added: string | null = null
+    updateBoard((prev) => {
+      const result = addCard(prev, type)
+      added = result.id
+      return result.board
+    })
+    if (added && configuresOnAdd(type)) setEditingWidget(added)
+  }
+
   /** "모든 앱": the apps new since it last opened keep their mark this time, then count as seen */
   const openAllApps = (apps: readonly HomeAppCard[]) => {
     if (!board) return
@@ -2158,7 +2199,7 @@ export function Home({
   }
 
   /** the new card: on the board in the card's size, above a folder in 7×2 (plan R7) */
-  function renderAppsCard(apps: readonly HomeAppCard[], size: CardSize) {
+  function renderAppsCard(apps: readonly HomeAppCard[], size: CardSize, onBoard = false) {
     if (!board) return null
     const available = new Set(apps.map((app) => app.key))
     return (
@@ -2167,8 +2208,10 @@ export function Home({
         pinned={board.pinned}
         size={size}
         unseen={unseenApps(board.seenApps, available).length}
-        customizing={false}
+        customizing={onBoard && customizing}
         onOpenAll={() => openAllApps(apps)}
+        onUnpin={(key) => updateBoard((b) => setPinned(b, key, false))}
+        onMove={(key, toIndex) => updateBoard((b) => moveApp(b, key, toIndex))}
       />
     )
   }
@@ -2206,7 +2249,7 @@ export function Home({
       case 'trend':
         return <TrendCard />
       case 'apps':
-        return renderAppsCard(apps, card) ?? <></>
+        return renderAppsCard(apps, card, true) ?? <></>
       case 'recent':
         return (
           <RecentCard
@@ -2238,11 +2281,50 @@ export function Home({
     }
   }
 
-  /** the dialogs Home opens over any view: templates, the converter and "모든 앱" */
+  /** the dialogs Home opens over any view: templates, the converter, "모든 앱" and customizing's */
   function renderHomeDialogs() {
-    const apps = allApps && board ? homeApps() : []
+    const apps = (allApps || boardListOpen) && board ? homeApps() : []
     return (
       <>
+        {galleryOpen && board && (
+          <WidgetGallery
+            board={board}
+            trendAvailable={boardContext?.trend ?? false}
+            lang={lang}
+            onPick={addBoardCard}
+            onClose={() => setGalleryOpen(false)}
+          />
+        )}
+        {boardListOpen && board && (
+          <HomeCustomizePanel
+            board={board}
+            update={updateBoard}
+            apps={apps}
+            lang={lang}
+            cardName={(card) => boardCardName(card, lang, apps)}
+            themeLabels={{
+              title: t('theme'),
+              light: t('themeLight'),
+              dark: t('themeDark'),
+              system: t('themeSystem'),
+            }}
+            onOpenGallery={() => {
+              setBoardListOpen(false)
+              setGalleryOpen(true)
+            }}
+            onClose={() => setBoardListOpen(false)}
+          />
+        )}
+        {resetAsk && (
+          <ResetBoardDialog
+            lang={lang}
+            onNo={() => setResetAsk(false)}
+            onYes={() => {
+              setResetAsk(false)
+              if (boardContext) updateBoard((b) => resetHomeBoard(b, boardContext))
+            }}
+          />
+        )}
         {allApps && board && (
           <AllApps
             apps={apps}
@@ -3429,7 +3511,58 @@ export function Home({
             {renderSearchBox()}
             {renderSearchSettingsButton()}
           </div>
+          <button
+            type="button"
+            className="home-custom-open"
+            data-home-custom="open"
+            aria-pressed={customizing}
+            onClick={() => setCustomizing((on) => !on)}
+          >
+            {homeCustomText(lang, 'customize')}
+          </button>
         </div>
+        {customizing && (
+          <div
+            className="hb-customize-bar"
+            role="toolbar"
+            aria-label={homeCustomText(lang, 'customize')}
+            data-customize-bar=""
+          >
+            <p className="hb-customize-hint">{homeCustomText(lang, 'customizeHint')}</p>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-customize="add"
+              onClick={() => setGalleryOpen(true)}
+            >
+              {homeCustomText(lang, 'addCard')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-customize="reset"
+              onClick={() => setResetAsk(true)}
+            >
+              {homeCustomText(lang, 'resetBoard')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-customize="list"
+              onClick={() => setBoardListOpen(true)}
+            >
+              {homeCustomText(lang, 'listView')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-customize="done"
+              onClick={() => setCustomizing(false)}
+            >
+              {homeCustomText(lang, 'done')}
+            </button>
+          </div>
+        )}
         {searchActive
           ? renderBoardSearch()
           : board && (
@@ -3437,6 +3570,11 @@ export function Home({
                 board={board}
                 cardName={(card) => boardCardName(card, lang, apps)}
                 renderCard={(card) => cardBody(card, apps)}
+                customizing={customizing}
+                update={updateBoard}
+                lang={lang}
+                editing={editingWidget}
+                onEdit={setEditingWidget}
               />
             )}
       </main>

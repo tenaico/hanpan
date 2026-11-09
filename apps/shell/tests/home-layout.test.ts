@@ -3,16 +3,8 @@ import {
   DEFAULT_HOME_LAYOUT,
   HOME_MEMO_MAX,
   HOME_WIDGET_MAX,
-  addWidget,
   arrangeKeys,
-  moveKey,
-  moveWidget,
-  moveWidgetTo,
   normalizeHomeLayout,
-  removeWidget,
-  resetHomeLayout,
-  toggleKey,
-  updateWidget,
   validLinkUrl,
   type HomeWidget,
 } from '../src/shared/home-layout'
@@ -138,75 +130,11 @@ describe('validLinkUrl', () => {
   })
 })
 
-describe('widget helpers', () => {
-  const base = normalizeHomeLayout({
-    widgets: [
-      { id: 'a', type: 'clock' },
-      { id: 'b', type: 'memo', text: '' },
-      { id: 'c', type: 'recent' },
-    ],
-  })
-
-  it('adds a widget with a fresh id at the end', () => {
-    const { layout, id } = addWidget(base, 'shortcut')
-    expect(layout.widgets).toHaveLength(4)
-    expect(layout.widgets[3]).toMatchObject({ id, type: 'shortcut', target: null })
-    expect(base.widgets.map((w) => w.id)).not.toContain(id)
-  })
-
-  it('adds several memos, each on its own', () => {
-    const one = addWidget(base, 'memo')
-    const two = addWidget(one.layout, 'memo')
-    expect(one.id).not.toBe(two.id)
-    expect(two.layout.widgets.filter((w) => w.type === 'memo')).toHaveLength(3)
-  })
-
-  it('does not go past the widget limit', () => {
-    let layout = base
-    for (let k = 0; k < HOME_WIDGET_MAX + 3; k++) layout = addWidget(layout, 'clock').layout
-    expect(layout.widgets).toHaveLength(HOME_WIDGET_MAX)
-  })
-
-  it('removes, updates, resizes and moves a widget', () => {
-    expect(removeWidget(base, 'b').widgets.map((w) => w.id)).toEqual(['a', 'c'])
-    const titled = updateWidget(base, 'b', { title: '할 일', size: 'wide' })
-    expect(titled.widgets[1]).toMatchObject({ title: '할 일', size: 'wide' })
-    // an update cannot change the type or the id
-    const forced = updateWidget(base, 'a', { type: 'memo', id: 'z' } as never)
-    expect(forced.widgets[0]).toMatchObject({ id: 'a', type: 'clock' })
-    expect(moveWidget(base, 'c', -1).widgets.map((w) => w.id)).toEqual(['a', 'c', 'b'])
-    expect(moveWidget(base, 'a', -1).widgets.map((w) => w.id)).toEqual(['a', 'b', 'c'])
-    expect(moveWidgetTo(base, 'a', 'c').widgets.map((w) => w.id)).toEqual(['b', 'c', 'a'])
-    expect(moveWidgetTo(base, 'c', 'a').widgets.map((w) => w.id)).toEqual(['c', 'a', 'b'])
-  })
-})
-
 describe('ordering helpers', () => {
   const keys = ['a', 'b', 'c', 'd']
 
   it('arranges keys by a stored order, unknown keys keeping their place after', () => {
     expect(arrangeKeys(keys, ['c', 'zz', 'a'])).toEqual(['c', 'a', 'b', 'd'])
     expect(arrangeKeys(keys, [])).toEqual(keys)
-  })
-
-  it('moves a key up or down within its group and keeps other stored keys', () => {
-    expect(moveKey(keys, ['other'], 'c', -1)).toEqual(['a', 'c', 'b', 'd', 'other'])
-    expect(moveKey(keys, [], 'd', 1)).toEqual(keys)
-    expect(moveKey(keys, [], 'missing', 1)).toEqual(keys)
-  })
-
-  it('toggles a key in and out of a list', () => {
-    expect(toggleKey(['a'], 'b')).toEqual(['a', 'b'])
-    expect(toggleKey(['a', 'b'], 'a')).toEqual(['b'])
-  })
-
-  it('goes back to the default widgets and cards', () => {
-    const custom = normalizeHomeLayout({
-      widgets: [{ id: 'x', type: 'clock' }],
-      hiddenCards: ['pdf'],
-      pinnedApps: ['md'],
-    })
-    expect(custom.widgets).toHaveLength(1)
-    expect(resetHomeLayout()).toEqual(DEFAULT_HOME_LAYOUT)
   })
 })

@@ -185,72 +185,6 @@ export function normalizeHomeLayout(raw: unknown): HomeLayout {
   }
 }
 
-// ---- widgets ----
-
-function newWidgetId(layout: HomeLayout, type: HomeWidgetType): string {
-  for (;;) {
-    const id = `${type}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
-    if (!layout.widgets.some((w) => w.id === id)) return id
-  }
-}
-
-/** whether the gallery can still add `type` */
-export function canAddWidget(layout: HomeLayout, type: HomeWidgetType): boolean {
-  if (layout.widgets.length >= HOME_WIDGET_MAX) return false
-  return !SINGLE_WIDGET_TYPES.includes(type) || !layout.widgets.some((w) => w.type === type)
-}
-
-/** a new widget of `type` at the end; `id` is null when nothing could be added */
-export function addWidget(
-  layout: HomeLayout,
-  type: HomeWidgetType,
-): { layout: HomeLayout; id: string | null } {
-  if (!canAddWidget(layout, type)) return { layout, id: null }
-  const id = newWidgetId(layout, type)
-  const widget = normalizeWidget({ id, type, text: '', target: null, path: '' })!
-  return { layout: { ...layout, widgets: [...layout.widgets, widget] }, id }
-}
-
-export function removeWidget(layout: HomeLayout, id: string): HomeLayout {
-  return { ...layout, widgets: layout.widgets.filter((w) => w.id !== id) }
-}
-
-/** change a widget's options; its id and type stay, and the result is cleaned up like stored data */
-export function updateWidget(
-  layout: HomeLayout,
-  id: string,
-  patch: Partial<Record<string, unknown>>,
-): HomeLayout {
-  return {
-    ...layout,
-    widgets: layout.widgets.map((w) => {
-      if (w.id !== id) return w
-      return normalizeWidget({ ...w, ...patch, id: w.id, type: w.type }) ?? w
-    }),
-  }
-}
-
-/** one place earlier (-1) or later (1) */
-export function moveWidget(layout: HomeLayout, id: string, delta: -1 | 1): HomeLayout {
-  const at = layout.widgets.findIndex((w) => w.id === id)
-  const to = at + delta
-  if (at === -1 || to < 0 || to >= layout.widgets.length) return layout
-  const widgets = [...layout.widgets]
-  ;[widgets[at], widgets[to]] = [widgets[to]!, widgets[at]!]
-  return { ...layout, widgets }
-}
-
-/** a dragged widget takes the dropped-on widget's place */
-export function moveWidgetTo(layout: HomeLayout, id: string, targetId: string): HomeLayout {
-  const from = layout.widgets.findIndex((w) => w.id === id)
-  const to = layout.widgets.findIndex((w) => w.id === targetId)
-  if (from === -1 || to === -1 || from === to) return layout
-  const widgets = [...layout.widgets]
-  const [moved] = widgets.splice(from, 1)
-  widgets.splice(to, 0, moved!)
-  return { ...layout, widgets }
-}
-
 // ---- app cards ----
 
 /** `keys` in the stored `order`; keys the order does not name follow in their own order */
@@ -260,34 +194,4 @@ export function arrangeKeys<K extends string>(keys: readonly K[], order: readonl
     return at === -1 ? order.length + keys.indexOf(key) : at
   }
   return [...keys].sort((a, b) => rank(a) - rank(b))
-}
-
-/**
- * Move `key` one place up (-1) or down (1) among `keys` as currently arranged;
- * returns the new stored order, keeping keys of other groups after.
- */
-export function moveKey<K extends string>(
-  keys: readonly K[],
-  order: readonly string[],
-  key: K,
-  delta: -1 | 1,
-): string[] {
-  const arranged: string[] = arrangeKeys(keys, order)
-  const rest = order.filter((k) => !arranged.includes(k))
-  const at = arranged.indexOf(key)
-  const to = at + delta
-  if (at !== -1 && to >= 0 && to < arranged.length) {
-    arranged[at] = arranged[to]!
-    arranged[to] = key
-  }
-  return [...arranged, ...rest]
-}
-
-export function toggleKey<K extends string>(list: readonly K[], key: K): K[] {
-  return list.includes(key) ? list.filter((k) => k !== key) : [...list, key]
-}
-
-/** "기본값으로 되돌리기": the default widgets and cards */
-export function resetHomeLayout(): HomeLayout {
-  return normalizeHomeLayout({ widgets: defaultWidgets() })
 }

@@ -1,7 +1,9 @@
 /**
  * The new card (spec 7.4): the pinned apps in a grid of (w - 1) x h slots,
  * "모든 앱" right after the last pin (or in the last slot with "+N" when the
- * pins do not fit). Blank slots stay empty here; customizing fills them later.
+ * pins do not fit). Blank slots stay empty; while customizing (spec 7.8) they
+ * offer "앱 추가", each tile gets an × that unpins it and a tile no longer
+ * starts its app (plan R16).
  */
 import { cloneElement, isValidElement, type CSSProperties, type ReactElement } from 'react'
 import { appSlots, slotGrid, type AppKey } from '../../../shared/home-apps'
@@ -51,12 +53,26 @@ export function AppsCard(props: {
                 data-new={key}
                 data-hanpan={HANPAN_TILES.has(key) ? key : undefined}
                 data-tip={app.sub}
-                onClick={() => void app.action()}
+                onClick={() => {
+                  if (!props.customizing) void app.action()
+                }}
               >
                 {key === 'xmind' && <span className="hp-start-badge">{t('hpStartBadge')}</span>}
                 {undraggable(app.icon)}
                 <span className="hb-app-name">{app.title}</span>
               </button>
+              {props.customizing && (
+                <button
+                  type="button"
+                  className="hb-app-unpin"
+                  data-app-unpin={key}
+                  aria-label={homeCustomText(lang, 'unpinApp', { name: app.title })}
+                  title={homeCustomText(lang, 'unpinApp', { name: app.title })}
+                  onClick={() => props.onUnpin?.(key)}
+                >
+                  ×
+                </button>
+              )}
             </div>
           )
         })}
@@ -81,11 +97,18 @@ export function AppsCard(props: {
           </button>
         </div>
         {Array.from({ length: slots.empty }, (_, i) => (
-          <div
-            key={`empty-${i}`}
-            className="hb-app-slot is-empty"
-            data-app-slot={allIndex + 1 + i}
-          />
+          <div key={`empty-${i}`} className="hb-app-slot is-empty" data-app-slot={allIndex + 1 + i}>
+            {props.customizing && (
+              <button
+                type="button"
+                className="hb-app-add"
+                data-app-slot-add=""
+                onClick={props.onOpenAll}
+              >
+                {homeCustomText(lang, 'addAppSlot')}
+              </button>
+            )}
+          </div>
         ))}
       </div>
     </section>
