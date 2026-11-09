@@ -27,14 +27,19 @@ export function boardContextFrom(
  * Home's board as stored, cleaned up; the first read moves 0.18's
  * `homeLayout` over. Whatever the cleanup changed is stored at once, so the
  * next read (and the next version) sees the same board. `homeLayout` is never
- * written.
+ * written. A failed store (a Windows lock: EPERM/EBUSY) does not fail the read:
+ * the board is still given, and the next read stores it.
  */
 export function readHomeBoard(path: string, ctx: BoardContext): HomeBoard {
   const settings = readAppSettings(path)
   const stored = settings[HOME_BOARD_SETTING_KEY]
   const board = resolveHomeBoard(stored, settings[HOME_LAYOUT_SETTING_KEY], ctx)
   if (JSON.stringify(board) !== JSON.stringify(stored)) {
-    writeAppSetting(path, HOME_BOARD_SETTING_KEY, board)
+    try {
+      writeAppSetting(path, HOME_BOARD_SETTING_KEY, board)
+    } catch {
+      // the renderer must not fall back to the default board over a stored one
+    }
   }
   return board
 }
@@ -45,7 +50,8 @@ export function readHomeBoard(path: string, ctx: BoardContext): HomeBoard {
  * default board, so a renderer mistake never wipes the person's Home.
  */
 export function writeHomeBoard(path: string, raw: unknown, ctx: BoardContext): HomeBoard | null {
-  if (!isBoardValue(raw)) return null
+  // a board always has its required cards, so an empty list is a mistake too
+  if (!isBoardValue(raw) || (raw as { cards: unknown[] }).cards.length === 0) return null
   const board = normalizeHomeBoard(raw, ctx)
   writeAppSetting(path, HOME_BOARD_SETTING_KEY, board)
   return board

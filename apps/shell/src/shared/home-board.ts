@@ -175,9 +175,9 @@ function isRecord(raw: unknown): raw is Record<string, unknown> {
   return !!raw && typeof raw === 'object' && !Array.isArray(raw)
 }
 
-/** a stored version 1 board, however damaged inside */
+/** a stored version 1 board with a card list, however damaged inside */
 export function isBoardValue(raw: unknown): boolean {
-  return isRecord(raw) && raw.v === 1
+  return isRecord(raw) && raw.v === 1 && Array.isArray(raw.cards)
 }
 
 export function boardHasTrend(raw: unknown): boolean {

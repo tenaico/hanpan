@@ -1,7 +1,8 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as appSettings from '../src/main/app-settings'
 import { boardContextFrom, readHomeBoard, writeHomeBoard } from '../src/main/home-board'
 import { defaultHomeBoard, type BoardContext } from '../src/shared/home-board'
 import { TREND_FORECAST_URL } from '../src/shared/trend-forecast'
@@ -11,6 +12,12 @@ import { TREND_FORECAST_URL } from '../src/shared/trend-forecast'
  * 0.18 layout moved over and stored at once, written only when the renderer
  * sent a board, and never touching `homeLayout`.
  */
+
+// a write can fail on Windows while another process holds the file (EPERM/EBUSY)
+vi.mock('../src/main/app-settings', async (original) => {
+  const real = await original<typeof import('../src/main/app-settings')>()
+  return { ...real, writeAppSetting: vi.fn(real.writeAppSetting) }
+})
 
 const KO: BoardContext = { korean: true, koreanDocs: true, trend: true }
 
@@ -52,6 +59,19 @@ describe('readHomeBoard', () => {
     expect(readHomeBoard(path, KO)).toEqual(first)
   })
 
+  it('still gives the moved board when storing it fails', () => {
+    writeFileSync(path, JSON.stringify({ homeLayout }))
+    vi.mocked(appSettings.writeAppSetting).mockImplementationOnce(() => {
+      throw Object.assign(new Error('EPERM: operation not permitted'), { code: 'EPERM' })
+    })
+    const board = readHomeBoard(path, KO)
+    expect(board.cards.find((c) => c.id === 'memo-1')).toMatchObject({ text: '분기 보고' })
+    expect(settings().homeBoard).toBeUndefined()
+    // the next read moves homeLayout over again and stores it then
+    expect(readHomeBoard(path, KO)).toEqual(board)
+    expect(settings().homeBoard).toEqual(board)
+  })
+
   it('stores the default board when the file is missing', () => {
     expect(readHomeBoard(path, KO)).toEqual(defaultHomeBoard(KO))
     expect(settings().homeBoard).toEqual(defaultHomeBoard(KO))
@@ -73,6 +93,9 @@ describe('writeHomeBoard', () => {
     writeFileSync(path, before)
     expect(writeHomeBoard(path, 'garbage', KO)).toBeNull()
     expect(writeHomeBoard(path, { v: 2, cards: [] }, KO)).toBeNull()
+    expect(writeHomeBoard(path, { v: 1 }, KO)).toBeNull()
+    expect(writeHomeBoard(path, { v: 1, cards: 'x' }, KO)).toBeNull()
+    expect(writeHomeBoard(path, { v: 1, cards: [] }, KO)).toBeNull()
     expect(readFileSync(path, 'utf8')).toBe(before)
   })
 })

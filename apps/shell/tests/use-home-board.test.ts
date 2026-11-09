@@ -116,13 +116,37 @@ describe('useHomeBoard', () => {
     expect(setHomeBoard).not.toHaveBeenCalled()
   })
 
-  it('draws the default board when the answer has no board', async () => {
+  it('draws the default board without storing it when the answer has no board', async () => {
     await mount()
     await reply(null)
     const ctx = { ...KO, trend: false }
     expect(hook.board).toEqual(defaultHomeBoard(ctx))
     expect(hook.board!.introduced).toEqual(defaultCardTypes(ctx))
+    expect(setHomeBoard).not.toHaveBeenCalled()
+  })
+
+  it('draws the default board without storing it when reading fails', async () => {
+    let fail!: (error: unknown) => void
+    const failing = new Promise<HomeBoardSource>((_, reject) => {
+      fail = reject
+    })
+    ;(window as unknown as { aiOffice: { getHomeBoard: unknown } }).aiOffice.getHomeBoard = vi.fn(
+      () => failing,
+    )
+    await mount()
+    await act(async () => {
+      fail(new Error('EBUSY: resource busy or locked'))
+    })
+    expect(hook.board).toEqual(defaultHomeBoard({ ...KO, trend: false }))
+    // a language change cleans the drawn board up but still stores nothing
+    await mount({ korean: false, koreanDocs: false })
+    expect(setHomeBoard).not.toHaveBeenCalled()
+    // a change the person makes is stored
+    await act(async () => {
+      hook.update((prev) => ({ ...prev, pinned: [...prev.pinned, 'md'] }))
+    })
     expect(setHomeBoard).toHaveBeenCalledTimes(1)
+    expect((setHomeBoard.mock.calls[0]![0] as HomeBoard).pinned.at(-1)).toBe('md')
   })
 
   it('cleans the board up again when the screen turns Korean', async () => {

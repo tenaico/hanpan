@@ -224,10 +224,10 @@ describe('normalizeHomeBoard', () => {
     expect(empty.pinned).toEqual([])
   })
 
-  it('gives the default cards when cards is not a list', () => {
-    const b = normalizeHomeBoard({ v: 1, cards: 'x', pinned: ['md'] }, KO)
-    expect(types(b)).toEqual(types(defaultHomeBoard(KO)))
-    expect(b.pinned).toEqual(['md'])
+  it('takes a board whose cards are not a list for no board at all', () => {
+    expect(normalizeHomeBoard({ v: 1, cards: 'x', pinned: ['md'] }, KO)).toEqual(
+      defaultHomeBoard(KO),
+    )
   })
 
   it('cuts a note at 2,000 characters and a title at 60', () => {
@@ -467,9 +467,12 @@ describe('resolveHomeBoard', () => {
     expect(memoText(resolveHomeBoard(undefined, legacy, KO))).toEqual(['old'])
   })
 
-  it.each(['x', { v: 2 }])('moves homeLayout over when the board is damaged (%j)', (stored) => {
-    expect(memoText(resolveHomeBoard(stored, legacy, KO))).toEqual(['old'])
-  })
+  it.each(['x', { v: 2 }, { v: 1 }, { v: 1, cards: 'x' }])(
+    'moves homeLayout over when the board is damaged (%j)',
+    (stored) => {
+      expect(memoText(resolveHomeBoard(stored, legacy, KO))).toEqual(['old'])
+    },
+  )
 
   it.each([
     [undefined, undefined],

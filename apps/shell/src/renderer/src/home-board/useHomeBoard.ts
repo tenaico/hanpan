@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  isBoardValue,
   normalizeHomeBoard,
   type BoardContext,
   type HomeBoard,
@@ -10,7 +11,10 @@ import {
  * Home's board: read once from main, cleaned up for this screen, changed
  * through `update` and stored after every change. Nothing is drawn before the
  * stored board arrives (plan R4): drawing the default board first would let a
- * change made at launch store it over the board moved from 0.18.
+ * change made at launch store it over the board moved from 0.18. When main
+ * gives no board (or the read fails) the default board is drawn but not stored
+ * until the person changes something, so a passing failure never stores the
+ * default board over theirs.
  */
 export function useHomeBoard(input: { korean: boolean; koreanDocs: boolean }): {
   board: HomeBoard | null
@@ -21,6 +25,8 @@ export function useHomeBoard(input: { korean: boolean; koreanDocs: boolean }): {
   const [source, setSource] = useState<HomeBoardSource | null>(null)
   const [board, setBoard] = useState<HomeBoard | null>(null)
   const current = useRef<HomeBoard | null>(null)
+  // whether the board on screen came from main or a change the person made
+  const owned = useRef(false)
   const contextRef = useRef<BoardContext | null>(null)
 
   useEffect(() => {
@@ -60,9 +66,10 @@ export function useHomeBoard(input: { korean: boolean; koreanDocs: boolean }): {
     contextRef.current = context
     const base: unknown = current.current ?? source.board
     const next = normalizeHomeBoard(base, context)
+    if (!current.current) owned.current = isBoardValue(source.board)
     current.current = next
     setBoard(next)
-    if (JSON.stringify(next) !== JSON.stringify(base)) store(next)
+    if (owned.current && JSON.stringify(next) !== JSON.stringify(base)) store(next)
   }, [source, context, store])
 
   const update = useCallback(
@@ -72,6 +79,7 @@ export function useHomeBoard(input: { korean: boolean; koreanDocs: boolean }): {
       if (!prev || !ctx) return
       const next = normalizeHomeBoard(change(prev), ctx)
       current.current = next
+      owned.current = true
       setBoard(next)
       store(next)
     },
