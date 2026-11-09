@@ -304,5 +304,130 @@
     "cs": "Začínáme s Hanpanem: jak funguje každá funkce",
     "id": "Mulai dengan Hanpan: cara kerja setiap fitur",
     "ms": "Bermula dengan Hanpan: cara setiap ciri berfungsi"
+  },
+  "hbExample1": {
+    "ko": "시설 점검 결과 보고",
+    "en": "Facility inspection report",
+    "vi": "Báo cáo kết quả kiểm tra cơ sở"
+  },
+  "hbExample2": {
+    "ko": "입주사 안내문",
+    "en": "Notice to tenants",
+    "vi": "Thông báo gửi khách thuê"
+  },
+  "hbExample3": {
+    "ko": "주간 업무 보고",
+    "en": "Weekly work report",
+    "vi": "Báo cáo công việc hằng tuần"
+  },
+  "hbAllApps": {
+    "ko": "모든 앱",
+    "en": "All apps",
+    "vi": "Tất cả ứng dụng"
+  },
+  "hbAllAppsSearch": {
+    "ko": "앱 이름이나 하는 일로 찾기",
+    "en": "Search by app name or what it does",
+    "vi": "Tìm theo tên ứng dụng hoặc công dụng"
+  },
+  "hbRecentApps": {
+    "ko": "최근에 쓴 앱",
+    "en": "Recently used apps",
+    "vi": "Ứng dụng dùng gần đây"
+  },
+  "hbGroupDocs": {
+    "ko": "문서 만들기",
+    "en": "Create documents",
+    "vi": "Tạo tài liệu"
+  },
+  "hbGroupPdf": {
+    "ko": "PDF · 변환",
+    "en": "PDF · Convert",
+    "vi": "PDF · Chuyển đổi"
+  },
+  "hbGroupGraphics": {
+    "ko": "그림",
+    "en": "Graphics",
+    "vi": "Đồ họa"
+  },
+  "hbGroupFile": {
+    "ko": "파일",
+    "en": "Files",
+    "vi": "Tệp"
+  },
+  "hbNewApp": {
+    "ko": "새 앱",
+    "en": "New",
+    "vi": "Mới"
+  },
+  "hbSearchNoApps": {
+    "ko": "맞는 앱이 없습니다",
+    "en": "No matching apps",
+    "vi": "Không có ứng dụng phù hợp"
+  },
+  "hbAppDocxSub": {
+    "ko": "보고서·기안문 같은 워드 문서",
+    "en": "Word documents such as reports and memos",
+    "vi": "Tài liệu Word như báo cáo, tờ trình"
+  },
+  "hbAppXlsxSub": {
+    "ko": "표와 계산이 들어가는 엑셀 문서",
+    "en": "Excel sheets with tables and formulas",
+    "vi": "Bảng tính Excel có bảng và công thức"
+  },
+  "hbAppMdSub": {
+    "ko": "마크다운으로 가볍게 쓰는 글",
+    "en": "Light writing in Markdown",
+    "vi": "Viết nhanh, gọn bằng Markdown"
+  },
+  "hbAppHtmlSub": {
+    "ko": "안내 페이지 같은 웹 문서",
+    "en": "Web pages such as notices",
+    "vi": "Trang web như trang thông báo"
+  },
+  "hbAppPdfSub": {
+    "ko": "PDF에 메모하고 가리고 글 넣기",
+    "en": "Annotate, redact and add text to a PDF",
+    "vi": "Ghi chú, che và thêm chữ vào PDF"
+  },
+  "hbAppOpenSub": {
+    "ko": "이 컴퓨터에 있는 파일 열기",
+    "en": "Open a file on this computer",
+    "vi": "Mở tệp trên máy tính này"
+  },
+  "hbRecentAll": {
+    "ko": "전체 {n}개",
+    "en": "All {n}",
+    "vi": "Tất cả {n}"
+  },
+  "hbTrendTitle": {
+    "ko": "트렌드 레이더 · 오늘의 기상도",
+    "en": "Trend Radar · Today's forecast",
+    "vi": "Trend Radar · Dự báo hôm nay"
+  },
+  "hbTrendLine": {
+    "ko": "오늘의 한 줄",
+    "en": "Today's line",
+    "vi": "Điểm tin hôm nay"
+  },
+  "hbTrendMore": {
+    "ko": "자세히",
+    "en": "Details",
+    "vi": "Chi tiết"
+  },
+  "hbTrendAsOf": {
+    "ko": "{when} 기준",
+    "en": "as of {when}",
+    "vi": "tính đến {when}"
+  },
+  "hbTrendOffline": {
+    "ko": "인터넷에 연결되면 오늘의 트렌드가 나옵니다",
+    "en": "Today's trends appear once you are online",
+    "vi": "Xu hướng hôm nay sẽ hiện khi bạn kết nối mạng"
+  },
+  "hbTrendNoData": {
+    "ko": "정보 없음",
+    "en": "No data",
+    "vi": "Không có dữ liệu"
   }
 }

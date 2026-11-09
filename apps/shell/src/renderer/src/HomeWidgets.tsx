@@ -40,6 +40,8 @@ import './home-widgets.css'
 export interface HomeAppCard {
   key: string
   title: string
+  /** one line on what the app does, shown in "모든 앱" */
+  sub?: string
   icon: ReactElement
   action: () => unknown
 }
