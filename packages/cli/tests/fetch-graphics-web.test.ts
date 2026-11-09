@@ -14,6 +14,7 @@ import JSZip from 'jszip'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   assetUrl,
+  downloadWithRetry,
   extractZip,
   fetchGraphicsWeb,
   flattenSingleRoot,
@@ -196,5 +197,51 @@ describe('fetchGraphicsWeb', () => {
     await expect(
       fetchGraphicsWeb({ root: freshDir(), env: { GRAPHICS_WEB_PHOTO_DIR: empty }, pins: {} }),
     ).rejects.toThrow(/index\.html/)
+  })
+})
+
+describe('downloadWithRetry', () => {
+  const noWait = async () => {}
+  const ok = () => new Response('abc', { status: 200 })
+
+  it('retries a 504 and then writes the file', async () => {
+    const dest = join(freshDir(), 'a.zip')
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('', { status: 504 }))
+      .mockResolvedValueOnce(ok())
+    await downloadWithRetry('https://x/a.zip', dest, { fetchImpl, sleep: noWait })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+    expect(readFileSync(dest, 'utf8')).toBe('abc')
+  })
+
+  it('retries a network error', async () => {
+    const dest = join(freshDir(), 'a.zip')
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('fetch failed'))
+      .mockResolvedValueOnce(ok())
+    await downloadWithRetry('https://x/a.zip', dest, { fetchImpl, sleep: noWait })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not retry a 404', async () => {
+    const dest = join(freshDir(), 'a.zip')
+    const fetchImpl = vi.fn().mockResolvedValue(new Response('', { status: 404 }))
+    await expect(
+      downloadWithRetry('https://x/a.zip', dest, { fetchImpl, sleep: noWait }),
+    ).rejects.toThrow('HTTP 404')
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+  })
+
+  it('gives up after the last attempt with the last status', async () => {
+    const dest = join(freshDir(), 'a.zip')
+    const fetchImpl = vi.fn().mockImplementation(async () => new Response('', { status: 503 }))
+    const sleep = vi.fn(noWait)
+    await expect(
+      downloadWithRetry('https://x/a.zip', dest, { fetchImpl, sleep, attempts: 3 }),
+    ).rejects.toThrow('HTTP 503')
+    expect(fetchImpl).toHaveBeenCalledTimes(3)
+    expect(sleep).toHaveBeenCalledTimes(2)
   })
 })
