@@ -1,9 +1,10 @@
 # Màn hình Trang chủ: tập tin của bạn ở đâu
 
-Trang chủ là trang khởi đầu của GenOffice: thanh điều hướng bên trái, danh sách tập tin và các thẻ tạo nhanh bên phải.
+Trang chủ là trang khởi đầu của GenOffice: bên trái là thanh bên điều hướng, bên phải là bảng gồm các thẻ. Nhập chủ đề vào thẻ **Bắt đầu** để mở sơ đồ tư duy, và mở lại tài liệu gần đây từ thẻ **Tiếp tục**; nút **Tất cả N** trên thẻ đưa bạn đến danh sách **Gần đây** đầy đủ. Trên giao diện tiếng Hàn còn có một thẻ hiển thị dự báo hôm nay của Trend Radar; nhấp vào một lĩnh vực sẽ mở Trend Radar trong trình duyệt.
 
 ## Điều hướng trên thanh bên
 
+- **Trang chủ**: mở bảng thẻ. Ứng dụng khởi động ở đây.
 - **Gần đây**: các tập tin bạn đã mở gần đây. Mỗi hàng đều đóng dấu thời điểm — hôm nay, hôm qua hoặc ngày.
 - **Đã gắn sao**: các tập tin bạn đã gắn sao. Rê chuột lên một hàng tập tin rồi nhấp vào ngôi sao để thêm hoặc bỏ. **Chuyển vào nhóm** trong menu ⋯ xếp các tệp đánh sao vào nhóm có tên; xem Đánh sao lọc theo chúng.
 - **Hướng dẫn sử dụng**: mở sổ tay này.
@@ -32,18 +33,27 @@ Chọn ô tick của một hàng, hoặc nhấp ⌘/ctrl, để tạo một vùn
 
 ## Tìm kiếm
 
-Ô tìm kiếm ở trên khớp với hai thứ cùng lúc:
+Nhập vào ô tìm kiếm ở hàng trên cùng của bảng, kết quả sẽ hiện ở chỗ của bảng; xóa từ khóa hoặc nhấn Esc để quay lại bảng. Tìm kiếm khớp hai thứ cùng lúc:
 
 - **Tên tập tin**: lọc nhanh theo tên.
 - **Nội dung tập tin**: GenOffice lập chỉ mục cho tập tin của bạn ở nền (văn bản bên trong docx/odt/xlsx/pptx/pdf/md/html), nên tìm trong phần chữ cũng ra tập tin. Phạm vi và các công tắc nằm trong cài đặt tìm kiếm.
 
-## Thẻ bắt đầu nhanh
+## Tùy chỉnh trang chủ
 
-Các thẻ phía trên danh sách tạo tài liệu mới trong một bước. Nhấp vào một thẻ sẽ tạo tập tin thuộc loại đó và mở trình soạn thảo tương ứng — bạn có thể viết ngay, hoặc để AI soạn thảo giúp (mỗi trình soạn thảo đều có **nút AI** trên dải ruy-băng, và **Hỏi AI** trong menu ngữ cảnh của vùng đã chọn).
+Nhấp **Tùy chỉnh trang chủ** ở đầu bên phải hàng trên cùng của bảng để thay đổi các thẻ. Thay đổi được lưu ngay; nhấp **Xong** hoặc nhấn Esc khi làm xong.
+
+- Kéo thẻ để di chuyển, kéo góc dưới bên phải để đổi kích thước; menu **⋯** của thẻ cũng cho chọn kích thước. Trong thẻ **Tạo mới**, kéo ứng dụng để đổi thứ tự, hoặc nhấp × để bỏ ứng dụng khỏi Trang chủ.
+- **Thêm thẻ** thêm thẻ ghi chú nhanh, yêu thích, xem thư mục, đồng hồ và ngày, lối tắt, và đưa lại các thẻ bạn đã gỡ. Trang chủ có tối đa 24 thẻ.
+- **Bố cục mặc định** đưa thứ tự, kích thước của các thẻ mặc định và các ứng dụng trên Trang chủ về như ban đầu. Các thẻ bạn tự thêm vẫn được giữ nguyên.
+- **Sắp xếp thành danh sách** hiển thị thẻ và ứng dụng trong một cửa sổ danh sách, nơi bạn đổi thứ tự bằng ↑↓, thêm hoặc bỏ và chọn kích thước mà không cần chuột.
+
+## Tạo mới và Tất cả ứng dụng
+
+Thẻ **Tạo mới** chứa các ứng dụng bạn đã ghim vào Trang chủ. Nhấp vào một ứng dụng sẽ tạo tệp loại đó và mở trình soạn thảo tương ứng — bắt đầu viết ngay, hoặc để AI soạn bản nháp (mỗi trình soạn thảo đều có **nút AI** trên dải ruy-băng, và **Hỏi AI** trong menu ngữ cảnh của vùng đã chọn). Ô cuối cùng, **Tất cả ứng dụng**, liệt kê mọi ứng dụng theo nhóm: tìm theo tên ứng dụng hoặc công dụng, mở một trong ba **Ứng dụng dùng gần đây**, hoặc dùng nút ghim của ứng dụng để ghim vào Trang chủ hay bỏ khỏi đó. Ứng dụng mới có trong phiên bản mới mang nhãn **Mới**.
 
 Tập tin mới nằm trong thư mục đang được chọn ở thanh bên; nếu không chọn gì thì nó vào thư mục mặc định.
 
-Từng thẻ dùng để làm gì:
+Công dụng của từng ứng dụng:
 
 - **AI Docs** (.docx): tài liệu văn bản trống trong trình soạn thảo Docs. Tập tin chỉ thực sự được ghi xuống đĩa ở **lần lưu đầu tiên**; tài liệu mới mở với bảng AI đang mở rộng (tắt trong Cài đặt → "Mở bảng AI trong tài liệu mới").
 - **AI Sheets** (.xlsx): bảng tính trống trong trình soạn thảo Sheets. Trước khi bạn lưu, trên đĩa chưa có tập tin nào — tên được dành sẵn cho lần lưu đầu tiên; sau lần AI sinh nội dung đầu tiên, tên tập tin còn có thể được đổi tự động theo nội dung.

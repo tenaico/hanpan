@@ -193,7 +193,7 @@ describe('home settings entry', () => {
 describe('home screen without the removed areas', () => {
   it('has no cloud projects entry, sign-in or credits', async () => {
     await renderHome(statuses({ state: 'ready' }, { state: 'ready' }))
-    expect(host.querySelectorAll('.sidebar-nav .nav-item')).toHaveLength(3)
+    expect(host.querySelectorAll('.sidebar-nav .nav-item')).toHaveLength(4)
     expect(host.querySelector('.login-hint, .cloud-projects, .nav-external')).toBeNull()
     expect(host.textContent).not.toMatch(/credits|sign in/i)
   })
@@ -248,7 +248,7 @@ describe('first-connection notice on the home screen', () => {
 describe('ask panel without a connection', () => {
   const openAsk = async (): Promise<void> => {
     const items = host.querySelectorAll<HTMLElement>('.sidebar-nav .nav-item')
-    await click(items[2])
+    await click(items[3])
   }
 
   it('says what to connect and leads to Settings → AI', async () => {

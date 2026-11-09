@@ -1,10 +1,10 @@
 import { mkdirSync } from 'node:fs'
-import { mkdtemp, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { test, expect, type ElectronApplication, type Page } from '@playwright/test'
 import { createXmindDocumentFromOutline } from '@genoffice/xmind-engine'
-import { closeAndSaveVideo, launchShell, waitForPageWithUrl } from './helpers'
+import { closeAndSaveVideo, launchShell, startTrendServer, waitForPageWithUrl } from './helpers'
 
 /**
  * Hanpan's user manual pictures, taken from the real app in Korean: the same
@@ -54,12 +54,54 @@ async function helpPage(app: ElectronApplication): Promise<Page> {
   throw new Error('no help page')
 }
 
+/**
+ * The sidebar's account row reads the Claude and Codex programs of the machine
+ * taking the pictures, so a signed-in developer's plan would end up in the
+ * committed figures. Answer "not installed" for both, stop the real checker's
+ * pushes, and tell the window, so the row reads the same on every machine.
+ */
+async function hideAiAccount(app: ElectronApplication): Promise<void> {
+  await app.evaluate(({ ipcMain, webContents }) => {
+    const proto = Object.getPrototypeOf(webContents.getAllWebContents()[0]) as {
+      send: (channel: string, ...args: unknown[]) => void
+    }
+    const realSend = proto.send
+    proto.send = function (this: unknown, channel: string, ...args: unknown[]) {
+      if (channel === 'ai:subscription-changed') return
+      return realSend.call(this, channel, ...args)
+    }
+    const statuses = {
+      'claude-code': { provider: 'claude-code', state: 'not-installed', meteredAccepted: false },
+      codex: { provider: 'codex', state: 'not-installed', meteredAccepted: false },
+    }
+    for (const channel of ['ai:subscription-statuses', 'ai:subscription-recheck']) {
+      ipcMain.removeHandler(channel)
+      ipcMain.handle(channel, () => statuses)
+    }
+    for (const wc of webContents.getAllWebContents()) {
+      if (!wc.isDestroyed()) realSend.call(wc, 'ai:subscription-changed', statuses)
+    }
+  })
+}
+
 const OUTLINE =
   '# 보고\n\n- 2026년 AI 연수 계획\n  - 추진 배경\n    - 교원 AI 활용 수요 증가\n    - 업무 경감 필요\n  - 추진 내용\n    - 기초 연수 (3월)\n    - 심화 연수 (5월)\n  - 기대 효과\n'
 
 test('the manual tour, in Korean', async () => {
   test.setTimeout(300_000)
   mkdirSync(IMAGES, { recursive: true })
+  // a fixed forecast, so the trend card in the pictures does not change from day to day
+  const server = await startTrendServer(
+    await readFile(resolve(__dirname, 'assets/trend-forecast.json'), 'utf8'),
+  )
+  try {
+    await tour(server.url)
+  } finally {
+    await server.close()
+  }
+})
+
+async function tour(trendUrl: string): Promise<void> {
   const dir = await mkdtemp(join(tmpdir(), 'hanpan-tour-'))
   const mapPath = join(dir, 'AI 연수 계획.xmind')
   await writeFile(
@@ -67,10 +109,18 @@ test('the manual tour, in Korean', async () => {
     await (await createXmindDocumentFromOutline(OUTLINE, { untitled: '제목 없음' })).save(),
   )
 
-  const launched = await launchShell({ onboardingSeen: true, videoDir: 'hanpan-tour', lang: 'ko' })
+  const launched = await launchShell({
+    onboardingSeen: true,
+    videoDir: 'hanpan-tour',
+    lang: 'ko',
+    env: { HANPAN_TREND_URL: trendUrl },
+  })
   const { app, page } = launched
   try {
+    await hideAiAccount(app)
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]?.setSize(1440, 900))
+    // the app asks for the forecast 3 seconds after it starts
+    await expect(page.locator('[data-trend-field]')).toHaveCount(10, { timeout: 30_000 })
     await page.waitForTimeout(1500)
     await shot(page, '01-home')
 
@@ -133,7 +183,17 @@ test('the manual tour, in Korean', async () => {
     const home = (await listTabs(page)).find((t) => t.kind === 'home')!
     await activate(page, home.id)
     await page.locator('[data-hanpan="templates"]').click()
-    await expect(page.locator('.hp-tpl-card')).toHaveCount(22)
+    // every template the app lists (the 글집 ones, the picture ones and the official forms)
+    const templates = await page.evaluate(
+      async () =>
+        (
+          await (
+            window as unknown as { hanpanApi: { templates(): Promise<unknown[]> } }
+          ).hanpanApi.templates()
+        ).length,
+    )
+    expect(templates).toBeGreaterThan(0)
+    await expect(page.locator('.hp-tpl-card')).toHaveCount(templates)
     await shot(page, '07-templates')
     await page.locator('.hp-tpl-close').click()
 
@@ -167,6 +227,6 @@ test('the manual tour, in Korean', async () => {
     await help.waitForTimeout(1500)
     await shot(help, '09-help')
   } finally {
-    await closeAndSaveVideo(launched)
+    await closeAndSaveVideo(launched, 'hanpan-tour')
   }
-})
+}

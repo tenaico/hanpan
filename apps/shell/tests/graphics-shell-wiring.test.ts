@@ -8,6 +8,7 @@ import { LAUNCHABLE_EXTS } from '../src/main/launch-paths'
 import { TREE_FILE_EXTENSIONS } from '../src/main/folder-tree'
 import { OPENABLE_DOC_RE } from '@genoffice/electron-utils/drop-open'
 import { HOME_FILTER_GROUPS } from '../src/shared/home-filter-groups'
+import { APP_GROUPS } from '../src/shared/home-apps'
 
 /**
  * The AI Photo and AI Illustration tabs (decision 0093) are hosted like the
@@ -154,18 +155,14 @@ describe('menus', () => {
 })
 
 describe('Home', () => {
-  it('shows the two AI cards right after the PDF tools, with the AI chip', () => {
-    const at = home.indexOf("key: 'pdf-tools',")
-    const photo = home.indexOf("key: 'photo',", at)
-    const illust = home.indexOf("key: 'illust',", at)
-    const open = home.indexOf("key: 'open',", at)
-    expect(at).toBeGreaterThan(0)
-    expect(photo).toBeGreaterThan(at)
-    expect(illust).toBeGreaterThan(photo)
-    expect(open).toBeGreaterThan(illust)
-    expect(home.slice(photo, open)).toMatch(/ai: true[\s\S]*ai: true/)
-    expect(home.slice(photo, open)).toContain('window.aiOffice.newPhoto(newFileOpts)')
-    expect(home.slice(photo, open)).toContain('window.aiOffice.newIllust(newFileOpts)')
+  it('starts the two graphics apps from the board, in the selected folder', () => {
+    // 0.19: the new card's apps come in APP_GROUPS order; each starts as the old card did
+    const graphics = APP_GROUPS.find((group) => group.id === 'graphics')!.keys
+    expect(graphics.slice(0, 2)).toEqual(['photo', 'illust'])
+    expect(home).toContain("photo: made('psd'),")
+    expect(home).toContain("illust: made('vectorcraft'),")
+    expect(home).toContain('window.aiOffice.newPhoto(newFileOpts)')
+    expect(home).toContain('window.aiOffice.newIllust(newFileOpts)')
   })
 
   it('lists the formats, icons and filters', () => {

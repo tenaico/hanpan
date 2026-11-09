@@ -24,8 +24,8 @@ Hanpan schickt, was Sie in einer Mindmap geordnet haben, als Hangul-Bericht (HWP
 
 ## Hanpan-Vorlagen
 
-- Die Karte **Hanpan-Vorlagen** auf der Startseite öffnet 22 Vorlagen (amtliche Schreiben, Berichte, Angebote, Protokolle, Pläne) als HWP oder Word.
-- Fügen Sie in der Karte **Markdown converter** auf der Startseite Markdown ein oder öffnen Sie eine .md-Datei und drücken Sie **Convert all**: Jedes gewählte Format (HWP, HWPX, Word, ODT, PDF, HTML) entsteht nebeneinander in einem Ordner.
+- Unter **Neu** auf der Startseite öffnet **Hanpan-Vorlagen** 22 Vorlagen (amtliche Schreiben, Berichte, Angebote, Protokolle, Pläne) als HWP oder Word.
+- Öffnen Sie **Markdown converter** unter **All apps** auf der Startseite, fügen Sie Markdown ein oder öffnen Sie eine .md-Datei und drücken Sie **Convert all**: Jedes gewählte Format (HWP, HWPX, Word, ODT, PDF, HTML) entsteht nebeneinander in einem Ordner.
 - Die Gruppe **교육** (Bildung) enthält einen Unterrichtsentwurf zu alten koreanischen Bildern, eine Ausstellungsankündigung und eine Lesestunde zu 「운수 좋은 날」. Die Bilder stammen von Gongu (gongu.copyright.or.kr) und sind gemeinfrei oder CC BY, dürfen also von allen bearbeitet werden; jedes kommt mit seiner Quellenzeile darunter ins Dokument. Lassen Sie diese Zeile stehen. **Open as mind map** auf einer Vorlagenkarte öffnet Überschriften und Listen als Zweige einer Mindmap. Im Folien-Editor setzt **Einfügen › Soundeffekte** einen von sechs Soundeffekten koreanischer traditioneller Musik (주식회사 아이티앤, CC BY) auf die Folie, die Quelle steht im Namen des Sounds.
 - Die Gruppe **서식** (amtliche Formulare) enthält Formulare aus koreanischen Rechtsvorschriften (Antrag auf Informationszugang, Widerspruch im Verwaltungsverfahren, Vollmacht für Behördenanträge, Einspruch gegen einen abgelehnten Antrag), genau so, wie das Nationale Rechtsinformationszentrum (law.go.kr) sie veröffentlicht. **Open as HWP** öffnet eine Kopie in einem HWP-Tab; füllen Sie die Felder aus und speichern oder drucken Sie sie. Gesetzliche Formulare sind nicht urheberrechtlich geschützt und dürfen von allen genutzt werden. Sie ändern sich mit dem Gesetz, prüfen Sie also vor dem Einreichen auf law.go.kr, ob Sie die aktuelle Fassung haben.
 
@@ -36,7 +36,7 @@ Hanpan schickt, was Sie in einer Mindmap geordnet haben, als Hangul-Bericht (HWP
 
 ## Design
 
-- Die Karte **Design** auf der Startseite erstellt Plakate, Karten-News, Aushänge und Vorschaubilder.
+- Unter **Neu** auf der Startseite erstellt **Design** Plakate, Karten-News, Aushänge und Vorschaubilder.
 - Drücken Sie **Zum Einfügen in ein Dokument kopieren** und dann Strg+V in einem HWP-, Word- oder PowerPoint-Tab, um die Seite als Bild einzufügen. Seiten lassen sich auch als PNG und PDF speichern.
 - In einer Mindmap erstellt **An ein Dokument senden › Als Karten-News senden** eine Karte je Hauptzweig.
 - Drücken Sie oben rechts im Designfenster auf **✦ AI helper**, um den Assistenten rechts zu öffnen. Unter **Make new** beschreiben Sie, was entstehen soll, und senden es ab: Die in den Einstellungen gewählte KI schreibt den Text, Hanpan gestaltet daraus ein bearbeitbares Design. **Fill this design** behält Layout und Farben des aktuellen Designs und schreibt nur die Textfelder mit Ihrem Inhalt neu; nach der Wahl einer Vorlage tut **✦ Fill this template with my content** dasselbe. Bei einem gewählten Textfeld erscheint darüber eine ✦-Leiste, die es mit einem Klick glättet, kürzt, griffiger macht oder zwischen Englisch und Koreanisch übersetzt. Jedes Ergebnis hat **Undo**, und ist noch keine KI verbunden, verbinden Sie sie direkt im Assistenten.

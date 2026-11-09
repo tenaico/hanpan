@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { copyFileSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { closeAndSaveVideo, launchShell, screenshotPath } from './helpers'
+import { closeAndSaveVideo, launchShell, openFromAllApps, screenshotPath } from './helpers'
 
 /** Hanpan's Markdown converter: one press turns the text into HWP, Word and PDF side by side. */
 
@@ -39,7 +39,7 @@ test('the Markdown converter writes HWP, Word and PDF in one press', async () =>
     // the converter writes to the app's save folder (Documents\Hanpan) by default, not a
     // separate Documents\한판 변환 (5b6aaab4): point Documents at a temp folder
     await app.evaluate(({ app: electronApp }, dir) => electronApp.setPath('documents', dir), out)
-    await page.locator('[data-new="md-convert"]').click()
+    await openFromAllApps(page, 'md-convert')
     const dialog = page.locator('[data-hanpan="md-converter"]')
     await expect(dialog).toBeVisible()
     const folder = join(out, 'Hanpan')

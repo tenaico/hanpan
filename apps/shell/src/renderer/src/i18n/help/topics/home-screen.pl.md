@@ -1,9 +1,10 @@
 # Ekran strony głównej: gdzie mieszkają Twoje pliki
 
-Strona główna to punkt wyjścia GenOffice: pasek nawigacyjny po lewej, listy plików i karty szybkiego tworzenia po prawej.
+Strona główna to strona startowa GenOffice: po lewej pasek nawigacji, po prawej tablica z kartami. Wpisz temat w karcie **Zacznij**, aby otworzyć mapę myśli, a ostatnie dokumenty otwieraj ponownie z karty **Kontynuuj**; jej przycisk **All N** prowadzi do pełnej listy **Ostatnie**. Na ekranach w języku koreańskim jest też karta z dzisiejszą prognozą Trend Radar; kliknięcie dziedziny otwiera Trend Radar w przeglądarce.
 
 ## Nawigacja na pasku bocznym
 
+- **Strona główna**: tablica z kartami. Tu zaczyna się aplikacja.
 - **Ostatnie**: pliki, które ostatnio otwierałeś. Każdy wiersz ma na sobie czas — dzisiaj, wczoraj albo datę.
 - **Ulubione**: pliki oznaczone gwiazdką. Najedź na wiersz pliku i kliknij gwiazdkę, aby dodać lub usunąć plik. **Przenieś do grupy** w menu ⋯ porządkuje pliki z gwiazdką w nazwane grupy; widok Oznaczone filtruje po nich.
 - **Podręcznik użytkownika**: otwiera ten podręcznik.
@@ -32,18 +33,27 @@ Zaznacz pole wyboru w wierszu lub kliknij ⌘/ctrl, aby zbudować zaznaczenie; p
 
 ## Wyszukiwanie
 
-Pole wyszukiwania u góry filtruje naraz dwie rzeczy:
+Wpisz tekst w polu wyszukiwania w górnym wierszu tablicy, a wyniki pojawią się w miejscu tablicy; wyczyść wyszukiwanie lub naciśnij Esc, aby wrócić do tablicy. Wyszukiwanie obejmuje naraz dwie rzeczy:
 
 - **Nazwy plików**: szybkie filtrowanie po nazwie.
 - **Zawartość plików**: GenOffice indeksuje Twoje pliki w tle (tekst w docx/odt/xlsx/pptx/pdf/md/html), więc wyszukiwanie po treści znajduje również pliki. Zakres i przełączniki ustawia się w ustawieniach wyszukiwania.
 
-## Karty szybkiego startu
+## Dostosuj stronę główną
 
-Karty nad listami tworzą nowy dokument jednym krokiem. Kliknięcie karty tworzy plik danego typu i otwiera jego edytor — możesz od razu pisać albo pozwolić, aby AI przygotował wstęp (każdy edytor ma **przycisk AI** na wstążce oraz **Zapytaj AI** w menu kontekstowym zaznaczenia).
+Kliknij **Dostosuj stronę główną** po prawej stronie górnego wiersza tablicy, aby zmienić karty. Zmiany zapisują się od razu; na koniec kliknij **Gotowe** lub naciśnij Esc.
+
+- Przeciągnij kartę, aby ją przenieść, a jej prawy dolny róg, aby zmienić rozmiar; rozmiar można też wybrać w menu karty **⋯**. W karcie **Nowy** przeciągaj aplikacje, aby zmienić ich kolejność, lub kliknij ×, aby usunąć aplikację ze strony głównej.
+- **Dodaj kartę** dodaje szybką notatkę, ulubione, widok folderu, zegar lub skrót i przywraca usunięte karty. Strona główna mieści do 24 kart.
+- **Układ domyślny** przywraca początkową kolejność i rozmiar kart domyślnych oraz aplikacje widoczne na stronie głównej. Karty dodane przez Ciebie zostaną.
+- **Ułóż jako listę** pokazuje karty i aplikacje na liście, gdzie bez myszy zmienisz ich kolejność klawiszami ↑↓, dodasz je lub usuniesz i wybierzesz rozmiar.
+
+## Nowy i All apps
+
+Karta **Nowy** zawiera aplikacje przypięte do strony głównej. Kliknięcie aplikacji tworzy plik tego typu i otwiera jego edytor — zacznij pisać od razu albo pozwól AI przygotować szkic (każdy edytor ma **przycisk AI** na wstążce oraz **Zapytaj AI** w menu kontekstowym zaznaczenia). Ostatnie pole, **All apps**, pokazuje wszystkie aplikacje w grupach: szukaj po nazwie lub zastosowaniu, otwórz jedną z trzech **Recently used apps** albo przyciskiem przypinania przypnij aplikację do strony głównej lub ją usuń. Aplikacje dodane w nowej wersji mają oznaczenie **New**.
 
 Nowy plik trafia do folderu aktualnie zaznaczonego na pasku bocznym; jeśli nic nie jest zaznaczone, trafia do folderu domyślnego.
 
-Co robi każda karta:
+Co robi każda aplikacja:
 
 - **AI Docs** (.docx): pusty dokument tekstowy w edytorze Docs. Plik zostaje zapisany na dysku dopiero przy **pierwszym zapisaniu**; nowe dokumenty otwierają się z rozwiniętym panelem AI (wyłączasz to w Ustawienia → „Otwieraj panel AI w nowych dokumentach”).
 - **AI Sheets** (.xlsx): pusty arkusz w edytorze Sheets. Dopóki nie zapiszesz, na dysku nie ma żadnego pliku — nazwa jest zarezerwowana na pierwsze zapisanie; po pierwszym wygenerowaniu przez AI plik można też automatycznie zmienić na podstawie jego zawartości.

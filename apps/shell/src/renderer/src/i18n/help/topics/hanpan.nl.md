@@ -24,8 +24,8 @@ Hanpan stuurt wat u in een mindmap hebt geordend naar een Hangul-rapport (HWP), 
 
 ## Hanpan-sjablonen
 
-- De kaart **Hanpan-sjablonen** op Start opent 22 sjablonen (officiële brieven, rapporten, voorstellen, notulen, plannen) als HWP of Word.
-- Plak in de kaart **Markdown converter** op de startpagina Markdown of open een .md-bestand en druk op **Convert all**: elk aangevinkt formaat (HWP, HWPX, Word, ODT, PDF, HTML) komt naast elkaar in één map.
+- Onder **Nieuw** op de startpagina opent **Hanpan-sjablonen** 22 sjablonen (officiële brieven, rapporten, voorstellen, notulen, plannen) als HWP of Word.
+- Open **Markdown converter** via **All apps** op de startpagina en plak Markdown of open een .md-bestand en druk op **Convert all**: elk aangevinkt formaat (HWP, HWPX, Word, ODT, PDF, HTML) komt naast elkaar in één map.
 - De groep **교육** (onderwijs) bevat een lesplan over oude Koreaanse schilderijen, een tentoonstellingsaankondiging en een leesles over 「운수 좋은 날」. De afbeeldingen komen van Gongu (gongu.copyright.or.kr) en zijn rechtenvrij of CC BY, dus iedereen mag ze bewerken; elke afbeelding komt met haar bronregel eronder in het document. Laat die regel staan. **Open as mind map** op een sjabloonkaart opent de koppen en lijsten als takken van een mindmap. In de dia-editor zet **Invoegen › Geluidseffecten** een van zes geluidseffecten van Koreaanse traditionele muziek (주식회사 아이티앤, CC BY) op de dia, met de bron in de naam van het geluid.
 - De groep **서식** (officiële formulieren) bevat formulieren uit Koreaanse wetgeving (verzoek om openbaarmaking, administratief beroep, volmacht voor aanvragen bij de overheid en bezwaar tegen een weigering), precies zoals het Nationale Juridische Informatiecentrum (law.go.kr) ze publiceert. **Open as HWP** opent een kopie in een HWP-tabblad; vul de vakken in en sla het op of druk het af. Wettelijke formulieren zijn niet auteursrechtelijk beschermd, dus iedereen mag ze gebruiken. Ze veranderen als de wet verandert, dus controleer op law.go.kr of je de geldende versie hebt voordat je het indient.
 
@@ -36,7 +36,7 @@ Hanpan stuurt wat u in een mindmap hebt geordend naar een Hangul-rapport (HWP), 
 
 ## Ontwerp
 
-- De kaart **Ontwerp** op Start maakt posters, nieuwskaarten, mededelingen en miniaturen.
+- Onder **Nieuw** op de startpagina maakt **Ontwerp** posters, nieuwskaarten, mededelingen en miniaturen.
 - Druk op **Kopiëren om in een document te plakken** en daarna op Ctrl+V in een HWP-, Word- of PowerPoint-tabblad om de pagina als afbeelding in te voegen. Pagina’s worden ook als PNG en PDF opgeslagen.
 - In een kaart maakt **Naar een document sturen › Als nieuwskaarten sturen** één kaart per hoofdtak.
 - Druk rechtsboven in het ontwerpvenster op **✦ AI helper** om de assistent rechts te openen. Beschrijf onder **Make new** wat je wilt en verstuur het: de AI die je in Instellingen koos schrijft de tekst en Hanpan maakt er een bewerkbaar ontwerp van. **Fill this design** houdt de opmaak en kleuren van het huidige ontwerp en herschrijft alleen de tekstvakken met jouw inhoud; na het kiezen van een sjabloon doet **✦ Fill this template with my content** hetzelfde. Met een geselecteerd tekstvak verschijnt erboven een ✦-balk die het met één klik verfijnt, inkort, pakkender maakt of vertaalt tussen Engels en Koreaans. Elk resultaat heeft **Undo**, en is er nog geen AI verbonden, dan verbind je die direct in de assistent.

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
-import { launchShell, closeAndSaveVideo, waitForPageWithUrl } from './helpers'
+import { launchShell, closeAndSaveVideo, openFromAllApps, waitForPageWithUrl } from './helpers'
 
 /**
  * An RTL UI must mirror the chrome, never the document (genoffice#1861).
@@ -12,7 +12,10 @@ import { launchShell, closeAndSaveVideo, waitForPageWithUrl } from './helpers'
  * `ctx.direction`.
  */
 
-/** Select each document by the format it creates, independent of Home's layout and language. */
+/**
+ * Select each document by the format it creates, from All apps, independent of
+ * Home's pinned apps and language.
+ */
 const APPS = [
   { name: 'docs', format: 'docx', url: '://docs/', host: '.editor-scroll' },
   { name: 'sheets', format: 'xlsx', url: '://sheets/', host: '#univer-container' },
@@ -48,7 +51,7 @@ for (const { name, format, url, host } of APPS) {
       videoDir: `rtl-${name}`,
     })
     try {
-      await launched.page.locator(`.quick-card[data-new="${format}"]`).click()
+      await openFromAllApps(launched.page, format)
       const page = await waitForPageWithUrl(launched.app, url)
       const surface = page.locator(host).first()
       await expect(surface).toBeVisible({ timeout: 45_000 })

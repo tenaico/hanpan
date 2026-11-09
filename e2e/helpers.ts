@@ -12,6 +12,8 @@ import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { createRequire } from 'node:module'
+import { createServer, type IncomingHttpHeaders } from 'node:http'
+import type { AddressInfo } from 'node:net'
 
 export const SHELL_DIR = resolve(__dirname, '../apps/shell')
 export const ARTIFACTS_DIR = resolve(__dirname, 'artifacts')
@@ -108,6 +110,9 @@ export async function launchShell(options: LaunchOptions): Promise<LaunchedApp> 
       GENOFFICE_USER_DATA: userDataDir,
       GENOFFICE_NO_SPARE_VIEW: '1',
       GENOFFICE_LANG: options.lang ?? 'en',
+      // no forecast address unless a spec passes one, so no run asks the real
+      // Trend Radar (plan R10)
+      HANPAN_TREND_URL: '',
       ...(options.env ?? {}),
       ...(process.platform === 'linux' ? { ELECTRON_DISABLE_SANDBOX: '1' } : {}),
     },
@@ -290,4 +295,50 @@ export async function graphicsGpuMissing(page: Page): Promise<string | null> {
   })
   if (found.webgpu || found.webgl2) return null
   return 'no WebGPU adapter and no WebGL2 context here (no GPU): the graphics web apps cannot start'
+}
+
+/**
+ * Open an app from the All apps dialog of the first New card on screen (the
+ * board's, or the folder view's). Apps that are not pinned to Home live only
+ * there, and it does not depend on the pinned order or the UI language.
+ */
+export async function openFromAllApps(page: Page, key: string): Promise<void> {
+  await page.locator('[data-all-apps-open]').first().click()
+  await page.locator(`[data-all-apps] [data-new="${key}"]`).click()
+}
+
+export interface TrendServer {
+  /** the forecast address to pass as HANPAN_TREND_URL */
+  url: string
+  /** every request the server got, in order */
+  requests: Array<{ url: string; headers: IncomingHttpHeaders }>
+  close(): Promise<void>
+}
+
+/**
+ * A local stand-in for the Trend Radar forecast: it answers every request with
+ * `body` as JSON and records what was asked, so a spec can check what the app
+ * sends without reaching the real site.
+ */
+export async function startTrendServer(body: string): Promise<TrendServer> {
+  const requests: TrendServer['requests'] = []
+  const server = createServer((req, res) => {
+    requests.push({ url: req.url ?? '', headers: req.headers })
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
+    res.end(body)
+  })
+  await new Promise<void>((done, fail) => {
+    server.once('error', fail)
+    server.listen(0, '127.0.0.1', () => done())
+  })
+  const { port } = server.address() as AddressInfo
+  return {
+    url: `http://127.0.0.1:${port}/api/forecast`,
+    requests,
+    close: () =>
+      new Promise<void>((done, fail) => {
+        server.closeAllConnections()
+        server.close((error) => (error ? fail(error) : done()))
+      }),
+  }
 }

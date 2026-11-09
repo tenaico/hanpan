@@ -37,8 +37,8 @@ import type {
   FileSearchSettings,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
-import { normalizeHomeLayout } from '../shared/home-layout'
 import { RECOVERY_LIST_CHANNELS } from '../shared/recovery-list-api'
+import { TREND_CHANNELS, parseTrendSnapshot, type TrendApi } from '../shared/trend-api'
 import type {
   RecoveryListApi,
   RecoveryListItem,
@@ -437,11 +437,13 @@ const homeApi: HomeApi = {
     if (typeof on !== 'boolean') throw new Error('Invalid Korean document features switch.')
     await ipcRenderer.invoke(HOME_CHANNELS.setKoreanDocFeatures, on)
   },
-  async getHomeLayout() {
-    return normalizeHomeLayout(await ipcRenderer.invoke(HOME_CHANNELS.getHomeLayout))
+  async getHomeBoard() {
+    const r = (await ipcRenderer.invoke(HOME_CHANNELS.getHomeBoard)) as
+      { board?: unknown; trendAvailable?: unknown } | null | undefined
+    return { board: r?.board ?? null, trendAvailable: r?.trendAvailable === true }
   },
-  async setHomeLayout(layout) {
-    return normalizeHomeLayout(await ipcRenderer.invoke(HOME_CHANNELS.setHomeLayout, layout))
+  async setHomeBoard(board) {
+    return ipcRenderer.invoke(HOME_CHANNELS.setHomeBoard, board)
   },
   async openWidgetTarget(target) {
     return (await ipcRenderer.invoke(HOME_CHANNELS.openWidgetTarget, target)) === true
@@ -966,3 +968,20 @@ contextBridge.exposeInMainWorld('aiOfficeRecovery', recoveryListApi)
 
 // open documents dragged from the OS anywhere over Home or the tab strip
 installDropOpenBridge()
+
+// Home's trend card (spec 7.11): the forecast the main process stored, and its
+// links opened by the main process; both sides check what crosses
+const trendApi: TrendApi = {
+  get: async () => parseTrendSnapshot(await ipcRenderer.invoke(TREND_CHANNELS.get)),
+  onChanged: (handler) => {
+    const listener = (_event: IpcRendererEvent, raw: unknown): void =>
+      handler(parseTrendSnapshot(raw))
+    ipcRenderer.on(TREND_CHANNELS.changed, listener)
+    return () => ipcRenderer.removeListener(TREND_CHANNELS.changed, listener)
+  },
+  open: async (path) => {
+    if (path !== null && typeof path !== 'string') return
+    await ipcRenderer.invoke(TREND_CHANNELS.open, path)
+  },
+}
+contextBridge.exposeInMainWorld('aiOfficeTrend', trendApi)

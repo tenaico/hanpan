@@ -12,9 +12,16 @@ import {
   MarkdownConverter,
   type MarkdownConverterApi,
 } from '../src/renderer/src/hanpan/MarkdownConverter'
-import { HomeCustomizePanel, WidgetGallery } from '../src/renderer/src/HomeWidgets'
+import {
+  HomeCustomizePanel,
+  ResetBoardDialog,
+  WidgetGallery,
+} from '../src/renderer/src/HomeWidgets'
+import { AllApps } from '../src/renderer/src/home-board/AllApps'
 import { LocaleProvider } from '../src/renderer/src/locale'
-import { DEFAULT_HOME_LAYOUT } from '../src/shared/home-layout'
+import { defaultHomeBoard } from '../src/shared/home-board'
+
+const KO = { korean: true, koreanDocs: true, trend: true }
 
 const actEnvironment = globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
 actEnvironment.IS_REACT_ACT_ENVIRONMENT = true
@@ -71,7 +78,8 @@ const cases: [string, (onClose: () => void) => ReactElement][] = [
     'widget gallery',
     (onClose) =>
       createElement(WidgetGallery, {
-        layout: DEFAULT_HOME_LAYOUT,
+        board: defaultHomeBoard(KO),
+        trendAvailable: true,
         lang: 'ko',
         onPick: () => undefined,
         onClose,
@@ -81,13 +89,31 @@ const cases: [string, (onClose: () => void) => ReactElement][] = [
     'home customize panel',
     (onClose) =>
       createElement(HomeCustomizePanel, {
-        layout: DEFAULT_HOME_LAYOUT,
+        board: defaultHomeBoard(KO),
         update: () => undefined,
-        groups: [],
-        cards: [],
+        apps: [],
         lang: 'ko',
+        cardName: (card) => card.id,
         themeLabels: { title: '테마', light: '밝게', dark: '어둡게', system: '시스템' },
         onOpenGallery: () => undefined,
+        onClose,
+      }),
+  ],
+  [
+    'default layout question',
+    (onClose) =>
+      createElement(ResetBoardDialog, { lang: 'ko', onYes: () => undefined, onNo: onClose }),
+  ],
+  [
+    'all apps',
+    (onClose) =>
+      createElement(AllApps, {
+        apps: [],
+        pinned: [],
+        recent: [],
+        newKeys: new Set<string>(),
+        onLaunch: () => undefined,
+        onTogglePin: () => undefined,
         onClose,
       }),
   ],

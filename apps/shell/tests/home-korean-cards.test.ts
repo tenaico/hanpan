@@ -110,7 +110,12 @@ async function renderHome(lang: 'ko' | 'en' | 'vi'): Promise<void> {
   })
 }
 
-const card = (key: string) => host.querySelector(`.hp-cards [data-new="${key}"]`)
+const card = (key: string) => host.querySelector(`[data-home-board] .quick-card[data-new="${key}"]`)
+/** the sidebar's "최근 사용" */
+const recentNav = () =>
+  Array.from(host.querySelectorAll<HTMLButtonElement>('.sidebar-nav .nav-item')).find(
+    (button) => button.querySelector('.nav-label')?.textContent === '최근 사용',
+  )!
 const koreanCards = () => ['hwp', 'templates', 'design'].map((key) => card(key) !== null)
 
 beforeEach(() => {
@@ -176,28 +181,34 @@ describe('Home cleanup', () => {
     } as unknown as typeof window.hanpanApi
   })
 
-  it.each([
-    ['pdf', 'pdf-tools'],
-    ['md', 'md-convert'],
-  ])('shows %s and %s as one card', async (main, extra) => {
-    await renderHome('ko')
-    const cards = Array.from(host.querySelectorAll('.hp-secondary > *'))
-    const pair = cards.find((el) => el.querySelector(`[data-new="${main}"]`))!
-    expect(pair, main).toBeTruthy()
-    expect(pair.querySelector(`[data-new="${extra}"]`), extra).not.toBeNull()
-    expect(cards.filter((el) => el.matches(`[data-new="${extra}"]`))).toHaveLength(0)
-  })
+  it.each(['pdf-tools', 'md-convert'])(
+    'lists %s as an item of its own in All apps',
+    async (key) => {
+      await renderHome('ko')
+      await act(async () => host.querySelector<HTMLButtonElement>('[data-all-apps-open]')!.click())
+      const items = host.querySelectorAll(`[data-all-apps] [data-new="${key}"]`)
+      expect(items).toHaveLength(1)
+      expect(items[0]!.closest('[data-new="pdf"], [data-new="md"]')).toBeNull()
+    },
+  )
 
-  it('still opens the PDF tools and the Markdown converter from the merged cards', async () => {
+  it('still opens the PDF tools and the Markdown converter from All apps', async () => {
     await renderHome('ko')
-    await act(async () => host.querySelector<HTMLButtonElement>('[data-new="pdf-tools"]')!.click())
+    const open = async (key: string) => {
+      await act(async () => host.querySelector<HTMLButtonElement>('[data-all-apps-open]')!.click())
+      await act(async () =>
+        host.querySelector<HTMLButtonElement>(`[data-all-apps] [data-new="${key}"]`)!.click(),
+      )
+    }
+    await open('pdf-tools')
     expect(openTools).toHaveBeenCalledTimes(1)
-    await act(async () => host.querySelector<HTMLButtonElement>('[data-new="md-convert"]')!.click())
+    await open('md-convert')
     expect(host.querySelector('[data-hanpan="md-converter"]')).not.toBeNull()
   })
 
   it('offers six file tabs', async () => {
     await renderHome('ko')
+    await act(async () => recentNav().click())
     const pills = host.querySelector('.filter-pills')!
     expect(Array.from(pills.querySelectorAll('.filter-pill')).map((b) => b.textContent)).toEqual([
       '전체',

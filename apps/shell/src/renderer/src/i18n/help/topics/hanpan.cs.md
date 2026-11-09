@@ -24,8 +24,8 @@ Hanpan pošle to, co jste uspořádali v myšlenkové mapě, do zprávy Hangul (
 
 ## Šablony Hanpan
 
-- Karta **Šablony Hanpan** na úvodní obrazovce otevře 22 šablon (úřední dopisy, zprávy, návrhy, zápisy, plány) jako HWP nebo Word.
-- Na kartě **Markdown converter** na úvodní stránce vložte Markdown nebo otevřete soubor .md a stiskněte **Convert all**: každý zaškrtnutý formát (HWP, HWPX, Word, ODT, PDF, HTML) vznikne v jedné složce.
+- V kartě **Nový** na domovské stránce otevřou **Šablony Hanpan** 22 šablon (úřední dopisy, zprávy, návrhy, zápisy, plány) jako HWP nebo Word.
+- Otevřete **Markdown converter** z **All apps** na domovské stránce a vložte Markdown nebo otevřete soubor .md a stiskněte **Convert all**: každý zaškrtnutý formát (HWP, HWPX, Word, ODT, PDF, HTML) vznikne v jedné složce.
 - Skupina **교육** (vzdělávání) obsahuje přípravu hodiny o staré korejské malbě, pozvánku na výstavu a hodinu čtení 「운수 좋은 날」. Obrázky pocházejí z Gongu (gongu.copyright.or.kr) a jsou volné nebo pod CC BY, takže je smí upravit kdokoli; každý přijde do dokumentu s řádkem zdroje pod sebou. Ten řádek ponechte. **Open as mind map** na kartě šablony otevře nadpisy a seznamy jako větve myšlenkové mapy. V editoru snímků **Vložení › Zvukové efekty** přidá jeden ze šesti zvukových efektů korejské tradiční hudby (주식회사 아이티앤, CC BY) se zdrojem v názvu zvuku.
 - Skupina **서식** (úřední formuláře) obsahuje formuláře připojené ke korejským předpisům (žádost o informace, správní odvolání, plná moc pro úřední podání a námitka proti zamítnutí) přesně tak, jak je zveřejňuje Národní centrum právních informací (law.go.kr). **Open as HWP** otevře kopii na kartě HWP; vyplňte políčka a pak ji uložte nebo vytiskněte. Zákonné formuláře nejsou chráněny autorským právem, takže je může použít kdokoli. Mění se se zákonem, proto si před podáním na law.go.kr ověřte, že máte platné znění.
 
@@ -36,7 +36,7 @@ Hanpan pošle to, co jste uspořádali v myšlenkové mapě, do zprávy Hangul (
 
 ## Návrh
 
-- Karta **Návrh** na úvodní obrazovce vytváří plakáty, karty se zprávami, oznámení a náhledy.
+- V kartě **Nový** na domovské stránce vytváří **Návrh** plakáty, karty se zprávami, oznámení a náhledy.
 - Stiskněte **Kopírovat pro vložení do dokumentu** a pak Ctrl+V na kartě HWP, Word nebo PowerPoint, čímž stránku vložíte jako obrázek. Stránky lze uložit i jako PNG a PDF.
 - V mapě **Odeslat do dokumentu › Odeslat jako karty se zprávami** vytvoří jednu kartu na každou hlavní větev.
 - Stiskněte **✦ AI helper** vpravo nahoře v okně návrhu a vpravo se otevře asistent. V **Make new** popište, co chcete, a odešlete: AI zvolená v Nastavení napíše text a Hanpan z něj sestaví upravitelný návrh. **Fill this design** zachová rozvržení a barvy současného návrhu a přepíše jen textová pole vaším obsahem; po výběru šablony totéž udělá **✦ Fill this template with my content**. U vybraného textového pole se nad ním objeví lišta ✦, která ho jedním kliknutím vyladí, zkrátí, zatraktivní nebo přeloží mezi angličtinou a korejštinou. Každý výsledek má **Undo** a pokud ještě není připojena žádná AI, připojíte ji přímo v asistentovi.

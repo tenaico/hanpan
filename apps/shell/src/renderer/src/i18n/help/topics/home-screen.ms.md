@@ -1,9 +1,10 @@
 # Skrin Laman Utama: di mana fail anda berada
 
-Laman Utama ialah halaman permulaan GenOffice: bar navigasi di kiri, senarai fail dan kad penciptaan pantas di kanan.
+Laman Utama ialah halaman permulaan GenOffice: bar sisi navigasi di kiri dan papan kad di kanan. Taip topik dalam kad **Mula** untuk membuka peta minda, dan buka semula dokumen terkini daripada kad **Teruskan**; butang **All N** padanya membawa anda ke senarai **Terkini** yang penuh. Pada skrin berbahasa Korea, ada juga kad yang menunjukkan ramalan hari ini daripada Trend Radar; klik sesuatu bidang untuk membuka Trend Radar dalam pelayar.
 
 ## Navigasi bar sisi
 
+- **Laman Utama**: papan kad. Aplikasi bermula di sini.
 - **Terkini**: fail yang baru dibuka oleh anda. Setiap baris dicap dengan waktunya — hari ini, semalam atau tarikh.
 - **Berbintang**: fail yang anda tandakan dengan bintang. Halakan kursor ke baris fail dan klik bintang untuk menambah atau membuangnya. **Alih ke kumpulan** dalam menu ⋯ menyusun fail berbintang ke kumpulan bernama; paparan Berbintang menapis mengikutnya.
 - **Panduan Pengguna**: membuka manual ini.
@@ -32,18 +33,27 @@ Tandakan kotak pada satu baris, atau ⌘/ctrl-klik, untuk membina satu pilihan; 
 
 ## Carian
 
-Kotak carian di atas menapis dua perkara serentak:
+Taip dalam kotak carian pada baris atas papan, dan hasilnya muncul di tempat papan; kosongkan carian atau tekan Esc untuk kembali ke papan. Carian memadankan dua perkara serentak:
 
 - **Nama fail**: penapisan pantas mengikut nama.
 - **Kandungan fail**: GenOffice mengindeks fail anda di latar belakang, iaitu teks di dalam docx/odt/xlsx/pptx/pdf/md/html. Oleh itu, mencari dalam teks badan turut menemui fail. Skop dan suis ditetapkan dalam tetapan carian.
 
-## Kad mula pantas
+## Sesuaikan Laman Utama
 
-Kad di atas senarai menubuhkan dokumen baharu dalam satu langkah. Klik pada kad akan mencipta fail jenis tersebut dan membuka editornya. Anda boleh terus menulis, atau membiarkan AI menyediakan draf untuk anda. Setiap editor mempunyai **butang AI** pada reben dan **Tanya AI** dalam menu konteks pilihan.
+Klik **Sesuaikan Laman Utama** di hujung kanan baris atas papan untuk mengubah kad. Perubahan disimpan serta-merta; klik **Selesai** atau tekan Esc apabila selesai.
+
+- Seret kad untuk mengalihkannya, dan seret sudut kanan bawahnya untuk mengubah saiz; menu **⋯** kad juga membolehkan anda memilih saiz. Dalam kad **Baharu**, seret aplikasi untuk menyusun semula, atau klik × untuk mengalih keluar aplikasi dari Laman Utama.
+- **Tambah kad** menambah kad nota pantas, kegemaran, paparan folder, jam atau pintasan, dan mengembalikan kad yang telah anda alih keluar. Laman Utama memuatkan sehingga 24 kad.
+- **Susun atur lalai** mengembalikan susunan dan saiz kad lalai, serta aplikasi yang dipaparkan di Laman Utama, kepada keadaan asal. Kad yang anda tambah kekal.
+- **Susun sebagai senarai** memaparkan kad dan aplikasi dalam senarai, tempat anda menyusun semula dengan ↑↓, menambah atau mengalih keluar dan memilih saiz tanpa tetikus.
+
+## Baharu dan All apps
+
+Kad **Baharu** mengandungi aplikasi yang anda semat ke Laman Utama. Klik aplikasi untuk mencipta fail jenis itu dan membuka editornya — terus mula menulis, atau biarkan AI menyediakan draf (setiap editor mempunyai **butang AI** pada reben dan **Tanya AI** dalam menu konteks pilihan). Petak terakhir, **All apps**, menyenaraikan semua aplikasi mengikut kumpulan: cari mengikut nama atau fungsinya, buka salah satu daripada tiga **Recently used apps**, atau gunakan butang semat aplikasi untuk menyematnya ke Laman Utama atau mengalih keluarnya. Aplikasi yang tiba dalam versi baharu membawa lencana **New**.
 
 Fail baharu akan mendarat dalam folder yang sedang dipilih dalam bar sisi. Jika tiada apa-apa yang dipilih, ia akan ke folder lalai.
 
-Apa yang setiap kad lakukan:
+Fungsi setiap aplikasi:
 
 - **AI Docs** (.docx): dokumen teks kosong dalam editor Docs. Fail hanya ditulis ke cakera semasa **simpanan pertama**. Dokumen baharu dibuka dengan panel AI dikembangkan, dan anda boleh matikan melalui Tetapan → "Buka panel AI dalam dokumen baharu".
 - **AI Sheets** (.xlsx): hamparan kosong dalam editor Sheets. Sebelum anda simpan, tiada fail wujud pada cakera; nama itu dikhaskan untuk simpanan pertama. Selepas penjanaan AI yang pertama, fail tersebut juga boleh dinamakan semula secara automatik berdasarkan kandungannya.

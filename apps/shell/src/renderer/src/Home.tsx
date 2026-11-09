@@ -10,14 +10,30 @@ import { TemplatePicker } from './hanpan/TemplatePicker'
 import { StartBoard } from './hanpan/StartBoard'
 import {
   HomeCustomizePanel,
-  HomeWidgets,
+  ResetBoardDialog,
+  WidgetBody,
   WidgetGallery,
-  addWidgetTo,
-  arrangeCards,
+  boardCardName,
   configuresOnAdd,
-  useHomeLayout,
   type HomeAppCard,
 } from './HomeWidgets'
+import { useHomeBoard } from './home-board/useHomeBoard'
+import { BoardGrid } from './home-board/BoardGrid'
+import { AppsCard } from './home-board/AppsCard'
+import { AllApps } from './home-board/AllApps'
+import { buildHomeApps } from './home-board/home-apps'
+import { RecentCard } from './home-board/RecentCard'
+import { TrendCard } from './home-board/TrendCard'
+import { recentRows } from './home-board/board-geometry'
+import {
+  markAppsSeen,
+  recordAppLaunch,
+  setPinned,
+  unseenApps,
+  type AppKey,
+} from '../../shared/home-apps'
+import type { BoardCard, CardSize } from '../../shared/home-board'
+import { addCard, moveApp, resetHomeBoard } from '../../shared/home-board-edit'
 import { homeCustomText } from './i18n/strings-home-custom'
 import { MarkdownConverter, type MarkdownConverterApi } from './hanpan/MarkdownConverter'
 import './hanpan/hanpan.css'
@@ -1158,7 +1174,8 @@ export function Home({
   const [loadingMore, setLoadingMore] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(readSidebarWidth)
   const sidebarRef = useRef<HTMLElement>(null)
-  const [view, setView] = useState<'recent' | 'starred'>('recent')
+  // 0.19: Home opens on the board; the sidebar's lists show the files (spec 7.0)
+  const [view, setView] = useState<'home' | 'recent' | 'starred'>('home')
   // the knowledge-base ask panel takes over the content area the same way
   const [askMode, setAskMode] = useState(false)
   // Google Drive (decision 0033) takes over the content area the same way
@@ -1342,6 +1359,21 @@ export function Home({
     // counters and the other view stay group-agnostic
     const group = view === 'starred' && groupFilter ? groupFilter : undefined
     const limit = keepCount ? Math.max(entriesLen.current, PAGE_SIZE) : PAGE_SIZE
+    if (view === 'home') {
+      // the board lists no files itself: only the sidebar counts and the recent card's total
+      setEntries([])
+      setListTotal(0)
+      void window.aiOffice.recents({ offset: 0, limit: 0, ext }).then((page) => {
+        if (seq !== requestSeq.current) return
+        setRecentAll(page.totalAll ?? page.total)
+        setNavCounts((prev) => ({ ...prev, recent: visiblePageCount(page) }))
+      })
+      void window.aiOffice.starred({ offset: 0, limit: 0, ext }).then((page) => {
+        if (seq !== requestSeq.current) return
+        setNavCounts((prev) => ({ ...prev, starred: visiblePageCount(page) }))
+      })
+      return
+    }
     const primary = view === 'recent' ? window.aiOffice.recents : window.aiOffice.starred
     const secondary = view === 'recent' ? window.aiOffice.starred : window.aiOffice.recents
     void primary({ offset: 0, limit, ext, group }).then((page) => {
@@ -1652,7 +1684,7 @@ export function Home({
     }, 150)
   }
 
-  const changeView = (next: 'recent' | 'starred') => {
+  const changeView = (next: 'home' | 'recent' | 'starred') => {
     setView(next)
     setSelectedFolder(null)
     setAskMode(false)
@@ -2038,12 +2070,22 @@ export function Home({
       }),
     [],
   )
-  // 0.17: the widgets and the app card arrangement ("홈 꾸미기")
-  const [homeLayout, updateHomeLayout] = useHomeLayout()
-  const [customizeOpen, setCustomizeOpen] = useState(false)
-  const [galleryOpen, setGalleryOpen] = useState(false)
-  /** the widget whose settings are open */
+  // 0.19: the home board (spec 7), stored under `homeBoard`
+  const {
+    board,
+    context: boardContext,
+    update: updateBoard,
+  } = useHomeBoard({ korean: lang === 'ko', koreanDocs })
+  /** the widget card whose settings are open */
   const [editingWidget, setEditingWidget] = useState<string | null>(null)
+  /** "홈 꾸미기" (spec 7.8): the bar, the card tools, the new card's × and blank slots */
+  const [customizing, setCustomizing] = useState(false)
+  /** the dialogs customizing opens: "카드 추가", "목록으로 정리", "기본 배치로" */
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  const [boardListOpen, setBoardListOpen] = useState(false)
+  const [resetAsk, setResetAsk] = useState(false)
+  /** "모든 앱" with the apps that were new when it opened, or closed */
+  const [allApps, setAllApps] = useState<{ newKeys: ReadonlySet<string> } | null>(null)
   const [converterOpen, setConverterOpen] = useState(false)
   const hp = window.hanpanApi
   const converterApi: MarkdownConverterApi | null =
@@ -2051,293 +2093,247 @@ export function Home({
       ? (hp as MarkdownConverterApi)
       : null
 
-  /**
-   * Hanpan's order: the mind map first (every document starts there), then the
-   * HWP report, the slides and the templates it feeds, as large cards; the other
-   * documents and tools follow in a compact row. Every card keeps `quick-card`
-   * and names what it makes in `data-new`.
-   */
-  function quickCardDefs() {
-    const made = (ext: string) => NEW_ITEMS.find((item) => item.ext === ext)!
-    const primary = [
-      {
-        key: 'xmind',
-        badge: <FileBadge ext="xmind" size={34} />,
-        title: made('xmind').title,
-        sub: t('hpCardMapSub'),
-        ai: true,
-        start: true,
-        action: made('xmind').action,
-      },
-      ...(koreanDocs
-        ? [
-            {
-              key: 'hwp',
-              badge: <FileBadge ext="hwp" size={34} />,
-              title: made('hwp').title,
-              sub: t('hpCardHwpSub'),
-              ai: true,
-              action: made('hwp').action,
-            },
-          ]
-        : []),
-      {
-        key: 'pptx',
-        badge: <FileBadge ext="pptx" size={34} />,
-        title: made('pptx').title,
-        sub: t('hpCardPptSub'),
-        ai: true,
-        action: made('pptx').action,
-      },
-      ...(window.hanpanApi && koreanDocs
-        ? [
-            {
-              key: 'templates',
-              // a form with a seal, not AI 한글's "가" (0.17 리뷰 v2 shell #29)
-              badge: <TemplatesBadge />,
-              title: t('hpTemplatesCard'),
-              sub: t('hpTemplatesCardSub'),
-              ai: false,
-              action: () => setTemplatesOpen(true),
-            },
-          ]
-        : []),
-    ]
-    /** a second feature reached from the same card (0.17 #12: one card per pair) */
-    type CardExtra = { key: string; title: string; tip: string; action: () => unknown }
-    const secondary: Array<{
-      key: string
-      icon: ReactElement
-      title: string
-      ai: boolean
-      tip?: string
-      sub?: string
-      extra?: CardExtra
-      action: () => unknown
-    }> = [
-      ...['docx', 'xlsx'].map((ext) => ({
-        key: ext,
-        icon: <FileBadge ext={ext} size={24} />,
-        title: made(ext).title,
-        ai: true,
-        tip: undefined as string | undefined,
-        action: made(ext).action,
-      })),
-      ...(window.hanpanApi?.openDesign && koreanDocs
-        ? [
-            {
-              key: 'design',
-              icon: (
-                <span className="quick-folder hp-design-badge" aria-hidden="true">
-                  ✦
-                </span>
-              ),
-              title: t('hpDesignCard'),
-              ai: false,
-              tip: t('hpDesignCardSub'),
-              action: () => window.hanpanApi?.openDesign?.(),
-            },
-          ]
-        : []),
-      // AI 마크다운 and the Markdown converter share one card
-      {
-        key: 'md',
-        icon: <FileBadge ext="md" size={24} />,
-        title: made('md').title,
-        ai: true,
-        tip: undefined as string | undefined,
-        extra: converterApi
-          ? {
-              key: 'md-convert',
-              title: t('hpConvChip'),
-              tip: `${t('hpConvCard')} · ${t('hpConvCardSub')}`,
-              action: () => setConverterOpen(true),
-            }
-          : undefined,
-        action: made('md').action,
-      },
-      {
-        key: 'html',
-        icon: <FileBadge ext="html" size={24} />,
-        title: made('html').title,
-        ai: true,
-        tip: undefined as string | undefined,
-        action: made('html').action,
-      },
-      // AI PDF and the PDF tools share one card; decision 0030: PDF tasks
-      // without AI, in their own window
-      {
-        key: 'pdf',
-        icon: <FileBadge ext="pdf" size={24} />,
-        title: made('pdf').title,
-        ai: true,
-        tip: undefined as string | undefined,
-        extra: {
-          key: 'pdf-tools',
-          title: t('pdfToolsCard'),
-          tip: t('pdfToolsCardSub'),
-          action: () => window.aiOfficePdfToolsHome.open(),
-        },
-        action: made('pdf').action,
-      },
-      // decision 0093: the PhotoCraft and VectorCraft web apps in tabs, with an AI assistant
-      {
-        key: 'photo',
-        icon: (
-          <span className="quick-folder" aria-hidden="true">
-            <GraphicsIcon kind="photo" />
+  /** each app's icon on the new card and in "모든 앱" */
+  function appIcon(key: AppKey): ReactElement {
+    switch (key) {
+      case 'templates':
+        // a form with a seal, not AI 한글's "가" (0.17 리뷰 v2 shell #29)
+        return <TemplatesBadge />
+      case 'design':
+        return (
+          <span className="quick-folder hp-design-badge" aria-hidden="true">
+            ✦
           </span>
-        ),
-        title: t('newPhoto'),
-        ai: true,
-        // the app it is built on, under what it does (the original names stay)
-        sub: 'PhotoCraft',
-        tip: t('hpPhotoTip') as string | undefined,
-        action: () => window.aiOffice.newPhoto(newFileOpts),
-      },
-      {
-        key: 'illust',
-        icon: (
-          <span className="quick-folder" aria-hidden="true">
-            <GraphicsIcon kind="illust" />
+        )
+      case 'md-convert':
+        return (
+          <span className="quick-folder hp-conv-badge" aria-hidden="true">
+            ⇄
           </span>
-        ),
-        title: t('newIllust'),
-        ai: true,
-        sub: 'VectorCraft',
-        tip: t('hpIllustTip') as string | undefined,
-        action: () => window.aiOffice.newIllust(newFileOpts),
-      },
-      {
-        key: 'open',
-        icon: (
+        )
+      case 'pdf-tools':
+        return <FileBadge ext="pdf" size={28} />
+      case 'photo':
+      case 'illust':
+        return (
+          <span className="quick-folder" aria-hidden="true">
+            <GraphicsIcon kind={key} />
+          </span>
+        )
+      case 'open':
+        return (
           <span className="quick-folder">
             <FolderIcon size={16} />
           </span>
-        ),
-        title: t('openLocal'),
-        ai: false,
-        tip: OPEN_LOCAL_EXTENSIONS,
-        action: () => window.aiOffice.browse(),
-      },
-    ]
-    return { primary, secondary }
-  }
-
-  /** every app card as the 홈 꾸미기 panel and the favorites widget list them */
-  function homeAppCards(): { primary: HomeAppCard[]; secondary: HomeAppCard[] } {
-    const defs = quickCardDefs()
-    return {
-      primary: defs.primary.map((card) => ({
-        key: card.key,
-        title: card.title,
-        icon: card.badge,
-        action: card.action,
-      })),
-      secondary: defs.secondary.map((card) => ({
-        key: card.key,
-        title: card.title,
-        icon: card.icon,
-        action: card.action,
-      })),
+        )
+      default:
+        return <FileBadge ext={key} size={28} />
     }
   }
 
-  /** the cards in the person's order, hidden ones left out (0.17 홈 꾸미기) */
-  function renderQuickCards() {
-    const defs = quickCardDefs()
-    const primary = arrangeCards(defs.primary, homeLayout)
-    const secondary = arrangeCards(defs.secondary, homeLayout)
+  /**
+   * Every app Home offers, in APP_KEYS order. A new document lands in the
+   * selected folder (`newFileOpts`); starting an app from Home records it for
+   * "최근에 쓴 앱" (plan R18).
+   */
+  function homeApps(): HomeAppCard[] {
+    const made = (ext: string) => NEW_ITEMS.find((item) => item.ext === ext)!.action
+    return buildHomeApps({
+      t,
+      koreanDocs,
+      offers: {
+        templates: !!window.hanpanApi,
+        design: !!window.hanpanApi?.openDesign,
+        converter: converterApi !== null,
+      },
+      iconFor: appIcon,
+      actions: {
+        xmind: made('xmind'),
+        hwp: made('hwp'),
+        pptx: made('pptx'),
+        docx: made('docx'),
+        xlsx: made('xlsx'),
+        md: made('md'),
+        html: made('html'),
+        templates: () => setTemplatesOpen(true),
+        pdf: made('pdf'),
+        'pdf-tools': () => window.aiOfficePdfToolsHome.open(),
+        'md-convert': () => setConverterOpen(true),
+        photo: made('psd'),
+        illust: made('vectorcraft'),
+        design: () => window.hanpanApi?.openDesign?.(),
+        open: () => window.aiOffice.browse(),
+      },
+      onLaunch: (key) => updateBoard((b) => recordAppLaunch(b, key)),
+    })
+  }
+
+  // Esc ends customizing when no dialog or card menu is open (those take Esc first)
+  useEffect(() => {
+    if (!customizing || galleryOpen || boardListOpen || resetAsk || allApps) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !event.defaultPrevented) setCustomizing(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [customizing, galleryOpen, boardListOpen, resetAsk, allApps])
+
+  /** "카드 추가": the new card goes last; a memo, shortcut or folder opens its settings */
+  const addBoardCard = (type: Parameters<typeof configuresOnAdd>[0]) => {
+    setGalleryOpen(false)
+    let added: string | null = null
+    updateBoard((prev) => {
+      const result = addCard(prev, type)
+      added = result.id
+      return result.board
+    })
+    if (added && configuresOnAdd(type)) setEditingWidget(added)
+  }
+
+  /** "모든 앱": the apps new since it last opened keep their mark this time, then count as seen */
+  const openAllApps = (apps: readonly HomeAppCard[]) => {
+    if (!board) return
+    const available = new Set(apps.map((app) => app.key))
+    setAllApps({ newKeys: new Set(unseenApps(board.seenApps, available)) })
+    updateBoard((b) => markAppsSeen(b, available))
+  }
+
+  /** the new card: on the board in the card's size, above a folder in 7×2 (plan R7) */
+  function renderAppsCard(apps: readonly HomeAppCard[], size: CardSize, onBoard = false) {
+    if (!board) return null
+    const available = new Set(apps.map((app) => app.key))
     return (
-      <div className="hp-cards">
-        {primary.length > 0 && (
-          <div className="quick-cards hp-primary">
-            {primary.map((card) => (
-              <button
-                key={card.key}
-                className={
-                  card.start ? 'quick-card hp-primary-card is-start' : 'quick-card hp-primary-card'
-                }
-                data-new={card.key}
-                data-hanpan={card.key === 'templates' ? 'templates' : undefined}
-                onClick={() => void card.action()}
-              >
-                {card.start && <span className="hp-start-badge">{t('hpStartBadge')}</span>}
-                {card.badge}
-                <span className="quick-text">
-                  <span className="quick-title-row">
-                    <span className="quick-title">{card.title}</span>
-                    {card.ai && <span className="ai-chip">AI</span>}
-                  </span>
-                  <span className="quick-sub">{card.sub}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="section-head hp-more-head">
-          <span className="section-label">{t('hpMoreTools')}</span>
-          <button
-            type="button"
-            className="home-custom-open"
-            data-home-custom="open"
-            onClick={() => setCustomizeOpen(true)}
-          >
-            {homeCustomText(lang, 'customize')}
-          </button>
-        </div>
-        <div className="quick-cards hp-secondary">
-          {secondary.map((card) => {
-            const main = (
-              <button
-                key={card.key}
-                className="quick-card hp-compact"
-                data-new={card.key}
-                data-hanpan={card.key === 'design' ? card.key : undefined}
-                data-tip={card.tip}
-                onClick={() => void card.action()}
-              >
-                {card.icon}
-                {card.sub ? (
-                  <span className="hp-compact-text">
-                    <span className="quick-title">{card.title}</span>
-                    <span className="hp-compact-sub">{card.sub}</span>
-                  </span>
-                ) : (
-                  <span className="quick-title">{card.title}</span>
-                )}
-                {card.ai && <span className="ai-chip">AI</span>}
-              </button>
-            )
-            const extra = card.extra
-            if (!extra) return main
-            return (
-              <div key={card.key} className="hp-pair" data-pair={card.key}>
-                {main}
-                <button
-                  className="hp-pair-alt"
-                  data-new={extra.key}
-                  data-hanpan={extra.key === 'md-convert' ? extra.key : undefined}
-                  data-tip={extra.tip}
-                  onClick={() => void extra.action()}
-                >
-                  {extra.title}
-                </button>
-              </div>
-            )
-          })}
-        </div>
-        {customizeOpen && renderCustomizePanel()}
-        {galleryOpen && (
-          <WidgetGallery
-            layout={homeLayout}
+      <AppsCard
+        apps={apps}
+        pinned={board.pinned}
+        size={size}
+        unseen={unseenApps(board.seenApps, available).length}
+        customizing={onBoard && customizing}
+        onOpenAll={() => openAllApps(apps)}
+        onUnpin={(key) => updateBoard((b) => setPinned(b, key, false))}
+        onMove={(key, toIndex) => updateBoard((b) => moveApp(b, key, toIndex))}
+      />
+    )
+  }
+
+  function renderStartBody() {
+    const now = new Date()
+    const hour = now.getHours()
+    const greetKey =
+      hour < 6
+        ? 'greetEvening'
+        : hour < 12
+          ? 'greetMorning'
+          : hour < 18
+            ? 'greetAfternoon'
+            : 'greetEvening'
+    const cjk = lang === 'zh' || lang === 'zh-TW' || lang === 'ja'
+    const greeting = `${t(greetKey)}${cjk ? '。' : '. '}`
+    return window.hanpanApi?.newMap ? (
+      <StartBoard greeting={greeting.trim()} t={(key) => t(key as Parameters<typeof t>[0])} />
+    ) : (
+      <div className="home-hero">
+        <h1 className="hero-title">
+          {greeting}
+          <span className="hero-ask">{t(greetAskKey)}</span>
+        </h1>
+      </div>
+    )
+  }
+
+  /** what a board card shows inside its frame */
+  function cardBody(card: BoardCard, apps: readonly HomeAppCard[]): ReactElement {
+    switch (card.type) {
+      case 'start':
+        return renderStartBody()
+      case 'trend':
+        return <TrendCard />
+      case 'apps':
+        return renderAppsCard(apps, card, true) ?? <></>
+      case 'recent':
+        return (
+          <RecentCard
+            title={boardCardName(card, lang, apps)}
+            rows={recentRows(card.h)}
+            total={recentAll}
+            reloadKey={widgetTick}
+            onShowAll={() => changeView('recent')}
+            describe={(entry) => ({
+              location: locationLabel(entry.path, roots),
+              modified: formatModified(entry.mtimeMs, i18n),
+            })}
+            iconFor={(ext) => <FileBadge ext={ext} size={24} />}
+          />
+        )
+      default:
+        return (
+          <WidgetBody
+            card={card}
+            update={updateBoard}
+            apps={apps}
             lang={lang}
-            onPick={(type) => {
-              setGalleryOpen(false)
-              const id = addWidgetTo(updateHomeLayout, type)
-              if (id && configuresOnAdd(type)) setEditingWidget(id)
-            }}
+            dateLocale={i18n.dateLocale}
+            reloadKey={widgetTick}
+            editing={editingWidget === card.id}
+            onEdit={setEditingWidget}
+          />
+        )
+    }
+  }
+
+  /** the dialogs Home opens over any view: templates, the converter, "모든 앱" and customizing's */
+  function renderHomeDialogs() {
+    const apps = (allApps || boardListOpen) && board ? homeApps() : []
+    return (
+      <>
+        {galleryOpen && board && (
+          <WidgetGallery
+            board={board}
+            trendAvailable={boardContext?.trend ?? false}
+            lang={lang}
+            onPick={addBoardCard}
             onClose={() => setGalleryOpen(false)}
+          />
+        )}
+        {boardListOpen && board && (
+          <HomeCustomizePanel
+            board={board}
+            update={updateBoard}
+            apps={apps}
+            lang={lang}
+            cardName={(card) => boardCardName(card, lang, apps)}
+            themeLabels={{
+              title: t('theme'),
+              light: t('themeLight'),
+              dark: t('themeDark'),
+              system: t('themeSystem'),
+            }}
+            onOpenGallery={() => {
+              setBoardListOpen(false)
+              setGalleryOpen(true)
+            }}
+            onClose={() => setBoardListOpen(false)}
+          />
+        )}
+        {resetAsk && (
+          <ResetBoardDialog
+            lang={lang}
+            onNo={() => setResetAsk(false)}
+            onYes={() => {
+              setResetAsk(false)
+              if (boardContext) updateBoard((b) => resetHomeBoard(b, boardContext))
+            }}
+          />
+        )}
+        {allApps && board && (
+          <AllApps
+            apps={apps}
+            pinned={board.pinned}
+            recent={board.recentApps}
+            newKeys={allApps.newKeys}
+            onLaunch={(key) => void apps.find((app) => app.key === key)?.action()}
+            onTogglePin={(key) => updateBoard((b) => setPinned(b, key, !b.pinned.includes(key)))}
+            onClose={() => setAllApps(null)}
           />
         )}
         {templatesOpen && (
@@ -2354,51 +2350,7 @@ export function Home({
         {converterOpen && converterApi && (
           <MarkdownConverter api={converterApi} onClose={() => setConverterOpen(false)} />
         )}
-      </div>
-    )
-  }
-
-  function renderCustomizePanel() {
-    const apps = homeAppCards()
-    return (
-      <HomeCustomizePanel
-        layout={homeLayout}
-        update={updateHomeLayout}
-        groups={[
-          { label: homeCustomText(lang, 'mainCards'), cards: apps.primary },
-          { label: t('hpMoreTools'), cards: apps.secondary },
-        ]}
-        cards={[...apps.primary, ...apps.secondary]}
-        lang={lang}
-        onOpenGallery={() => {
-          setCustomizeOpen(false)
-          setGalleryOpen(true)
-        }}
-        themeLabels={{
-          title: t('theme'),
-          light: t('themeLight'),
-          dark: t('themeDark'),
-          system: t('themeSystem'),
-        }}
-        onClose={() => setCustomizeOpen(false)}
-      />
-    )
-  }
-
-  function renderWidgets() {
-    const apps = homeAppCards()
-    return (
-      <HomeWidgets
-        layout={homeLayout}
-        update={updateHomeLayout}
-        cards={[...apps.primary, ...apps.secondary]}
-        lang={lang}
-        dateLocale={i18n.dateLocale}
-        reloadKey={widgetTick}
-        editingId={editingWidget}
-        onEdit={setEditingWidget}
-        onOpenGallery={() => setGalleryOpen(true)}
-      />
+      </>
     )
   }
 
@@ -3429,7 +3381,8 @@ export function Home({
           <div className="section-head">
             <span className="section-label">{t('secQuickStart')}</span>
           </div>
-          {renderQuickCards()}
+          {/* a new file made here lands in this folder (plan R7) */}
+          {renderAppsCard(homeApps(), { w: 7, h: 2 })}
         </section>
 
         <section className="recents" aria-label={t('folders')}>
@@ -3548,41 +3501,113 @@ export function Home({
 
   // ── Plain view ────────────────────────────────────────
 
-  function renderGlobalContent() {
-    const now = new Date()
-    const hour = now.getHours()
-    const greetKey =
-      hour < 6
-        ? 'greetEvening'
-        : hour < 12
-          ? 'greetMorning'
-          : hour < 18
-            ? 'greetAfternoon'
-            : 'greetEvening'
-    const cjk = lang === 'zh' || lang === 'zh-TW' || lang === 'ja'
-    const greeting = `${t(greetKey)}${cjk ? '。' : '. '}`
+  /** Home: the head row with the file search, then the board or the search results */
+  function renderBoardContent() {
+    const apps = homeApps()
+    return (
+      <main className="content hb-content">
+        <div className="hb-head" data-board-head="">
+          <div className="file-search-group">
+            {renderSearchBox()}
+            {renderSearchSettingsButton()}
+          </div>
+          <button
+            type="button"
+            className="home-custom-open"
+            data-home-custom="open"
+            aria-pressed={customizing}
+            onClick={() => setCustomizing((on) => !on)}
+          >
+            {homeCustomText(lang, 'customize')}
+          </button>
+        </div>
+        {customizing && (
+          <div
+            className="hb-customize-bar"
+            role="toolbar"
+            aria-label={homeCustomText(lang, 'customize')}
+            data-customize-bar=""
+          >
+            <p className="hb-customize-hint">{homeCustomText(lang, 'customizeHint')}</p>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-customize="add"
+              onClick={() => setGalleryOpen(true)}
+            >
+              {homeCustomText(lang, 'addCard')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-customize="reset"
+              onClick={() => setResetAsk(true)}
+            >
+              {homeCustomText(lang, 'resetBoard')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-customize="list"
+              onClick={() => setBoardListOpen(true)}
+            >
+              {homeCustomText(lang, 'listView')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-customize="done"
+              onClick={() => setCustomizing(false)}
+            >
+              {homeCustomText(lang, 'done')}
+            </button>
+          </div>
+        )}
+        {searchActive
+          ? renderBoardSearch()
+          : board && (
+              <BoardGrid
+                board={board}
+                cardName={(card) => boardCardName(card, lang, apps)}
+                renderCard={(card) => cardBody(card, apps)}
+                customizing={customizing}
+                update={updateBoard}
+                lang={lang}
+                editing={editingWidget}
+                onEdit={setEditingWidget}
+              />
+            )}
+      </main>
+    )
+  }
+
+  /** the search results in the board's place, under the type filter and the count (plan R8) */
+  function renderBoardSearch() {
+    return (
+      <section className="recents hb-search" aria-label={t('searchFilesPlaceholder')}>
+        <div className="recents-toolbar">
+          <div className="filter-pills" role="tablist" aria-label={t('filterAria')}>
+            {FILTERS.map((f) => (
+              <button
+                key={f.key}
+                className={`filter-pill${filter === f.key ? ' active' : ''}`}
+                onClick={() => changeFilter(f.key)}
+              >
+                {t(f.label)}
+              </button>
+            ))}
+          </div>
+          {renderSearchHeading()}
+        </div>
+        {renderSearchResults()}
+      </section>
+    )
+  }
+
+  /** "최근 사용" and "즐겨찾기": the file lists */
+  function renderListContent() {
     return (
       <main className="content">
-        <section className="quick-start" aria-label={t('secQuickStart')}>
-          {window.hanpanApi?.newMap ? (
-            <StartBoard
-              greeting={greeting.trim()}
-              t={(key) => t(key as Parameters<typeof t>[0])}
-              korean={koreanDocs}
-            />
-          ) : (
-            <div className="home-hero">
-              <h1 className="hero-title">
-                {greeting}
-                <span className="hero-ask">{t(greetAskKey)}</span>
-              </h1>
-            </div>
-          )}
-          {renderQuickCards()}
-        </section>
-
-        {renderWidgets()}
-
         <section
           className="recents"
           aria-label={view === 'recent' ? t('secRecent') : t('secStarred')}
@@ -3787,6 +3812,23 @@ export function Home({
         </div>
         <nav className="sidebar-nav">
           <button
+            className={`nav-item${activeNav === 'home' ? ' active' : ''}`}
+            data-nav="home"
+            aria-current={activeNav === 'home' ? 'page' : undefined}
+            onClick={() => changeView('home')}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M2.2 7.2L8 2.4l5.8 4.8M3.6 6v7.3h3.2V9.8h2.4v3.5h3.2V6"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="nav-label">{homeCustomText(lang, 'navHome')}</span>
+          </button>
+          <button
             className={`nav-item${activeNav === 'recent' ? ' active' : ''}`}
             aria-current={activeNav === 'recent' ? 'page' : undefined}
             onClick={() => changeView('recent')}
@@ -3927,9 +3969,12 @@ export function Home({
           onOpenPath={(path) => void window.aiOffice.openPath(path)}
           onGoToRecents={() => changeView('recent')}
         />
+      ) : view === 'home' ? (
+        renderBoardContent()
       ) : (
-        renderGlobalContent()
+        renderListContent()
       )}
+      {renderHomeDialogs()}
       {confirmDelete && (
         <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
           <div

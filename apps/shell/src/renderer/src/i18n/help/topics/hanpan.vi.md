@@ -24,8 +24,8 @@ Hanpan gửi những gì bạn sắp xếp trong sơ đồ tư duy thành báo c
 
 ## Mẫu Hanpan
 
-- Thẻ **Mẫu Hanpan** ở Trang chủ mở các mẫu công văn, báo cáo, đề xuất, biên bản, kế hoạch và biểu mẫu pháp định dạng HWP hoặc Word.
-- Trong thẻ **Markdown converter** ở Trang chủ, dán Markdown hoặc mở tệp .md rồi nhấn **Convert all**: mọi định dạng đã chọn (HWP, HWPX, Word, ODT, PDF, HTML) được tạo cùng trong một thư mục.
+- **Mẫu Hanpan** trong **Tạo mới** ở Trang chủ mở các mẫu công văn, báo cáo, đề xuất, biên bản, kế hoạch và biểu mẫu pháp định dạng HWP hoặc Word.
+- Mở **Markdown converter** từ **Tất cả ứng dụng** ở Trang chủ, rồi dán Markdown hoặc mở tệp .md rồi nhấn **Convert all**: mọi định dạng đã chọn (HWP, HWPX, Word, ODT, PDF, HTML) được tạo cùng trong một thư mục.
 - Nhóm **교육** (giáo dục) có giáo án thưởng thức tranh cổ Hàn Quốc, thông báo triển lãm và bài đọc 「운수 좋은 날」. Tranh lấy từ Gongu (gongu.copyright.or.kr), đã hết bản quyền hoặc theo CC BY nên ai cũng có thể chỉnh sửa; mỗi tranh vào tài liệu kèm dòng ghi nguồn bên dưới. Hãy giữ dòng đó. **Open as mind map** trên thẻ mẫu sẽ mở tiêu đề và danh sách thành các nhánh của sơ đồ tư duy. Trong trình chỉnh sửa trang chiếu, **Chèn › Hiệu ứng âm thanh** đặt một trong sáu hiệu ứng nhạc truyền thống Hàn Quốc (주식회사 아이티앤, CC BY) lên trang, với nguồn ghi trong tên âm thanh.
 - Nhóm **서식** (biểu mẫu chính thức) gồm các biểu mẫu kèm theo luật của Hàn Quốc (đơn yêu cầu công khai thông tin, đơn khiếu nại hành chính, giấy ủy quyền làm thủ tục hành chính và đơn phản đối quyết định từ chối), đúng như Trung tâm Thông tin Pháp luật Quốc gia (law.go.kr) công bố. **Open as HWP** mở một bản sao trong thẻ HWP; điền vào các ô rồi lưu hoặc in. Biểu mẫu pháp luật không được bảo hộ bản quyền nên ai cũng có thể dùng. Biểu mẫu thay đổi khi luật thay đổi, vì vậy hãy kiểm tra trên law.go.kr rằng đó là phiên bản mới nhất trước khi nộp.
 
@@ -36,7 +36,7 @@ Hanpan gửi những gì bạn sắp xếp trong sơ đồ tư duy thành báo c
 
 ## Thiết kế
 
-- Thẻ **Thiết kế** ở Trang chủ tạo áp phích, thẻ tin, thông báo và ảnh thu nhỏ.
+- **Thiết kế** trong **Tạo mới** ở Trang chủ tạo áp phích, thẻ tin, thông báo và ảnh thu nhỏ.
 - Nhấn **Sao chép để dán vào tài liệu**, rồi Ctrl+V trong thẻ HWP, Word hoặc PowerPoint để chèn trang dưới dạng ảnh. Trang cũng lưu được dạng PNG và PDF.
 - Trong sơ đồ, **Gửi sang tài liệu › Gửi thành thẻ tin** tạo một thẻ cho mỗi nhánh chính.
 - Nhấn **✦ AI helper** ở góc trên bên phải cửa sổ thiết kế để mở trợ lý ở bên phải. Trong **Make new**, mô tả điều bạn muốn rồi gửi: AI đã chọn trong Cài đặt viết chữ và Hanpan dàn trang thành thiết kế có thể chỉnh sửa. **Fill this design** giữ nguyên bố cục và màu của thiết kế hiện tại, chỉ viết lại các ô chữ bằng nội dung của bạn; sau khi chọn mẫu, **✦ Fill this template with my content** cũng làm như vậy. Khi chọn một ô chữ, thanh ✦ hiện phía trên giúp trau chuốt, rút gọn, làm nổi bật hơn hoặc dịch giữa tiếng Anh và tiếng Hàn chỉ bằng một cú nhấp. Mỗi kết quả đều có **Undo**, và nếu chưa kết nối AI, bạn có thể kết nối ngay trong trợ lý.

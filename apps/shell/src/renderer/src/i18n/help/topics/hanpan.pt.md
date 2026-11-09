@@ -24,8 +24,8 @@ O Hanpan envia o que você organizou num mapa mental para um relatório Hangul (
 
 ## Modelos do Hanpan
 
-- O cartão **Modelos do Hanpan** no Início abre 22 modelos (ofícios, relatórios, propostas, atas, planos) como HWP ou Word.
-- No cartão **Markdown converter** do início, cole Markdown ou abra um arquivo .md e toque em **Convert all**: cada formato marcado (HWP, HWPX, Word, ODT, PDF, HTML) é criado na mesma pasta.
+- Em **Novo** no Início, **Modelos do Hanpan** abre 22 modelos (ofícios, relatórios, propostas, atas, planos) como HWP ou Word.
+- Abra **Markdown converter** em **All apps** no Início e cole Markdown ou abra um arquivo .md e toque em **Convert all**: cada formato marcado (HWP, HWPX, Word, ODT, PDF, HTML) é criado na mesma pasta.
 - O grupo **교육** (educação) traz um plano de aula sobre pintura coreana antiga, um aviso de exposição e uma aula de leitura de 「운수 좋은 날」. As imagens vêm do Gongu (gongu.copyright.or.kr) e estão em domínio público ou sob CC BY, então qualquer pessoa pode adaptá-las; cada uma entra no documento com a linha de crédito abaixo. Mantenha essa linha. **Open as mind map** num cartão de modelo abre os títulos e listas como ramos de um mapa mental. No editor de slides, **Inserir › Efeitos sonoros** coloca um de seis efeitos de música tradicional coreana (주식회사 아이티앤, CC BY), com o crédito no nome do som.
 - O grupo **서식** (formulários oficiais) traz formulários anexos a leis coreanas (pedido de acesso à informação, recurso administrativo, procuração para pedidos administrativos e contestação de uma recusa), tal como o Centro Nacional de Informação Jurídica (law.go.kr) os publica. **Open as HWP** abre uma cópia numa aba HWP; preencha os campos e depois salve ou imprima. Formulários legais não são protegidos por direitos autorais, então qualquer pessoa pode usá-los. Eles mudam quando a lei muda, por isso confirme em law.go.kr que tem a versão em vigor antes de entregar.
 
@@ -36,7 +36,7 @@ O Hanpan envia o que você organizou num mapa mental para um relatório Hangul (
 
 ## Design
 
-- O cartão **Design** no Início cria cartazes, cards de notícias, avisos e miniaturas.
+- Em **Novo** no Início, **Design** cria cartazes, cards de notícias, avisos e miniaturas.
 - Pressione **Copiar para colar num documento** e depois Ctrl+V numa aba HWP, Word ou PowerPoint para inserir a página como imagem. As páginas também são salvas em PNG e PDF.
 - Num mapa, **Enviar para um documento › Enviar como cards de notícias** cria um card por ramo principal.
 - Toque em **✦ AI helper** no canto superior direito da janela de design para abrir o assistente à direita. Em **Make new**, descreva o que quer e envie: a IA escolhida nas Configurações escreve o texto e o Hanpan o diagrama como um design editável. **Fill this design** mantém o layout e as cores do design atual e reescreve só as caixas de texto com o seu conteúdo; depois de escolher um modelo, **✦ Fill this template with my content** faz o mesmo. Com uma caixa de texto selecionada, uma barra ✦ acima dela refina, encurta, torna mais chamativa ou traduz entre inglês e coreano com um clique. Cada resultado tem **Undo**, e se ainda não houver uma IA conectada, você a conecta dentro do assistente.

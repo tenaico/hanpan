@@ -24,8 +24,8 @@ Hanpan envoie ce que vous avez organisé dans une carte mentale vers un rapport 
 
 ## Modèles Hanpan
 
-- La carte **Modèles Hanpan** de l'accueil ouvre 22 modèles (lettres officielles, rapports, propositions, comptes rendus, plans) en HWP ou en Word.
-- Dans la carte **Markdown converter** de l'accueil, collez du Markdown ou ouvrez un fichier .md, puis appuyez sur **Convert all** : chaque format coché (HWP, HWPX, Word, ODT, PDF, HTML) est créé dans un même dossier.
+- Dans **Nouveau** sur l'accueil, **Modèles Hanpan** ouvre 22 modèles (lettres officielles, rapports, propositions, comptes rendus, plans) en HWP ou en Word.
+- Ouvrez **Markdown converter** depuis **All apps** sur l'accueil, puis collez du Markdown ou ouvrez un fichier .md, puis appuyez sur **Convert all** : chaque format coché (HWP, HWPX, Word, ODT, PDF, HTML) est créé dans un même dossier.
 - Le groupe **교육** (éducation) contient une fiche de cours sur la peinture coréenne ancienne, une annonce d'exposition et une séance de lecture sur 「운수 좋은 날」. Les images viennent de Gongu (gongu.copyright.or.kr) ; elles sont dans le domaine public ou sous CC BY, donc chacun peut les adapter, et chacune entre dans le document avec sa ligne de crédit dessous. Laissez cette ligne. **Open as mind map** sur une carte de modèle ouvre ses titres et listes comme branches d'une carte mentale. Dans l'éditeur de diapositives, **Insertion › Effets sonores** place l'un des six effets de musique traditionnelle coréenne (주식회사 아이티앤, CC BY), avec le crédit dans le nom du son.
 - Le groupe **서식** (formulaires officiels) contient des formulaires annexés aux lois coréennes (demande d’accès à l’information, recours administratif, procuration pour les démarches administratives, contestation d’un refus), tels que le Centre national d’information juridique (law.go.kr) les publie. **Open as HWP** ouvre une copie dans un onglet HWP : remplissez les cases, puis enregistrez-la ou imprimez-la. Les formulaires légaux ne sont pas protégés par le droit d’auteur, chacun peut donc les utiliser. Ils changent avec la loi : vérifiez sur law.go.kr que vous avez la version en vigueur avant de le remettre.
 
@@ -36,7 +36,7 @@ Hanpan envoie ce que vous avez organisé dans une carte mentale vers un rapport 
 
 ## Design
 
-- La carte **Design** de l'accueil crée affiches, cartes d'actualité, avis et miniatures.
+- Dans **Nouveau** sur l'accueil, **Design** crée affiches, cartes d'actualité, avis et miniatures.
 - Appuyez sur **Copier pour coller dans un document**, puis Ctrl+V dans un onglet HWP, Word ou PowerPoint pour insérer la page comme image. Les pages s'enregistrent aussi en PNG et PDF.
 - Dans une carte, **Envoyer vers un document › Envoyer en cartes d'actualité** crée une carte par branche principale.
 - Appuyez sur **✦ AI helper** en haut à droite de la fenêtre de design pour ouvrir l'assistant à droite. Sous **Make new**, décrivez ce que vous voulez et envoyez : l'IA choisie dans les réglages écrit le texte et Hanpan le met en page en un design modifiable. **Fill this design** garde la mise en page et les couleurs actuelles et ne réécrit que les zones de texte avec votre contenu ; après avoir choisi un modèle, **✦ Fill this template with my content** fait de même. Une zone de texte sélectionnée, une barre ✦ au-dessus la peaufine, la raccourcit, la rend plus accrocheuse ou la traduit entre anglais et coréen en un clic. Chaque résultat a son **Undo**, et si aucune IA n'est encore connectée, vous la connectez directement dans l'assistant.

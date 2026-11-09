@@ -3,27 +3,30 @@ import type { ReactElement } from 'react'
 import type { Lang } from '@genoffice/i18n'
 import type { FileEntry, FolderRoot, RecentEntry, UiTheme } from '../../shared/home-api'
 import {
-  DEFAULT_HOME_LAYOUT,
   HOME_MEMO_MAX,
   HOME_TITLE_MAX,
-  addWidget,
-  arrangeKeys,
-  canAddWidget,
-  moveKey,
-  moveWidget,
-  moveWidgetTo,
-  normalizeHomeLayout,
-  removeWidget,
-  resetHomeLayout,
-  toggleKey,
-  updateWidget,
   validLinkUrl,
-  type HomeLayout,
   type HomeWidget,
-  type HomeWidgetType,
   type ShortcutKind,
   type ShortcutTarget,
 } from '../../shared/home-layout'
+import {
+  CARD_SIZES,
+  parseSizeKey,
+  sizeKey,
+  type BoardCard,
+  type BoardCardType,
+  type HomeBoard,
+} from '../../shared/home-board'
+import {
+  canAddCard,
+  isRemovable,
+  moveApp,
+  moveCard,
+  removeCard,
+  updateCard,
+} from '../../shared/home-board-edit'
+import { APP_KEYS, isAppKey, setPinned, type AppKey } from '../../shared/home-apps'
 import { useDialogKeys } from './dialog-keys'
 import { homeCustomText, type HomeCustomStringKey } from './i18n/strings-home-custom'
 import './home-widgets.css'
@@ -40,90 +43,43 @@ import './home-widgets.css'
 export interface HomeAppCard {
   key: string
   title: string
+  /** one line on what the app does, shown in "모든 앱" */
+  sub?: string
   icon: ReactElement
   action: () => unknown
 }
 
-type Update = (change: (prev: HomeLayout) => HomeLayout) => void
+type BoardUpdate = (change: (prev: HomeBoard) => HomeBoard) => void
 type Text = (key: HomeCustomStringKey) => string
+/** a 0.18 widget in the widget row, or a card on the 0.19 board */
+type WidgetLike = HomeWidget | BoardCard
 
 /** how many files the list widgets show */
 const WIDGET_FILES = 5
 /** a note is written out this long after the last keystroke (and on leaving the box) */
 const MEMO_SAVE_DELAY_MS = 800
-/** the widgets that open their settings right after being added */
-const CONFIGURE_ON_ADD: readonly HomeWidgetType[] = ['memo', 'shortcut', 'folder']
-/** the gallery's order: what people add most first */
-const GALLERY_ORDER: readonly HomeWidgetType[] = [
+/** the cards that open their settings right after being added */
+const CONFIGURE_ON_ADD: readonly BoardCardType[] = ['memo', 'shortcut', 'folder']
+/** the gallery's order: what people add most first, the trend card last (spec 7.8) */
+const GALLERY_ORDER = [
   'shortcut',
   'memo',
   'folder',
   'clock',
   'recent',
   'favorites',
-]
+  'trend',
+] as const satisfies readonly BoardCardType[]
+type GalleryType = (typeof GALLERY_ORDER)[number]
 
-/** Home's layout: read once, changed through `update`, stored after every change */
-export function useHomeLayout(): [HomeLayout, Update] {
-  const [layout, setLayout] = useState<HomeLayout>(DEFAULT_HOME_LAYOUT)
-  const current = useRef(layout)
-  const changed = useRef(false)
-  useEffect(() => {
-    let alive = true
-    Promise.resolve(window.aiOffice.getHomeLayout?.())
-      .then((stored) => {
-        // a change made before the stored layout arrived wins over it
-        if (!alive || changed.current) return
-        current.current = normalizeHomeLayout(stored)
-        setLayout(current.current)
-      })
-      .catch(() => undefined)
-    return () => {
-      alive = false
-    }
-  }, [])
-  const update = useCallback((change: (prev: HomeLayout) => HomeLayout) => {
-    changed.current = true
-    const next = normalizeHomeLayout(change(current.current))
-    current.current = next
-    setLayout(next)
-    // a failed write keeps the change for this session; the next launch shows the stored one
-    void Promise.resolve(window.aiOffice.setHomeLayout?.(next)).catch(() => undefined)
-  }, [])
-  return [layout, update]
-}
-
-/** add a widget of `type`; returns its id (null when it could not be added) */
-export function addWidgetTo(update: Update, type: HomeWidgetType): string | null {
-  let id: string | null = null
-  update((prev) => {
-    const added = addWidget(prev, type)
-    id = added.id
-    return added.layout
-  })
-  return id
-}
-
-export function configuresOnAdd(type: HomeWidgetType): boolean {
+export function configuresOnAdd(type: BoardCardType): boolean {
   return CONFIGURE_ON_ADD.includes(type)
 }
 
-/** `cards` as the person arranged them, hidden ones dropped unless `withHidden` */
-export function arrangeCards<T extends { key: string }>(
-  cards: readonly T[],
-  layout: HomeLayout,
-  withHidden = false,
-): T[] {
-  const byKey = new Map(cards.map((card) => [card.key, card]))
-  return arrangeKeys(
-    cards.map((card) => card.key),
-    layout.cardOrder,
-  )
-    .filter((key) => withHidden || !layout.hiddenCards.includes(key))
-    .map((key) => byKey.get(key)!)
-}
-
-const TYPE_NAME: Record<HomeWidgetType, HomeCustomStringKey> = {
+const TYPE_NAME: Record<BoardCardType, HomeCustomStringKey> = {
+  start: 'cardStart',
+  trend: 'cardTrend',
+  apps: 'cardApps',
   recent: 'widgetRecent',
   favorites: 'widgetFavorites',
   memo: 'widgetNote',
@@ -131,7 +87,8 @@ const TYPE_NAME: Record<HomeWidgetType, HomeCustomStringKey> = {
   folder: 'widgetFolder',
   clock: 'widgetClock',
 }
-const TYPE_DESC: Record<HomeWidgetType, HomeCustomStringKey> = {
+const TYPE_DESC: Record<GalleryType, HomeCustomStringKey> = {
+  trend: 'descTrend',
   recent: 'descRecent',
   favorites: 'descFavorites',
   memo: 'descNote',
@@ -144,8 +101,23 @@ function lastSegment(path: string): string {
   return path.split(/[\\/]/).filter(Boolean).pop() ?? path
 }
 
+/** the name a card goes by on the board (its frame's label): fixed for the built-in cards */
+export function boardCardName(card: BoardCard, lang: Lang, apps: readonly HomeAppCard[]): string {
+  const text: Text = (key) => homeCustomText(lang, key)
+  switch (card.type) {
+    case 'start':
+    case 'trend':
+    case 'apps':
+      return text(TYPE_NAME[card.type])
+    case 'recent':
+      return card.title || text('widgetRecent')
+    default:
+      return widgetTitle(card, text, apps)
+  }
+}
+
 /** the name a widget shows: the person's title, else something that says what it holds */
-export function widgetTitle(widget: HomeWidget, text: Text, cards: readonly HomeAppCard[]): string {
+export function widgetTitle(widget: WidgetLike, text: Text, cards: readonly HomeAppCard[]): string {
   if (widget.title) return widget.title
   if (widget.type === 'memo' && widget.id === 'memo') return text('widgetMemo')
   if (widget.type === 'folder' && widget.path) return lastSegment(widget.path)
@@ -206,44 +178,10 @@ function FileList({
   )
 }
 
-function RecentBody({ text, reloadKey }: { text: Text; reloadKey: unknown }) {
-  const entries = useFileList('recents', reloadKey)
-  return <FileList entries={entries} empty={text('recentEmpty')} attr="data-recent-file" />
-}
-
-function FavoritesBody({
-  text,
-  reloadKey,
-  pinned,
-}: {
-  text: Text
-  reloadKey: unknown
-  pinned: HomeAppCard[]
-}) {
+/** the starred files; apps are pinned to the new card now, not here (spec 7.7) */
+function FavoritesBody({ text, reloadKey }: { text: Text; reloadKey: unknown }) {
   const starred = useFileList('starred', reloadKey)
-  return (
-    <>
-      {pinned.length > 0 && (
-        <div className="hw-apps">
-          {pinned.map((card) => (
-            <button
-              key={card.key}
-              type="button"
-              className="hw-app"
-              data-fav-app={card.key}
-              onClick={() => void card.action()}
-            >
-              {card.icon}
-              <span className="hw-name">{card.title}</span>
-            </button>
-          ))}
-        </div>
-      )}
-      {starred.length > 0 || pinned.length === 0 ? (
-        <FileList entries={starred} empty={text('favoritesEmpty')} attr="data-fav-file" />
-      ) : null}
-    </>
-  )
+  return <FileList entries={starred} empty={text('favoritesEmpty')} attr="data-fav-file" />
 }
 
 function MemoBody({
@@ -315,20 +253,19 @@ export function widgetUnset(widget: HomeWidget): boolean {
 }
 
 function ShortcutBody({
-  widget,
+  target,
   title,
   cards,
   text,
   onSetUp,
 }: {
-  widget: Extract<HomeWidget, { type: 'shortcut' }>
+  target: ShortcutTarget | null
   title: string
   cards: readonly HomeAppCard[]
   text: Text
   onSetUp: () => void
 }) {
   const [failed, setFailed] = useState(false)
-  const target = widget.target
   if (!target) return <UnsetBody text={text} onSetUp={onSetUp} />
   const card = target.kind === 'app' ? cards.find((c) => c.key === target.value) : undefined
   const open = async () => {
@@ -454,24 +391,34 @@ function MoveButtons({
   )
 }
 
-/** a widget's settings, shown in place of its body; changes are stored as they are made */
+/**
+ * A widget's settings, shown in place of its body; changes are stored as they
+ * are made. What a change does is the caller's: the 0.18 widget row and the
+ * board store them differently.
+ */
 function WidgetForm({
   widget,
-  update,
   cards,
   text,
+  sizeOptions,
+  sizeValue,
+  onPatch: patch,
+  onSize,
+  onMove,
   onDone,
 }: {
-  widget: HomeWidget
-  update: Update
+  widget: WidgetLike
   cards: readonly HomeAppCard[]
   text: Text
+  sizeOptions: { value: string; label: string }[]
+  sizeValue: string
+  onPatch: (values: Record<string, unknown>) => void
+  onSize: (value: string) => void
+  onMove: (delta: -1 | 1) => void
   onDone: () => void
 }) {
   /** the name the card shows while the title is empty, offered as the field's hint */
   const shownName = widgetTitle({ ...widget, title: '' }, text, cards)
-  const patch = (values: Record<string, unknown>) =>
-    update((prev) => updateWidget(prev, widget.id, values))
   const target = widget.type === 'shortcut' ? widget.target : null
   const [kind, setKind] = useState<ShortcutKind>(target?.kind ?? 'file')
   const [link, setLink] = useState(target?.kind === 'link' ? target.value : '')
@@ -636,19 +583,15 @@ function WidgetForm({
       <div className="hw-form-row">
         <label className="hw-field">
           <span>{text('size')}</span>
-          <select
-            name="size"
-            value={widget.size}
-            onChange={(event) => patch({ size: event.target.value })}
-          >
-            <option value="small">{text('sizeSmall')}</option>
-            <option value="wide">{text('sizeWide')}</option>
+          <select name="size" value={sizeValue} onChange={(event) => onSize(event.target.value)}>
+            {sizeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
-        <MoveButtons
-          text={text}
-          onMove={(delta) => update((prev) => moveWidget(prev, widget.id, delta))}
-        />
+        <MoveButtons text={text} onMove={onMove} />
         <button
           type="button"
           className="hw-small-btn hw-done"
@@ -664,199 +607,156 @@ function WidgetForm({
   )
 }
 
-export function HomeWidgets({
-  layout,
+/**
+ * A widget card's head and body on the board (spec 7.7): its name, its
+ * settings button and either its settings or what it shows. The board draws
+ * the card around it; start, trend, apps and recent have bodies of their own.
+ */
+export function WidgetBody({
+  card,
   update,
-  cards,
+  apps,
   lang,
   dateLocale,
   reloadKey,
-  editingId,
+  editing,
   onEdit,
-  onOpenGallery,
 }: {
-  layout: HomeLayout
-  update: Update
-  /** every app card Home offers (favorites and app shortcuts open them) */
-  cards: readonly HomeAppCard[]
+  card: BoardCard
+  update: (change: (prev: HomeBoard) => HomeBoard) => void
+  /** every app Home offers (app shortcuts open them) */
+  apps: readonly HomeAppCard[]
   lang: Lang
   dateLocale: string
   /** changes when the recents or starred lists change */
   reloadKey: unknown
-  /** the widget whose settings are open */
-  editingId: string | null
+  editing: boolean
   onEdit: (id: string | null) => void
-  onOpenGallery: () => void
-}) {
+}): ReactElement {
   const text: Text = (key) => homeCustomText(lang, key)
-  const dragged = useRef<string | null>(null)
-  const [dropTarget, setDropTarget] = useState<string | null>(null)
-  const pinned = layout.pinnedApps
-    .map((key) => cards.find((card) => card.key === key))
-    .filter((card): card is HomeAppCard => !!card)
+  const title = widgetTitle(card, text, apps)
+  const patch = (values: Record<string, unknown>) =>
+    update((prev) => updateCard(prev, card.id, values))
 
-  const body = (widget: HomeWidget, title: string): ReactElement => {
-    switch (widget.type) {
-      case 'recent':
-        return <RecentBody text={text} reloadKey={reloadKey} />
+  const body = (): ReactElement | null => {
+    switch (card.type) {
       case 'favorites':
-        return <FavoritesBody text={text} reloadKey={reloadKey} pinned={pinned} />
+        return <FavoritesBody text={text} reloadKey={reloadKey} />
       case 'memo':
         return (
           <MemoBody
-            memo={widget.text}
+            memo={card.text}
             placeholder={text('memoPlaceholder')}
-            onSave={(memo) => update((prev) => updateWidget(prev, widget.id, { text: memo }))}
+            onSave={(memo) => patch({ text: memo })}
           />
         )
       case 'shortcut':
         return (
           <ShortcutBody
-            widget={widget}
+            target={card.target}
             title={title}
-            cards={cards}
+            cards={apps}
             text={text}
-            onSetUp={() => onEdit(widget.id)}
+            onSetUp={() => onEdit(card.id)}
           />
         )
       case 'folder':
-        if (!widget.path) return <UnsetBody text={text} onSetUp={() => onEdit(widget.id)} />
-        return <FolderBody path={widget.path} text={text} reloadKey={reloadKey} />
+        if (!card.path) return <UnsetBody text={text} onSetUp={() => onEdit(card.id)} />
+        return <FolderBody path={card.path} text={text} reloadKey={reloadKey} />
       case 'clock':
         return <ClockBody dateLocale={dateLocale} />
+      default:
+        return null
     }
   }
 
   return (
-    <section className="home-widgets-wrap" aria-label={text('widgets')}>
-      <div className="section-head hw-row-head">
-        <span className="section-label">{text('widgets')}</span>
+    <>
+      <header className="hw-head">
+        {/* two lines at most on a narrow card (spec 7.9); the whole title on hover */}
+        <h2 className="hw-title" title={title}>
+          {title}
+        </h2>
         <button
           type="button"
-          className="home-custom-open"
-          data-home-widgets="add"
-          onClick={onOpenGallery}
+          className="hw-icon-btn"
+          data-widget-settings=""
+          // a card name keeps the many "settings" buttons on Home apart
+          aria-label={`${title} ${text('settings')}`}
+          title={text('settings')}
+          aria-pressed={editing}
+          onClick={() => onEdit(editing ? null : card.id)}
         >
-          + {text('addWidget')}
+          ⚙
         </button>
-      </div>
-      {layout.widgets.length === 0 ? (
-        <p className="hw-empty">{text('noWidgets')}</p>
+      </header>
+      {editing ? (
+        <WidgetForm
+          widget={card}
+          cards={apps}
+          text={text}
+          sizeOptions={CARD_SIZES[card.type].map((s) => ({
+            value: sizeKey(s),
+            label: homeCustomText(lang, 'sizeOption', { w: s.w, h: s.h }),
+          }))}
+          sizeValue={sizeKey(card)}
+          onPatch={patch}
+          onSize={(value) => {
+            const next = parseSizeKey(value)
+            if (next) patch({ ...next })
+          }}
+          onMove={(delta) => update((prev) => moveCard(prev, card.id, delta))}
+          onDone={() => onEdit(null)}
+        />
       ) : (
-        <div className="home-widgets">
-          {layout.widgets.map((widget) => {
-            const title = widgetTitle(widget, text, cards)
-            const editing = editingId === widget.id
-            return (
-              <div
-                key={widget.id}
-                className={`hw-card${dropTarget === widget.id ? ' drop-target' : ''}`}
-                data-widget={widget.id}
-                data-widget-type={widget.type}
-                data-size={widget.size}
-                data-unset={widgetUnset(widget) ? 'true' : undefined}
-                draggable={!editing}
-                onDragStart={(event) => {
-                  dragged.current = widget.id
-                  event.dataTransfer?.setData('text/plain', widget.id)
-                  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
-                }}
-                onDragOver={(event) => {
-                  if (!dragged.current || dragged.current === widget.id) return
-                  event.preventDefault()
-                  setDropTarget(widget.id)
-                }}
-                onDragLeave={() => setDropTarget((at) => (at === widget.id ? null : at))}
-                onDrop={(event) => {
-                  event.preventDefault()
-                  const from = dragged.current
-                  dragged.current = null
-                  setDropTarget(null)
-                  if (from && from !== widget.id)
-                    update((prev) => moveWidgetTo(prev, from, widget.id))
-                }}
-                onDragEnd={() => {
-                  dragged.current = null
-                  setDropTarget(null)
-                }}
-              >
-                <div className="hw-head">
-                  <h2 className="hw-title">{title}</h2>
-                  <button
-                    type="button"
-                    className="hw-icon-btn"
-                    data-widget-settings=""
-                    // 앱 설정 단추와 같은 이름 "설정"이 홈에 여럿 생기지 않도록 위젯 이름을 붙인다
-                    aria-label={`${title} ${text('settings')}`}
-                    title={text('settings')}
-                    aria-pressed={editing}
-                    onClick={() => onEdit(editing ? null : widget.id)}
-                  >
-                    ⚙
-                  </button>
-                  <button
-                    type="button"
-                    className="hw-icon-btn"
-                    data-widget-remove=""
-                    aria-label={text('remove')}
-                    title={text('remove')}
-                    onClick={() => {
-                      if (editing) onEdit(null)
-                      update((prev) => removeWidget(prev, widget.id))
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-                {editing ? (
-                  <WidgetForm
-                    widget={widget}
-                    update={update}
-                    cards={cards}
-                    text={text}
-                    onDone={() => onEdit(null)}
-                  />
-                ) : (
-                  body(widget, title)
-                )}
-              </div>
-            )
-          })}
-        </div>
+        body()
       )}
-    </section>
+    </>
   )
 }
 
-/** "위젯 추가": every widget type, with what it does */
+/**
+ * "카드 추가" (spec 7.8): every card type the board can take more of, with
+ * what it does. A single card that is already there is greyed out; the trend
+ * card is offered only when this build has a forecast address (plan R29).
+ */
 export function WidgetGallery({
-  layout,
+  board,
+  trendAvailable,
   lang,
   onPick,
   onClose,
 }: {
-  layout: HomeLayout
+  board: HomeBoard
+  trendAvailable: boolean
   lang: Lang
-  onPick: (type: HomeWidgetType) => void
+  onPick: (type: BoardCardType) => void
   onClose: () => void
-}) {
+}): ReactElement {
   const text: Text = (key) => homeCustomText(lang, key)
   const dialogRef = useDialogKeys(onClose)
+  const types = GALLERY_ORDER.filter((type) => type !== 'trend' || trendAvailable)
+  const full = !types.some((type) => canAddCard(board, type))
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal home-custom hw-gallery"
         role="dialog"
         aria-modal="true"
-        aria-label={text('addWidget')}
+        aria-label={text('addCard')}
         data-widget-gallery=""
         ref={dialogRef}
         onClick={(event) => event.stopPropagation()}
       >
-        <h3>{text('addWidget')}</h3>
+        <h3>{text('addCard')}</h3>
+        {full && (
+          <p className="hw-hint" role="status" data-board-full="">
+            {text('boardFull')}
+          </p>
+        )}
         <ul className="hw-gallery-list">
-          {GALLERY_ORDER.map((type) => {
-            const allowed = canAddWidget(layout, type)
+          {types.map((type) => {
+            const allowed = canAddCard(board, type)
             return (
               <li key={type}>
                 <button
@@ -886,31 +786,73 @@ export function WidgetGallery({
   )
 }
 
-export function HomeCustomizePanel({
-  layout,
-  update,
-  groups,
-  cards,
+/** "기본 배치로" asks first (plan R17): what goes back, and that added cards stay */
+export function ResetBoardDialog({
   lang,
+  onYes,
+  onNo,
+}: {
+  lang: Lang
+  onYes: () => void
+  onNo: () => void
+}): ReactElement {
+  const text: Text = (key) => homeCustomText(lang, key)
+  const dialogRef = useDialogKeys(onNo)
+  return (
+    <div className="modal-overlay" onClick={onNo}>
+      <div
+        className="modal home-custom"
+        role="dialog"
+        aria-modal="true"
+        aria-label={text('resetBoard')}
+        data-reset-confirm=""
+        ref={dialogRef}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h3>{text('resetBoard')}</h3>
+        <p>{text('resetBoardAsk')}</p>
+        <div className="hc-actions">
+          <button type="button" className="btn btn-secondary" data-reset="no" onClick={onNo}>
+            {text('cancel')}
+          </button>
+          <button type="button" className="btn btn-primary" data-reset="yes" onClick={onYes}>
+            {text('resetYes')}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * "목록으로 정리" (spec 7.8): the board as two lists for the keyboard. The
+ * cards move with ↑↓, take a size and leave with ×; the apps on the new card
+ * go on and off with a check box and move with ↑↓ while pinned. The theme
+ * choice stays here as in 0.17. Every change is stored as it is made.
+ */
+export function HomeCustomizePanel({
+  board,
+  update,
+  apps,
+  lang,
+  cardName,
   themeLabels,
   onOpenGallery,
   onClose,
 }: {
-  layout: HomeLayout
-  update: Update
-  /** the app card groups as Home shows them (each reorders within itself) */
-  groups: ReadonlyArray<{ label: string; cards: readonly HomeAppCard[] }>
-  cards: readonly HomeAppCard[]
+  board: HomeBoard
+  update: BoardUpdate
+  /** the apps this Home offers */
+  apps: readonly HomeAppCard[]
   lang: Lang
+  cardName: (card: BoardCard) => string
   /** the theme labels Settings uses, so both places say the same */
   themeLabels: { title: string } & Record<UiTheme, string>
   onOpenGallery: () => void
   onClose: () => void
-}) {
+}): ReactElement {
   const text: Text = (key) => homeCustomText(lang, key)
   const [theme, setThemeState] = useState<UiTheme>('system')
-  /** "기본값으로 되돌리기" wipes the arrangement: it asks once first */
-  const [askReset, setAskReset] = useState(false)
   useEffect(() => {
     let alive = true
     Promise.resolve(window.aiOffice.getTheme?.())
@@ -929,46 +871,79 @@ export function HomeCustomizePanel({
   }
   const dialogRef = useDialogKeys(onClose)
 
+  const byKey = new Map(apps.map((app) => [app.key, app]))
+  /** the pins this Home can show, in pin order */
+  const shownPins = board.pinned.filter((key): key is AppKey => isAppKey(key) && byKey.has(key))
+  const appRows: AppKey[] = [
+    ...shownPins,
+    ...APP_KEYS.filter((key) => byKey.has(key) && !shownPins.includes(key)),
+  ]
+  /** pinned app `key` takes the place of the pin shown next to it */
+  const moveAppBy = (key: AppKey, delta: -1 | 1) => {
+    const neighbor = shownPins[shownPins.indexOf(key) + delta]
+    if (neighbor) update((prev) => moveApp(prev, key, prev.pinned.indexOf(neighbor)))
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal home-custom"
         role="dialog"
         aria-modal="true"
-        aria-label={text('customize')}
+        aria-label={text('listView')}
         data-home-custom="panel"
         ref={dialogRef}
         onClick={(event) => event.stopPropagation()}
       >
-        <h3>{text('customize')}</h3>
+        <h3>{text('listView')}</h3>
         <div className="hc-body">
           <fieldset className="hc-group">
-            <legend>{text('widgets')}</legend>
+            <legend>{text('boardCards')}</legend>
             <ul className="hc-list">
-              {layout.widgets.map((widget, index) => (
-                <li key={widget.id} data-custom-widget={widget.id}>
-                  <span className="hc-check">
-                    <span className="hc-type">{text(TYPE_NAME[widget.type])}</span>
-                    {widgetTitle(widget, text, cards)}
-                  </span>
-                  <MoveButtons
-                    text={text}
-                    first={index === 0}
-                    last={index === layout.widgets.length - 1}
-                    onMove={(delta) => update((prev) => moveWidget(prev, widget.id, delta))}
-                  />
-                  <button
-                    type="button"
-                    className="hc-pin"
-                    data-widget-remove=""
-                    aria-label={text('remove')}
-                    title={text('remove')}
-                    onClick={() => update((prev) => removeWidget(prev, widget.id))}
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
+              {board.cards.map((card, index) => {
+                const name = cardName(card)
+                return (
+                  <li key={card.id} data-custom-board={card.id}>
+                    <span className="hc-check">
+                      <span className="hc-type">{text(TYPE_NAME[card.type])}</span>
+                      {name}
+                    </span>
+                    <select
+                      name="size"
+                      aria-label={`${name} ${text('size')}`}
+                      value={sizeKey(card)}
+                      onChange={(event) => {
+                        const next = parseSizeKey(event.target.value)
+                        if (next) update((prev) => updateCard(prev, card.id, { ...next }))
+                      }}
+                    >
+                      {CARD_SIZES[card.type].map((s) => (
+                        <option key={sizeKey(s)} value={sizeKey(s)}>
+                          {homeCustomText(lang, 'sizeOption', { w: s.w, h: s.h })}
+                        </option>
+                      ))}
+                    </select>
+                    <MoveButtons
+                      text={text}
+                      first={index === 0}
+                      last={index === board.cards.length - 1}
+                      onMove={(delta) => update((prev) => moveCard(prev, card.id, delta))}
+                    />
+                    {isRemovable(card.type) && (
+                      <button
+                        type="button"
+                        className="hc-pin"
+                        data-card-remove=""
+                        aria-label={homeCustomText(lang, 'removeCard', { name })}
+                        title={homeCustomText(lang, 'removeCard', { name })}
+                        onClick={() => update((prev) => removeCard(prev, card.id))}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
             <button
               type="button"
@@ -976,68 +951,38 @@ export function HomeCustomizePanel({
               data-home-widgets="add"
               onClick={onOpenGallery}
             >
-              + {text('addWidget')}
+              + {text('addCard')}
             </button>
           </fieldset>
           <fieldset className="hc-group">
-            <legend>{text('appCards')}</legend>
-            {groups.map((group) => {
-              const keys = group.cards.map((card) => card.key)
-              return (
-                <div key={group.label} className="hc-subgroup">
-                  <p className="hc-sublabel">{group.label}</p>
-                  <ul className="hc-list">
-                    {arrangeCards(group.cards, layout, true).map((card, index, arranged) => {
-                      const pinnedApp = layout.pinnedApps.includes(card.key)
-                      return (
-                        <li key={card.key} data-custom-card={card.key}>
-                          <label className="hc-check">
-                            <input
-                              type="checkbox"
-                              checked={!layout.hiddenCards.includes(card.key)}
-                              onChange={() =>
-                                update((prev) => ({
-                                  ...prev,
-                                  hiddenCards: toggleKey(prev.hiddenCards, card.key),
-                                }))
-                              }
-                            />
-                            {card.title}
-                          </label>
-                          <button
-                            type="button"
-                            className={pinnedApp ? 'hc-pin is-pinned' : 'hc-pin'}
-                            data-pin={pinnedApp ? 'on' : 'off'}
-                            aria-pressed={pinnedApp}
-                            aria-label={text(pinnedApp ? 'unpin' : 'pin')}
-                            title={text(pinnedApp ? 'unpin' : 'pin')}
-                            onClick={() =>
-                              update((prev) => ({
-                                ...prev,
-                                pinnedApps: toggleKey(prev.pinnedApps, card.key),
-                              }))
-                            }
-                          >
-                            {pinnedApp ? '★' : '☆'}
-                          </button>
-                          <MoveButtons
-                            text={text}
-                            first={index === 0}
-                            last={index === arranged.length - 1}
-                            onMove={(delta) =>
-                              update((prev) => ({
-                                ...prev,
-                                cardOrder: moveKey(keys, prev.cardOrder, card.key, delta),
-                              }))
-                            }
-                          />
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              )
-            })}
+            <legend>{text('boardApps')}</legend>
+            <ul className="hc-list">
+              {appRows.map((key) => {
+                const app = byKey.get(key)!
+                const pinned = shownPins.includes(key)
+                const at = shownPins.indexOf(key)
+                return (
+                  <li key={key} data-custom-card={key}>
+                    <label className="hc-check">
+                      <input
+                        type="checkbox"
+                        checked={pinned}
+                        onChange={() => update((prev) => setPinned(prev, key, !pinned))}
+                      />
+                      {app.title}
+                    </label>
+                    {pinned && (
+                      <MoveButtons
+                        text={text}
+                        first={at === 0}
+                        last={at === shownPins.length - 1}
+                        onMove={(delta) => moveAppBy(key, delta)}
+                      />
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
           </fieldset>
           <fieldset className="hc-group">
             <legend>{themeLabels.title}</legend>
@@ -1058,40 +1003,7 @@ export function HomeCustomizePanel({
           </fieldset>
         </div>
         <div className="hc-actions">
-          {askReset ? (
-            <span className="hc-reset-ask" role="alert">
-              {text('resetAsk')}
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-home-custom="reset-confirm"
-                onClick={() => {
-                  setAskReset(false)
-                  update(() => resetHomeLayout())
-                  chooseTheme('system')
-                }}
-              >
-                {text('resetYes')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-home-custom="reset-cancel"
-                onClick={() => setAskReset(false)}
-              >
-                {text('cancel')}
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              data-home-custom="reset"
-              onClick={() => setAskReset(true)}
-            >
-              {text('reset')}
-            </button>
-          )}
+          <span />
           <button
             type="button"
             className="btn btn-primary"

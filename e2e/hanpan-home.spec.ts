@@ -13,7 +13,7 @@ test('Home leads with the mind map, and a typed topic opens a map with it', asyn
     await expect(page.locator('.quick-card').first()).toHaveAttribute('data-new', 'xmind')
     await expect(page.locator('.quick-card').nth(1)).toHaveAttribute('data-new', 'hwp')
     await expect(page.locator('.quick-card').nth(2)).toHaveAttribute('data-new', 'pptx')
-    await expect(page.locator('.quick-card').nth(3)).toHaveAttribute('data-new', 'templates')
+    await expect(page.locator('.quick-card').nth(3)).toHaveAttribute('data-new', 'docx')
     await page.screenshot({ path: screenshotPath('hanpan-home-light') })
     await page.emulateMedia({ colorScheme: 'dark' })
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'))
@@ -28,7 +28,9 @@ test('Home leads with the mind map, and a typed topic opens a map with it', asyn
 
     // the user guide, one click from the top of the board: the help tab opens on Hanpan's guide
     await page.evaluate(() =>
-      (window as unknown as { aiOfficeTabs: { activate(id: string): Promise<void> } }).aiOfficeTabs.activate('home'),
+      (
+        window as unknown as { aiOfficeTabs: { activate(id: string): Promise<void> } }
+      ).aiOfficeTabs.activate('home'),
     )
     await page.locator('[data-hanpan="start-guide"]').click()
     // the help tab's page is the one with the manual's topic list
@@ -37,7 +39,13 @@ test('Home leads with the mind map, and a typed topic opens a map with it', asyn
       .poll(
         async () => {
           for (const candidate of app.windows()) {
-            if (await candidate.locator('.help-topic').count().catch(() => 0)) help = candidate
+            if (
+              await candidate
+                .locator('.help-topic')
+                .count()
+                .catch(() => 0)
+            )
+              help = candidate
           }
           return Boolean(help)
         },

@@ -96,3 +96,4 @@
 | [0093](0093-hanpan-graphics-web-tabs.md)                      | AI 포토·AI 일러스트는 웹판을 한판 탭에 넣고 AI가 고친다(0090을 대체)                            | 2026-11-06 |
 | [0095](0095-hanpan-system-share-sheet.md)                     | 공유하기는 운영체제 공유 창을 열고, Windows에서는 작은 C# 도우미가 띄운다                       | 2026-11-06 |
 | [0096](0096-hanpan-send-to-app-via-markdown.md)               | 앱 간 연동은 Markdown을 거쳐 다른 편집기의 새 문서로 보낸다                                     | 2026-11-06 |
+| [0097](0097-hanpan-home-board.md)                             | 한판 홈은 카드를 끌어 놓는 보드이고, 트렌드 레이더의 기상도는 메인 프로세스가 받는다            | 2026-11-09 |

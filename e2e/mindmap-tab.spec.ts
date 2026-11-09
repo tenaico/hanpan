@@ -10,6 +10,7 @@ import {
   SHELL_DIR,
   closeAndSaveVideo,
   launchShell,
+  openFromAllApps,
   screenshotPath,
   waitForPageWithUrl,
 } from './helpers'
@@ -143,9 +144,10 @@ test.describe('mind map editor in the shell', () => {
       // ── the Home card
       const card = page.locator('.quick-card[data-new="xmind"]')
       await expect(card).toHaveCount(1)
-      await expect(card.locator('.quick-sub')).toHaveText('Organise ideas, send them to documents')
+      // the board's tile shows the name; its one-line description is the hover tip (0.19)
+      await expect(card).toHaveAttribute('data-tip', 'Organise ideas, send them to documents')
       // the card is named for the editor, never after another product
-      await expect(card.locator('.quick-title')).toHaveText('Mind Map')
+      await expect(card.locator('.hb-app-name')).toHaveText('Mind Map')
       await expect(card.locator('img')).toBeVisible()
       const cardIconSrc = await card.locator('img').getAttribute('src')
       await page.screenshot({ path: screenshotPath('mindmap-home-card') })
@@ -287,6 +289,8 @@ test.describe('mind map editor in the shell', () => {
       // and it is now a recent file. Home re-reads its list when the window
       // gets the focus back, which an unattended run has to say itself.
       await page.evaluate(() => window.dispatchEvent(new Event('focus')))
+      // the recent files table is the Recent view; Home shows the board
+      await page.locator('.sidebar-nav .nav-item', { hasText: 'Recent' }).click()
       const recentRow = page.locator('.recent-row', { hasText: 'first-map.xmind' })
       await expect(recentRow).toBeVisible()
     } finally {
@@ -370,13 +374,12 @@ test.describe('mind map editor in the shell', () => {
       await map.screenshot({ path: screenshotPath('mindmap-open-file') })
 
       // ── recent files: the row carries the mind map tile and opens the file
+      // The tile is on the board's New card; the table is the Recent view.
       await page.locator('.tab-bar .tab-item.tab-home').click()
+      const tile = await page.locator('.quick-card[data-new="xmind"] img').getAttribute('src')
+      await page.locator('.sidebar-nav .nav-item', { hasText: 'Recent' }).click()
       const row = page.locator('.recent-row', { hasText: 'trip.xmind' })
       await expect(row).toBeVisible()
-      const tile = await page
-        .locator('.quick-card', { hasText: 'Mind Map' })
-        .locator('img')
-        .getAttribute('src')
       expect(await row.locator('.recent-icon img').getAttribute('src')).toBe(tile)
       await expectMindMapTabIcon(tab, tile)
       await page.screenshot({ path: screenshotPath('mindmap-home-recent-row') })
@@ -510,8 +513,8 @@ test.describe('mind map editor in the shell', () => {
         },
         join(outside, 'picked.xmind'),
       )
-      // Open the file picker by its action, independent of other tooltips.
-      await page.locator('.quick-card[data-new="open"]').click()
+      // Open the file picker by its action, from All apps on the folder's New card.
+      await openFromAllApps(page, 'open')
       await expect(tab.locator('.tab-title')).toHaveText('picked.xmind')
       const asked = (
         await app.evaluate(

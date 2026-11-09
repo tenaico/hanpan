@@ -23,6 +23,16 @@ export declare function localDirFor(
 export declare function isStrict(env: Record<string, string | undefined>): boolean
 export declare function flattenSingleRoot(dir: string): void
 export declare function extractZip(zipPath: string, destDir: string): Promise<void>
+export declare function downloadWithRetry(
+  url: string,
+  dest: string,
+  options?: {
+    fetchImpl?: (url: string, init?: RequestInit) => Promise<Response>
+    sleep?: (ms: number) => Promise<void>
+    attempts?: number
+    baseDelayMs?: number
+  },
+): Promise<void>
 export declare function fetchGraphicsWeb(options: {
   root?: string
   env?: Record<string, string | undefined>
