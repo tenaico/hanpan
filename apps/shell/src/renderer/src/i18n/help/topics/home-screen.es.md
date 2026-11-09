@@ -1,9 +1,10 @@
 # La pantalla de inicio: dónde están sus archivos
 
-Inicio es la página de arranque de GenOffice: una barra de navegación a la izquierda, listas de archivos y tarjetas de creación rápida a la derecha.
+Inicio es la página de partida de GenOffice: una barra lateral de navegación a la izquierda y un tablero de tarjetas a la derecha. Escribe un tema en la tarjeta **Empezar** para abrir un mapa mental, y vuelve a abrir documentos recientes desde la tarjeta **Continuar**; su botón **All N** lleva a la lista completa de **Recientes**. En las pantallas en coreano, otra tarjeta muestra el pronóstico de hoy de Trend Radar; al hacer clic en un ámbito se abre Trend Radar en el navegador.
 
 ## Navegación en la barra lateral
 
+- **Inicio**: el tablero de tarjetas. La aplicación empieza aquí.
 - **Recientes**: los archivos que abrió recientemente. Cada fila lleva su momento: hoy, ayer o la fecha.
 - **Destacados**: los archivos que marcó como destacados. Pase el cursor por una fila y haga clic en la estrella para añadirlos o quitarlos. **Mover a grupo** en el menú ⋯ ordena los archivos destacados en grupos con nombre; la vista Destacados filtra por ellos.
 - **Guía del usuario**: abre este manual.
@@ -32,18 +33,27 @@ Marque la casilla de una fila, o haga ⌘/ctrl-clic, para ir formando una selecc
 
 ## Búsqueda
 
-El cuadro de búsqueda de arriba cubre dos cosas a la vez:
+Escribe en el cuadro de búsqueda de la fila superior del tablero y los resultados ocupan el lugar del tablero; borra la búsqueda o pulsa Esc para volver al tablero. Busca en dos cosas a la vez:
 
 - **Nombres de archivo**: filtrado rápido por nombre.
 - **Contenido de los archivos**: GenOffice indexa sus archivos en segundo plano (el texto de los .docx/odt/xlsx/pptx/pdf/md/html), así que buscar en el cuerpo del texto también encuentra archivos. El ámbito y los interruptores se ajustan en los ajustes de búsqueda.
 
-## Tarjetas de inicio rápido
+## Personalizar inicio
 
-Las tarjetas que están encima de las listas crean un documento en un solo paso. Al hacer clic en una tarjeta se crea un archivo de ese tipo y se abre su editor: puede escribir de inmediato o dejar que la IA lo redacte (cada editor tiene un **botón de IA** en la cinta de opciones y **Pedir a la IA** en el menú contextual de la selección).
+Haz clic en **Personalizar inicio**, a la derecha de la fila superior del tablero, para cambiar las tarjetas. Los cambios se guardan al momento; haz clic en **Listo** o pulsa Esc al terminar.
+
+- Arrastra una tarjeta para moverla y su esquina inferior derecha para cambiar su tamaño; el menú **⋯** de la tarjeta también permite elegir un tamaño. Dentro de la tarjeta **Nuevo**, arrastra las aplicaciones para reordenarlas o haz clic en × para quitar una de inicio.
+- **Añadir tarjeta** añade una nota rápida, favoritos, una vista de carpeta, un reloj o un acceso directo, y recupera las tarjetas que quitaste. Inicio admite hasta 24 tarjetas.
+- **Diseño predeterminado** devuelve a su estado inicial el orden y el tamaño de las tarjetas predeterminadas y las aplicaciones que se muestran en inicio. Las tarjetas que añadiste se mantienen.
+- **Ordenar como lista** muestra las tarjetas y las aplicaciones en una lista donde puedes reordenarlas con ↑↓, añadirlas o quitarlas y elegir su tamaño sin ratón.
+
+## Nuevo y All apps
+
+La tarjeta **Nuevo** contiene las aplicaciones que fijaste en inicio. Al hacer clic en una se crea un archivo de ese tipo y se abre su editor: empieza a escribir enseguida o deja que la IA redacte un borrador (cada editor tiene un **botón de IA** en la cinta de opciones y **Pedir a la IA** en el menú contextual de la selección). La última casilla, **All apps**, enumera todas las aplicaciones por grupo: busca por nombre o por lo que hace, abre una de las tres **Recently used apps** o usa el botón de fijar de una aplicación para fijarla en inicio o quitarla. Las aplicaciones que llegan con una versión nueva llevan la insignia **New**.
 
 El archivo nuevo va a la carpeta seleccionada en la barra lateral; si no hay ninguna, va a la carpeta predeterminada.
 
-Qué hace cada tarjeta:
+Qué hace cada aplicación:
 
 - **AI Docs** (.docx): un documento de texto en blanco en el editor Docs. El archivo se escribe en el disco solo al **guardar por primera vez**; los documentos nuevos se abren con el panel de IA desplegado (se desactiva en Configuración → «Abrir el panel de IA en documentos nuevos»).
 - **AI Sheets** (.xlsx): una hoja de cálculo en blanco en el editor Sheets. Hasta que no guarde, no existe ningún archivo en el disco; el nombre queda reservado para el primer guardado. Tras la primera generación con IA, el archivo también se puede renombrar automáticamente según su contenido.

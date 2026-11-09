@@ -1,9 +1,10 @@
 # L’écran d’accueil : où vivent vos fichiers
 
-Accueil est la page de démarrage de GenOffice : une barre de navigation à gauche, des listes de fichiers et des cartes de création rapide à droite.
+L'accueil est la page de départ de GenOffice : une barre latérale de navigation à gauche et un tableau de cartes à droite. Saisissez un sujet dans la carte **Démarrer** pour ouvrir une carte mentale, et rouvrez vos documents récents depuis la carte **Reprendre** ; son bouton **All N** mène à la liste complète **Récents**. Sur les écrans en coréen, une autre carte affiche la prévision du jour de Trend Radar ; cliquer sur un domaine ouvre Trend Radar dans votre navigateur.
 
 ## Navigation dans la barre latérale
 
+- **Accueil** : le tableau de cartes. L'application démarre ici.
 - **Récents** : les fichiers que vous avez ouverts récemment. Chaque ligne est datée — aujourd’hui, hier ou la date.
 - **Favoris** : les fichiers que vous avez mis en favori. Survolez une ligne et cliquez sur l’étoile pour l’ajouter ou le retirer. **Déplacer vers un groupe** dans le menu ⋯ range les fichiers étoilés dans des groupes nommés ; la vue Étoilés filtre par groupe.
 - **Guide de l’utilisateur** : ouvre ce manuel.
@@ -32,18 +33,27 @@ Cochez la case d’une ligne, ou faites ⌘/ctrl-clic, pour composer une sélect
 
 ## Recherche
 
-La zone de recherche en haut porte sur deux choses à la fois :
+Tapez dans la zone de recherche en haut du tableau : les résultats prennent la place du tableau ; effacez la recherche ou appuyez sur Échap pour revenir au tableau. Elle porte sur deux choses à la fois :
 
 - **Les noms de fichiers** : filtrage rapide par nom.
 - **Le contenu des fichiers** : GenOffice indexe vos fichiers en arrière-plan (le texte des .docx/odt/xlsx/pptx/pdf/md/html), si bien que chercher dans le corps du texte trouve aussi des fichiers. La portée et les interrupteurs se règlent dans les paramètres de recherche.
 
-## Cartes de démarrage rapide
+## Personnaliser l'accueil
 
-Les cartes au-dessus des listes créent un document en une étape. Cliquer sur une carte crée un fichier de ce type et ouvre son éditeur — vous pouvez écrire tout de suite, ou laisser l’IA le rédiger (chaque éditeur a un **bouton IA** dans son ruban, et **Demander à l’IA** dans le menu contextuel de sélection).
+Cliquez sur **Personnaliser l'accueil** à droite de la ligne du haut du tableau pour modifier les cartes. Les changements sont enregistrés aussitôt ; cliquez sur **Terminé** ou appuyez sur Échap quand vous avez fini.
+
+- Faites glisser une carte pour la déplacer, et son coin inférieur droit pour la redimensionner ; le menu **⋯** de la carte permet aussi de choisir une taille. Dans la carte **Nouveau**, faites glisser les applications pour les réordonner, ou cliquez sur × pour en retirer une de l'accueil.
+- **Ajouter une carte** ajoute une note rapide, les favoris, une vue de dossier, une horloge ou un raccourci, et fait revenir les cartes retirées. L'accueil peut contenir jusqu'à 24 cartes.
+- **Disposition par défaut** rétablit l'ordre et la taille des cartes par défaut, ainsi que les applications affichées sur l'accueil. Les cartes que vous avez ajoutées restent en place.
+- **Ranger en liste** affiche les cartes et les applications dans une liste, où vous pouvez les réordonner avec ↑↓, les ajouter ou les retirer et choisir leur taille sans souris.
+
+## Nouveau et All apps
+
+La carte **Nouveau** contient les applications épinglées à l'accueil. Cliquer sur une application crée un fichier de ce type et ouvre son éditeur — commencez à écrire tout de suite, ou laissez l'IA rédiger un brouillon (chaque éditeur a un **bouton IA** dans son ruban, et **Demander à l’IA** dans le menu contextuel de sélection). La dernière case, **All apps**, liste toutes les applications par groupe : cherchez par nom ou par usage, ouvrez l'une des trois **Recently used apps**, ou utilisez le bouton d'épingle d'une application pour l'épingler à l'accueil ou l'en retirer. Les applications arrivées avec une nouvelle version portent le badge **New**.
 
 Le nouveau fichier atterrit dans le dossier actuellement sélectionné dans la barre latérale ; sans sélection, il va dans le dossier par défaut.
 
-Ce que fait chaque carte :
+Ce que fait chaque application :
 
 - **AI Docs** (.docx) : un document texte vierge dans l’éditeur Docs. Le fichier n’est écrit sur le disque qu’à la **première sauvegarde** ; les nouveaux documents s’ouvrent avec le panneau IA déplié (désactivez-le dans Paramètres → « Ouvrir le panneau IA dans les nouveaux documents »).
 - **AI Sheets** (.xlsx) : un tableur vierge dans l’éditeur Sheets. Tant que vous n’avez pas enregistré, aucun fichier n’existe sur le disque — le nom est réservé pour la première sauvegarde ; après la première génération par l’IA, le fichier peut aussi être renommé automatiquement d’après son contenu.

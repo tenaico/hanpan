@@ -1,9 +1,10 @@
 # Der Startbildschirm: wo Ihre Dateien liegen
 
-Die Startseite ist GenOffices Startseite: eine Navigationsleiste links, Dateilisten und Schnellerstellungskarten rechts.
+Die Startseite ist die Einstiegsseite von GenOffice: links eine Navigationsleiste, rechts ein Board aus Karten. Geben Sie in der Karte **Start** ein Thema ein, um eine Mindmap zu öffnen, und öffnen Sie zuletzt verwendete Dokumente über die Karte **Weitermachen**; ihre Schaltfläche **All N** führt zur vollständigen Liste **Zuletzt verwendet**. Auf koreanischen Bildschirmen zeigt eine weitere Karte die heutige Prognose von Trend Radar; ein Klick auf ein Gebiet öffnet Trend Radar im Browser.
 
 ## Navigation in der Seitenleiste
 
+- **Startseite**: das Board aus Karten. Die App startet hier.
 - **Zuletzt verwendet**: die zuletzt geöffneten Dateien. Jede Zeile trägt ihren Zeitpunkt — heute, gestern oder das Datum.
 - **Favoriten**: die von Ihnen mit einem Stern versehenen Dateien. Fahren Sie über eine Dateizeile und klicken Sie auf den Stern, um sie hinzuzufügen oder zu entfernen. **In Gruppe verschieben** im ⋯-Menü sortiert markierte Dateien in benannte Gruppen; die Markierungs-Ansicht filtert danach.
 - **Benutzerhandbuch**: öffnet dieses Handbuch.
@@ -32,18 +33,27 @@ Haken Sie das Kontrollkästchen einer Zeile an oder klicken Sie mit ⌘/Strg, um
 
 ## Suche
 
-Das Suchfeld oben erfasst gleichzeitig zwei Dinge:
+Geben Sie etwas in das Suchfeld in der obersten Zeile des Boards ein, erscheinen die Ergebnisse an der Stelle des Boards; leeren Sie die Suche oder drücken Sie Esc, um zum Board zurückzukehren. Die Suche erfasst gleichzeitig zwei Dinge:
 
 - **Dateinamen**: schnelles Filtern nach Namen.
 - **Dateinhalte**: GenOffice indexiert Ihre Dateien im Hintergrund (Text in docx/odt/xlsx/pptx/pdf/md/html), sodass die Volltextsuche auch Dateien findet. Umfang und Schalter stehen in den Sucheinstellungen.
 
-## Schnellstart-Karten
+## Startseite anpassen
 
-Die Karten über den Listen erzeugen in einem Schritt ein neues Dokument. Ein Klick auf eine Karte erzeugt eine Datei dieses Typs und öffnet den passenden Editor — Sie legen sofort los oder lassen die KI einen Entwurf schreiben (jeder Editor hat eine **KI-Schaltfläche** im Menüband und **KI fragen** im Kontextmenü der Auswahl).
+Klicken Sie rechts in der obersten Zeile des Boards auf **Startseite anpassen**, um die Karten zu ändern. Änderungen werden sofort gespeichert; klicken Sie zum Schluss auf **Fertig** oder drücken Sie Esc.
+
+- Ziehen Sie eine Karte, um sie zu verschieben, und ihre untere rechte Ecke, um die Größe zu ändern; auch im **⋯**-Menü der Karte können Sie eine Größe wählen. In der Karte **Neu** ziehen Sie Apps, um ihre Reihenfolge zu ändern, oder klicken auf ×, um eine von der Startseite zu entfernen.
+- **Karte hinzufügen** fügt eine Schnellnotiz, Favoriten, eine Ordneransicht, eine Uhr oder eine Verknüpfung hinzu und holt entfernte Karten zurück. Die Startseite fasst bis zu 24 Karten.
+- **Standardanordnung** setzt Reihenfolge und Größe der Standardkarten sowie die Apps auf der Startseite auf den Anfangszustand zurück. Von Ihnen hinzugefügte Karten bleiben erhalten.
+- **Als Liste anordnen** zeigt Karten und Apps in einer Liste, in der Sie sie ohne Maus mit ↑↓ umsortieren, hinzufügen oder entfernen und ihre Größe wählen.
+
+## Neu und All apps
+
+Die Karte **Neu** enthält die Apps, die Sie an die Startseite angeheftet haben. Ein Klick auf eine App legt eine Datei dieses Typs an und öffnet ihren Editor — schreiben Sie sofort los oder lassen Sie die KI einen Entwurf schreiben (jeder Editor hat eine **KI-Schaltfläche** im Menüband und **KI fragen** im Kontextmenü der Auswahl). Das letzte Feld, **All apps**, listet alle Apps nach Gruppen: Suchen Sie nach Name oder Aufgabe, öffnen Sie eine der drei **Recently used apps** oder heften Sie eine App mit ihrer Pin-Schaltfläche an die Startseite an bzw. entfernen Sie sie. Apps, die mit einer neuen Version dazukommen, tragen das Abzeichen **New**.
 
 Die neue Datei landet im aktuell in der Seitenleiste ausgewählten Ordner; ohne Auswahl geht sie in den Standardordner.
 
-Was die einzelnen Karten tun:
+Was die einzelnen Apps tun:
 
 - **AI Docs** (.docx): ein leeres Textdokument im Docs-Editor. Die Datei wird erst beim **ersten Speichern** auf den Datenträger geschrieben; neue Dokumente öffnen mit ausgeklapptem KI-Bereich (abschaltbar unter Einstellungen → „KI-Panel in neuen Dokumenten öffnen“).
 - **AI Sheets** (.xlsx): eine leere Tabelle im Sheets-Editor. Bis zum Speichern existiert keine Datei auf dem Datenträger — der Name ist für das erste Speichern reserviert; nach der ersten KI-Generierung kann die Datei außerdem automatisch aus ihrem Inhalt benannt werden.

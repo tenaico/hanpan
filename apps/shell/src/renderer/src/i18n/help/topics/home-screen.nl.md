@@ -1,9 +1,10 @@
 # Het startscherm: waar je bestanden staan
 
-Start is de beginpagina van GenOffice: een navigatiebalk links, bestandslijsten en snelmakenkaarten rechts.
+De startpagina is het beginscherm van GenOffice: links een navigatiezijbalk, rechts een bord met kaarten. Typ een onderwerp in de kaart **Beginnen** om een mindmap te openen, en open recente documenten opnieuw vanuit de kaart **Verdergaan**; de knop **All N** daarop brengt je naar de volledige lijst **Recent**. Op Koreaanse schermen toont nog een kaart de voorspelling van vandaag uit Trend Radar; klik op een gebied om Trend Radar in je browser te openen.
 
 ## Navigatie in de zijbalk
 
+- **Startpagina**: het bord met kaarten. De app start hier.
 - **Recent**: bestanden die je onlangs hebt geopend. Elke rij draagt zijn moment — vandaag, gisteren of de datum.
 - **Favorieten**: bestanden die je hebt gemarkeerd. Beweeg over een bestandsrij en klik op de ster om het toe te voegen of te verwijderen. **Naar groep verplaatsen** in het ⋯-menu sorteert bestanden met ster in genoemde groepen; de Sterren-weergave filtert erop.
 - **Gebruikershandleiding**: opent deze handleiding.
@@ -32,18 +33,27 @@ Vink het vakje bij een rij aan, of ⌘/ctrl-klik, om een selectie op te bouwen; 
 
 ## Zoeken
 
-Het zoekvak bovenaan filtert op twee dingen tegelijk:
+Typ in het zoekvak in de bovenste rij van het bord, dan nemen de resultaten de plaats van het bord in; wis de zoekopdracht of druk op Esc om terug te gaan naar het bord. Er wordt tegelijk op twee dingen gezocht:
 
 - **Bestandsnamen**: snel filteren op naam.
 - **Bestandsinhoud**: GenOffice indexeert je bestanden op de achtergrond (de tekst in docx/odt/xlsx/pptx/pdf/md/html), dus zoeken naar hoofdtekst vindt ook bestanden. Het bereik en de schakelaars staan in de zoekinstellingen.
 
-## Snelstartkaarten
+## Startpagina aanpassen
 
-De kaarten boven de lijsten maken met één stap een nieuw document. Klikken op een kaart maakt een bestand van dat type en opent de bijbehorende editor — je kunt meteen gaan typen of de AI een eerste opzet laten maken (elke editor heeft een **AI-knop** op het lint en **Vraag AI** in het contextmenu van de selectie).
+Klik rechts in de bovenste rij van het bord op **Startpagina aanpassen** om de kaarten te wijzigen. Wijzigingen worden meteen bewaard; klik op **Klaar** of druk op Esc als je klaar bent.
+
+- Sleep een kaart om hem te verplaatsen en sleep de rechteronderhoek om het formaat te wijzigen; in het **⋯**-menu van de kaart kun je ook een formaat kiezen. Sleep in de kaart **Nieuw** apps om de volgorde te wijzigen, of klik op × om een app van de startpagina te halen.
+- **Kaart toevoegen** voegt een snelle notitie, favorieten, een mapweergave, een klok of een snelkoppeling toe en haalt kaarten terug die je had weggehaald. De startpagina biedt plaats aan maximaal 24 kaarten.
+- **Standaardindeling** zet de volgorde en het formaat van de standaardkaarten en de apps op de startpagina terug naar de beginstand. Kaarten die je zelf hebt toegevoegd, blijven staan.
+- **Als lijst ordenen** toont kaarten en apps in een lijst, waarin je ze zonder muis met ↑↓ herschikt, toevoegt of weghaalt en hun formaat kiest.
+
+## Nieuw en All apps
+
+De kaart **Nieuw** bevat de apps die je aan de startpagina hebt vastgemaakt. Klik op een app om een bestand van dat type te maken en de editor te openen — begin meteen met schrijven of laat de AI een concept maken (elke editor heeft een **AI-knop** op het lint en **Vraag AI** in het contextmenu van de selectie). Het laatste vak, **All apps**, toont alle apps per groep: zoek op naam of op wat een app doet, open een van de drie **Recently used apps**, of gebruik de vastmaakknop van een app om hem aan de startpagina vast te maken of weg te halen. Apps die met een nieuwe versie zijn bijgekomen, krijgen het label **New**.
 
 Het nieuwe bestand komt in de map die op dat moment in de zijbalk geselecteerd is; is er geen selectie, dan gaat het naar de standaardmap.
 
-Wat elke kaart doet:
+Wat elke app doet:
 
 - **AI Docs** (.docx): een leeg tekstdocument in de Docs-editor. Het bestand wordt pas bij de **eerste keer opslaan** naar schijf geschreven; nieuwe documenten openen met het AI-paneel uitgeklapt (zet dat uit in Instellingen → "AI-paneel openen in nieuwe documenten").
 - **AI Sheets** (.xlsx): een leeg spreadsheet in de Sheets-editor. Zolang je niet opslaat bestaat er geen bestand op schijf — de naam is gereserveerd voor de eerste keer opslaan; na de eerste AI-generatie kan het bestand ook automatisch op basis van de inhoud worden hernoemd.

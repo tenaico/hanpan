@@ -24,8 +24,8 @@ Hanpan envía lo que ordenaste en un mapa mental a un informe Hangul (HWP), una 
 
 ## Plantillas de Hanpan
 
-- La tarjeta **Plantillas de Hanpan** del inicio abre 22 plantillas (cartas oficiales, informes, propuestas, actas, planes) como HWP o Word.
-- En la tarjeta **Markdown converter** del inicio, pega Markdown o abre un archivo .md y pulsa **Convert all**: cada formato marcado (HWP, HWPX, Word, ODT, PDF, HTML) se crea en una misma carpeta.
+- En **Nuevo** del inicio, **Plantillas de Hanpan** abre 22 plantillas (cartas oficiales, informes, propuestas, actas, planes) como HWP o Word.
+- Abre **Markdown converter** desde **All apps** en el inicio y pega Markdown o abre un archivo .md y pulsa **Convert all**: cada formato marcado (HWP, HWPX, Word, ODT, PDF, HTML) se crea en una misma carpeta.
 - El grupo **교육** (educación) incluye una planificación de clase sobre pintura coreana antigua, un aviso de exposición y una clase de lectura de 「운수 좋은 날」. Las imágenes vienen de Gongu (gongu.copyright.or.kr) y son de dominio público o CC BY, así que cualquiera puede adaptarlas; cada una entra en el documento con su línea de crédito debajo. No la borres. **Open as mind map** en una tarjeta de plantilla abre sus títulos y listas como ramas de un mapa mental. En el editor de diapositivas, **Insertar › Efectos de sonido** coloca uno de seis efectos de música tradicional coreana (주식회사 아이티앤, CC BY), con el crédito en el nombre del sonido.
 - El grupo **서식** (formularios oficiales) incluye formularios anexos a leyes coreanas (solicitud de acceso a la información, recurso administrativo, poder para trámites y objeción a una denegación), tal como los publica el Centro Nacional de Información Jurídica (law.go.kr). **Open as HWP** abre una copia en una pestaña HWP; rellena las casillas y guárdala o imprímela. Los formularios legales no están protegidos por derechos de autor, así que cualquiera puede usarlos. Cambian cuando cambia la ley, así que comprueba en law.go.kr que tienes la versión vigente antes de presentarlo.
 
@@ -36,7 +36,7 @@ Hanpan envía lo que ordenaste en un mapa mental a un informe Hangul (HWP), una 
 
 ## Diseño
 
-- La tarjeta **Diseño** del inicio crea carteles, tarjetas de noticias, avisos y miniaturas.
+- En **Nuevo** del inicio, **Diseño** crea carteles, tarjetas de noticias, avisos y miniaturas.
 - Pulsa **Copiar para pegar en un documento** y luego Ctrl+V en una pestaña HWP, Word o PowerPoint para insertar la página como imagen. Las páginas también se guardan en PNG y PDF.
 - En un mapa, **Enviar a un documento › Enviar como tarjetas de noticias** crea una tarjeta por cada rama principal.
 - Pulsa **✦ AI helper** arriba a la derecha de la ventana de diseño para abrir el asistente a la derecha. En **Make new**, describe lo que quieres y envíalo: la IA elegida en Ajustes escribe el texto y Hanpan lo maqueta como un diseño editable. **Fill this design** conserva la maquetación y los colores actuales y solo reescribe los cuadros de texto con tu contenido; tras elegir una plantilla, **✦ Fill this template with my content** hace lo mismo. Con un cuadro de texto seleccionado, una barra ✦ encima lo pule, lo acorta, lo hace más llamativo o lo traduce entre inglés y coreano con un clic. Cada resultado tiene **Undo**, y si aún no hay una IA conectada, la conectas dentro del asistente.

@@ -1,9 +1,10 @@
 # Layar Beranda: tempat file Anda berada
 
-Beranda adalah halaman awal GenOffice: bilah navigasi di sebelah kiri, daftar file dan kartu pembuatan cepat di sebelah kanan.
+Beranda adalah halaman awal GenOffice: bilah sisi navigasi di kiri dan papan berisi kartu di kanan. Ketik topik di kartu **Mulai** untuk membuka peta pikiran, dan buka lagi dokumen terbaru dari kartu **Lanjutkan**; tombol **All N** di kartu itu membawa Anda ke daftar **Terbaru** lengkap. Di layar berbahasa Korea, ada juga kartu yang menampilkan prakiraan hari ini dari Trend Radar; mengeklik sebuah bidang membuka Trend Radar di browser.
 
 ## Navigasi bilah sisi
 
+- **Beranda**: papan kartu. Aplikasi dimulai di sini.
 - **Terbaru**: file yang baru saja Anda buka. Setiap baris diberi cap waktu — hari ini, kemarin, atau tanggalnya.
 - **Berbintang**: file yang Anda beri bintang. Arahkan kursor ke baris file lalu klik bintang untuk menambah atau menghapusnya. **Pindahkan ke grup** di menu ⋯ menyortir berkas berbintang ke grup bernama; tampilan Berbintang menyaring menurutnya.
 - **Panduan Pengguna**: membuka panduan ini.
@@ -32,18 +33,27 @@ Centang kotak pada sebuah baris, atau ⌘/ctrl-klik, untuk menyusun sebuah pilih
 
 ## Pencarian
 
-Kotak pencarian di atas mencocokkan dua hal sekaligus:
+Ketik di kotak pencarian pada baris teratas papan, dan hasilnya muncul menggantikan papan; hapus pencarian atau tekan Esc untuk kembali ke papan. Pencarian mencocokkan dua hal sekaligus:
 
 - **Nama file**: penyaringan cepat berdasarkan nama.
 - **Isi file**: GenOffice mengindeks file Anda di latar belakang (teks di dalam docx/odt/xlsx/pptx/pdf/md/html), sehingga mencari teks isi pun menemukan file. Cakupan dan sakelarnya ada di pengaturan pencarian.
 
-## Kartu Mulai cepat
+## Sesuaikan Beranda
 
-Kartu di atas daftar membuat dokumen baru dalam satu langkah. Mengklik kartu membuat file bertipe tersebut dan membuka editornya — langsung mulai menulis, atau biarkan AI yang membuat drafannya (setiap editor punya **tombol AI** di pita, dan **Tanya AI** di menu konteks pilihan).
+Klik **Sesuaikan Beranda** di ujung kanan baris teratas papan untuk mengubah kartu. Perubahan langsung disimpan; klik **Selesai** atau tekan Esc setelah selesai.
+
+- Seret kartu untuk memindahkannya, dan seret sudut kanan bawahnya untuk mengubah ukuran; menu **⋯** kartu juga bisa dipakai untuk memilih ukuran. Di dalam kartu **Baru**, seret aplikasi untuk mengubah urutannya, atau klik × untuk menghapusnya dari Beranda.
+- **Tambah kartu** menambahkan kartu catatan cepat, favorit, tampilan folder, jam, atau pintasan, dan mengembalikan kartu yang pernah Anda hapus. Beranda dapat memuat hingga 24 kartu.
+- **Tata letak bawaan** mengembalikan urutan dan ukuran kartu bawaan, serta aplikasi yang tampil di Beranda, ke keadaan awal. Kartu yang Anda tambahkan tetap ada.
+- **Susun sebagai daftar** menampilkan kartu dan aplikasi dalam daftar, tempat Anda mengubah urutan dengan ↑↓, menambah atau menghapus, dan memilih ukuran tanpa mouse.
+
+## Baru dan All apps
+
+Kartu **Baru** berisi aplikasi yang Anda sematkan ke Beranda. Mengeklik aplikasi membuat file jenis itu dan membuka editornya — langsung mulai menulis, atau biarkan AI membuat draf (setiap editor punya **tombol AI** di pita, dan **Tanya AI** di menu konteks pilihan). Kotak terakhir, **All apps**, menampilkan semua aplikasi per kelompok: cari menurut nama atau fungsinya, buka salah satu dari tiga **Recently used apps**, atau pakai tombol sematkan pada aplikasi untuk menyematkannya ke Beranda atau menghapusnya. Aplikasi yang datang di versi baru diberi tanda **New**.
 
 File baru akan masuk ke folder yang sedang dipilih di bilah sisi; jika tidak ada yang dipilih, file masuk ke folder bawaan.
 
-Apa yang dilakukan tiap kartu:
+Fungsi tiap aplikasi:
 
 - **AI Docs** (.docx): dokumen teks kosong di editor Docs. File baru ditulis ke disk saat **penyimpanan pertama**; dokumen baru terbuka dengan panel AI terbentang (nonaktifkan lewat Pengaturan → "Buka panel AI di dokumen baru").
 - **AI Sheets** (.xlsx): spreadsheet kosong di editor Sheets. Sebelum Anda menyimpan, belum ada file di disk — namanya dicadangkan untuk penyimpanan pertama; setelah generasi AI pertama, file juga bisa diberi nama otomatis dari isinya.

@@ -24,8 +24,8 @@ Hanpan sends what you sorted out in a mind map to a Hangul (HWP) report, a slide
 
 ## Hanpan templates
 
-- The **Hanpan templates** card on Home opens templates for official letters, reports, proposals, minutes and plans, and statutory forms, as HWP or Word.
-- In the **Markdown converter** card on Home, paste Markdown or open a .md file and press **Convert all**: every format you ticked (HWP, HWPX, Word, ODT, PDF, HTML) is made side by side in one folder.
+- Under **New** on Home, **Hanpan templates** opens templates for official letters, reports, proposals, minutes and plans, and statutory forms, as HWP or Word.
+- Open **Markdown converter** from **All apps** on Home, then paste Markdown or open a .md file and press **Convert all**: every format you ticked (HWP, HWPX, Word, ODT, PDF, HTML) is made side by side in one folder.
 - The **교육** (education) group has a lesson plan for looking at old Korean paintings, an exhibition notice and a reading lesson on 「운수 좋은 날」. The pictures come from Gongu (gongu.copyright.or.kr) and are out of copyright or under CC BY, so anyone may adapt them; each one goes into the document with its credit line under it. Leave that line in. **Open as mind map** on a template card opens its headings and lists as branches of a mind map. In the slide editor, **Insert › Sound Effects** puts one of six Korean traditional-music sound effects (주식회사 아이티앤, CC BY) on the slide, with the credit in the sound’s name.
 - The **서식** (official forms) group has forms attached to Korean statutes (a freedom-of-information request, an administrative appeal, a power of attorney for civil petitions and an objection to a refused petition), exactly as the National Law Information Center (law.go.kr) publishes them. **Open as HWP** opens a copy in a HWP tab; fill in the boxes, then save or print it. Statutory forms are not protected by copyright, so anyone may use them. Forms change when the law does, so check on law.go.kr that yours is the current version before you hand it in.
 
@@ -36,7 +36,7 @@ Hanpan sends what you sorted out in a mind map to a Hangul (HWP) report, a slide
 
 ## Design
 
-- The **Design** card on Home makes posters, card news, notices and thumbnails.
+- Under **New** on Home, **Design** makes posters, card news, notices and thumbnails.
 - Press **Copy to paste in a document**, then Ctrl+V in a HWP, Word or PowerPoint tab to put the page in as a picture. Pages also save as PNG and PDF.
 - **Send to a document › Send to card news** in a mind map makes one card per main branch.
 - Press **✦ AI helper** at the top right of the design window to open the helper on the right. Under **Make new**, describe what you want and send it: the AI you chose in Settings writes the words and Hanpan lays them out as an editable design. **Fill this design** keeps the current layout and colours and rewrites only the text boxes with your content; after picking a template, **✦ Fill this template with my content** does the same. With a text box selected, a ✦ bar above it polishes, shortens, makes it catchier or translates between English and Korean in one click. Every result has **Undo**, and if no AI is connected yet you can connect one right in the helper.

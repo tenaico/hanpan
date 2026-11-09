@@ -24,8 +24,8 @@ Hanpan menghantar apa yang anda susun dalam peta minda ke laporan Hangul (HWP), 
 
 ## Templat Hanpan
 
-- Kad **Templat Hanpan** di Laman Utama membuka 22 templat (surat rasmi, laporan, cadangan, minit, rancangan) sebagai HWP atau Word.
-- Dalam kad **Markdown converter** di Laman Utama, tampal Markdown atau buka fail .md dan tekan **Convert all**: setiap format yang ditanda (HWP, HWPX, Word, ODT, PDF, HTML) dibuat bersebelahan dalam satu folder.
+- **Templat Hanpan** dalam **Baharu** di Laman Utama membuka 22 templat (surat rasmi, laporan, cadangan, minit, rancangan) sebagai HWP atau Word.
+- Buka **Markdown converter** daripada **All apps** di Laman Utama, kemudian tampal Markdown atau buka fail .md dan tekan **Convert all**: setiap format yang ditanda (HWP, HWPX, Word, ODT, PDF, HTML) dibuat bersebelahan dalam satu folder.
 - Kumpulan **교육** (pendidikan) mengandungi rancangan pelajaran tentang lukisan lama Korea, notis pameran dan pelajaran membaca 「운수 좋은 날」. Gambar datang dari Gongu (gongu.copyright.or.kr) dan sudah tamat hak cipta atau di bawah CC BY, jadi sesiapa boleh mengubahnya; setiap gambar masuk ke dokumen dengan baris sumber di bawahnya. Biarkan baris itu. **Open as mind map** pada kad templat membuka tajuk dan senarainya sebagai cabang peta minda. Dalam penyunting slaid, **Sisip › Kesan Bunyi** meletakkan salah satu daripada enam kesan bunyi muzik tradisional Korea (주식회사 아이티앤, CC BY), dengan sumber dalam nama bunyi.
 - Kumpulan **서식** (borang rasmi) mengandungi borang yang dilampirkan pada undang-undang Korea (permohonan maklumat awam, rayuan pentadbiran, surat kuasa untuk urusan perkhidmatan awam dan bantahan terhadap penolakan), sebagaimana diterbitkan oleh Pusat Maklumat Undang-undang Kebangsaan (law.go.kr). **Open as HWP** membuka salinan dalam tab HWP; isi ruangannya, kemudian simpan atau cetak. Borang undang-undang tidak dilindungi hak cipta, jadi sesiapa pun boleh menggunakannya. Borang berubah apabila undang-undang berubah, jadi semak di law.go.kr bahawa ia versi terkini sebelum anda menghantarnya.
 
@@ -36,7 +36,7 @@ Hanpan menghantar apa yang anda susun dalam peta minda ke laporan Hangul (HWP), 
 
 ## Reka bentuk
 
-- Kad **Reka bentuk** di Laman Utama membuat poster, kad berita, notis dan gambar kecil.
+- **Reka bentuk** dalam **Baharu** di Laman Utama membuat poster, kad berita, notis dan gambar kecil.
 - Tekan **Salin untuk ditampal dalam dokumen**, kemudian Ctrl+V dalam tab HWP, Word atau PowerPoint untuk memasukkan halaman sebagai gambar. Halaman juga boleh disimpan sebagai PNG dan PDF.
 - Dalam peta, **Hantar ke dokumen › Hantar sebagai kad berita** membuat satu kad bagi setiap cabang utama.
 - Tekan **✦ AI helper** di penjuru kanan atas tetingkap reka bentuk untuk membuka pembantu di sebelah kanan. Di bawah **Make new**, terangkan apa yang anda mahu dan hantar: AI yang dipilih dalam Tetapan menulis teks dan Hanpan menyusunnya menjadi reka bentuk yang boleh disunting. **Fill this design** mengekalkan susun atur dan warna reka bentuk semasa dan hanya menulis semula kotak teks dengan kandungan anda; selepas memilih templat, **✦ Fill this template with my content** melakukan perkara yang sama. Dengan kotak teks dipilih, bar ✦ di atasnya memurnikan, memendekkan, menjadikannya lebih menarik atau menterjemah antara bahasa Inggeris dan Korea dengan satu klik. Setiap hasil ada **Undo**, dan jika belum ada AI disambungkan, anda boleh menyambungnya terus dalam pembantu.

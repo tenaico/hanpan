@@ -1,9 +1,10 @@
 # O ecrã Início: onde ficam os seus arquivos
 
-O ecrã Início é a página inicial do GenOffice: uma barra de navegação à esquerda e, à direita, as listas de arquivos e os cartões de criação rápida.
+O Início é a página de partida do GenOffice: uma barra lateral de navegação à esquerda e um quadro de cartões à direita. Digite um tema no cartão **Começar** para abrir um mapa mental, e reabra documentos recentes pelo cartão **Continuar**; o botão **All N** dele leva à lista completa de **Recentes**. Nas telas em coreano, outro cartão mostra a previsão de hoje do Trend Radar; clicar em uma área abre o Trend Radar no navegador.
 
 ## Navegação na barra lateral
 
+- **Início**: o quadro de cartões. O aplicativo começa aqui.
 - **Recentes**: os arquivos que você abriu recentemente. Cada linha traz o momento — hoje, ontem ou a data.
 - **Favoritos**: os arquivos que você marcou com uma estrela. Passe o cursor sobre a linha do arquivo e clique na estrela para adicioná-lo ou removê-lo. **Mover para grupo** no menu ⋯ organiza os favoritos em grupos nomeados; a visualização Favoritos filtra por eles.
 - **Guia do Usuário**: abre este manual.
@@ -32,18 +33,27 @@ Marque a caixa de uma linha, ou faça ⌘/ctrl-clique, para construir uma seleç
 
 ## Pesquisa
 
-A caixa de pesquisa no topo corresponde a duas coisas ao mesmo tempo:
+Digite na caixa de pesquisa da linha superior do quadro e os resultados ocupam o lugar do quadro; limpe a pesquisa ou pressione Esc para voltar ao quadro. Ela procura duas coisas ao mesmo tempo:
 
 - **Nomes de arquivos**: filtragem rápida por nome.
 - **Conteúdo dos arquivos**: o GenOffice indexa seus arquivos em segundo plano (texto dentro de docx/odt/xlsx/pptx/pdf/md/html), pelo que pesquisar no corpo do texto também encontra arquivos. O âmbito e as opções ficam nas configurações de pesquisa.
 
-## Cartões de início rápido
+## Personalizar início
 
-Os cartões acima das listas criam um documento novo num só passo. Clicar num cartão cria um arquivo desse tipo e abre o respetivo editor — comece a escrever de imediato, ou deixe o AI fazer o rascunho por si (todos os editores têm um **botão de IA** no friso e **Perguntar à IA** no menu de contexto da seleção).
+Clique em **Personalizar início**, à direita da linha superior do quadro, para mudar os cartões. As mudanças são salvas na hora; clique em **Concluído** ou pressione Esc ao terminar.
+
+- Arraste um cartão para movê-lo e o canto inferior direito para redimensioná-lo; o menu **⋯** do cartão também permite escolher um tamanho. No cartão **Novo**, arraste os aplicativos para reordená-los ou clique em × para remover um do Início.
+- **Adicionar cartão** adiciona nota rápida, favoritos, visualização de pasta, relógio ou atalho, e traz de volta os cartões que você removeu. O Início comporta até 24 cartões.
+- **Layout padrão** volta ao estado inicial a ordem e o tamanho dos cartões padrão e os aplicativos mostrados no Início. Os cartões que você adicionou continuam.
+- **Organizar em lista** mostra cartões e aplicativos em uma lista, onde você os reordena com ↑↓, adiciona ou remove e escolhe o tamanho sem mouse.
+
+## Novo e All apps
+
+O cartão **Novo** reúne os aplicativos que você fixou no Início. Clicar em um aplicativo cria um arquivo desse tipo e abre o editor dele — comece a escrever na hora ou deixe a IA fazer um rascunho (todos os editores têm um **botão de IA** no friso e **Perguntar à IA** no menu de contexto da seleção). A última casa, **All apps**, lista todos os aplicativos por grupo: pesquise pelo nome ou pelo que ele faz, abra um dos três **Recently used apps** ou use o botão de fixar de um aplicativo para fixá-lo no Início ou removê-lo. Aplicativos que chegam numa versão nova trazem o selo **New**.
 
 O arquivo novo vai parar à pasta atualmente selecionada na barra lateral; se não houver nenhuma seleção, vai para a pasta predefinida.
 
-O que faz cada cartão:
+O que cada aplicativo faz:
 
 - **AI Docs** (.docx): um documento de texto em branco no editor Docs. O arquivo só é gravado no disco no **primeiro salvamento**; e os documentos novos abrem com o painel de IA expandido (desligue em Configurações → "Abrir o painel de IA em novos documentos").
 - **AI Sheets** (.xlsx): uma folha de cálculo em branco no editor Sheets. Até você salvar, não existe arquivo no disco — o nome fica reservado para o primeiro salvamento; após a primeira geração pela IA, o arquivo também pode ser renomeado automaticamente a partir do seu conteúdo.

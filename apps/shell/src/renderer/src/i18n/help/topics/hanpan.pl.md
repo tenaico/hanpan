@@ -24,8 +24,8 @@ Hanpan wysyła to, co uporządkowałeś na mapie myśli, do raportu Hangul (HWP)
 
 ## Szablony Hanpan
 
-- Karta **Szablony Hanpan** na ekranie startowym otwiera 22 szablonów (pisma urzędowe, raporty, oferty, protokoły, plany) jako HWP lub Word.
-- Na karcie **Markdown converter** na stronie głównej wklej Markdown lub otwórz plik .md i naciśnij **Convert all**: każdy zaznaczony format (HWP, HWPX, Word, ODT, PDF, HTML) powstaje w jednym folderze.
+- W karcie **Nowy** na stronie głównej **Szablony Hanpan** otwierają 22 szablonów (pisma urzędowe, raporty, oferty, protokoły, plany) jako HWP lub Word.
+- Otwórz **Markdown converter** z **All apps** na stronie głównej i wklej Markdown lub otwórz plik .md i naciśnij **Convert all**: każdy zaznaczony format (HWP, HWPX, Word, ODT, PDF, HTML) powstaje w jednym folderze.
 - Grupa **교육** (edukacja) zawiera konspekt lekcji o dawnym malarstwie koreańskim, zapowiedź wystawy i lekcję czytania 「운수 좋은 날」. Obrazy pochodzą z Gongu (gongu.copyright.or.kr) i są w domenie publicznej lub na CC BY, więc każdy może je przerabiać; każdy trafia do dokumentu z linią źródła pod spodem. Nie usuwaj jej. **Open as mind map** na karcie szablonu otwiera nagłówki i listy jako gałęzie mapy myśli. W edytorze slajdów **Wstawianie › Efekty dźwiękowe** dodaje jeden z sześciu efektów koreańskiej muzyki tradycyjnej (주식회사 아이티앤, CC BY), a źródło jest w nazwie dźwięku.
 - Grupa **서식** (formularze urzędowe) zawiera formularze z koreańskich przepisów (wniosek o udostępnienie informacji, odwołanie administracyjne, pełnomocnictwo do spraw urzędowych i sprzeciw wobec odmowy) dokładnie w postaci, w jakiej publikuje je Krajowe Centrum Informacji Prawnej (law.go.kr). **Open as HWP** otwiera kopię w karcie HWP; wypełnij pola, a potem zapisz lub wydrukuj. Formularze ustawowe nie są chronione prawem autorskim, więc każdy może z nich korzystać. Zmieniają się razem z prawem, dlatego przed złożeniem sprawdź na law.go.kr, czy masz aktualną wersję.
 
@@ -36,7 +36,7 @@ Hanpan wysyła to, co uporządkowałeś na mapie myśli, do raportu Hangul (HWP)
 
 ## Projekt
 
-- Karta **Projekt** na ekranie startowym tworzy plakaty, karty informacyjne, ogłoszenia i miniatury.
+- W karcie **Nowy** na stronie głównej **Projekt** tworzy plakaty, karty informacyjne, ogłoszenia i miniatury.
 - Naciśnij **Kopiuj do wklejenia w dokumencie**, a potem Ctrl+V w karcie HWP, Word lub PowerPoint, aby wstawić stronę jako obraz. Strony można też zapisać jako PNG i PDF.
 - Na mapie **Wyślij do dokumentu › Wyślij jako karty informacyjne** tworzy jedną kartę na każdą główną gałąź.
 - Naciśnij **✦ AI helper** w prawym górnym rogu okna projektu, aby otworzyć asystenta po prawej. W **Make new** opisz, czego potrzebujesz, i wyślij: AI wybrana w Ustawieniach pisze tekst, a Hanpan układa z niego edytowalny projekt. **Fill this design** zachowuje układ i kolory bieżącego projektu i przepisuje tylko pola tekstowe Twoją treścią; po wyborze szablonu to samo robi **✦ Fill this template with my content**. Przy zaznaczonym polu tekstowym nad nim pojawia się pasek ✦, który jednym kliknięciem wygładza, skraca, uatrakcyjnia albo tłumaczy między angielskim a koreańskim. Każdy wynik ma **Undo**, a jeśli AI nie jest jeszcze połączona, połączysz ją od razu w asystencie.
