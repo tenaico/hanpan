@@ -143,10 +143,44 @@ function matchesPin(path, pin) {
   }
 }
 
-async function httpDownload(url, dest) {
-  const response = await fetch(url, { redirect: 'follow' })
-  if (!response.ok || !response.body) throw new Error(`${url}: HTTP ${response.status}`)
-  await pipeline(Readable.fromWeb(response.body), createWriteStream(dest))
+/** GitHub Releases answers 5xx and 429 now and then; those and network errors are retried. */
+function retryable(status) {
+  return status === 429 || status >= 500
+}
+
+/**
+ * Downloads url to dest, retrying a passing failure with a growing wait
+ * (2 s, 4 s, 8 s by default). A 4xx other than 429 stops at once.
+ */
+export async function downloadWithRetry(
+  url,
+  dest,
+  {
+    fetchImpl = fetch,
+    sleep = (ms) => new Promise((done) => setTimeout(done, ms)),
+    attempts = 4,
+    baseDelayMs = 2000,
+  } = {},
+) {
+  let last
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let again = true
+    try {
+      const response = await fetchImpl(url, { redirect: 'follow' })
+      if (!response.ok || !response.body) {
+        again = retryable(response.status)
+        throw new Error(`${url}: HTTP ${response.status}`)
+      }
+      await pipeline(Readable.fromWeb(response.body), createWriteStream(dest))
+      return
+    } catch (e) {
+      last = e
+      if (!again || attempt === attempts) break
+      console.warn(`${e instanceof Error ? e.message : e}; retry ${attempt}/${attempts - 1}`)
+      await sleep(baseDelayMs * 2 ** (attempt - 1))
+    }
+  }
+  throw last
 }
 
 function readStamp(dir) {
@@ -165,7 +199,7 @@ function requireIndex(kind, dir) {
 /** Puts each app's web build in place; returns what happened to each. */
 export async function fetchGraphicsWeb({ root = ROOT, env = process.env, pins, download }) {
   const strict = isStrict(env)
-  const get = download ?? httpDownload
+  const get = download ?? downloadWithRetry
   const result = {}
   for (const kind of GRAPHICS_KINDS) {
     const dest = join(root, 'apps/graphics/public/web', kind)
