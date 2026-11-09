@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SUBSCRIPTION_IPC_CHANNELS } from '@genoffice/ai-provider/browser'
@@ -139,16 +139,28 @@ describe('subscription preload API', () => {
     expect((await api.statuses())['claude-code']).toEqual(READY['claude-code'])
   })
 
-  it('is the only preload that can ask for a sign-out: no editor window exposes it', () => {
-    const preloadOf = (app: string): string =>
-      readFileSync(
-        fileURLToPath(new URL(`../../${app}/src/preload/index.ts`, import.meta.url)),
-        'utf8',
-      )
+  it('lets only the main and design windows ask for a sign-out: no editor window exposes it', () => {
+    const read = (path: string): string =>
+      readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf8')
     const asksForLogout = /SUBSCRIPTION_IPC_CHANNELS\.logout|subscription-logout/
-    expect(preloadOf('shell')).toMatch(asksForLogout)
+    const usesBridge = /subscription-bridge/
+    // the logout channel lives in one bridge, shared by the main window and the design window
+    expect(read('../src/preload/subscription-bridge.ts')).toMatch(asksForLogout)
+    const allowed = ['index.ts', 'design.ts']
+    for (const file of allowed) expect(read(`../src/preload/${file}`), file).toMatch(usesBridge)
+    const shellPreloads = readdirSync(fileURLToPath(new URL('../src/preload/', import.meta.url)))
+    for (const file of shellPreloads.filter(
+      (name) =>
+        name.endsWith('.ts') && name !== 'subscription-bridge.ts' && !allowed.includes(name),
+    )) {
+      const source = read(`../src/preload/${file}`)
+      expect(source, file).not.toMatch(asksForLogout)
+      expect(source, file).not.toMatch(usesBridge)
+    }
     for (const app of ['docs', 'sheets', 'slides', 'pdf', 'markdown', 'html']) {
-      expect(preloadOf(app), app).not.toMatch(asksForLogout)
+      const source = read(`../../${app}/src/preload/index.ts`)
+      expect(source, app).not.toMatch(asksForLogout)
+      expect(source, app).not.toMatch(usesBridge)
     }
   })
 
