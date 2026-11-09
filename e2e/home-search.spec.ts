@@ -103,9 +103,10 @@ test.describe('home file search', () => {
       await box.press('Escape')
       await expect(box).toHaveValue('')
       await expect(page.locator('.search-results')).toHaveCount(0)
-      await expect(page.locator('.recents-heading .section-label')).toHaveText('Recent')
-      // Blur the box on a non-interactive heading; body's centre can hit a create card.
-      await page.locator('.recents-heading .section-label').click()
+      // the board comes back in place of the results
+      await expect(page.locator('[data-home-board]')).toBeVisible()
+      // Blur the box on a non-interactive card title; body's centre can hit an app tile.
+      await page.locator('[data-card-type="apps"] .hb-card-title').click()
       await expect(box).not.toBeFocused()
       await page.keyboard.press(process.platform === 'darwin' ? 'Meta+f' : 'Control+f')
       await expect(box).toBeFocused()

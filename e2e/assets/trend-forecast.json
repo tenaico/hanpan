@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "asOf": "2026-11-09T00:30:00Z",
+  "date": "2026-11-09",
+  "fields": [
+    {
+      "key": "ai",
+      "title": "AI 트렌드 Big 5",
+      "scale": "weather",
+      "s": 2,
+      "label": "맑음",
+      "head": "새 모델 발표가 이어지며 관심이 높습니다.",
+      "path": "/ai"
+    },
+    {
+      "key": "opensource",
+      "title": "오픈소스 AI",
+      "scale": "weather",
+      "s": 1,
+      "label": "구름 조금",
+      "head": "공개 모델 내려받기가 지난주보다 늘었습니다.",
+      "path": "/opensource"
+    },
+    {
+      "key": "local-ai",
+      "title": "로컬 AI",
+      "scale": "weather",
+      "s": null,
+      "label": "정보 없음",
+      "head": "",
+      "path": "/local-ai"
+    },
+    {
+      "key": "ai-safety",
+      "title": "AI 보안·윤리",
+      "scale": "weather",
+      "s": -1,
+      "label": "비 조금",
+      "head": "개인정보 관련 규제 논의가 다시 나왔습니다.",
+      "path": "/ai-safety"
+    },
+    {
+      "key": "stocks",
+      "title": "주식",
+      "scale": "weather",
+      "s": 1,
+      "label": "구름 조금",
+      "head": "주요 지수가 소폭 올랐습니다.",
+      "path": "/stocks"
+    },
+    {
+      "key": "economy",
+      "title": "경제",
+      "scale": "weather",
+      "s": 0,
+      "label": "흐림",
+      "head": "물가와 금리가 지난달과 비슷합니다.",
+      "path": "/economy"
+    },
+    {
+      "key": "semiconductor",
+      "title": "반도체",
+      "scale": "weather",
+      "s": 2,
+      "label": "맑음",
+      "head": "메모리 가격 오름세가 이어집니다.",
+      "path": "/semiconductor"
+    },
+    {
+      "key": "realestate",
+      "title": "부동산",
+      "scale": "market",
+      "s": 1,
+      "label": "상승",
+      "head": "서울 아파트 매매가가 조금 올랐습니다.",
+      "path": "/realestate"
+    },
+    {
+      "key": "fx",
+      "title": "환율",
+      "scale": "weather",
+      "s": -1,
+      "label": "비 조금",
+      "head": "원화 약세가 이어집니다.",
+      "path": "/fx"
+    },
+    {
+      "key": "crypto",
+      "title": "암호화폐",
+      "scale": "weather",
+      "s": -2,
+      "label": "폭우",
+      "head": "비트코인 가격이 크게 내렸습니다.",
+      "path": "/crypto"
+    }
+  ],
+  "line": "AI·반도체는 맑고, 암호화폐·환율은 비가 옵니다."
+}

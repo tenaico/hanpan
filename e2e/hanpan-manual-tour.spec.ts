@@ -1,10 +1,10 @@
 import { mkdirSync } from 'node:fs'
-import { mkdtemp, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { test, expect, type ElectronApplication, type Page } from '@playwright/test'
 import { createXmindDocumentFromOutline } from '@genoffice/xmind-engine'
-import { closeAndSaveVideo, launchShell, waitForPageWithUrl } from './helpers'
+import { closeAndSaveVideo, launchShell, startTrendServer, waitForPageWithUrl } from './helpers'
 
 /**
  * Hanpan's user manual pictures, taken from the real app in Korean: the same
@@ -60,6 +60,18 @@ const OUTLINE =
 test('the manual tour, in Korean', async () => {
   test.setTimeout(300_000)
   mkdirSync(IMAGES, { recursive: true })
+  // a fixed forecast, so the trend card in the pictures does not change from day to day
+  const server = await startTrendServer(
+    await readFile(resolve(__dirname, 'assets/trend-forecast.json'), 'utf8'),
+  )
+  try {
+    await tour(server.url)
+  } finally {
+    await server.close()
+  }
+})
+
+async function tour(trendUrl: string): Promise<void> {
   const dir = await mkdtemp(join(tmpdir(), 'hanpan-tour-'))
   const mapPath = join(dir, 'AI 연수 계획.xmind')
   await writeFile(
@@ -67,10 +79,17 @@ test('the manual tour, in Korean', async () => {
     await (await createXmindDocumentFromOutline(OUTLINE, { untitled: '제목 없음' })).save(),
   )
 
-  const launched = await launchShell({ onboardingSeen: true, videoDir: 'hanpan-tour', lang: 'ko' })
+  const launched = await launchShell({
+    onboardingSeen: true,
+    videoDir: 'hanpan-tour',
+    lang: 'ko',
+    env: { HANPAN_TREND_URL: trendUrl },
+  })
   const { app, page } = launched
   try {
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]?.setSize(1440, 900))
+    // the app asks for the forecast 3 seconds after it starts
+    await expect(page.locator('[data-trend-field]')).toHaveCount(10, { timeout: 30_000 })
     await page.waitForTimeout(1500)
     await shot(page, '01-home')
 
@@ -169,4 +188,4 @@ test('the manual tour, in Korean', async () => {
   } finally {
     await closeAndSaveVideo(launched)
   }
-})
+}

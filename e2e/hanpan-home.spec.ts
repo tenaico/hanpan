@@ -13,7 +13,7 @@ test('Home leads with the mind map, and a typed topic opens a map with it', asyn
     await expect(page.locator('.quick-card').first()).toHaveAttribute('data-new', 'xmind')
     await expect(page.locator('.quick-card').nth(1)).toHaveAttribute('data-new', 'hwp')
     await expect(page.locator('.quick-card').nth(2)).toHaveAttribute('data-new', 'pptx')
-    await expect(page.locator('.quick-card').nth(3)).toHaveAttribute('data-new', 'templates')
+    await expect(page.locator('.quick-card').nth(3)).toHaveAttribute('data-new', 'docx')
     await page.screenshot({ path: screenshotPath('hanpan-home-light') })
     await page.emulateMedia({ colorScheme: 'dark' })
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'))

@@ -5,6 +5,7 @@ import { test, expect } from '@playwright/test'
 import {
   launchShell,
   closeAndSaveVideo,
+  openFromAllApps,
   waitForPageWithUrl,
   screenshotPath,
   stubAiReady,
@@ -44,13 +45,12 @@ test.describe('markdown editor', () => {
     }
   })
 
-  test('AI Markdown quick card opens a markdown editor tab', async () => {
+  test('AI Markdown from All apps opens a markdown editor tab', async () => {
     const launched = await launchShell({ onboardingSeen: true, videoDir: 'new-markdown-tab' })
     const { app, page } = launched
     try {
-      const card = page.locator('.quick-card', { hasText: 'AI Markdown' })
-      await expect(card).toHaveCount(1)
-      await card.click()
+      // Markdown is not pinned to Home with the Korean document features on
+      await openFromAllApps(page, 'md')
 
       const editorTab = page.locator('.tab-bar .tab-item:not(.tab-home)')
       await expect(editorTab).toHaveCount(1)
