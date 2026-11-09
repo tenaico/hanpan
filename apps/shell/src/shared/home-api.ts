@@ -20,6 +20,7 @@ import type {
 import type { UpdateChannel, UpdateUiState } from './update-api'
 import type { KbFileInfo, KbReadPage, KbSearchHit } from '@genoffice/agent-core'
 import type { AiPanelPrefs } from '@genoffice/ui/ai-panel-prefs'
+import type { HomeBoard, HomeBoardSource } from './home-board'
 import type { HomeLayout, ShortcutTarget } from './home-layout'
 
 /** UI language; kept self-contained here (mirrors Lang in @genoffice/i18n) */
@@ -369,6 +370,10 @@ export interface HomeApi {
   getHomeLayout?(): Promise<HomeLayout>
   /** store the layout (cleaned up in main); resolves to what was stored */
   setHomeLayout?(layout: HomeLayout): Promise<HomeLayout>
+  /** 0.19: Home's board (userData/app-settings.json `homeBoard`, moved over from `homeLayout` once) */
+  getHomeBoard?(): Promise<HomeBoardSource>
+  /** store the board (cleaned up in main); resolves to what was stored, null when refused */
+  setHomeBoard?(board: HomeBoard): Promise<unknown>
   /** open a shortcut widget's file, folder or http(s) link; main checks it again. false when refused */
   openWidgetTarget?(target: ShortcutTarget): Promise<boolean>
   /** a file or folder picker for a shortcut widget; null when cancelled */
@@ -627,6 +632,8 @@ export const HOME_CHANNELS = {
   getKoreanDocFeatures: 'home:get-korean-doc-features',
   getHomeLayout: 'home:get-home-layout',
   setHomeLayout: 'home:set-home-layout',
+  getHomeBoard: 'home:get-home-board',
+  setHomeBoard: 'home:set-home-board',
   openWidgetTarget: 'home:open-widget-target',
   pickWidgetTarget: 'home:pick-widget-target',
   setKoreanDocFeatures: 'home:set-korean-doc-features',

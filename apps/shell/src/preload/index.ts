@@ -443,6 +443,14 @@ const homeApi: HomeApi = {
   async setHomeLayout(layout) {
     return normalizeHomeLayout(await ipcRenderer.invoke(HOME_CHANNELS.setHomeLayout, layout))
   },
+  async getHomeBoard() {
+    const r = (await ipcRenderer.invoke(HOME_CHANNELS.getHomeBoard)) as
+      { board?: unknown; trendAvailable?: unknown } | null | undefined
+    return { board: r?.board ?? null, trendAvailable: r?.trendAvailable === true }
+  },
+  async setHomeBoard(board) {
+    return ipcRenderer.invoke(HOME_CHANNELS.setHomeBoard, board)
+  },
   async openWidgetTarget(target) {
     return (await ipcRenderer.invoke(HOME_CHANNELS.openWidgetTarget, target)) === true
   },
