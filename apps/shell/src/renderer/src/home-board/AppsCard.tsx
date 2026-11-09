@@ -3,9 +3,20 @@
  * "모든 앱" right after the last pin (or in the last slot with "+N" when the
  * pins do not fit). Blank slots stay empty; while customizing (spec 7.8) they
  * offer "앱 추가", each tile gets an × that unpins it and a tile no longer
- * starts its app (plan R16).
+ * starts its app (plan R16): it is dragged instead, onto another app's slot
+ * on this card, never out of it. Without customizing a tile only starts its
+ * app, so a press can never move one.
  */
-import { cloneElement, isValidElement, type CSSProperties, type ReactElement } from 'react'
+import {
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type ReactElement,
+} from 'react'
 import { appSlots, slotGrid, type AppKey } from '../../../shared/home-apps'
 import type { CardSize } from '../../../shared/home-board'
 import type { HomeAppCard } from '../HomeWidgets'
@@ -15,6 +26,9 @@ import './apps-card.css'
 
 /** the Hanpan tiles the e2e tests press by `data-hanpan` (plan R5) */
 const HANPAN_TILES: ReadonlySet<string> = new Set(['templates', 'design', 'md-convert'])
+
+/** how far the pointer goes before a press on a tile becomes a drag */
+const DRAG_START_PX = 4
 
 /** an app icon that cannot be dragged off its tile */
 export function undraggable(icon: ReactElement): ReactElement {
@@ -39,20 +53,96 @@ export function AppsCard(props: {
   const slots = appSlots(props.pinned, new Set(byKey.keys()), props.size)
   const { cols } = slotGrid(props.size)
   const allIndex = slots.apps.length
+  const gridRef = useRef<HTMLDivElement | null>(null)
+  /** a press on a tile while customizing: it becomes a drag past DRAG_START_PX */
+  const [held, setHeld] = useState<{ key: AppKey; x: number; y: number } | null>(null)
+  const [dropSlot, setDropSlot] = useState<number | null>(null)
+  const latest = useRef({ dropSlot, apps: slots.apps, pinned: props.pinned, onMove: props.onMove })
+  latest.current = { dropSlot, apps: slots.apps, pinned: props.pinned, onMove: props.onMove }
+
+  // a drag ends with customizing
+  useEffect(() => {
+    if (!props.customizing) {
+      setHeld(null)
+      setDropSlot(null)
+    }
+  }, [props.customizing])
+
+  // the drag follows the pointer; release over an app slot moves the app, Esc drops the drag
+  useEffect(() => {
+    if (!held) return
+    let moving = false
+    const finish = () => {
+      setHeld(null)
+      setDropSlot(null)
+    }
+    const onMove = (event: PointerEvent) => {
+      if (!moving && Math.hypot(event.clientX - held.x, event.clientY - held.y) <= DRAG_START_PX) {
+        return
+      }
+      moving = true
+      const slot = document
+        .elementFromPoint?.(event.clientX, event.clientY)
+        ?.closest<HTMLElement>('[data-app-slot]')
+      const index = slot && gridRef.current?.contains(slot) ? Number(slot.dataset.appSlot) : NaN
+      // only the app slots take a drop: not "모든 앱", not a blank slot
+      setDropSlot(index >= 0 && index < latest.current.apps.length ? index : null)
+    }
+    const onUp = () => {
+      const { dropSlot: at, apps, pinned, onMove: move } = latest.current
+      finish()
+      const target = at === null ? undefined : apps[at]
+      // the app takes the place of the pin it is dropped on (hidden pins keep theirs)
+      if (moving && target && target !== held.key) move?.(held.key, pinned.indexOf(target))
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      event.stopPropagation()
+      finish()
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', finish)
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', finish)
+      window.removeEventListener('keydown', onKeyDown, true)
+    }
+  }, [held])
+
+  const press = (event: ReactPointerEvent<HTMLButtonElement>, key: AppKey) => {
+    if (!props.customizing || (event.button !== undefined && event.button !== 0)) return
+    setHeld({ key, x: event.clientX, y: event.clientY })
+  }
+
   return (
     <section className="hb-apps-card">
       <h2 className="hb-card-title">{homeCustomText(lang, 'cardApps')}</h2>
-      <div className="hb-apps" style={{ '--cols': cols } as CSSProperties}>
+      <div
+        ref={gridRef}
+        className="hb-apps"
+        data-app-dragging={held ? 'true' : undefined}
+        style={{ '--cols': cols } as CSSProperties}
+      >
         {slots.apps.map((key, index) => {
           const app = byKey.get(key)!
           return (
-            <div key={key} className="hb-app-slot" data-app-slot={index}>
+            <div
+              key={key}
+              className="hb-app-slot"
+              data-app-slot={index}
+              data-drop-slot={dropSlot === index ? '' : undefined}
+            >
               <button
                 type="button"
                 className="quick-card hb-app"
                 data-new={key}
                 data-hanpan={HANPAN_TILES.has(key) ? key : undefined}
                 data-tip={app.sub}
+                onPointerDown={props.customizing ? (event) => press(event, key) : undefined}
                 onClick={() => {
                   if (!props.customizing) void app.action()
                 }}

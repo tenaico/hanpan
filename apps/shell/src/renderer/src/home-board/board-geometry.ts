@@ -1,3 +1,5 @@
+import type { CardSize } from '../../../shared/home-board'
+
 /**
  * The board's measures that follow from a card's size (spec 7.2, 7.6).
  */
@@ -19,4 +21,34 @@ export function cardSpan(w: number, cols: BoardColumns): number {
 /** the files the recent card lists: six on a card three rows high, else three */
 export function recentRows(h: number): number {
   return h >= 3 ? 6 : 3
+}
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+
+/**
+ * The size a card `start` wide and high would have after its corner moved
+ * `dx`, `dy` pixels on a board whose columns are `colPx` wide: whole columns
+ * and rows, 1 to 12 wide and 1 to 4 high. The caller snaps it to a size the
+ * card's type allows.
+ */
+export function sizeFromDrag(start: CardSize, dx: number, dy: number, colPx: number): CardSize {
+  const width = start.w * colPx + (start.w - 1) * BOARD_GAP_PX + dx
+  const height = start.h * BOARD_ROW_PX + (start.h - 1) * BOARD_GAP_PX + dy
+  return {
+    w: clamp(Math.round((width + BOARD_GAP_PX) / (colPx + BOARD_GAP_PX)), 1, 12),
+    h: clamp(Math.round((height + BOARD_GAP_PX) / (BOARD_ROW_PX + BOARD_GAP_PX)), 1, 4),
+  }
+}
+
+/** a card `size` big on the board, in pixels */
+export function cardPixels(size: CardSize, colPx: number): { width: number; height: number } {
+  return {
+    width: size.w * colPx + (size.w - 1) * BOARD_GAP_PX,
+    height: size.h * BOARD_ROW_PX + (size.h - 1) * BOARD_GAP_PX,
+  }
+}
+
+/** one column's width on a twelve-column board `boardWidth` pixels wide */
+export function columnPixels(boardWidth: number): number {
+  return (boardWidth - 11 * BOARD_GAP_PX) / 12
 }

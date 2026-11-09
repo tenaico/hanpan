@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactElement } from 'react'
+import type {
+  CSSProperties,
+  DragEvent as ReactDragEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+  ReactElement,
+} from 'react'
 import type { Lang } from '@genoffice/i18n'
 import { useDismissablePopover } from '@genoffice/ui'
 import {
@@ -7,15 +13,41 @@ import {
   sizeKey,
   type BoardCard,
   type BoardCardType,
+  type CardSize,
   type HomeBoard,
 } from '../../../shared/home-board'
-import { isRemovable, removeCard, resizeCard } from '../../../shared/home-board-edit'
+import {
+  isRemovable,
+  moveCardTo,
+  nearestSize,
+  removeCard,
+  resizeCard,
+} from '../../../shared/home-board-edit'
 import { homeCustomText } from '../i18n/strings-home-custom'
-import { cardSpan, type BoardColumns } from './board-geometry'
+import {
+  cardPixels,
+  cardSpan,
+  columnPixels,
+  sizeFromDrag,
+  type BoardColumns,
+} from './board-geometry'
 import './home-board.css'
 
 /** the cards whose settings form WidgetBody draws: their menu offers "설정" */
 const WIDGET_TYPES: readonly BoardCardType[] = ['memo', 'favorites', 'folder', 'clock', 'shortcut']
+/** what a card drag carries, so a drop elsewhere never mistakes it for a file */
+const CARD_DRAG_TYPE = 'application/x-hanpan-card'
+
+/** a corner drag in progress: where it started and the size it shows */
+interface Resizing {
+  id: string
+  type: BoardCardType
+  start: CardSize
+  x: number
+  y: number
+  colPx: number
+  preview: CardSize
+}
 
 /**
  * Home's board (spec 7.2): the cards in their order on a CSS grid, each as
@@ -23,10 +55,15 @@ const WIDGET_TYPES: readonly BoardCardType[] = ['memo', 'favorites', 'folder', '
  * (`row dense`), so the stored order and sizes are all there is to a layout.
  * The board draws the frame; `renderCard` draws what is inside.
  *
- * While customizing (spec 7.8) every card gets a dashed frame, a menu with its
- * sizes (and "설정" for a widget card) and, when it may leave the board, an ×.
- * The card bodies do not take input then (plan R16), except the new card,
- * whose tiles customize themselves, and a card whose settings are open.
+ * A card moves by its handle (⋮⋮) at any time (spec 7.8): dropped on another
+ * card it takes that card's place. A drag that starts in a card's body (a
+ * memo's text) never moves the card.
+ *
+ * While customizing every card gets a dashed frame, a menu with its sizes
+ * (and "설정" for a widget card), an × when it may leave the board and, on
+ * twelve columns (plan R15), a corner that resizes it to the nearest allowed
+ * size. The card bodies do not take input then (plan R16), except the new
+ * card, whose tiles customize themselves, and a card whose settings are open.
  */
 export function BoardGrid(props: {
   board: HomeBoard
@@ -42,14 +79,24 @@ export function BoardGrid(props: {
   const { customizing, update, lang } = props
   // the narrow layouts measure the board later (plan Task 9); twelve columns until then
   const cols: BoardColumns = 12
+  const boardRef = useRef<HTMLElement | null>(null)
   /** the card whose menu is open */
   const [menuFor, setMenuFor] = useState<string | null>(null)
   const menuToolsRef = useRef<HTMLDivElement | null>(null)
   const closeMenu = () => setMenuFor(null)
+  /** the card being dragged by its handle; a ref, so dragover reads it without a render */
+  const dragging = useRef<string | null>(null)
+  const [dropTarget, setDropTarget] = useState<string | null>(null)
+  const [resizing, setResizing] = useState<Resizing | null>(null)
+  const resizingRef = useRef<Resizing | null>(null)
+  resizingRef.current = resizing
 
-  // the menu goes with customizing
+  // the menu and a resize go with customizing
   useEffect(() => {
-    if (!customizing) setMenuFor(null)
+    if (!customizing) {
+      setMenuFor(null)
+      setResizing(null)
+    }
   }, [customizing])
 
   // outside press, window blur and a press on the tab strip close the menu
@@ -80,6 +127,50 @@ export function BoardGrid(props: {
     first?.focus()
   }, [menuFor])
 
+  // a corner drag follows the pointer anywhere; release keeps the size, Esc drops it
+  const resizeActive = resizing !== null
+  useEffect(() => {
+    if (!resizeActive) return
+    const onMove = (event: PointerEvent) => {
+      const now = resizingRef.current
+      if (!now) return
+      const wanted = sizeFromDrag(
+        now.start,
+        event.clientX - now.x,
+        event.clientY - now.y,
+        now.colPx,
+      )
+      const preview = nearestSize(now.type, wanted)
+      if (preview.w !== now.preview.w || preview.h !== now.preview.h) {
+        setResizing({ ...now, preview })
+      }
+    }
+    const onUp = () => {
+      const now = resizingRef.current
+      setResizing(null)
+      if (now && (now.preview.w !== now.start.w || now.preview.h !== now.start.h)) {
+        update((prev) => resizeCard(prev, now.id, now.preview))
+      }
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      event.stopPropagation()
+      resizingRef.current = null
+      setResizing(null)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+      window.removeEventListener('keydown', onKeyDown, true)
+    }
+  }, [resizeActive, update])
+
   /** ↑↓ move between the menu's items */
   const onMenuKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
@@ -90,23 +181,96 @@ export function BoardGrid(props: {
     items[(at + step + items.length) % items.length]?.focus()
   }
 
+  const endDrag = () => {
+    dragging.current = null
+    setDropTarget(null)
+  }
+
+  const startDrag = (event: ReactDragEvent<HTMLElement>, card: BoardCard) => {
+    dragging.current = card.id
+    const frame = event.currentTarget.closest<HTMLElement>('.hb-card')
+    event.dataTransfer?.setData(CARD_DRAG_TYPE, card.id)
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+    if (frame) event.dataTransfer?.setDragImage?.(frame, 24, 16)
+  }
+
+  /** a card takes a drop only from another card's handle */
+  const dropHandlers = (card: BoardCard) => ({
+    onDragOver: (event: ReactDragEvent<HTMLElement>) => {
+      if (!dragging.current || dragging.current === card.id) return
+      event.preventDefault()
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+      if (dropTarget !== card.id) setDropTarget(card.id)
+    },
+    onDragLeave: (event: ReactDragEvent<HTMLElement>) => {
+      const next = event.relatedTarget as Node | null
+      if (dropTarget === card.id && !(next && event.currentTarget.contains(next))) {
+        setDropTarget(null)
+      }
+    },
+    onDrop: (event: ReactDragEvent<HTMLElement>) => {
+      const from = dragging.current
+      if (!from || from === card.id) return
+      event.preventDefault()
+      endDrag()
+      update((prev) => moveCardTo(prev, from, card.id))
+    },
+  })
+
+  const startResize = (event: ReactPointerEvent<HTMLElement>, card: BoardCard) => {
+    if (event.button !== undefined && event.button !== 0) return
+    event.preventDefault()
+    event.stopPropagation()
+    const width = boardRef.current?.getBoundingClientRect().width ?? 0
+    if (width <= 0) return
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    const start = { w: card.w, h: card.h }
+    setResizing({
+      id: card.id,
+      type: card.type,
+      start,
+      x: event.clientX,
+      y: event.clientY,
+      colPx: columnPixels(width),
+      preview: start,
+    })
+  }
+
   function renderTools(card: BoardCard, name: string): ReactElement {
     const open = menuFor === card.id
     return (
-      <div className="hb-card-tools" ref={open ? menuToolsRef : undefined}>
+      <div
+        className="hb-card-tools"
+        data-customizing={customizing ? 'true' : undefined}
+        ref={open ? menuToolsRef : undefined}
+      >
         <button
           type="button"
-          className="hb-tool"
-          data-card-menu=""
-          aria-haspopup="menu"
-          aria-expanded={open}
-          aria-label={homeCustomText(lang, 'cardMenu', { name })}
-          title={homeCustomText(lang, 'cardMenu', { name })}
-          onClick={() => setMenuFor(open ? null : card.id)}
+          className="hb-tool hb-card-handle"
+          data-card-handle=""
+          draggable
+          aria-label={homeCustomText(lang, 'dragHandle', { name })}
+          title={homeCustomText(lang, 'dragHandle', { name })}
+          onDragStart={(event) => startDrag(event, card)}
+          onDragEnd={endDrag}
         >
-          ⋯
+          ⋮⋮
         </button>
-        {open && (
+        {customizing && (
+          <button
+            type="button"
+            className="hb-tool"
+            data-card-menu=""
+            aria-haspopup="menu"
+            aria-expanded={open}
+            aria-label={homeCustomText(lang, 'cardMenu', { name })}
+            title={homeCustomText(lang, 'cardMenu', { name })}
+            onClick={() => setMenuFor(open ? null : card.id)}
+          >
+            ⋯
+          </button>
+        )}
+        {customizing && open && (
           <div
             className="hb-card-menu"
             role="menu"
@@ -147,7 +311,7 @@ export function BoardGrid(props: {
             )}
           </div>
         )}
-        {isRemovable(card.type) && (
+        {customizing && isRemovable(card.type) && (
           <button
             type="button"
             className="hb-tool"
@@ -165,6 +329,7 @@ export function BoardGrid(props: {
 
   return (
     <section
+      ref={boardRef}
       className="hb-board"
       data-home-board=""
       data-cols={cols}
@@ -174,6 +339,8 @@ export function BoardGrid(props: {
       {props.board.cards.map((card) => {
         const name = props.cardName(card)
         const quiet = customizing && card.type !== 'apps' && props.editing !== card.id
+        const preview = resizing?.id === card.id ? resizing : null
+        const ghost = preview ? cardPixels(preview.preview, preview.colPx) : null
         return (
           <section
             key={card.id}
@@ -181,13 +348,32 @@ export function BoardGrid(props: {
             data-card={card.id}
             data-card-type={card.type}
             data-size={sizeKey(card)}
+            data-drop-target={dropTarget === card.id ? '' : undefined}
+            data-resize-preview={preview ? sizeKey(preview.preview) : undefined}
             aria-label={name}
             style={{ '--span': cardSpan(card.w, cols), '--rows': card.h } as CSSProperties}
+            {...dropHandlers(card)}
           >
             <div className="hb-card-body" inert={quiet}>
               {props.renderCard(card)}
             </div>
-            {customizing && renderTools(card, name)}
+            {renderTools(card, name)}
+            {customizing && cols === 12 && (
+              <div
+                className="hb-card-resize"
+                data-card-resize=""
+                aria-label={homeCustomText(lang, 'resizeCorner', { name })}
+                title={homeCustomText(lang, 'resizeCorner', { name })}
+                onPointerDown={(event) => startResize(event, card)}
+              />
+            )}
+            {ghost && (
+              <div
+                className="hb-resize-ghost"
+                aria-hidden="true"
+                style={{ width: ghost.width, height: ghost.height }}
+              />
+            )}
           </section>
         )
       })}

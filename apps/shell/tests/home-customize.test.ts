@@ -384,3 +384,163 @@ describe('the list view', () => {
     expect(panel.querySelector('[data-custom-card="md"] [data-move]')).toBeNull()
   })
 })
+
+/** a drag event as React hears it (jsdom has no DragEvent) */
+const drag = async (el: Element | null | undefined, type: string) => {
+  expect(el).toBeTruthy()
+  await act(async () => {
+    el!.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }))
+  })
+}
+const pointer = async (
+  el: EventTarget | null | undefined,
+  type: string,
+  init: { clientX?: number; clientY?: number } = {},
+) => {
+  expect(el).toBeTruthy()
+  await act(async () => {
+    el!.dispatchEvent(
+      new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, ...init }),
+    )
+  })
+}
+
+describe('dragging cards by the handle (Task 6)', () => {
+  it('moves a card onto another one without customizing', async () => {
+    await renderHome()
+    const handle = cardEl('favorites').querySelector('[data-card-handle]')!
+    expect(handle.getAttribute('draggable')).toBe('true')
+    expect(handle.getAttribute('aria-label')).toBe('즐겨찾기 옮기기')
+    await drag(handle, 'dragstart')
+    await drag(cardEl('apps'), 'dragover')
+    expect(cardEl('apps').hasAttribute('data-drop-target')).toBe(true)
+    await drag(cardEl('apps'), 'drop')
+    await drag(handle, 'dragend')
+    expect(cardIds()).toEqual(['start', 'favorites', 'apps', 'recent', 'memo'])
+    expect(boardNow().cards.map((c) => c.id)).toEqual(cardIds())
+    expect($('[data-drop-target]')).toBeNull()
+  })
+
+  it('does not move a card for a drag that starts in its body', async () => {
+    await renderHome()
+    await drag(cardEl('memo').querySelector('textarea'), 'dragstart')
+    await drag(cardEl('apps'), 'dragover')
+    await drag(cardEl('apps'), 'drop')
+    expect(cardIds()).toEqual(['start', 'apps', 'recent', 'memo', 'favorites'])
+  })
+
+  it('leaves the order alone when the drag ends without a drop', async () => {
+    await renderHome()
+    const handle = cardEl('favorites').querySelector('[data-card-handle]')!
+    await drag(handle, 'dragstart')
+    await drag(cardEl('apps'), 'dragover')
+    await drag(handle, 'dragend')
+    await drag(cardEl('apps'), 'drop')
+    expect(cardIds()).toEqual(['start', 'apps', 'recent', 'memo', 'favorites'])
+    expect($('[data-drop-target]')).toBeNull()
+  })
+})
+
+describe('resizing by the corner (Task 6)', () => {
+  /** a board 1060px wide: columns of 75.5px */
+  const wideBoard = () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 1060,
+      bottom: 800,
+      width: 1060,
+      height: 800,
+      toJSON: () => ({}),
+    })
+  }
+  afterEach(() => vi.restoreAllMocks())
+
+  it('previews the nearest size while dragging and keeps it on release', async () => {
+    stored = {
+      ...boardWith(),
+      cards: boardWith().cards.map((c) => (c.id === 'memo' ? { ...c, w: 3 } : c)),
+    }
+    wideBoard()
+    await renderHome()
+    expect(cardEl('memo').querySelector('[data-card-resize]')).toBeNull()
+    await customize()
+    const corner = cardEl('memo').querySelector('[data-card-resize]')!
+    expect(corner.getAttribute('aria-label')).toBe('빠른 메모 크기 바꾸기')
+    await pointer(corner, 'pointerdown', { clientX: 500, clientY: 300 })
+    await pointer(corner, 'pointermove', { clientX: 679, clientY: 300 })
+    expect(cardEl('memo').dataset.resizePreview).toBe('6x2')
+    await pointer(corner, 'pointerup', { clientX: 679, clientY: 300 })
+    expect(cardEl('memo').dataset.size).toBe('6x2')
+    expect(cardEl('memo').hasAttribute('data-resize-preview')).toBe(false)
+  })
+
+  it('keeps the size when Esc cancels the drag', async () => {
+    stored = {
+      ...boardWith(),
+      cards: boardWith().cards.map((c) => (c.id === 'memo' ? { ...c, w: 3 } : c)),
+    }
+    wideBoard()
+    await renderHome()
+    await customize()
+    const corner = cardEl('memo').querySelector('[data-card-resize]')!
+    await pointer(corner, 'pointerdown', { clientX: 500, clientY: 300 })
+    await pointer(corner, 'pointermove', { clientX: 679, clientY: 300 })
+    await press('Escape')
+    expect(cardEl('memo').hasAttribute('data-resize-preview')).toBe(false)
+    await pointer(corner, 'pointerup', { clientX: 679, clientY: 300 })
+    expect(cardEl('memo').dataset.size).toBe('3x2')
+    // Esc went to the drag, not to customizing
+    expect($('[data-customize-bar]')).not.toBeNull()
+  })
+})
+
+describe('dragging apps on the new card (Task 6)', () => {
+  /** the slot under the pointer is slot `n` of the new card */
+  const overSlot = (n: number) => {
+    document.elementFromPoint = () => $(`[data-card="apps"] [data-app-slot="${n}"]`)
+  }
+  afterEach(() => {
+    delete (document as { elementFromPoint?: unknown }).elementFromPoint
+  })
+
+  it('moves an app to the slot it is dropped on while customizing', async () => {
+    await renderHome()
+    await customize()
+    const photo = $('.quick-card[data-new="photo"]')!
+    overSlot(0)
+    await pointer(photo, 'pointerdown', { clientX: 300, clientY: 300 })
+    await pointer(photo, 'pointermove', { clientX: 200, clientY: 250 })
+    expect($('[data-card="apps"] [data-app-slot="0"]')!.hasAttribute('data-drop-slot')).toBe(true)
+    await pointer(photo, 'pointerup', { clientX: 200, clientY: 250 })
+    expect(tileKeys()[0]).toBe('photo')
+    expect($('[data-drop-slot]')).toBeNull()
+  })
+
+  it('does not drop an app on "모든 앱"', async () => {
+    stored = { ...boardWith(), pinned: ['xmind', 'pptx'] }
+    await renderHome()
+    await customize()
+    const pptx = $('.quick-card[data-new="pptx"]')!
+    overSlot(2)
+    await pointer(pptx, 'pointerdown', { clientX: 300, clientY: 300 })
+    await pointer(pptx, 'pointermove', { clientX: 400, clientY: 300 })
+    await pointer(pptx, 'pointerup', { clientX: 400, clientY: 300 })
+    expect(tileKeys()).toEqual(['xmind', 'pptx'])
+  })
+
+  it('does not drag apps without customizing, and a press starts the app once', async () => {
+    await renderHome()
+    const xmind = $('.quick-card[data-new="xmind"]')!
+    overSlot(3)
+    await pointer(xmind, 'pointerdown', { clientX: 300, clientY: 300 })
+    await pointer(xmind, 'pointermove', { clientX: 400, clientY: 300 })
+    await pointer(xmind, 'pointerup', { clientX: 400, clientY: 300 })
+    expect(tileKeys()[0]).toBe('xmind')
+    expect($('[data-drop-slot]')).toBeNull()
+    await click(xmind)
+    expect(newMindmap).toHaveBeenCalledTimes(1)
+  })
+})
