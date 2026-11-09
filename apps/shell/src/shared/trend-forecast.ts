@@ -161,3 +161,38 @@ export function trendLinkUrl(path: string | null): string | null {
   if (path === null) return `${TREND_SITE}/?${TREND_UTM}`
   return trendPath(path) === null ? null : `${TREND_SITE}${path}?${TREND_UTM}`
 }
+
+/** the calendar date in Korea (UTC+9, no daylight saving) as YYYY-MM-DD */
+export function kstDate(now: Date): string {
+  return new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 10)
+}
+
+/**
+ * The {when} of the card's "as of" (spec 7.6, plan R12): the time for a
+ * forecast of today in Korea, otherwise the forecast's own date. A failed
+ * fetch alone does not add a date; the forecast's date decides.
+ */
+export function trendAsOfText(forecast: TrendForecast, now: Date, locale: string): string {
+  if (forecast.date === kstDate(now)) {
+    return new Intl.DateTimeFormat(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+      timeZone: 'Asia/Seoul',
+    }).format(new Date(forecast.asOf))
+  }
+  return new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', timeZone: 'UTC' }).format(
+    new Date(`${forecast.date}T00:00:00Z`),
+  )
+}
+
+export type TrendGlyph =
+  'sun' | 'sun-cloud' | 'cloud' | 'rain' | 'storm' | 'fire' | 'up' | 'flat' | 'down' | 'snow'
+
+const WEATHER_GLYPHS: readonly TrendGlyph[] = ['storm', 'rain', 'cloud', 'sun-cloud', 'sun']
+const MARKET_GLYPHS: readonly TrendGlyph[] = ['snow', 'down', 'flat', 'up', 'fire']
+
+/** the icon for a signal on its scale (spec 7.6), the same meaning as on the site */
+export function trendGlyph(scale: TrendScale, s: TrendSignal): TrendGlyph {
+  return (scale === 'market' ? MARKET_GLYPHS : WEATHER_GLYPHS)[s + 2]
+}

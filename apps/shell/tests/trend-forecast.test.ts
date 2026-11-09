@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   TREND_FIELD_KEYS,
   cutText,
+  kstDate,
   mergeTrendForecast,
   parseTrendForecast,
+  trendAsOfText,
+  trendGlyph,
   trendLinkUrl,
   type TrendForecast,
 } from '../src/shared/trend-forecast'
@@ -252,5 +255,45 @@ describe('mergeTrendForecast (R24)', () => {
     const reread = parse(broken)
     expect(byKey(reread, 'fx')).not.toHaveProperty('asOf')
     expect(byKey(reread, 'local-ai')?.asOf).toBe('2026-11-09T00:30:00Z')
+  })
+})
+
+describe('kstDate and trendAsOfText (plan Task 8, R12)', () => {
+  it('reads the date in Korean time', () => {
+    expect(kstDate(new Date('2026-11-08T15:30:00Z'))).toBe('2026-11-09')
+    expect(kstDate(new Date('2026-11-08T14:59:00Z'))).toBe('2026-11-08')
+  })
+
+  it('gives the time for a forecast of today and the date for an older one', () => {
+    const f = parse(answer())
+    expect(trendAsOfText(f, new Date('2026-11-09T03:00:00Z'), 'ko-KR')).toBe('09:30')
+    expect(trendAsOfText(f, new Date('2026-11-10T03:00:00Z'), 'ko-KR')).toBe('11월 9일')
+  })
+
+  it('does not put a time on yesterday right after midnight in Korea (Review Focus 5)', () => {
+    const f = parse(answer())
+    expect(trendAsOfText(f, new Date('2026-11-09T15:30:00Z'), 'ko-KR')).toBe('11월 9일')
+  })
+})
+
+describe('trendGlyph (spec 7.6)', () => {
+  it('draws the weather scale', () => {
+    expect([2, 1, 0, -1, -2].map((s) => trendGlyph('weather', s as -2 | -1 | 0 | 1 | 2))).toEqual([
+      'sun',
+      'sun-cloud',
+      'cloud',
+      'rain',
+      'storm',
+    ])
+  })
+
+  it('draws the market scale', () => {
+    expect([2, 1, 0, -1, -2].map((s) => trendGlyph('market', s as -2 | -1 | 0 | 1 | 2))).toEqual([
+      'fire',
+      'up',
+      'flat',
+      'down',
+      'snow',
+    ])
   })
 })
