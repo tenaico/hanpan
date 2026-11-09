@@ -37,7 +37,6 @@ import type {
   FileSearchSettings,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
-import { normalizeHomeLayout } from '../shared/home-layout'
 import { RECOVERY_LIST_CHANNELS } from '../shared/recovery-list-api'
 import { TREND_CHANNELS, parseTrendSnapshot, type TrendApi } from '../shared/trend-api'
 import type {
@@ -437,12 +436,6 @@ const homeApi: HomeApi = {
   async setKoreanDocFeatures(on) {
     if (typeof on !== 'boolean') throw new Error('Invalid Korean document features switch.')
     await ipcRenderer.invoke(HOME_CHANNELS.setKoreanDocFeatures, on)
-  },
-  async getHomeLayout() {
-    return normalizeHomeLayout(await ipcRenderer.invoke(HOME_CHANNELS.getHomeLayout))
-  },
-  async setHomeLayout(layout) {
-    return normalizeHomeLayout(await ipcRenderer.invoke(HOME_CHANNELS.setHomeLayout, layout))
   },
   async getHomeBoard() {
     const r = (await ipcRenderer.invoke(HOME_CHANNELS.getHomeBoard)) as

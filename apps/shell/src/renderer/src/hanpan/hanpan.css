@@ -232,7 +232,8 @@
 
 .hp-board {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  /* one column since the flow drawing left the start card (0.19, spec 7.3) */
+  grid-template-columns: minmax(0, 1fr);
   gap: 32px;
   align-items: center;
   margin: 24px 0 22px;
@@ -337,11 +338,6 @@
   color: var(--hp-chalk);
 }
 
-/* the start card has one column since the flow drawing left it (0.19, spec 7.3) */
-.hp-board {
-  grid-template-columns: minmax(0, 1fr);
-}
-
 /* the guide button's key: F1 opens the same guide */
 .hp-guide-key {
   padding: 0 5px;
@@ -350,43 +346,6 @@
   font: inherit;
   font-size: 11px;
   line-height: 16px;
-}
-
-/* the four cards the work goes through, large; the mind map leads */
-.hp-cards .quick-cards.hp-primary {
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 12px;
-}
-
-.hp-primary .quick-card.hp-primary-card {
-  max-width: none;
-  min-height: 138px;
-  padding: 20px 20px 18px;
-  border-radius: 14px;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.hp-primary .quick-card.hp-primary-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--hp-card-lift);
-}
-
-.hp-primary .hp-primary-card .quick-title {
-  font-size: 17px;
-  font-weight: 700;
-}
-
-.hp-primary .hp-primary-card .quick-sub {
-  font-size: 13px;
-  white-space: normal;
-}
-
-.hp-primary .quick-card.is-start {
-  border: 1.5px solid var(--accent);
-  background: var(--accent-soft);
 }
 
 .hp-start-badge {
@@ -399,77 +358,6 @@
   color: var(--hp-chalk-ink);
   font-size: 12px;
   font-weight: 800;
-}
-
-.hp-more-head {
-  margin: 22px 0 10px;
-}
-
-.hp-cards .quick-cards.hp-secondary {
-  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
-  gap: 8px;
-}
-
-.hp-secondary .quick-card.hp-compact {
-  max-width: none;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
-  border-radius: 10px;
-}
-
-.hp-secondary .hp-compact .quick-title {
-  overflow: hidden;
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.hp-secondary .hp-compact .ai-chip {
-  margin-left: auto;
-}
-
-/* 0.17 #12: one card for a pair of features (AI PDF + PDF 도구, AI 마크다운 + 변환기):
-   the card makes the document, the button on its right edge opens the tool */
-.hp-secondary .hp-pair {
-  display: flex;
-  min-width: 0;
-  /* 0.17 리뷰 #2: a pair holds two buttons, so it takes two columns; in one column
-     the name was cut to "A." or "." */
-  grid-column: span 2;
-}
-.hp-secondary .hp-pair > .quick-card.hp-compact {
-  flex: 1;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-.hp-pair-alt {
-  flex: none;
-  padding: 0 10px;
-  border: 1px solid var(--border);
-  border-left: none;
-  border-radius: 0 10px 10px 0;
-  background: var(--surface);
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 12px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.hp-pair-alt:hover {
-  border-color: var(--border-hover);
-  color: var(--text-primary);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hp-primary .quick-card.hp-primary-card {
-    transition: none;
-  }
-  .hp-primary .quick-card.hp-primary-card:hover {
-    transform: none;
-  }
 }
 
 /* ── Hanpan: the Markdown converter ── */

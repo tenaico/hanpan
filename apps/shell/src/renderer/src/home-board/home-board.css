@@ -1,0 +1,175 @@
+/* Home's board (spec 7.0, 7.2): the head row, the grid, the card frame and the
+   recent card. Colors come from the tokens only. */
+
+/* the head row: the same file search as the lists, on the left */
+.hb-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.hb-head .file-search-group {
+  margin-left: 0;
+}
+
+/* search results take the board's place, with the type filter above them (plan R8) */
+.recents.hb-search {
+  margin-top: 0;
+}
+
+/* twelve columns of 96px rows (spec 7.2); a later card fills a gap it fits */
+.hb-board {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-auto-rows: 96px;
+  gap: 14px;
+  grid-auto-flow: row dense;
+}
+
+.hb-card {
+  grid-column: span var(--span);
+  grid-row: span var(--rows);
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.hb-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  overflow: auto;
+}
+
+/* the start card is the board itself: its chalkboard fills the frame */
+.hb-card[data-card-type='start'] {
+  border: none;
+  background: transparent;
+}
+
+.hb-card[data-card-type='start'] .hb-card-body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.hb-card[data-card-type='start'] .hp-board {
+  flex: 1;
+  margin: 0;
+  padding: 22px 28px;
+}
+
+.hb-card[data-card-type='start'] .home-hero {
+  margin: 0;
+  padding: 22px 28px;
+}
+
+.hb-card-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hb-apps-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.hb-apps-card .hb-apps {
+  flex: 1;
+  min-height: 0;
+}
+
+/* the recent card ("이어서 하기", spec 7.6) */
+.hb-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.hb-recent-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hb-recent-all {
+  padding: 2px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hb-recent-all:hover {
+  background: var(--bg-hover);
+}
+
+.hb-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hb-recent-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 0.7fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 5px 6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hb-recent-row:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.hb-recent-row:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.hb-recent-name,
+.hb-recent-where {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hb-recent-where,
+.hb-recent-when {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.hb-recent-when {
+  white-space: nowrap;
+}

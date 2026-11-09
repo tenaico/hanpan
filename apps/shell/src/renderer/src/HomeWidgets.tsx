@@ -3,20 +3,15 @@ import type { ReactElement } from 'react'
 import type { Lang } from '@genoffice/i18n'
 import type { FileEntry, FolderRoot, RecentEntry, UiTheme } from '../../shared/home-api'
 import {
-  DEFAULT_HOME_LAYOUT,
   HOME_MEMO_MAX,
   HOME_TITLE_MAX,
-  addWidget,
   arrangeKeys,
   canAddWidget,
   moveKey,
   moveWidget,
-  moveWidgetTo,
-  normalizeHomeLayout,
   removeWidget,
   resetHomeLayout,
   toggleKey,
-  updateWidget,
   validLinkUrl,
   type HomeLayout,
   type HomeWidget,
@@ -76,53 +71,12 @@ const GALLERY_ORDER: readonly HomeWidgetType[] = [
   'favorites',
 ]
 
-/** Home's layout: read once, changed through `update`, stored after every change */
-export function useHomeLayout(): [HomeLayout, Update] {
-  const [layout, setLayout] = useState<HomeLayout>(DEFAULT_HOME_LAYOUT)
-  const current = useRef(layout)
-  const changed = useRef(false)
-  useEffect(() => {
-    let alive = true
-    Promise.resolve(window.aiOffice.getHomeLayout?.())
-      .then((stored) => {
-        // a change made before the stored layout arrived wins over it
-        if (!alive || changed.current) return
-        current.current = normalizeHomeLayout(stored)
-        setLayout(current.current)
-      })
-      .catch(() => undefined)
-    return () => {
-      alive = false
-    }
-  }, [])
-  const update = useCallback((change: (prev: HomeLayout) => HomeLayout) => {
-    changed.current = true
-    const next = normalizeHomeLayout(change(current.current))
-    current.current = next
-    setLayout(next)
-    // a failed write keeps the change for this session; the next launch shows the stored one
-    void Promise.resolve(window.aiOffice.setHomeLayout?.(next)).catch(() => undefined)
-  }, [])
-  return [layout, update]
-}
-
-/** add a widget of `type`; returns its id (null when it could not be added) */
-export function addWidgetTo(update: Update, type: HomeWidgetType): string | null {
-  let id: string | null = null
-  update((prev) => {
-    const added = addWidget(prev, type)
-    id = added.id
-    return added.layout
-  })
-  return id
-}
-
 export function configuresOnAdd(type: HomeWidgetType): boolean {
   return CONFIGURE_ON_ADD.includes(type)
 }
 
-/** `cards` as the person arranged them, hidden ones dropped unless `withHidden` */
-export function arrangeCards<T extends { key: string }>(
+/** `cards` as the person arranged them, hidden ones dropped unless `withHidden` (0.18 panel) */
+function arrangeCards<T extends { key: string }>(
   cards: readonly T[],
   layout: HomeLayout,
   withHidden = false,
@@ -158,6 +112,21 @@ const TYPE_DESC: Record<HomeWidgetType, HomeCustomStringKey> = {
 
 function lastSegment(path: string): string {
   return path.split(/[\\/]/).filter(Boolean).pop() ?? path
+}
+
+/** the name a card goes by on the board (its frame's label): fixed for the built-in cards */
+export function boardCardName(card: BoardCard, lang: Lang, apps: readonly HomeAppCard[]): string {
+  const text: Text = (key) => homeCustomText(lang, key)
+  switch (card.type) {
+    case 'start':
+    case 'trend':
+    case 'apps':
+      return text(TYPE_NAME[card.type])
+    case 'recent':
+      return card.title || text('widgetRecent')
+    default:
+      return widgetTitle(card, text, apps)
+  }
 }
 
 /** the name a widget shows: the person's title, else something that says what it holds */
@@ -220,11 +189,6 @@ function FileList({
       ))}
     </ul>
   )
-}
-
-function RecentBody({ text, reloadKey }: { text: Text; reloadKey: unknown }) {
-  const entries = useFileList('recents', reloadKey)
-  return <FileList entries={entries} empty={text('recentEmpty')} attr="data-recent-file" />
 }
 
 /** the starred files; apps are pinned to the new card now, not here (spec 7.7) */
@@ -653,177 +617,6 @@ function WidgetForm({
         </button>
       </div>
     </div>
-  )
-}
-
-export function HomeWidgets({
-  layout,
-  update,
-  cards,
-  lang,
-  dateLocale,
-  reloadKey,
-  editingId,
-  onEdit,
-  onOpenGallery,
-}: {
-  layout: HomeLayout
-  update: Update
-  /** every app card Home offers (favorites and app shortcuts open them) */
-  cards: readonly HomeAppCard[]
-  lang: Lang
-  dateLocale: string
-  /** changes when the recents or starred lists change */
-  reloadKey: unknown
-  /** the widget whose settings are open */
-  editingId: string | null
-  onEdit: (id: string | null) => void
-  onOpenGallery: () => void
-}) {
-  const text: Text = (key) => homeCustomText(lang, key)
-  const dragged = useRef<string | null>(null)
-  const [dropTarget, setDropTarget] = useState<string | null>(null)
-  const sizeOptions = [
-    { value: 'small', label: text('sizeSmall') },
-    { value: 'wide', label: text('sizeWide') },
-  ]
-
-  const body = (widget: HomeWidget, title: string): ReactElement => {
-    switch (widget.type) {
-      case 'recent':
-        return <RecentBody text={text} reloadKey={reloadKey} />
-      case 'favorites':
-        return <FavoritesBody text={text} reloadKey={reloadKey} />
-      case 'memo':
-        return (
-          <MemoBody
-            memo={widget.text}
-            placeholder={text('memoPlaceholder')}
-            onSave={(memo) => update((prev) => updateWidget(prev, widget.id, { text: memo }))}
-          />
-        )
-      case 'shortcut':
-        return (
-          <ShortcutBody
-            target={widget.target}
-            title={title}
-            cards={cards}
-            text={text}
-            onSetUp={() => onEdit(widget.id)}
-          />
-        )
-      case 'folder':
-        if (!widget.path) return <UnsetBody text={text} onSetUp={() => onEdit(widget.id)} />
-        return <FolderBody path={widget.path} text={text} reloadKey={reloadKey} />
-      case 'clock':
-        return <ClockBody dateLocale={dateLocale} />
-    }
-  }
-
-  return (
-    <section className="home-widgets-wrap" aria-label={text('widgets')}>
-      <div className="section-head hw-row-head">
-        <span className="section-label">{text('widgets')}</span>
-        <button
-          type="button"
-          className="home-custom-open"
-          data-home-widgets="add"
-          onClick={onOpenGallery}
-        >
-          + {text('addWidget')}
-        </button>
-      </div>
-      {layout.widgets.length === 0 ? (
-        <p className="hw-empty">{text('noWidgets')}</p>
-      ) : (
-        <div className="home-widgets">
-          {layout.widgets.map((widget) => {
-            const title = widgetTitle(widget, text, cards)
-            const editing = editingId === widget.id
-            return (
-              <div
-                key={widget.id}
-                className={`hw-card${dropTarget === widget.id ? ' drop-target' : ''}`}
-                data-widget={widget.id}
-                data-widget-type={widget.type}
-                data-size={widget.size}
-                data-unset={widgetUnset(widget) ? 'true' : undefined}
-                draggable={!editing}
-                onDragStart={(event) => {
-                  dragged.current = widget.id
-                  event.dataTransfer?.setData('text/plain', widget.id)
-                  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
-                }}
-                onDragOver={(event) => {
-                  if (!dragged.current || dragged.current === widget.id) return
-                  event.preventDefault()
-                  setDropTarget(widget.id)
-                }}
-                onDragLeave={() => setDropTarget((at) => (at === widget.id ? null : at))}
-                onDrop={(event) => {
-                  event.preventDefault()
-                  const from = dragged.current
-                  dragged.current = null
-                  setDropTarget(null)
-                  if (from && from !== widget.id)
-                    update((prev) => moveWidgetTo(prev, from, widget.id))
-                }}
-                onDragEnd={() => {
-                  dragged.current = null
-                  setDropTarget(null)
-                }}
-              >
-                <div className="hw-head">
-                  <h2 className="hw-title">{title}</h2>
-                  <button
-                    type="button"
-                    className="hw-icon-btn"
-                    data-widget-settings=""
-                    // 앱 설정 단추와 같은 이름 "설정"이 홈에 여럿 생기지 않도록 위젯 이름을 붙인다
-                    aria-label={`${title} ${text('settings')}`}
-                    title={text('settings')}
-                    aria-pressed={editing}
-                    onClick={() => onEdit(editing ? null : widget.id)}
-                  >
-                    ⚙
-                  </button>
-                  <button
-                    type="button"
-                    className="hw-icon-btn"
-                    data-widget-remove=""
-                    aria-label={text('remove')}
-                    title={text('remove')}
-                    onClick={() => {
-                      if (editing) onEdit(null)
-                      update((prev) => removeWidget(prev, widget.id))
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-                {editing ? (
-                  <WidgetForm
-                    widget={widget}
-                    cards={cards}
-                    text={text}
-                    sizeOptions={sizeOptions}
-                    sizeValue={widget.size}
-                    onPatch={(values) => update((prev) => updateWidget(prev, widget.id, values))}
-                    onSize={(value) =>
-                      update((prev) => updateWidget(prev, widget.id, { size: value }))
-                    }
-                    onMove={(delta) => update((prev) => moveWidget(prev, widget.id, delta))}
-                    onDone={() => onEdit(null)}
-                  />
-                ) : (
-                  body(widget, title)
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </section>
   )
 }
 

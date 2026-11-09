@@ -152,7 +152,6 @@ import {
   writeAppSettingThen,
 } from './app-settings'
 import { boardContextFrom, readHomeBoard, writeHomeBoard } from './home-board'
-import { readHomeLayout, writeHomeLayout } from './home-layout'
 import { openWidgetTarget, pathKind } from './home-widget-targets'
 import { KOREAN_DOC_FEATURES_KEY, readKoreanDocFeatures } from './korean-doc-features'
 import { trendForecastUrl } from './trend/trend-config'
@@ -6736,11 +6735,6 @@ function registerHomeIpc(): void {
     for (const wc of webContents.getAllWebContents()) wc.send('app:auto-save-default-changed', next)
   })
 
-  // 0.17: Home's widgets and app card arrangement; a damaged value reads as the defaults
-  ipcMain.handle(HOME_CHANNELS.getHomeLayout, () => readHomeLayout(APP_SETTINGS_PATH()))
-  ipcMain.handle(HOME_CHANNELS.setHomeLayout, (_event, layout: unknown) =>
-    writeHomeLayout(APP_SETTINGS_PATH(), layout),
-  )
   // 0.19: Home's board; the first read moves the 0.18 layout over (spec 7.10)
   const boardContext = () =>
     boardContextFrom(currentLang(), readKoreanDocFeatures(APP_SETTINGS_PATH()), TREND_URL)

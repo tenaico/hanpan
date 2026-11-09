@@ -1,10 +1,6 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_HOME_LAYOUT,
-  HOME_LAYOUT_SETTING_KEY,
   HOME_MEMO_MAX,
   HOME_WIDGET_MAX,
   addWidget,
@@ -20,7 +16,6 @@ import {
   validLinkUrl,
   type HomeWidget,
 } from '../src/shared/home-layout'
-import { readHomeLayout, writeHomeLayout } from '../src/main/home-layout'
 
 /**
  * 0.17 위젯 및 인터페이스 사용자화: the home layout (widget instances, app
@@ -213,34 +208,5 @@ describe('ordering helpers', () => {
     })
     expect(custom.widgets).toHaveLength(1)
     expect(resetHomeLayout()).toEqual(DEFAULT_HOME_LAYOUT)
-  })
-})
-
-describe('home layout storage', () => {
-  let dir: string
-  let path: string
-  beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'home-layout-'))
-    path = join(dir, 'app-settings.json')
-  })
-  afterEach(() => rmSync(dir, { recursive: true, force: true }))
-
-  it('reads the defaults from a missing or corrupt file', () => {
-    expect(readHomeLayout(path)).toEqual(DEFAULT_HOME_LAYOUT)
-    writeFileSync(path, '{not json')
-    expect(readHomeLayout(path)).toEqual(DEFAULT_HOME_LAYOUT)
-  })
-
-  it('writes a normalized layout beside the other settings', () => {
-    writeFileSync(path, JSON.stringify({ theme: 'dark' }))
-    const written = writeHomeLayout(path, {
-      hiddenCards: ['pdf', 9],
-      widgets: [{ id: 'm', type: 'memo', text: 'hello' }],
-    })
-    expect(written.hiddenCards).toEqual(['pdf'])
-    const file = JSON.parse(readFileSync(path, 'utf8'))
-    expect(file.theme).toBe('dark')
-    expect(file[HOME_LAYOUT_SETTING_KEY].widgets[0].text).toBe('hello')
-    expect(readHomeLayout(path)).toEqual(written)
   })
 })

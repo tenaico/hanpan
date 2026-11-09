@@ -126,6 +126,11 @@ function selected(): string[] {
 }
 
 describe('Home sidebar navigation', () => {
+  it('starts on Home', async () => {
+    expect(selected()).toEqual(['Home'])
+    expect(container.querySelector('[data-home-board]')).not.toBeNull()
+  })
+
   it.each(['Recent', 'Starred'])('shows only Ask AI as selected after leaving %s', async (from) => {
     await click(nav(from))
     expect(selected()).toEqual([from])
@@ -145,6 +150,7 @@ describe('Home sidebar navigation', () => {
   })
 
   it('keeps the file-type filter when returning from Ask AI', async () => {
+    await click(nav('Recent'))
     const docs = [...container.querySelectorAll<HTMLButtonElement>('.filter-pill')].find(
       (button) => button.textContent === 'Documents',
     )!
