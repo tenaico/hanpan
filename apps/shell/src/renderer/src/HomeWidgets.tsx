@@ -24,6 +24,15 @@ import {
   type ShortcutKind,
   type ShortcutTarget,
 } from '../../shared/home-layout'
+import {
+  CARD_SIZES,
+  parseSizeKey,
+  sizeKey,
+  type BoardCard,
+  type BoardCardType,
+  type HomeBoard,
+} from '../../shared/home-board'
+import { moveCard, updateCard } from '../../shared/home-board-edit'
 import { useDialogKeys } from './dialog-keys'
 import { homeCustomText, type HomeCustomStringKey } from './i18n/strings-home-custom'
 import './home-widgets.css'
@@ -48,6 +57,8 @@ export interface HomeAppCard {
 
 type Update = (change: (prev: HomeLayout) => HomeLayout) => void
 type Text = (key: HomeCustomStringKey) => string
+/** a 0.18 widget in the widget row, or a card on the 0.19 board */
+type WidgetLike = HomeWidget | BoardCard
 
 /** how many files the list widgets show */
 const WIDGET_FILES = 5
@@ -125,7 +136,10 @@ export function arrangeCards<T extends { key: string }>(
     .map((key) => byKey.get(key)!)
 }
 
-const TYPE_NAME: Record<HomeWidgetType, HomeCustomStringKey> = {
+const TYPE_NAME: Record<BoardCardType, HomeCustomStringKey> = {
+  start: 'cardStart',
+  trend: 'cardTrend',
+  apps: 'cardApps',
   recent: 'widgetRecent',
   favorites: 'widgetFavorites',
   memo: 'widgetNote',
@@ -147,7 +161,7 @@ function lastSegment(path: string): string {
 }
 
 /** the name a widget shows: the person's title, else something that says what it holds */
-export function widgetTitle(widget: HomeWidget, text: Text, cards: readonly HomeAppCard[]): string {
+export function widgetTitle(widget: WidgetLike, text: Text, cards: readonly HomeAppCard[]): string {
   if (widget.title) return widget.title
   if (widget.type === 'memo' && widget.id === 'memo') return text('widgetMemo')
   if (widget.type === 'folder' && widget.path) return lastSegment(widget.path)
@@ -213,39 +227,10 @@ function RecentBody({ text, reloadKey }: { text: Text; reloadKey: unknown }) {
   return <FileList entries={entries} empty={text('recentEmpty')} attr="data-recent-file" />
 }
 
-function FavoritesBody({
-  text,
-  reloadKey,
-  pinned,
-}: {
-  text: Text
-  reloadKey: unknown
-  pinned: HomeAppCard[]
-}) {
+/** the starred files; apps are pinned to the new card now, not here (spec 7.7) */
+function FavoritesBody({ text, reloadKey }: { text: Text; reloadKey: unknown }) {
   const starred = useFileList('starred', reloadKey)
-  return (
-    <>
-      {pinned.length > 0 && (
-        <div className="hw-apps">
-          {pinned.map((card) => (
-            <button
-              key={card.key}
-              type="button"
-              className="hw-app"
-              data-fav-app={card.key}
-              onClick={() => void card.action()}
-            >
-              {card.icon}
-              <span className="hw-name">{card.title}</span>
-            </button>
-          ))}
-        </div>
-      )}
-      {starred.length > 0 || pinned.length === 0 ? (
-        <FileList entries={starred} empty={text('favoritesEmpty')} attr="data-fav-file" />
-      ) : null}
-    </>
-  )
+  return <FileList entries={starred} empty={text('favoritesEmpty')} attr="data-fav-file" />
 }
 
 function MemoBody({
@@ -317,20 +302,19 @@ export function widgetUnset(widget: HomeWidget): boolean {
 }
 
 function ShortcutBody({
-  widget,
+  target,
   title,
   cards,
   text,
   onSetUp,
 }: {
-  widget: Extract<HomeWidget, { type: 'shortcut' }>
+  target: ShortcutTarget | null
   title: string
   cards: readonly HomeAppCard[]
   text: Text
   onSetUp: () => void
 }) {
   const [failed, setFailed] = useState(false)
-  const target = widget.target
   if (!target) return <UnsetBody text={text} onSetUp={onSetUp} />
   const card = target.kind === 'app' ? cards.find((c) => c.key === target.value) : undefined
   const open = async () => {
@@ -456,24 +440,34 @@ function MoveButtons({
   )
 }
 
-/** a widget's settings, shown in place of its body; changes are stored as they are made */
+/**
+ * A widget's settings, shown in place of its body; changes are stored as they
+ * are made. What a change does is the caller's: the 0.18 widget row and the
+ * board store them differently.
+ */
 function WidgetForm({
   widget,
-  update,
   cards,
   text,
+  sizeOptions,
+  sizeValue,
+  onPatch: patch,
+  onSize,
+  onMove,
   onDone,
 }: {
-  widget: HomeWidget
-  update: Update
+  widget: WidgetLike
   cards: readonly HomeAppCard[]
   text: Text
+  sizeOptions: { value: string; label: string }[]
+  sizeValue: string
+  onPatch: (values: Record<string, unknown>) => void
+  onSize: (value: string) => void
+  onMove: (delta: -1 | 1) => void
   onDone: () => void
 }) {
   /** the name the card shows while the title is empty, offered as the field's hint */
   const shownName = widgetTitle({ ...widget, title: '' }, text, cards)
-  const patch = (values: Record<string, unknown>) =>
-    update((prev) => updateWidget(prev, widget.id, values))
   const target = widget.type === 'shortcut' ? widget.target : null
   const [kind, setKind] = useState<ShortcutKind>(target?.kind ?? 'file')
   const [link, setLink] = useState(target?.kind === 'link' ? target.value : '')
@@ -638,19 +632,15 @@ function WidgetForm({
       <div className="hw-form-row">
         <label className="hw-field">
           <span>{text('size')}</span>
-          <select
-            name="size"
-            value={widget.size}
-            onChange={(event) => patch({ size: event.target.value })}
-          >
-            <option value="small">{text('sizeSmall')}</option>
-            <option value="wide">{text('sizeWide')}</option>
+          <select name="size" value={sizeValue} onChange={(event) => onSize(event.target.value)}>
+            {sizeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
-        <MoveButtons
-          text={text}
-          onMove={(delta) => update((prev) => moveWidget(prev, widget.id, delta))}
-        />
+        <MoveButtons text={text} onMove={onMove} />
         <button
           type="button"
           className="hw-small-btn hw-done"
@@ -693,16 +683,17 @@ export function HomeWidgets({
   const text: Text = (key) => homeCustomText(lang, key)
   const dragged = useRef<string | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
-  const pinned = layout.pinnedApps
-    .map((key) => cards.find((card) => card.key === key))
-    .filter((card): card is HomeAppCard => !!card)
+  const sizeOptions = [
+    { value: 'small', label: text('sizeSmall') },
+    { value: 'wide', label: text('sizeWide') },
+  ]
 
   const body = (widget: HomeWidget, title: string): ReactElement => {
     switch (widget.type) {
       case 'recent':
         return <RecentBody text={text} reloadKey={reloadKey} />
       case 'favorites':
-        return <FavoritesBody text={text} reloadKey={reloadKey} pinned={pinned} />
+        return <FavoritesBody text={text} reloadKey={reloadKey} />
       case 'memo':
         return (
           <MemoBody
@@ -714,7 +705,7 @@ export function HomeWidgets({
       case 'shortcut':
         return (
           <ShortcutBody
-            widget={widget}
+            target={widget.target}
             title={title}
             cards={cards}
             text={text}
@@ -813,9 +804,15 @@ export function HomeWidgets({
                 {editing ? (
                   <WidgetForm
                     widget={widget}
-                    update={update}
                     cards={cards}
                     text={text}
+                    sizeOptions={sizeOptions}
+                    sizeValue={widget.size}
+                    onPatch={(values) => update((prev) => updateWidget(prev, widget.id, values))}
+                    onSize={(value) =>
+                      update((prev) => updateWidget(prev, widget.id, { size: value }))
+                    }
+                    onMove={(delta) => update((prev) => moveWidget(prev, widget.id, delta))}
                     onDone={() => onEdit(null)}
                   />
                 ) : (
@@ -827,6 +824,111 @@ export function HomeWidgets({
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * A widget card's head and body on the board (spec 7.7): its name, its
+ * settings button and either its settings or what it shows. The board draws
+ * the card around it; start, trend, apps and recent have bodies of their own.
+ */
+export function WidgetBody({
+  card,
+  update,
+  apps,
+  lang,
+  dateLocale,
+  reloadKey,
+  editing,
+  onEdit,
+}: {
+  card: BoardCard
+  update: (change: (prev: HomeBoard) => HomeBoard) => void
+  /** every app Home offers (app shortcuts open them) */
+  apps: readonly HomeAppCard[]
+  lang: Lang
+  dateLocale: string
+  /** changes when the recents or starred lists change */
+  reloadKey: unknown
+  editing: boolean
+  onEdit: (id: string | null) => void
+}): ReactElement {
+  const text: Text = (key) => homeCustomText(lang, key)
+  const title = widgetTitle(card, text, apps)
+  const patch = (values: Record<string, unknown>) =>
+    update((prev) => updateCard(prev, card.id, values))
+
+  const body = (): ReactElement | null => {
+    switch (card.type) {
+      case 'favorites':
+        return <FavoritesBody text={text} reloadKey={reloadKey} />
+      case 'memo':
+        return (
+          <MemoBody
+            memo={card.text}
+            placeholder={text('memoPlaceholder')}
+            onSave={(memo) => patch({ text: memo })}
+          />
+        )
+      case 'shortcut':
+        return (
+          <ShortcutBody
+            target={card.target}
+            title={title}
+            cards={apps}
+            text={text}
+            onSetUp={() => onEdit(card.id)}
+          />
+        )
+      case 'folder':
+        if (!card.path) return <UnsetBody text={text} onSetUp={() => onEdit(card.id)} />
+        return <FolderBody path={card.path} text={text} reloadKey={reloadKey} />
+      case 'clock':
+        return <ClockBody dateLocale={dateLocale} />
+      default:
+        return null
+    }
+  }
+
+  return (
+    <>
+      <header className="hw-head">
+        <h2 className="hw-title">{title}</h2>
+        <button
+          type="button"
+          className="hw-icon-btn"
+          data-widget-settings=""
+          // a card name keeps the many "settings" buttons on Home apart
+          aria-label={`${title} ${text('settings')}`}
+          title={text('settings')}
+          aria-pressed={editing}
+          onClick={() => onEdit(editing ? null : card.id)}
+        >
+          ⚙
+        </button>
+      </header>
+      {editing ? (
+        <WidgetForm
+          widget={card}
+          cards={apps}
+          text={text}
+          sizeOptions={CARD_SIZES[card.type].map((s) => ({
+            value: sizeKey(s),
+            label: homeCustomText(lang, 'sizeOption', { w: s.w, h: s.h }),
+          }))}
+          sizeValue={sizeKey(card)}
+          onPatch={patch}
+          onSize={(value) => {
+            const next = parseSizeKey(value)
+            if (next) patch({ ...next })
+          }}
+          onMove={(delta) => update((prev) => moveCard(prev, card.id, delta))}
+          onDone={() => onEdit(null)}
+        />
+      ) : (
+        body()
+      )}
+    </>
   )
 }
 

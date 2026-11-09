@@ -218,12 +218,12 @@ describe('home widgets', () => {
     expect(host.querySelector('.hp-cards [data-new="pdf"]')).not.toBeNull()
   })
 
-  it('lists starred files and pinned apps in the favorites widget', async () => {
+  it('lists starred files in the favorites widget', async () => {
     stored = { ...DEFAULT_HOME_LAYOUT, pinnedApps: ['xmind'] }
     await renderHome()
     const fav = host.querySelector('[data-widget-type="favorites"]')!
     expect(fav.textContent).toContain('plan.docx')
-    expect(fav.querySelector('[data-fav-app="xmind"]')).not.toBeNull()
+    expect(fav.querySelector('[data-fav-app]')).toBeNull()
     await click(fav.querySelector('[data-fav-file]'))
     expect(openPath).toHaveBeenCalledWith('C:\\docs\\plan.docx')
   })
@@ -437,13 +437,11 @@ describe('홈 꾸미기 panel', () => {
     expect(secondaryKeys().slice(0, 2)).toEqual([order[1], order[0]])
   })
 
-  it('pins an app into favorites', async () => {
+  it('stores an app pinned in the panel', async () => {
     await renderHome()
     await openPanel()
     await click(panel()!.querySelector('[data-custom-card="html"] [data-pin]'))
-    expect(
-      host.querySelector('[data-widget-type="favorites"] [data-fav-app="html"]'),
-    ).not.toBeNull()
+    expect(layoutNow().pinnedApps).toContain('html')
   })
 
   it('switches the theme through the existing setting', async () => {

@@ -4,8 +4,14 @@
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { StartBoard, flowGeometry } from '../src/renderer/src/hanpan/StartBoard'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { HomeApi } from '../src/shared/home-api'
+import { StartBoard } from '../src/renderer/src/hanpan/StartBoard'
+
+/**
+ * The start card (spec 7.3): the topic box, the office examples that start a
+ * map and the user guide button with its F1 key. The flow drawing is gone.
+ */
 
 const actEnvironment = globalThis as typeof globalThis & {
   IS_REACT_ACT_ENVIRONMENT?: boolean
@@ -14,11 +20,17 @@ actEnvironment.IS_REACT_ACT_ENVIRONMENT = true
 
 let host: HTMLDivElement
 let root: Root
+let openHelp: ReturnType<typeof vi.fn>
+let newMap: ReturnType<typeof vi.fn>
 
 beforeEach(() => {
   host = document.createElement('div')
   document.body.append(host)
   root = createRoot(host)
+  openHelp = vi.fn(async () => undefined)
+  newMap = vi.fn(async () => ({ ok: true }))
+  window.aiOffice = { openHelp } as unknown as HomeApi
+  window.hanpanApi = { newMap } as unknown as typeof window.hanpanApi
 })
 
 afterEach(() => {
@@ -26,31 +38,34 @@ afterEach(() => {
   host.remove()
 })
 
-function renderBoard(korean: boolean): void {
-  act(() => root.render(createElement(StartBoard, { greeting: 'Hi', t: (key) => key, korean })))
+function renderBoard(): void {
+  act(() => root.render(createElement(StartBoard, { greeting: 'Hi', t: (key) => key })))
 }
 
-const branches = () =>
-  Array.from(host.querySelectorAll('.hp-flow-branches li')).map((li) => li.textContent)
-
-describe('flowGeometry', () => {
-  it('matches the current drawing for four branches', () =>
-    expect(flowGeometry(4)).toEqual({ height: 166, rootY: 83, ends: [19, 62, 105, 148] }))
-
-  it('fits two branches', () =>
-    expect(flowGeometry(2)).toEqual({ height: 80, rootY: 40, ends: [19, 62] }))
-})
-
 describe('StartBoard', () => {
-  it('shows only the slides and Word branches when Korean features are off', () => {
-    renderBoard(false)
-    expect(branches()).toEqual(['hpFlowPpt', 'hpFlowDocx'])
-    expect(host.querySelectorAll('.hp-flow-lines path')).toHaveLength(2)
+  it('has no flow figure', () => {
+    renderBoard()
+    expect(host.querySelector('.hp-flow')).toBeNull()
   })
 
-  it('shows all four branches when Korean features are on', () => {
-    renderBoard(true)
-    expect(branches()).toEqual(['hpFlowHwp', 'hpFlowPpt', 'hpFlowDocx', 'hpFlowCard'])
-    expect(host.querySelectorAll('.hp-flow-lines path')).toHaveLength(4)
+  it("shows F1 on the guide button and opens Hanpan's guide", async () => {
+    renderBoard()
+    const guide = host.querySelector<HTMLElement>('[data-hanpan="start-guide"]')!
+    expect(guide.querySelector('kbd')?.textContent).toBe('F1')
+    expect(guide.dataset.tip).toBe('hpManualTip')
+    await act(async () => guide.click())
+    expect(openHelp).toHaveBeenCalledWith('hanpan')
+  })
+
+  it('offers office examples that start a map', async () => {
+    renderBoard()
+    const chips = Array.from(host.querySelectorAll<HTMLElement>('.hp-example'))
+    expect(chips.map((chip) => chip.textContent)).toEqual([
+      'hbExample1',
+      'hbExample2',
+      'hbExample3',
+    ])
+    await act(async () => chips[0]!.click())
+    expect(newMap).toHaveBeenCalledWith('hbExample1')
   })
 })

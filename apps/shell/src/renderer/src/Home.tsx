@@ -3565,11 +3565,7 @@ export function Home({
       <main className="content">
         <section className="quick-start" aria-label={t('secQuickStart')}>
           {window.hanpanApi?.newMap ? (
-            <StartBoard
-              greeting={greeting.trim()}
-              t={(key) => t(key as Parameters<typeof t>[0])}
-              korean={koreanDocs}
-            />
+            <StartBoard greeting={greeting.trim()} t={(key) => t(key as Parameters<typeof t>[0])} />
           ) : (
             <div className="home-hero">
               <h1 className="hero-title">
