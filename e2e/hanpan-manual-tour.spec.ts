@@ -183,7 +183,17 @@ async function tour(trendUrl: string): Promise<void> {
     const home = (await listTabs(page)).find((t) => t.kind === 'home')!
     await activate(page, home.id)
     await page.locator('[data-hanpan="templates"]').click()
-    await expect(page.locator('.hp-tpl-card')).toHaveCount(22)
+    // every template the app lists (the 글집 ones, the picture ones and the official forms)
+    const templates = await page.evaluate(
+      async () =>
+        (
+          await (
+            window as unknown as { hanpanApi: { templates(): Promise<unknown[]> } }
+          ).hanpanApi.templates()
+        ).length,
+    )
+    expect(templates).toBeGreaterThan(0)
+    await expect(page.locator('.hp-tpl-card')).toHaveCount(templates)
     await shot(page, '07-templates')
     await page.locator('.hp-tpl-close').click()
 
