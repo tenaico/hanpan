@@ -5,6 +5,7 @@
 **Goal:** 트렌드레이더에 `GET /api/forecast`를 더한다. 한판 홈의 트렌드 카드는 이 주소에서 사이트 홈과 같은 '오늘의 기상도'를 받아 그린다.
 
 **Architecture:**
+
 - 지금 사이트 홈 화면(`src/app/page.tsx`, 브라우저)에서 하는 기상도 계산을 `src/lib`의 순수 함수로 옮긴다.
 - 사이트 홈과 새 서버 주소가 그 함수를 같이 쓴다. 그래서 둘의 날씨는 늘 같다.
 - 서버 주소는 원본 API의 lib 함수로 입력을 모아 계산하고, 응답 머리(`Cache-Control`)로 Vercel CDN에 결과를 저장시킨다.
@@ -16,10 +17,12 @@
 ## Global Constraints
 
 **저장소와 가지**
+
 - 저장소: `C:\Users\ten\Desktop\tenai-trend` (`tenaico/tenai-trend`).
 - 가지: master 752e1a4에서 딴 `feat/forecast-api`.
 
 **지켜야 할 값**
+
 - 사이트 화면은 바뀌지 않는다. 홈의 10줄 날씨 말, 아이콘, 한 줄 요약(`head`), 순서가 지금과 같아야 한다.
 - 응답 형식은 `schema` 1이다. 키는 `schema`, `asOf`, `date`, `fields`, `line`이다. `fields`의 항목 키는 `key`, `title`, `scale`, `s`, `label`, `head`, `path`다.
 - 분야 `key`와 순서: `ai`, `opensource`, `local-ai`, `ai-safety`, `stocks`, `economy`, `semiconductor`, `realestate`, `fx`, `crypto`.
@@ -28,6 +31,7 @@
 - '오늘의 한 줄'은 규칙으로 만든다. AI를 부르지 않는다.
 
 **작업 규칙**
+
 - 새 의존성은 `vitest`(devDependencies) 하나뿐이다.
 - 커밋은 영어 메시지로, `git -c user.email=37573099+grapevine26@users.noreply.github.com -c user.name=grapevine26 commit`으로 한다. 메시지 끝에 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`을 붙인다.
 - 시험 명령은 `npm test`(= `vitest run`), `npm run lint`, `npm run build`다.
@@ -45,10 +49,12 @@
 ### Task 1: Vitest와 서버에서도 쓰는 신호 모듈
 
 **Files:**
+
 - Create: `src/lib/signal.ts`, `src/lib/signal.test.ts`, `vitest.config.ts`
 - Modify: `package.json` (`"test": "vitest run"`, devDependency `vitest`), `src/components/briefing.tsx:9-42`, `src/components/market.tsx:32-41`
 
 **Interfaces:**
+
 - Produces (`src/lib/signal.ts`, `"use client"` 없음, JSX 없음):
   - `type Signal = -2 | -1 | 0 | 1 | 2`
   - `type Scale = "weather" | "market"`
@@ -69,31 +75,44 @@
 - [ ] **Step 2: 실패하는 시험을 쓴다.** `src/lib/signal.test.ts`:
 
 ```ts
-import { describe, expect, it } from "vitest";
-import { signalLabel, toSignal, trendScore } from "./signal";
+import { describe, expect, it } from 'vitest'
+import { signalLabel, toSignal, trendScore } from './signal'
 
-describe("toSignal", () => {
-  it.each([[1.5, 2], [1.49, 1], [0.5, 1], [0.49, 0], [-0.49, 0], [-0.5, -1], [-1.49, -1], [-1.5, -2]])("%f → %i", (score, s) => {
-    expect(toSignal(score)).toBe(s);
-  });
-});
+describe('toSignal', () => {
+  it.each([
+    [1.5, 2],
+    [1.49, 1],
+    [0.5, 1],
+    [0.49, 0],
+    [-0.49, 0],
+    [-0.5, -1],
+    [-1.49, -1],
+    [-1.5, -2],
+  ])('%f → %i', (score, s) => {
+    expect(toSignal(score)).toBe(s)
+  })
+})
 
-describe("signalLabel", () => {
-  it("weather and market words", () => {
-    expect(signalLabel(1)).toBe("구름 조금");
-    expect(signalLabel(-2)).toBe("폭풍우");
-    expect(signalLabel(-2, "market")).toBe("침체");
-    expect(signalLabel(0, "market")).toBe("보합");
-  });
-});
+describe('signalLabel', () => {
+  it('weather and market words', () => {
+    expect(signalLabel(1)).toBe('구름 조금')
+    expect(signalLabel(-2)).toBe('폭풍우')
+    expect(signalLabel(-2, 'market')).toBe('침체')
+    expect(signalLabel(0, 'market')).toBe('보합')
+  })
+})
 
-describe("trendScore", () => {
-  it("adds direction, 20-day line, alignment and 1-month momentum", () => {
-    expect(trendScore({ price: 110, changePct: 1, ma20: 100, ma60: 90, ret1m: 5 })).toBeCloseTo(2.1);
-    expect(trendScore({ price: 110, changePct: 1, ma20: 100, ma60: 90, ret1m: 5 }, true)).toBeCloseTo(-2.1);
-    expect(trendScore({ price: 90, changePct: -1, ma20: null, ma60: null, ret1m: null })).toBeCloseTo(-0.4);
-  });
-});
+describe('trendScore', () => {
+  it('adds direction, 20-day line, alignment and 1-month momentum', () => {
+    expect(trendScore({ price: 110, changePct: 1, ma20: 100, ma60: 90, ret1m: 5 })).toBeCloseTo(2.1)
+    expect(
+      trendScore({ price: 110, changePct: 1, ma20: 100, ma60: 90, ret1m: 5 }, true),
+    ).toBeCloseTo(-2.1)
+    expect(
+      trendScore({ price: 90, changePct: -1, ma20: null, ma60: null, ret1m: null }),
+    ).toBeCloseTo(-0.4)
+  })
+})
 ```
 
 - [ ] **Step 3: 실패를 확인한다.**
@@ -111,9 +130,11 @@ describe("trendScore", () => {
 ### Task 2: 기상도 계산 함수와 '오늘의 한 줄'
 
 **Files:**
+
 - Create: `src/lib/forecast.ts`, `src/lib/forecast.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 1의 `Signal`, `Scale`, `toSignal`, `trendScore`, `signalLabel`. 그리고 `src/lib/localai-insight.ts`의 `analyzeLocal`, `PC_GB`, `type Local`, `src/lib/format.ts`의 `fmt`, `fmtSigned`, `won`, `src/lib/yahoo.ts`의 `type Quote`(타입만).
 - Produces (`src/lib/forecast.ts`, `"use client"` 없음, JSX 없음, 서버 전용 모듈을 런타임으로 import하지 않음):
   - `type FieldKey = "ai" | "opensource" | "local-ai" | "ai-safety" | "stocks" | "economy" | "semiconductor" | "realestate" | "fx" | "crypto"`
@@ -130,25 +151,27 @@ describe("trendScore", () => {
   - `withTopic(name: string): string`. 이름 뒤에 '은'이나 '는'을 붙인다.
   - `forecastLine(rows: ForecastRow[]): string`
 
-**`computeForecast`는 지금 `page.tsx` 37~95줄(신호 계산)과 96~215줄(`head`)을 그대로 옮긴 것이다.**
+**`computeForecast`는 지금 `page.tsx` 37~~95줄(신호 계산)과 96~~215줄(`head`)을 그대로 옮긴 것이다.**
+
 - 시간에 따라 달라지는 값(허깅페이스 7일 신규, `analyzeLocal`의 7일 기준)은 지금처럼 `Date.now()`를 쓴다.
 - `s`는 지금 사이트가 보여 주는 값 그대로다(원본이 없으면 아래 표의 기본값). `known`은 그 분야의 원본이 실제로 있었는지를 뜻한다.
 - **Ruling:** 스펙 7.11은 "함수는 원본이 없으면 `null`을 돌려주고, 사이트는 `null`을 0으로 보여 준다"고 적었다. 그러나 AI 분야는 원본이 없을 때 사이트가 0이 아니라 1(구름 조금)을 보여 준다. 그래서 `null`을 0으로 바꾸면 사이트 모습이 달라진다. 이를 피하려고 `s`(사이트 값)와 `known`을 따로 두고, API만 `known`이 거짓일 때 `null`을 보낸다. 잘못 판단한 경우의 비용은 없다. 바깥으로 나가는 형식은 스펙과 같다.
 
-| key | `known`이 참인 조건 | 원본이 없을 때의 `s` (사이트와 같음) |
-|---|---|---|
-| ai | `quotes.ai`가 1개 이상 | `toSignal(0.5)` = 1 |
-| opensource | `hf.models`가 1개 이상 | 0 |
-| local-ai | `local`이 있음 | 0 |
-| ai-safety | 늘 참(리서치 파일) | — |
-| stocks | `quotes.korea`에 `^KS11`이 있음 | 0 |
-| economy | `ecos`가 있음 | 0 |
-| semiconductor | 늘 참(수출 리서치 파일; 반도체 주가는 있으면 더함) | — |
-| realestate | `ecos.kbSaleSeoulApt` 점이 1개 이상 | 0 |
-| fx | `quotes.macro`에 `KRW=X`가 있음 | 0 |
-| crypto | `quotes.crypto`에 `BTC-USD`가 있음 | 0 |
+| key           | `known`이 참인 조건                                | 원본이 없을 때의 `s` (사이트와 같음) |
+| ------------- | -------------------------------------------------- | ------------------------------------ |
+| ai            | `quotes.ai`가 1개 이상                             | `toSignal(0.5)` = 1                  |
+| opensource    | `hf.models`가 1개 이상                             | 0                                    |
+| local-ai      | `local`이 있음                                     | 0                                    |
+| ai-safety     | 늘 참(리서치 파일)                                 | —                                    |
+| stocks        | `quotes.korea`에 `^KS11`이 있음                    | 0                                    |
+| economy       | `ecos`가 있음                                      | 0                                    |
+| semiconductor | 늘 참(수출 리서치 파일; 반도체 주가는 있으면 더함) | —                                    |
+| realestate    | `ecos.kbSaleSeoulApt` 점이 1개 이상                | 0                                    |
+| fx            | `quotes.macro`에 `KRW=X`가 있음                    | 0                                    |
+| crypto        | `quotes.crypto`에 `BTC-USD`가 있음                 | 0                                    |
 
 **`forecastLine` 규칙 (Claude 판단, 스펙 7.11이 만드는 사람에게 맡긴 부분):**
+
 - `scale`이 `"weather"`이고 `known`이 참인 분야만 본다.
 - 좋은 쪽은 `s ≥ 1`인 분야를 `s` 큰 순, 같으면 필드 순서로 골라 최대 2개다. 궂은 쪽은 `s ≤ −1`인 분야를 `s` 작은 순, 같으면 필드 순서로 골라 최대 2개다.
 - 문장 틀(이름은 `·`로 잇고, 마지막 이름에 `withTopic`):
@@ -158,6 +181,7 @@ describe("trendScore", () => {
   - 둘 다 없을 때: `뚜렷하게 맑거나 궂은 분야가 없습니다.`
 
 **`withTopic` 규칙.** 마지막 글자로 정한다.
+
 - 한글이면 받침이 있을 때 '은', 없을 때 '는'이다. 받침이 있으면 `(code − 0xAC00) % 28 ≠ 0`이다.
 - 숫자면 0, 1, 3, 6, 7, 8은 '은', 2, 4, 5, 9는 '는'이다.
 - 영문자면 l, m, n, r(대소문자 무관)은 '은', 나머지는 '는'이다.
@@ -166,12 +190,14 @@ describe("trendScore", () => {
 - [ ] **Step 1: 실패하는 시험을 쓴다.** `src/lib/forecast.test.ts`
 
 준비물:
+
 - 실제 리서치 파일 넷(`@data/ai-big5.json` 등)을 `ForecastData`로 쓴다.
 - `beforeEach`에서 `vi.useFakeTimers()`, `vi.setSystemTime(new Date("2026-11-09T00:00:00Z"))`를 부른다.
 - `quote(symbol, over)` 도우미는 `price 100, changePct 0, ma20 100, ma60 100, ret1m 0, change 0, retYtd 0, spark []`에 `over`를 덮은 `Quote`를 만든다. `lib/yahoo.ts`의 `Quote`에 필요한 나머지 필드는 숫자 0, `null`, 빈 배열로 채운다.
 - `allNull`은 모든 원본이 `null`인 입력이다.
 
 시험:
+
 - `"keeps the home page field order"`
   - `computeForecast(allNull, data).map(r => r.key)`가 Global Constraints의 10개 순서와 같다.
 - `"stocks: bullish KOSPI and S&P give clear weather"`
@@ -222,9 +248,11 @@ describe("trendScore", () => {
 ### Task 3: 사이트 홈이 공용 함수를 쓰게 하기 (사이트 모습은 그대로)
 
 **Files:**
+
 - Modify: `src/app/page.tsx`
 
 **Interfaces:**
+
 - Consumes: Task 2의 `computeForecast`, `FORECAST_FIELDS`, `ForecastRow`. 그리고 Task 1의 `signalLook`(briefing, 아이콘용).
 
 - [ ] **Step 1: `page.tsx`를 바꾼다.**
@@ -247,10 +275,12 @@ describe("trendScore", () => {
 ### Task 4: `/api/forecast` 주소
 
 **Files:**
+
 - Create: `src/lib/forecast-load.ts`, `src/lib/forecast-load.test.ts`, `src/app/api/forecast/route.ts`
 - Modify: `src/lib/forecast.ts` (응답 함수 추가), `src/lib/forecast.test.ts`, `README.md` (한판 연동 절)
 
 **Interfaces:**
+
 - Consumes: Task 2의 `computeForecast`, `forecastLine`, `ForecastRow`, `ForecastInputs`, `FieldKey`. 그리고 Task 1의 `signalLabel`.
 - Produces (`src/lib/forecast.ts`에 추가):
   - `type ForecastPayload = { schema: 1; asOf: string; date: string; fields: { key: FieldKey; title: string; scale: Scale; s: Signal | null; label: string; head: string; path: string }[]; line: string }`
@@ -283,6 +313,7 @@ describe("trendScore", () => {
 - [ ] **Step 1: 실패하는 시험을 쓴다.**
 
 `forecast.test.ts`에 더한다:
+
 - `"payload uses the Korean date"`
   - 입력: `toForecastPayload(rows, new Date("2026-11-08T15:30:00Z"))`
   - 기대: `date`는 `"2026-11-09"`, `asOf`는 `"2026-11-08T15:30:00.000Z"`, `schema`는 1이다.
@@ -296,6 +327,7 @@ describe("trendScore", () => {
   - 3개 → 503과 `"no-store"`
 
 `forecast-load.test.ts`:
+
 - `"a hanging source becomes null after the timeout, others still load"`
   - 준비: `vi.useFakeTimers()`. `hf`는 끝나지 않는 Promise, 나머지는 바로 값을 준다. `loadForecastInputs(fake, 20_000)`를 부른 뒤 `vi.advanceTimersByTimeAsync(20_000)`.
   - 기대: `hf`는 null이고 나머지는 값이다.
@@ -331,6 +363,7 @@ describe("trendScore", () => {
 **Files:** 없음 (저장소 밖 작업)
 
 **Interfaces:**
+
 - Consumes: Task 4의 `/api/forecast`. 그리고 배포 자리(스펙 7.11 '배포 자리'). 팀 Vercel 프로젝트와 `trend.tenai.kr`은 혁준이 연결한다.
 
 - [ ] **Step 1: 가지를 올리고 PR을 연다.**

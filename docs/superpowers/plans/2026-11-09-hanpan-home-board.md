@@ -5,6 +5,7 @@
 **Goal:** 한판 0.19.0의 홈을 카드 보드로 바꾸고, 트렌드레이더의 '오늘의 기상도'를 메인 프로세스가 받아 트렌드 카드로 보여 준다. 0.18 사용자의 위젯, 메모 글, 앱 순서, 숨긴 앱은 그대로 옮긴다.
 
 **Architecture:**
+
 - 저장은 `app-settings.json`의 새 열쇠 `homeBoard` 하나다. 메인 프로세스가 읽을 때 정리하고, 없으면 0.18 `homeLayout`에서 옮겨 와 바로 저장한다. 화면은 같은 순수 함수(`apps/shell/src/shared/home-board.ts`)로 고친 뒤 바뀔 때마다 저장한다. `homeLayout`에는 아무것도 쓰지 않는다.
 - 보드는 순서 목록과 정해진 크기, CSS grid(`grid-auto-flow: row dense`)로 깐다. 화면 부품(격자, 새로 만들기, 모든 앱, 이어서 하기, 트렌드)은 `apps/shell/src/renderer/src/home-board/`에 새로 두고, 0.17 위젯 몸통과 함께 `Home.tsx`가 잇는다.
 - 기상도는 메인 프로세스가 `net.fetch`로 받는다. 일정, 검사, 저장은 Electron 없이 도는 `trend-service.ts`가 맡는다. 화면은 IPC(`trend:get`, `trend:changed`)로 저장본만 받는다. 화면 CSP는 바꾸지 않는다.
@@ -45,29 +46,29 @@
 
 **카드.** 모두 합쳐 24장까지(`HOME_WIDGET_MAX`). 메모 글 2,000자(`HOME_MEMO_MAX`), 제목 60자(`HOME_TITLE_MAX`).
 
-| `type` | 허용 크기 | 기본 크기 | 뺄 수 있나 | 몇 장 |
-|---|---|---|---|---|
-| `start` | 7×2, 12×2 | 7×2 | 아니요 | 1 |
-| `trend` | 5×2, 5×3, 12×2 | 5×2 | 예 | 1 |
-| `apps` | 5×2, 5×3, 7×2, 7×3 | 5×3 | 아니요 | 1 |
-| `recent` | 7×2, 7×3, 12×3 | 7×3 | 예 | 1 |
-| `memo` | 3×2, 6×2 | 6×2 | 예 | 여러 장 |
-| `favorites` | 3×2, 6×2, 6×3 | 6×2 | 예 | 1 |
-| `folder` | 3×2, 6×2, 6×3 | 3×2 (판단: 0.17 small) | 예 | 여러 장 |
-| `clock` | 3×2 | 3×2 | 예 | 여러 장 |
-| `shortcut` | 3×2, 6×2 | 3×2 (판단: 0.17 small) | 예 | 여러 장 |
+| `type`      | 허용 크기          | 기본 크기              | 뺄 수 있나 | 몇 장   |
+| ----------- | ------------------ | ---------------------- | ---------- | ------- |
+| `start`     | 7×2, 12×2          | 7×2                    | 아니요     | 1       |
+| `trend`     | 5×2, 5×3, 12×2     | 5×2                    | 예         | 1       |
+| `apps`      | 5×2, 5×3, 7×2, 7×3 | 5×3                    | 아니요     | 1       |
+| `recent`    | 7×2, 7×3, 12×3     | 7×3                    | 예         | 1       |
+| `memo`      | 3×2, 6×2           | 6×2                    | 예         | 여러 장 |
+| `favorites` | 3×2, 6×2, 6×3      | 6×2                    | 예         | 1       |
+| `folder`    | 3×2, 6×2, 6×3      | 3×2 (판단: 0.17 small) | 예         | 여러 장 |
+| `clock`     | 3×2                | 3×2                    | 예         | 여러 장 |
+| `shortcut`  | 3×2, 6×2           | 3×2 (판단: 0.17 small) | 예         | 여러 장 |
 
 - 기본 크기는 허용되지 않은 저장 크기를 고칠 때, '카드 추가'로 넣을 때, '기본 배치로'에 쓴다.
 - 기본 배치(7.1): 시작 7×2, 트렌드 5×2(화면 언어가 한국어이고 기상도 주소가 있을 때만), 새로 만들기 5×3, 이어서 하기 7×3, 빠른 메모 6×2, 즐겨찾기 6×2. 기본 카드의 id는 `start`, `trend`, `apps`, `recent`, `memo`, `favorites`다.
 
 **앱.** 앱 열쇠는 `data-new` 열쇠 그대로다.
 
-| 묶음 id | '모든 앱' 묶음 이름 | 앱 열쇠 (이 순서) |
-|---|---|---|
-| `docs` | 문서 만들기 | `xmind`, `hwp`, `pptx`, `docx`, `xlsx`, `md`, `html`, `templates` |
-| `pdf` | PDF · 변환 | `pdf`, `pdf-tools`, `md-convert` |
-| `graphics` | 그림 | `photo`, `illust`, `design` |
-| `file` | 파일 | `open` |
+| 묶음 id    | '모든 앱' 묶음 이름 | 앱 열쇠 (이 순서)                                                 |
+| ---------- | ------------------- | ----------------------------------------------------------------- |
+| `docs`     | 문서 만들기         | `xmind`, `hwp`, `pptx`, `docx`, `xlsx`, `md`, `html`, `templates` |
+| `pdf`      | PDF · 변환          | `pdf`, `pdf-tools`, `md-convert`                                  |
+| `graphics` | 그림                | `photo`, `illust`, `design`                                       |
+| `file`     | 파일                | `open`                                                            |
 
 - 기본 핀(한국 문서 기능 켬): `xmind`, `hwp`, `pptx`, `docx`, `xlsx`, `pdf`, `templates`, `photo`, `illust`, `design`, `html`.
 - 기본 핀(끔): `xmind`, `pptx`, `docx`, `xlsx`, `pdf`, `photo`, `illust`, `html`, `md`, `pdf-tools`, `md-convert`.
@@ -78,6 +79,7 @@
 - 이어서 하기 카드는 7×3일 때 6줄을 보인다.
 
 **트렌드.**
+
 - 받기: 앱이 뜨고 3초 뒤에 한 번, 켜져 있는 동안 6시간마다. 5초가 넘으면 그만둔다.
 - 보내는 것: `?client=hanpan&v=<앱 버전>`과 `User-Agent: Hanpan/<버전>`. `credentials: 'omit'`. 사용자 id, 기기 id, 파일 정보는 보내지 않는다.
 - 저장 `userData/trend-forecast.json`. 화면에는 IPC `trend:get`(저장본), `trend:changed`(새 결과)로 넘긴다. 링크는 `trend:open`.
@@ -89,35 +91,35 @@
 
 **문구.** 아래 표의 한국어와 영어를 쓴다. '스펙'은 스펙이 정한 글이고, '확정'은 스펙이 만드는 사람에게 맡긴 글을 이 계획이 정한 것이다(Ruling R27). Task 1이 이 표 전부를 ko·en·vi로 등록한다(R22). vi는 Task 1이 초벌을 쓰고 Task 10이 다듬는다.
 
-| 파일 | 키 | 한국어 | 영어 | |
-|---|---|---|---|---|
-| home-strings | `hbExample1`, `hbExample2`, `hbExample3` | 시설 점검 결과 보고 / 입주사 안내문 / 주간 업무 보고 | Facility inspection report / Notice to tenants / Weekly work report | 확정(스펙 예시에서 '11월'을 뺐다, R27) |
-| home-strings | `hbAllApps` | 모든 앱 | All apps | 스펙 |
-| home-strings | `hbAllAppsSearch` | 앱 이름이나 하는 일로 찾기 | Search by app name or what it does | 확정 |
-| home-strings | `hbRecentApps` | 최근에 쓴 앱 | Recently used apps | 스펙 |
-| home-strings | `hbGroupDocs`, `hbGroupPdf`, `hbGroupGraphics`, `hbGroupFile` | 문서 만들기 / PDF · 변환 / 그림 / 파일 | Create documents / PDF · Convert / Graphics / Files | 스펙 |
-| home-strings | `hbNewApp` | 새 앱 | New | 스펙 |
-| home-strings | `hbSearchNoApps` | 맞는 앱이 없습니다 | No matching apps | 확정 |
-| home-strings | `hbAppDocxSub`, `hbAppXlsxSub`, `hbAppMdSub`, `hbAppHtmlSub`, `hbAppPdfSub`, `hbAppOpenSub` | 보고서·기안문 같은 워드 문서 / 표와 계산이 들어가는 엑셀 문서 / 마크다운으로 가볍게 쓰는 글 / 안내 페이지 같은 웹 문서 / PDF에 메모하고 가리고 글 넣기 / 이 컴퓨터에 있는 파일 열기 | Word documents such as reports and memos / Excel sheets with tables and formulas / Light writing in Markdown / Web pages such as notices / Annotate, redact and add text to a PDF / Open a file on this computer | 확정 |
-| home-strings | `hbRecentAll` | 전체 {n}개 | All {n} | 스펙 |
-| home-strings | `hbTrendTitle` | 트렌드 레이더 · 오늘의 기상도 | Trend Radar · Today's forecast | 스펙 |
-| home-strings | `hbTrendLine`, `hbTrendMore` | 오늘의 한 줄 / 자세히 | Today's line / Details | 스펙 |
-| home-strings | `hbTrendAsOf` | {when} 기준 | as of {when} | 스펙("11월 8일 기준") |
-| home-strings | `hbTrendOffline` | 인터넷에 연결되면 오늘의 트렌드가 나옵니다 | Today's trends appear once you are online | 스펙 |
-| home-strings | `hbTrendNoData` | 정보 없음 | No data | 스펙 |
-| home-custom | `navHome` | 홈 | Home | 스펙 |
-| home-custom | `cardStart`, `cardApps` | 시작 / 새로 만들기 | Start / New | 스펙 |
-| home-custom | `cardTrend`, `descTrend` | 트렌드 레이더 / 트렌드 레이더의 오늘의 기상도를 보여 줍니다. | Trend Radar / Shows today's forecast from Trend Radar. | 확정(제목과 같게 '트렌드 레이더'로 띄어 쓴다) |
-| home-custom | `widgetRecent` (값을 바꾼다) | 이어서 하기 | Continue | 스펙 |
-| home-custom | `descFavorites`, `favoritesEmpty` (값을 바꾼다) | 별표한 파일. / 파일에 별표를 하면 여기에 모입니다. | Starred files. / Star a file to see it here. | 7.7: "앱을 고정하면"을 뺀다 |
-| home-custom | `pin`, `unpin` (값을 바꾼다) | 홈에 고정 / 홈에서 빼기 | Pin to Home / Remove from Home | 확정 |
-| home-custom | `sizeOption` | 가로 {w}칸 × 세로 {h}줄 | {w} columns × {h} rows | 확정 |
-| home-custom | `customizeHint` | 카드를 끌어서 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다. | Drag a card to move it; drag its bottom-right corner to resize it. | 스펙 |
-| home-custom | `addCard`, `resetBoard`, `listView` | 카드 추가 / 기본 배치로 / 목록으로 정리 | Add card / Default layout / Arrange as a list | 스펙 ('완료'는 있는 `done`) |
-| home-custom | `resetBoardAsk` | 기본 카드의 순서와 크기, 홈에 보이는 앱을 처음 상태로 되돌릴까요? 직접 더한 카드는 그대로 남습니다. | Put the default cards' order and size, and the apps shown on Home, back to how they started? Cards you added stay. | 확정 |
-| home-custom | `cardMenu`, `removeCard`, `unpinApp`, `dragHandle`, `resizeCorner` | {name} 메뉴 / {name} 빼기 / {name} 홈에서 빼기 / {name} 옮기기 / {name} 크기 바꾸기 | {name} menu / Remove {name} / Remove {name} from Home / Move {name} / Resize {name} | 확정 |
-| home-custom | `addAppSlot` | 앱 추가 | Add app | 스펙 |
-| home-custom | `boardCards`, `boardApps`, `boardFull` | 카드 / 홈에 보이는 앱 / 카드는 24장까지 둘 수 있습니다. | Cards / Apps shown on Home / Home holds up to 24 cards. | 확정 |
+| 파일         | 키                                                                                          | 한국어                                                                                                                                                                              | 영어                                                                                                                                                                                                             |                                               |
+| ------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| home-strings | `hbExample1`, `hbExample2`, `hbExample3`                                                    | 시설 점검 결과 보고 / 입주사 안내문 / 주간 업무 보고                                                                                                                                | Facility inspection report / Notice to tenants / Weekly work report                                                                                                                                              | 확정(스펙 예시에서 '11월'을 뺐다, R27)        |
+| home-strings | `hbAllApps`                                                                                 | 모든 앱                                                                                                                                                                             | All apps                                                                                                                                                                                                         | 스펙                                          |
+| home-strings | `hbAllAppsSearch`                                                                           | 앱 이름이나 하는 일로 찾기                                                                                                                                                          | Search by app name or what it does                                                                                                                                                                               | 확정                                          |
+| home-strings | `hbRecentApps`                                                                              | 최근에 쓴 앱                                                                                                                                                                        | Recently used apps                                                                                                                                                                                               | 스펙                                          |
+| home-strings | `hbGroupDocs`, `hbGroupPdf`, `hbGroupGraphics`, `hbGroupFile`                               | 문서 만들기 / PDF · 변환 / 그림 / 파일                                                                                                                                              | Create documents / PDF · Convert / Graphics / Files                                                                                                                                                              | 스펙                                          |
+| home-strings | `hbNewApp`                                                                                  | 새 앱                                                                                                                                                                               | New                                                                                                                                                                                                              | 스펙                                          |
+| home-strings | `hbSearchNoApps`                                                                            | 맞는 앱이 없습니다                                                                                                                                                                  | No matching apps                                                                                                                                                                                                 | 확정                                          |
+| home-strings | `hbAppDocxSub`, `hbAppXlsxSub`, `hbAppMdSub`, `hbAppHtmlSub`, `hbAppPdfSub`, `hbAppOpenSub` | 보고서·기안문 같은 워드 문서 / 표와 계산이 들어가는 엑셀 문서 / 마크다운으로 가볍게 쓰는 글 / 안내 페이지 같은 웹 문서 / PDF에 메모하고 가리고 글 넣기 / 이 컴퓨터에 있는 파일 열기 | Word documents such as reports and memos / Excel sheets with tables and formulas / Light writing in Markdown / Web pages such as notices / Annotate, redact and add text to a PDF / Open a file on this computer | 확정                                          |
+| home-strings | `hbRecentAll`                                                                               | 전체 {n}개                                                                                                                                                                          | All {n}                                                                                                                                                                                                          | 스펙                                          |
+| home-strings | `hbTrendTitle`                                                                              | 트렌드 레이더 · 오늘의 기상도                                                                                                                                                       | Trend Radar · Today's forecast                                                                                                                                                                                   | 스펙                                          |
+| home-strings | `hbTrendLine`, `hbTrendMore`                                                                | 오늘의 한 줄 / 자세히                                                                                                                                                               | Today's line / Details                                                                                                                                                                                           | 스펙                                          |
+| home-strings | `hbTrendAsOf`                                                                               | {when} 기준                                                                                                                                                                         | as of {when}                                                                                                                                                                                                     | 스펙("11월 8일 기준")                         |
+| home-strings | `hbTrendOffline`                                                                            | 인터넷에 연결되면 오늘의 트렌드가 나옵니다                                                                                                                                          | Today's trends appear once you are online                                                                                                                                                                        | 스펙                                          |
+| home-strings | `hbTrendNoData`                                                                             | 정보 없음                                                                                                                                                                           | No data                                                                                                                                                                                                          | 스펙                                          |
+| home-custom  | `navHome`                                                                                   | 홈                                                                                                                                                                                  | Home                                                                                                                                                                                                             | 스펙                                          |
+| home-custom  | `cardStart`, `cardApps`                                                                     | 시작 / 새로 만들기                                                                                                                                                                  | Start / New                                                                                                                                                                                                      | 스펙                                          |
+| home-custom  | `cardTrend`, `descTrend`                                                                    | 트렌드 레이더 / 트렌드 레이더의 오늘의 기상도를 보여 줍니다.                                                                                                                        | Trend Radar / Shows today's forecast from Trend Radar.                                                                                                                                                           | 확정(제목과 같게 '트렌드 레이더'로 띄어 쓴다) |
+| home-custom  | `widgetRecent` (값을 바꾼다)                                                                | 이어서 하기                                                                                                                                                                         | Continue                                                                                                                                                                                                         | 스펙                                          |
+| home-custom  | `descFavorites`, `favoritesEmpty` (값을 바꾼다)                                             | 별표한 파일. / 파일에 별표를 하면 여기에 모입니다.                                                                                                                                  | Starred files. / Star a file to see it here.                                                                                                                                                                     | 7.7: "앱을 고정하면"을 뺀다                   |
+| home-custom  | `pin`, `unpin` (값을 바꾼다)                                                                | 홈에 고정 / 홈에서 빼기                                                                                                                                                             | Pin to Home / Remove from Home                                                                                                                                                                                   | 확정                                          |
+| home-custom  | `sizeOption`                                                                                | 가로 {w}칸 × 세로 {h}줄                                                                                                                                                             | {w} columns × {h} rows                                                                                                                                                                                           | 확정                                          |
+| home-custom  | `customizeHint`                                                                             | 카드를 끌어서 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다.                                                                                                                    | Drag a card to move it; drag its bottom-right corner to resize it.                                                                                                                                               | 스펙                                          |
+| home-custom  | `addCard`, `resetBoard`, `listView`                                                         | 카드 추가 / 기본 배치로 / 목록으로 정리                                                                                                                                             | Add card / Default layout / Arrange as a list                                                                                                                                                                    | 스펙 ('완료'는 있는 `done`)                   |
+| home-custom  | `resetBoardAsk`                                                                             | 기본 카드의 순서와 크기, 홈에 보이는 앱을 처음 상태로 되돌릴까요? 직접 더한 카드는 그대로 남습니다.                                                                                 | Put the default cards' order and size, and the apps shown on Home, back to how they started? Cards you added stay.                                                                                               | 확정                                          |
+| home-custom  | `cardMenu`, `removeCard`, `unpinApp`, `dragHandle`, `resizeCorner`                          | {name} 메뉴 / {name} 빼기 / {name} 홈에서 빼기 / {name} 옮기기 / {name} 크기 바꾸기                                                                                                 | {name} menu / Remove {name} / Remove {name} from Home / Move {name} / Resize {name}                                                                                                                              | 확정                                          |
+| home-custom  | `addAppSlot`                                                                                | 앱 추가                                                                                                                                                                             | Add app                                                                                                                                                                                                          | 스펙                                          |
+| home-custom  | `boardCards`, `boardApps`, `boardFull`                                                      | 카드 / 홈에 보이는 앱 / 카드는 24장까지 둘 수 있습니다.                                                                                                                             | Cards / Apps shown on Home / Home holds up to 24 cards.                                                                                                                                                          | 확정                                          |
 
 - **Ruling R27 (한국어 원문 확정):** 스펙 11절은 한국어 원문을 사용자에게 보여 확정하라고 했지만, 사용자가 "문제 있으면 알아서 판단해서 진행"하라고 정했다(2026-11-09). 그래서 위 '확정' 글을 이 계획이 정하고, 구현을 마친 최종 보고에 '정한 문구' 목록으로 남긴다. 바꾼 것 둘: `hbExample1`에서 '11월'을 뺐다(달이 지나면 낡는 글이고, 스펙은 "사무실에서 실제로 쓰는 문서 이름"만 요구한다). `descTrend`의 '트렌드레이더'를 제목(`hbTrendTitle`)과 같이 '트렌드 레이더'로 띄어 썼다(한 화면에 두 표기가 같이 보이지 않게). 되돌릴 수 있는 결정이다: 보고 뒤 사용자가 바꾸면 ko부터 고치고 Task 10의 번역을 다시 한다.
 
@@ -140,13 +142,13 @@ e2e와 단위 시험이 기대는 이름이다. 작업마다 이 이름을 그�
 
 작업마다 따로 작업 폴더(`git worktree add .claude/worktrees/home-board-t<번호> -b feat/home-board-t<번호> feat/home-board`)에서 구현하고, 한 묶음이 끝나면 `feat/home-board`에 차례로 합친(`git merge --no-ff`) 뒤 다음 묶음을 시작한다. 같은 묶음 안의 작업은 서로 다른 파일만 고치고 Task 1의 형과 이름만 공유한다. 한 묶음을 합친 뒤에는 `npm run typecheck -w @genoffice/shell`과 그 묶음의 단위 시험을 한 번 더 돌린다.
 
-| 차례 | 동시에 하는 작업 | 각 작업이 만들거나 고치는 파일 | 기다리는 것 |
-|---|---|---|---|
-| 0 | **Task 1** (혼자) | `shared/home-apps.ts`, `shared/home-board.ts`, `shared/trend-forecast.ts`(상수), `main/home-board.ts`, `main/trend/trend-config.ts`, `renderer/src/home-board/useHomeBoard.ts`, `renderer/src/home-board/TrendCard.tsx`(빈 카드), `shared/home-api.ts`, `preload/index.ts`, `main/index.ts`, `HomeWidgets.tsx`(`HomeAppCard.sub` 한 줄), 문구 파일 셋(R22) | 없음 |
-| A | **Task 2** ‖ **Task 3** ‖ **Task 7** | 2: `renderer/src/home-board/{home-apps.tsx, AppsCard.tsx, AllApps.tsx, apps-card.css}`, `shared/home-apps.ts`, `tests/{home-apps.test.ts, home-apps-ui.test.ts, home-dialog-keys.test.ts}` · 3: `renderer/src/home-board/{RecentCard.tsx, board-geometry.ts}`, `shared/home-board-edit.ts`, `hanpan/StartBoard.tsx`, `hanpan/hanpan.css`(341-400), `Home.tsx`(3568-3572 다섯 줄), `HomeWidgets.tsx`, `tests/{hanpan-start-board, home-cards-ui, board-geometry, home-board-edit, home-widgets}.test.ts` · 7: `shared/trend-api.ts`, `shared/trend-forecast.ts`, `main/trend/{trend-service.ts, trend-ipc.ts, trend-config.ts}`, `preload/index.ts`(끝에 더함), `main/index.ts`(10162·10672 근처), `shared/home-layout.ts`(1-8), `docs/security.md`, `PRIVACY.md`, `tests/{trend-forecast, trend-service, preload-trend, renderer-csp}.test.ts` | Task 1 |
-| B | **Task 4** ‖ **Task 8** ‖ **Task 11**(파일 고치기만) | 4: `Home.tsx`, `HomeWidgets.tsx`, `home-board/{BoardGrid.tsx, board-geometry.ts, home-board.css}`, `hanpan/hanpan.css`(405-524), `main/index.ts`(6729-6733), `preload/index.ts`(440-445), `shared/home-api.ts`, `main/home-layout.ts` 삭제, `tests/{home-widgets, home-korean-cards, home-navigation, home-subscription-entry, home-layout, board-geometry}.test.ts` · 8: `home-board/{TrendCard.tsx, trend-card.css}`, `shared/trend-forecast.ts`, `tests/{trend-forecast, home-trend-card}.test.ts` · 11: `e2e/**`만 | 묶음 A |
-| C | **Task 5 → Task 6 → Task 9**(한 폴더에서 차례로) ‖ **Task 10** | 5·6·9: `shared/home-board-edit.ts`, `shared/home-layout.ts`(187-292), `home-board/{BoardGrid.tsx, AppsCard.tsx, board-geometry.ts, home-board.css}`, `HomeWidgets.tsx`, `Home.tsx`, `hanpan/hanpan.css`(259-336), `tests/{home-board-edit, home-customize, home-dialog-keys, home-layout, board-geometry, home-board-columns}.test.ts` · 10: 문구 파일 셋(나머지 언어), `i18n/help/topics/{hanpan, home-screen}.*.md`, `docs/manual/한판-사용설명서.md`, `tests/home-board-strings.test.ts` | 묶음 B |
-| D | **Task 12** (혼자) | `e2e/home-board.spec.ts`, 결정 기록, `AGENTS.md`, 설명서 그림. 빌드와 e2e 실행 | 묶음 C |
+| 차례 | 동시에 하는 작업                                               | 각 작업이 만들거나 고치는 파일                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 기다리는 것 |
+| ---- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| 0    | **Task 1** (혼자)                                              | `shared/home-apps.ts`, `shared/home-board.ts`, `shared/trend-forecast.ts`(상수), `main/home-board.ts`, `main/trend/trend-config.ts`, `renderer/src/home-board/useHomeBoard.ts`, `renderer/src/home-board/TrendCard.tsx`(빈 카드), `shared/home-api.ts`, `preload/index.ts`, `main/index.ts`, `HomeWidgets.tsx`(`HomeAppCard.sub` 한 줄), 문구 파일 셋(R22)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | 없음        |
+| A    | **Task 2** ‖ **Task 3** ‖ **Task 7**                           | 2: `renderer/src/home-board/{home-apps.tsx, AppsCard.tsx, AllApps.tsx, apps-card.css}`, `shared/home-apps.ts`, `tests/{home-apps.test.ts, home-apps-ui.test.ts, home-dialog-keys.test.ts}` · 3: `renderer/src/home-board/{RecentCard.tsx, board-geometry.ts}`, `shared/home-board-edit.ts`, `hanpan/StartBoard.tsx`, `hanpan/hanpan.css`(341-400), `Home.tsx`(3568-3572 다섯 줄), `HomeWidgets.tsx`, `tests/{hanpan-start-board, home-cards-ui, board-geometry, home-board-edit, home-widgets}.test.ts` · 7: `shared/trend-api.ts`, `shared/trend-forecast.ts`, `main/trend/{trend-service.ts, trend-ipc.ts, trend-config.ts}`, `preload/index.ts`(끝에 더함), `main/index.ts`(10162·10672 근처), `shared/home-layout.ts`(1-8), `docs/security.md`, `PRIVACY.md`, `tests/{trend-forecast, trend-service, preload-trend, renderer-csp}.test.ts` | Task 1      |
+| B    | **Task 4** ‖ **Task 8** ‖ **Task 11**(파일 고치기만)           | 4: `Home.tsx`, `HomeWidgets.tsx`, `home-board/{BoardGrid.tsx, board-geometry.ts, home-board.css}`, `hanpan/hanpan.css`(405-524), `main/index.ts`(6729-6733), `preload/index.ts`(440-445), `shared/home-api.ts`, `main/home-layout.ts` 삭제, `tests/{home-widgets, home-korean-cards, home-navigation, home-subscription-entry, home-layout, board-geometry}.test.ts` · 8: `home-board/{TrendCard.tsx, trend-card.css}`, `shared/trend-forecast.ts`, `tests/{trend-forecast, home-trend-card}.test.ts` · 11: `e2e/**`만                                                                                                                                                                                                                                                                                                                         | 묶음 A      |
+| C    | **Task 5 → Task 6 → Task 9**(한 폴더에서 차례로) ‖ **Task 10** | 5·6·9: `shared/home-board-edit.ts`, `shared/home-layout.ts`(187-292), `home-board/{BoardGrid.tsx, AppsCard.tsx, board-geometry.ts, home-board.css}`, `HomeWidgets.tsx`, `Home.tsx`, `hanpan/hanpan.css`(259-336), `tests/{home-board-edit, home-customize, home-dialog-keys, home-layout, board-geometry, home-board-columns}.test.ts` · 10: 문구 파일 셋(나머지 언어), `i18n/help/topics/{hanpan, home-screen}.*.md`, `docs/manual/한판-사용설명서.md`, `tests/home-board-strings.test.ts`                                                                                                                                                                                                                                                                                                                                                    | 묶음 B      |
+| D    | **Task 12** (혼자)                                             | `e2e/home-board.spec.ts`, 결정 기록, `AGENTS.md`, 설명서 그림. 빌드와 e2e 실행                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 묶음 C      |
 
 - Task 5, 6, 9는 모두 `BoardGrid.tsx`와 `home-board.css`를 고치므로 동시에 두지 않는다. Task 10은 문구 파일과 문서만 고치므로 그 옆에서 돈다.
 - Task 11은 `e2e/` 파일만 고치므로 묶음 B에서 쓰기를 마쳐 두고, 실행은 Task 12가 한다(그 전에는 빌드가 보드를 담지 않는다).
@@ -169,11 +171,13 @@ e2e와 단위 시험이 기대는 이름이다. 작업마다 이 이름을 그�
 ### Task 1: 보드 저장 형식과 0.18 옮겨 오기
 
 **Files:**
+
 - Create: `apps/shell/src/shared/home-apps.ts`, `apps/shell/src/shared/home-board.ts`, `apps/shell/src/shared/trend-forecast.ts`(이 작업에서는 주소 상수만), `apps/shell/src/main/home-board.ts`, `apps/shell/src/main/trend/trend-config.ts`, `apps/shell/src/renderer/src/home-board/useHomeBoard.ts`, `apps/shell/src/renderer/src/home-board/TrendCard.tsx`(빈 카드. 제목 `hbTrendTitle`과 `[data-trend-offline]` `hbTrendOffline`만. Task 8이 채운다, R21)
 - Modify: `apps/shell/src/shared/home-api.ts:368-371, 628-629`(메서드와 채널을 더한다), `apps/shell/src/preload/index.ts:440-445`(더한다), `apps/shell/src/main/index.ts:6729-6733`(처리기를 더한다. 옛 `getHomeLayout`·`setHomeLayout`은 Task 4에서 지운다), `apps/shell/src/renderer/src/HomeWidgets.tsx:40-45`(`HomeAppCard`에 `sub?: string` 한 줄. Task 2가 쓴다), 문구 파일 셋 `apps/shell/src/renderer/src/hanpan/home-strings.json`, `apps/shell/src/renderer/src/strings.ts`(도구로), `apps/shell/src/renderer/src/i18n/strings-home-custom.ts`(Global Constraints 문구 표 전부, R22)
 - Test: `apps/shell/tests/home-board.test.ts`, `apps/shell/tests/home-board-storage.test.ts`, `apps/shell/tests/trend-config.test.ts`, `apps/shell/tests/use-home-board.test.ts`, `apps/shell/tests/preload-home-board.test.ts`
 
 **Interfaces:**
+
 - Consumes: `apps/shell/src/shared/home-layout.ts`의 `HomeLayout`, `normalizeHomeLayout`, `normalizeShortcutTarget`, `isAbsolutePath`, `arrangeKeys`, `HOME_LAYOUT_SETTING_KEY`, `HOME_MEMO_MAX`, `HOME_TITLE_MAX`, `HOME_WIDGET_MAX`, `ShortcutTarget`. `apps/shell/src/main/app-settings.ts`의 `readAppSettings`, `writeAppSetting`. `@genoffice/i18n`의 `koreanDocFeaturesOn`, `Lang`.
 - Produces:
 
@@ -249,6 +253,7 @@ export function useHomeBoard(input: { korean: boolean; koreanDocs: boolean }): {
 ```
 
 **정하는 규칙:**
+
 - **Ruling R1:** 스펙은 `normalizeHomeBoard(raw)`라고 적었지만, 기본 배치·기본 핀·나중에 더한 기본 카드가 화면 언어, 한국 문서 기능, 기상도 주소에 따라 달라진다(7.1, 7.4, 7.10). 그래서 둘째 인자 `ctx: BoardContext`를 받는다.
 - `defaultCardTypes(ctx)` = `['start', ...(ctx.korean && ctx.trend ? ['trend'] : []), 'apps', 'recent', 'memo', 'favorites']`.
 - `defaultHomeBoard(ctx)`: 그 종류를 `DEFAULT_SIZE`로 깔고, `pinned` = `defaultPins(ctx.koreanDocs)`, `seenApps` = `APP_KEYS` 전부, `recentApps` = `[]`, `introduced` = `defaultCardTypes(ctx)`.
@@ -296,13 +301,26 @@ it('lays out six cards on a Korean screen (7.1)', () => {
   const b = defaultHomeBoard(KO)
   expect(types(b)).toEqual(['start', 'trend', 'apps', 'recent', 'memo', 'favorites'])
   expect(sizes(b)).toEqual(['7x2', '5x2', '5x3', '7x3', '6x2', '6x2'])
-  expect(b.pinned).toEqual(['xmind', 'hwp', 'pptx', 'docx', 'xlsx', 'pdf', 'templates', 'photo', 'illust', 'design', 'html'])
+  expect(b.pinned).toEqual([
+    'xmind',
+    'hwp',
+    'pptx',
+    'docx',
+    'xlsx',
+    'pdf',
+    'templates',
+    'photo',
+    'illust',
+    'design',
+    'html',
+  ])
   expect(b.seenApps).toEqual([...APP_KEYS])
   expect(b.introduced).toEqual(types(b))
 })
 ```
 
 그 밖의 시험(이름과 기대값):
+
 - `'has no trend card off a Korean screen or without a forecast address'`: `EN`이면 trend가 없고 핀은 `['xmind', 'pptx', 'docx', 'xlsx', 'pdf', 'photo', 'illust', 'html', 'md', 'pdf-tools', 'md-convert']`. `KO_NO_URL`이면 trend가 없고 `introduced`에도 없다.
 - `normalizeHomeBoard`:
   - `it.each([undefined, null, 'x', 3, [], {}, { v: 2, cards: [] }])` → `defaultHomeBoard(KO)`와 같다.
@@ -330,6 +348,7 @@ it('lays out six cards on a Korean screen (7.1)', () => {
   - 둘 다 없거나 `homeLayout`이 글자이면 기본 배치다.
 
 `apps/shell/tests/home-board-storage.test.ts`(임시 폴더의 `app-settings.json`):
+
 - `homeLayout`만 있는 파일을 `readHomeBoard(path, KO)`로 읽으면 옮긴 보드를 돌려주고, 파일에 `homeBoard`가 생기며, `homeLayout`은 처음 값과 `toEqual`로 같다.
 - 두 번째 읽기는 같은 보드를 돌려준다.
 - `writeHomeBoard(path, board, KO)`는 정리한 보드를 저장하고 다른 열쇠(`theme`)를 남긴다.
@@ -339,6 +358,7 @@ it('lays out six cards on a Korean screen (7.1)', () => {
 `apps/shell/tests/trend-config.test.ts`: `trendForecastUrl({})` → `'https://trend.tenai.kr/api/forecast'`, `{ HANPAN_TREND_URL: '' }` → `null`, `'http://127.0.0.1:5123/api/forecast'` → 그대로, `'file:///C:/fixtures/forecast.json'` → 그대로, `'ftp://x/y'`와 `'not a url'` → `null`.
 
 `apps/shell/tests/use-home-board.test.ts`(jsdom, 훅을 쓰는 작은 부품을 그린다):
+
 - `getHomeBoard`가 답하기 전에는 `board`가 `null`이고, 답하면 저장된 카드가 나온다.
 - 저장된 보드에 trend가 없고 `introduced`에도 없을 때, 한국어 화면과 `trendAvailable: true`이면 trend가 들어가고 `setHomeBoard`가 한 번 불린다.
 - `update`를 두 번 잇달아 부른다(메모 글 바꾸기, 그다음 `pinned`에 `md` 더하기). 마지막 `setHomeBoard` 인자에 둘 다 들어 있다(Review Focus 4).
@@ -361,19 +381,29 @@ it('lays out six cards on a Korean screen (7.1)', () => {
 ### Task 2: 새로 만들기 카드와 '모든 앱'
 
 **Files:**
+
 - Create: `apps/shell/src/renderer/src/home-board/home-apps.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/home-board/AllApps.tsx`, `apps/shell/src/renderer/src/home-board/apps-card.css`(타일과 '모든 앱' 대화상자. `AppsCard.tsx`와 `AllApps.tsx`가 `import './apps-card.css'`로 들여온다, R21)
 - Modify: `apps/shell/src/shared/home-apps.ts`만. (`HomeAppCard.sub`와 문구는 Task 1이 끝냈다. `shared/home-board.ts`, `HomeWidgets.tsx`, 문구 파일은 건드리지 않는다. Task 3과 동시에 돌기 위해서다.)
 - Test: `apps/shell/tests/home-apps.test.ts`(새 파일, 순수 함수), `apps/shell/tests/home-apps-ui.test.ts`, `apps/shell/tests/home-dialog-keys.test.ts:63-92`(AllApps 사례를 더함)
 
 **Interfaces:**
+
 - Consumes: Task 1의 `AppKey`, `APP_GROUPS`, `APP_KEYS`, `HomeBoard`, `CardSize`. `apps/shell/src/renderer/src/dialog-keys.ts`의 `useDialogKeys`. `locale.tsx`의 `useI18n`, `StringKey`.
 - Produces:
 
 ```ts
 // shared/home-apps.ts
-export function slotGrid(size: CardSize): { cols: number; rows: number }   // cols = w - 1, rows = h
-export interface AppSlots { apps: AppKey[]; more: number; empty: number }
-export function appSlots(pinned: readonly string[], available: ReadonlySet<string>, size: CardSize): AppSlots
+export function slotGrid(size: CardSize): { cols: number; rows: number } // cols = w - 1, rows = h
+export interface AppSlots {
+  apps: AppKey[]
+  more: number
+  empty: number
+}
+export function appSlots(
+  pinned: readonly string[],
+  available: ReadonlySet<string>,
+  size: CardSize,
+): AppSlots
 export const RECENT_APPS_MAX = 8
 export function withRecentApp(recent: readonly string[], key: AppKey): AppKey[]
 export function unseenApps(seen: readonly string[], available: ReadonlySet<string>): AppKey[] // APP_KEYS 순서
@@ -395,36 +425,46 @@ export function buildHomeApps(deps: HomeAppsDeps): HomeAppCard[] // APP_KEYS 순
 
 // home-board/AppsCard.tsx
 export function AppsCard(props: {
-  apps: readonly HomeAppCard[]; pinned: readonly string[]; size: CardSize; unseen: number
-  customizing: boolean; onOpenAll: () => void
-  onUnpin?: (key: AppKey) => void; onMove?: (key: AppKey, toIndex: number) => void // Task 5·6
+  apps: readonly HomeAppCard[]
+  pinned: readonly string[]
+  size: CardSize
+  unseen: number
+  customizing: boolean
+  onOpenAll: () => void
+  onUnpin?: (key: AppKey) => void
+  onMove?: (key: AppKey, toIndex: number) => void // Task 5·6
 }): ReactElement
 
 // home-board/AllApps.tsx
 export function AllApps(props: {
-  apps: readonly HomeAppCard[]; pinned: readonly string[]; recent: readonly string[]
-  newKeys: ReadonlySet<string>; onLaunch: (key: AppKey) => void
-  onTogglePin: (key: AppKey) => void; onClose: () => void
+  apps: readonly HomeAppCard[]
+  pinned: readonly string[]
+  recent: readonly string[]
+  newKeys: ReadonlySet<string>
+  onLaunch: (key: AppKey) => void
+  onTogglePin: (key: AppKey) => void
+  onClose: () => void
 }): ReactElement
 ```
 
 **정하는 규칙:**
+
 - `appSlots`: `shown` = 쓸 수 있는 핀만, 핀 순서. `total` = (w−1)×h. `shown.length < total`이면 `apps` = shown, `more` = 0, `empty` = total − shown.length − 1. 아니면 `apps` = 앞의 total − 1개, `more` = shown.length − (total − 1), `empty` = 0.
 - `withRecentApp`: 그 열쇠를 맨 앞으로 옮기고 8개까지 남긴다.
 - `markAppsSeen`: 쓸 수 있는 앱 열쇠를 `seenApps`에 더한다. `unseenApps`는 쓸 수 있는 앱 중 `seen`에 없는 것이다.
 - `buildHomeApps`의 가용성: `hwp`는 koreanDocs, `templates`는 koreanDocs && offers.templates, `design`은 koreanDocs && offers.design, `md-convert`는 offers.converter, 나머지는 늘. 각 앱의 `action`은 `onLaunch(key)`를 먼저 부르고 원래 action을 부른다.
 - 이름 키와 한 줄 설명 키:
 
-| 열쇠 | 이름 | 한 줄 설명 | 열쇠 | 이름 | 한 줄 설명 |
-|---|---|---|---|---|---|
-| `xmind` | `newMindmap` | `hpCardMapSub` | `templates` | `hpTemplatesCard` | `hpTemplatesCardSub` |
-| `hwp` | `newHwp` | `hpCardHwpSub` | `pdf` | `newPdf` | `hbAppPdfSub` |
-| `pptx` | `newSlide` | `hpCardPptSub` | `pdf-tools` | `pdfToolsCard` | `pdfToolsCardSub` |
-| `docx` | `newDoc` | `hbAppDocxSub` | `md-convert` | `hpConvCard` | `hpConvCardSub` |
-| `xlsx` | `newSheet` | `hbAppXlsxSub` | `photo` | `newPhoto` | `hpPhotoTip` |
-| `md` | `newMarkdown` | `hbAppMdSub` | `illust` | `newIllust` | `hpIllustTip` |
-| `html` | `newHtml` | `hbAppHtmlSub` | `design` | `hpDesignCard` | `hpDesignCardSub` |
-| `open` | `openLocal` | `hbAppOpenSub` | | | |
+| 열쇠    | 이름          | 한 줄 설명     | 열쇠         | 이름              | 한 줄 설명           |
+| ------- | ------------- | -------------- | ------------ | ----------------- | -------------------- |
+| `xmind` | `newMindmap`  | `hpCardMapSub` | `templates`  | `hpTemplatesCard` | `hpTemplatesCardSub` |
+| `hwp`   | `newHwp`      | `hpCardHwpSub` | `pdf`        | `newPdf`          | `hbAppPdfSub`        |
+| `pptx`  | `newSlide`    | `hpCardPptSub` | `pdf-tools`  | `pdfToolsCard`    | `pdfToolsCardSub`    |
+| `docx`  | `newDoc`      | `hbAppDocxSub` | `md-convert` | `hpConvCard`      | `hpConvCardSub`      |
+| `xlsx`  | `newSheet`    | `hbAppXlsxSub` | `photo`      | `newPhoto`        | `hpPhotoTip`         |
+| `md`    | `newMarkdown` | `hbAppMdSub`   | `illust`     | `newIllust`       | `hpIllustTip`        |
+| `html`  | `newHtml`     | `hbAppHtmlSub` | `design`     | `hpDesignCard`    | `hpDesignCardSub`    |
+| `open`  | `openLocal`   | `hbAppOpenSub` |              |                   |                      |
 
 - AppsCard는 `section`이고 제목은 `h2.hb-card-title`에 `homeCustomText(lang, 'cardApps')`다.
   - 격자 요소는 `div.hb-apps`이고 `--cols: w−1`, `grid-template-columns: repeat(var(--cols), minmax(0, 160px)); justify-content: center; gap: 8px`.
@@ -446,27 +486,41 @@ export function AllApps(props: {
 
 ```ts
 const ALL = new Set(APP_KEYS)
-it.each([[{ w: 5, h: 2 }, 8], [{ w: 5, h: 3 }, 12], [{ w: 7, h: 2 }, 12], [{ w: 7, h: 3 }, 18]])(
-  'a %j card has %i app slots', (size, n) => {
-    const s = slotGrid(size)
-    expect(s.cols * s.rows).toBe(n)
-  })
+it.each([
+  [{ w: 5, h: 2 }, 8],
+  [{ w: 5, h: 3 }, 12],
+  [{ w: 7, h: 2 }, 12],
+  [{ w: 7, h: 3 }, 18],
+])('a %j card has %i app slots', (size, n) => {
+  const s = slotGrid(size)
+  expect(s.cols * s.rows).toBe(n)
+})
 it('puts All apps right after the last pin', () => {
-  expect(appSlots(['xmind', 'docx', 'pdf'], ALL, { w: 5, h: 3 })).toEqual({ apps: ['xmind', 'docx', 'pdf'], more: 0, empty: 8 })
+  expect(appSlots(['xmind', 'docx', 'pdf'], ALL, { w: 5, h: 3 })).toEqual({
+    apps: ['xmind', 'docx', 'pdf'],
+    more: 0,
+    empty: 8,
+  })
 })
 it('makes the last slot All apps with +N when pins overflow', () => {
   const pins = APP_KEYS.slice(0, 14)
-  expect(appSlots(pins, ALL, { w: 5, h: 3 })).toEqual({ apps: pins.slice(0, 11), more: 3, empty: 0 })
+  expect(appSlots(pins, ALL, { w: 5, h: 3 })).toEqual({
+    apps: pins.slice(0, 11),
+    more: 3,
+    empty: 0,
+  })
 })
 ```
 
 그 밖:
+
 - `appSlots`는 쓸 수 없는 핀을 건너뛰고 다음 핀을 당긴다. 그래도 `pinned` 자체는 바꾸지 않는다(Review Focus 3).
 - `withRecentApp`: `R = ['docx', 'xlsx', 'pdf', 'md', 'html', 'xmind', 'pptx', 'photo']`일 때 `withRecentApp(R, 'pdf')` → `['pdf', 'docx', 'xlsx', 'md', 'html', 'xmind', 'pptx', 'photo']`, `withRecentApp(R, 'open')` → `['open', 'docx', 'xlsx', 'pdf', 'md', 'html', 'xmind', 'pptx']`.
 - `unseenApps(['xmind'], new Set(['xmind', 'design']))` → `['design']`. `markAppsSeen` 뒤에는 `[]`.
 - `setPinned(board, 'md', true)`는 끝에 붙인다(두 번 해도 하나). `false`는 뺀다.
 
 `tests/home-apps-ui.test.ts`(jsdom, `LocaleProvider` 'ko'):
+
 - `buildHomeApps`: koreanDocs가 켜지고 offers가 모두 참이면 15개가 `APP_KEYS` 순서로 나온다. koreanDocs가 꺼지면 hwp, templates, design이 없다(12개). converter가 거짓이면 md-convert가 없다. `apps[0].action()`은 `onLaunch('xmind')`를 부른 뒤 원래 action을 부른다.
 - AppsCard(기본 핀(켬), 5×3, 15개 모두 쓸 수 있음):
   - `.quick-card`의 `data-new`가 핀 11개 순서와 같다. 12번째 칸이 `[data-all-apps-open]`이다.
@@ -498,28 +552,34 @@ it('makes the last slot All apps with +N when pins overflow', () => {
 ### Task 3: 시작 카드, 이어서 하기 카드, 위젯 카드 몸통
 
 **Files:**
+
 - Create: `apps/shell/src/renderer/src/home-board/RecentCard.tsx`, `apps/shell/src/renderer/src/home-board/board-geometry.ts`, `apps/shell/src/shared/home-board-edit.ts`(보드 편집 함수. Task 5가 더한다, R21)
 - Modify: `apps/shell/src/renderer/src/hanpan/StartBoard.tsx:10-45, 77-88, 130-149`, `apps/shell/src/renderer/src/hanpan/hanpan.css:341-400`(흐름 그림 규칙을 지운다), `apps/shell/src/renderer/src/Home.tsx:3568-3572`(`korean` 인자를 뺀다. 이 다섯 줄만), `apps/shell/src/renderer/src/HomeWidgets.tsx:148-159, 214-247, 457-665, 698-728`. 문구 파일과 `shared/home-board.ts`는 건드리지 않는다(Task 1이 끝냈다).
 - Test: `apps/shell/tests/hanpan-start-board.test.ts`(다시 쓴다), `apps/shell/tests/home-cards-ui.test.ts`, `apps/shell/tests/board-geometry.test.ts`, `apps/shell/tests/home-board-edit.test.ts`(새 파일), `apps/shell/tests/home-widgets.test.ts:221-229`
 
 **Interfaces:**
+
 - Consumes: Task 1의 `HomeBoard`, `BoardCard`, `CARD_SIZES`, `sizeKey`, `parseSizeKey`. Task 2의 `HomeAppCard`(sub 포함).
 - Produces:
 
 ```ts
 // hanpan/StartBoard.tsx
-export function StartBoard(props: { greeting: string; t: (key: string) => string }): ReactElement   // korean 인자와 flowGeometry를 없앤다
+export function StartBoard(props: { greeting: string; t: (key: string) => string }): ReactElement // korean 인자와 flowGeometry를 없앤다
 
 // shared/home-board-edit.ts (R21; home-board.ts의 정리 함수를 가져다 쓴다)
-export function updateCard(board: HomeBoard, id: string, patch: Record<string, unknown>): HomeBoard   // id·type 유지, 카드 정리 규칙 그대로
+export function updateCard(board: HomeBoard, id: string, patch: Record<string, unknown>): HomeBoard // id·type 유지, 카드 정리 규칙 그대로
 export function moveCard(board: HomeBoard, id: string, delta: -1 | 1): HomeBoard
 
 // home-board/board-geometry.ts
-export function recentRows(h: number): number   // h >= 3이면 6, 아니면 3
+export function recentRows(h: number): number // h >= 3이면 6, 아니면 3
 
 // home-board/RecentCard.tsx
 export function RecentCard(props: {
-  title: string; rows: number; total: number; reloadKey: unknown; onShowAll: () => void
+  title: string
+  rows: number
+  total: number
+  reloadKey: unknown
+  onShowAll: () => void
   describe: (entry: RecentEntry) => { location: string; modified: string }
   iconFor: (ext: string) => ReactElement
 }): ReactElement
@@ -528,19 +588,30 @@ export function RecentCard(props: {
 type WidgetLike = HomeWidget | BoardCard
 export function widgetTitle(widget: WidgetLike, text: Text, cards: readonly HomeAppCard[]): string
 function WidgetForm(props: {
-  widget: WidgetLike; cards: readonly HomeAppCard[]; text: Text
-  sizeOptions: { value: string; label: string }[]; sizeValue: string
-  onPatch: (values: Record<string, unknown>) => void; onSize: (value: string) => void
-  onMove: (delta: -1 | 1) => void; onDone: () => void
+  widget: WidgetLike
+  cards: readonly HomeAppCard[]
+  text: Text
+  sizeOptions: { value: string; label: string }[]
+  sizeValue: string
+  onPatch: (values: Record<string, unknown>) => void
+  onSize: (value: string) => void
+  onMove: (delta: -1 | 1) => void
+  onDone: () => void
 }): ReactElement
 export function WidgetBody(props: {
-  card: BoardCard; update: (change: (prev: HomeBoard) => HomeBoard) => void
-  apps: readonly HomeAppCard[]; lang: Lang; dateLocale: string; reloadKey: unknown
-  editing: boolean; onEdit: (id: string | null) => void
-}): ReactElement   // memo, favorites, folder, clock, shortcut
+  card: BoardCard
+  update: (change: (prev: HomeBoard) => HomeBoard) => void
+  apps: readonly HomeAppCard[]
+  lang: Lang
+  dateLocale: string
+  reloadKey: unknown
+  editing: boolean
+  onEdit: (id: string | null) => void
+}): ReactElement // memo, favorites, folder, clock, shortcut
 ```
 
 **정하는 규칙:**
+
 - StartBoard:
   - 오른쪽 그림(`figure.hp-flow`)과 `flowGeometry`, `FLOW_STEP`, `korean` 인자를 지운다.
   - 사용 설명서 단추(`data-hanpan="start-guide"`, `data-tip`, `openHelp('hanpan')`)는 그대로 두고, 단추 안 끝에 `<kbd class="hp-guide-key">F1</kbd>`를 붙인다.
@@ -586,6 +657,7 @@ export function WidgetBody(props: {
 ### Task 4: 보드 화면, 왼쪽 메뉴의 '홈', 머리 줄 검색
 
 **Files:**
+
 - Create: `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/home-board.css`(격자·카드 틀·머리 줄. `BoardGrid.tsx`가 `import './home-board.css'`, R21). `TrendCard.tsx` 빈 카드는 Task 1이 만들었으므로 들여오기만 한다.
 - Modify:
   - `apps/shell/src/renderer/src/Home.tsx`: 1161(`view`), 1338-1392(`reload`), 1655-1663(`changeView`), 2041-2403(옛 카드와 위젯 묶음을 바꾼다), 3422-3433(폴더 보기의 빠른 시작), 3551-3738(`renderGlobalContent`를 나눈다), 3788-3821(왼쪽 메뉴), 3913-3932(본문 고르기), 대화상자는 루트로
@@ -597,6 +669,7 @@ export function WidgetBody(props: {
 - Test: `apps/shell/tests/home-widgets.test.ts`, `apps/shell/tests/home-korean-cards.test.ts`, `apps/shell/tests/home-navigation.test.ts`, `apps/shell/tests/home-subscription-entry.test.ts:196`, `apps/shell/tests/home-layout.test.ts:219-246`(저장 시험을 지운다), `apps/shell/tests/board-geometry.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 1의 `useHomeBoard`, `HomeBoard`, `BoardCard`, `sizeKey`. Task 2의 `buildHomeApps`, `AppsCard`, `AllApps`, `appSlots`, `unseenApps`, `markAppsSeen`, `recordAppLaunch`, `setPinned`. Task 3의 `StartBoard`, `RecentCard`, `WidgetBody`, `recentRows`.
 - Produces:
 
@@ -605,7 +678,7 @@ export function WidgetBody(props: {
 export const BOARD_ROW_PX = 96
 export const BOARD_GAP_PX = 14
 export type BoardColumns = 12 | 6 | 1
-export function cardSpan(w: number, cols: BoardColumns): number   // 12 → w, 6 → (w >= 5 ? 6 : 3), 1 → 1
+export function cardSpan(w: number, cols: BoardColumns): number // 12 → w, 6 → (w >= 5 ? 6 : 3), 1 → 1
 
 // home-board/BoardGrid.tsx
 export function BoardGrid(props: {
@@ -624,6 +697,7 @@ export function boardCardName(card: BoardCard, lang: Lang, apps: readonly HomeAp
 - `Home.tsx`의 `view`는 `'home' | 'recent' | 'starred'`이고 기본은 `'home'`이다. 보드는 `const { board, context, update: updateBoard } = useHomeBoard({ korean: lang === 'ko', koreanDocs })`로 얻는다.
 
 **정하는 규칙:**
+
 - BoardGrid는 `<section class="hb-board" data-home-board data-cols="12" style="--cols: 12">` 안에 카드마다 `<section class="hb-card" data-card={id} data-card-type={type} data-size={sizeKey} aria-label={cardName} style="--span: {cardSpan(w, 12)}; --rows: {h}">`와 `div.hb-card-body`를 둔다. 열 수는 이 작업에서 12로 고정한다(Task 9가 잰다).
 - CSS: 보드는 `display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-auto-rows: 96px; gap: 14px; grid-auto-flow: row dense`. 카드는 `grid-column: span var(--span); grid-row: span var(--rows); min-width: 0`.
 - 본문 고르기: 폴더 보기 → `renderFolderContent()`, 드라이브 → `DrivePanel`, 묻기 → `KbAskPanel`, `view === 'home'` → `renderBoardContent()`, 그 밖 → `renderListContent()`(지금 `renderGlobalContent`의 `section.recents`만).
@@ -682,10 +756,12 @@ export function boardCardName(card: BoardCard, lang: Lang, apps: readonly HomeAp
 ### Task 5: 홈 꾸미기 (키보드로 다 되는 부분)
 
 **Files:**
+
 - Modify: `apps/shell/src/shared/home-board-edit.ts`(R21), `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/HomeWidgets.tsx:831-1107`(카드 고르기와 목록 창을 보드용으로), `apps/shell/src/renderer/src/Home.tsx`(꾸미기 상태, 머리 줄 단추, 안내 줄, 대화상자, Esc), `apps/shell/src/renderer/src/home-board/home-board.css`, `apps/shell/src/shared/home-layout.ts:187-292`(쓰지 않게 된 편집 함수를 지운다). 문구 파일은 건드리지 않는다(R22).
 - Test: `apps/shell/tests/home-board-edit.test.ts`(편집 동작), `apps/shell/tests/home-customize.test.ts`, `apps/shell/tests/home-dialog-keys.test.ts:70-92`, `apps/shell/tests/home-layout.test.ts:146-217`(지운 함수의 시험을 지운다)
 
 **Interfaces:**
+
 - Consumes: Task 1~4의 것. `@genoffice/ui`의 `useDismissablePopover`.
 - Produces:
 
@@ -718,6 +794,7 @@ export function HomeCustomizePanel(props: {
 ```
 
 **정하는 규칙:**
+
 - 꾸미기 상태(`customizing`)는 `Home.tsx`가 갖는다.
   - 머리 줄 오른쪽에 `button.home-custom-open[data-home-custom="open"][aria-pressed]`('홈 꾸미기', 있는 `customize`)을 둔다. 누르면 켜고 끈다.
   - 켜지면 머리 줄 바로 아래에 `div[role="toolbar"][data-customize-bar]`가 생긴다. 글은 `customizeHint`, 단추는 `[data-customize="add"]`(`addCard`), `[data-customize="reset"]`(`resetBoard`), `[data-customize="list"]`(`listView`), `[data-customize="done"]`(`done`)이다.
@@ -774,10 +851,12 @@ export function HomeCustomizePanel(props: {
 ### Task 6: 홈 꾸미기 (끌기와 크기 모서리)
 
 **Files:**
+
 - Modify: `apps/shell/src/renderer/src/home-board/board-geometry.ts`, `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`, `apps/shell/src/renderer/src/home-board/AppsCard.tsx`, `apps/shell/src/renderer/src/home-board/home-board.css`. 문구 `dragHandle`, `resizeCorner`는 Task 1이 등록했다(R22).
 - Test: `apps/shell/tests/board-geometry.test.ts`, `apps/shell/tests/home-customize.test.ts`(끌기 묶음)
 
 **Interfaces:**
+
 - Consumes: Task 5의 `moveCardTo`, `resizeCard`, `nearestSize`, `moveApp`. Task 4의 `BOARD_ROW_PX`, `BOARD_GAP_PX`.
 - Produces:
 
@@ -789,6 +868,7 @@ export function sizeFromDrag(start: CardSize, dx: number, dy: number, colPx: num
 ```
 
 **정하는 규칙:**
+
 - 카드 끌기는 평소와 꾸미기 상태 모두에서 손잡이로만 한다(스펙 7.8 '평소').
   - 손잡이 `button[data-card-handle][draggable]`(이름 `dragHandle`, ⋮⋮)는 평소에는 카드에 마우스를 올리거나 초점이 있을 때 보이고, 꾸미기 상태에서는 늘 보인다.
   - HTML5 끌기: `dragstart`에서 끄는 카드 id를 ref에 두고 `dataTransfer?.setData('application/x-hanpan-card', id)`, `setDragImage(카드 요소)`.
@@ -829,6 +909,7 @@ export function sizeFromDrag(start: CardSize, dx: number, dy: number, colPx: num
 ### Task 7: 기상도 받기와 문서
 
 **Files:**
+
 - Create: `apps/shell/src/shared/trend-api.ts`, `apps/shell/src/main/trend/trend-service.ts`, `apps/shell/src/main/trend/trend-ipc.ts`
 - Modify:
   - `apps/shell/src/shared/trend-forecast.ts`(검사와 링크), `apps/shell/src/main/trend/trend-config.ts`(`forecastRequestUrl`)
@@ -838,32 +919,73 @@ export function sizeFromDrag(start: CardSize, dx: number, dy: number, colPx: num
 - Test: `apps/shell/tests/trend-forecast.test.ts`, `apps/shell/tests/trend-service.test.ts`, `apps/shell/tests/preload-trend.test.ts`, `apps/shell/tests/renderer-csp.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 1의 `TREND_SITE`, `TREND_FORECAST_URL`, `trendForecastUrl`, `boardHasTrend`, `HOME_BOARD_SETTING_KEY`. `packages/electron-utils`의 `safeExternalUrl`. `main/app-settings.ts`의 `readAppSettings`.
 - Produces:
 
 ```ts
 // shared/trend-forecast.ts
 export const TREND_UTM = 'utm_source=hanpan&utm_medium=home&utm_campaign=forecast'
-export const TREND_FIELD_KEYS = ['ai', 'opensource', 'local-ai', 'ai-safety', 'stocks', 'economy', 'semiconductor', 'realestate', 'fx', 'crypto'] as const
+export const TREND_FIELD_KEYS = [
+  'ai',
+  'opensource',
+  'local-ai',
+  'ai-safety',
+  'stocks',
+  'economy',
+  'semiconductor',
+  'realestate',
+  'fx',
+  'crypto',
+] as const
 export type TrendFieldKey = (typeof TREND_FIELD_KEYS)[number]
 export type TrendSignal = -2 | -1 | 0 | 1 | 2
 export type TrendScale = 'weather' | 'market'
-export interface TrendField { key: TrendFieldKey; title: string; scale: TrendScale; s: TrendSignal | null; label: string; head: string; path: string; asOf?: string }
+export interface TrendField {
+  key: TrendFieldKey
+  title: string
+  scale: TrendScale
+  s: TrendSignal | null
+  label: string
+  head: string
+  path: string
+  asOf?: string
+}
 // asOf: 저장본에만 있다. 이 분야 값을 계산한 시각(ISO). 없으면 TrendForecast.asOf와 같다(R24)
-export interface TrendForecast { schema: 1; asOf: string; date: string; fields: TrendField[]; line: string }
+export interface TrendForecast {
+  schema: 1
+  asOf: string
+  date: string
+  fields: TrendField[]
+  line: string
+}
 export const TREND_TEXT_MAX = { title: 20, label: 10, head: 80, line: 80 } as const
 export const TREND_FIELDS_MAX = 12
-export const TREND_CARRY_MAX_MS = 48 * 60 * 60 * 1000   // R24
-export function cutText(text: string, max: number): string   // R26: max 안이면 그대로, 넘으면 (max − 1)자 + '…'
-export function mergeTrendForecast(fresh: TrendForecast, stored: TrendForecast | null): TrendForecast   // R24
+export const TREND_CARRY_MAX_MS = 48 * 60 * 60 * 1000 // R24
+export function cutText(text: string, max: number): string // R26: max 안이면 그대로, 넘으면 (max − 1)자 + '…'
+export function mergeTrendForecast(
+  fresh: TrendForecast,
+  stored: TrendForecast | null,
+): TrendForecast // R24
 export function trendPath(raw: unknown): string | null
 export function parseTrendForecast(raw: unknown): TrendForecast | null
-export function trendLinkUrl(path: string | null): string | null   // null이면 첫 화면
+export function trendLinkUrl(path: string | null): string | null // null이면 첫 화면
 
 // shared/trend-api.ts
-export const TREND_CHANNELS = { get: 'trend:get', changed: 'trend:changed', open: 'trend:open' } as const
-export interface TrendSnapshot { available: boolean; forecast: TrendForecast | null }
-export interface TrendApi { get(): Promise<TrendSnapshot>; onChanged(handler: (s: TrendSnapshot) => void): () => void; open(path: string | null): Promise<void> }
+export const TREND_CHANNELS = {
+  get: 'trend:get',
+  changed: 'trend:changed',
+  open: 'trend:open',
+} as const
+export interface TrendSnapshot {
+  available: boolean
+  forecast: TrendForecast | null
+}
+export interface TrendApi {
+  get(): Promise<TrendSnapshot>
+  onChanged(handler: (s: TrendSnapshot) => void): () => void
+  open(path: string | null): Promise<void>
+}
 export function parseTrendSnapshot(raw: unknown): TrendSnapshot
 
 // main/trend/trend-config.ts
@@ -882,12 +1004,20 @@ export interface TrendServiceDeps {
   wanted(): boolean
   broadcast(snapshot: TrendSnapshot): void
 }
-export interface TrendService { start(): void; boardChanged(): void; snapshot(): TrendSnapshot; stop(): void }
+export interface TrendService {
+  start(): void
+  boardChanged(): void
+  snapshot(): TrendSnapshot
+  stop(): void
+}
 export function createTrendService(deps: TrendServiceDeps): TrendService
 
 // main/trend/trend-ipc.ts
 export function registerTrendIpc(deps: {
-  userData: () => string; settingsPath: () => string; url: string | null; version: string
+  userData: () => string
+  settingsPath: () => string
+  url: string | null
+  version: string
   window: () => BrowserWindow | null
 }): TrendService
 ```
@@ -895,6 +1025,7 @@ export function registerTrendIpc(deps: {
 - preload는 `window.aiOfficeTrend: TrendApi`를 내놓는다.
 
 **정하는 규칙:**
+
 - `trendPath(raw)`: 글자이고 `/^\/(?:[A-Za-z0-9-]+(?:\/[A-Za-z0-9-]+)*)?$/`에 맞을 때만 그 글자, 아니면 `null`. 이 꼴이면 `//`, `:`, `\`, `?`, `#`, `%`, `.`이 들어갈 수 없다.
 - `parseTrendForecast(raw)`:
   - 객체가 아니거나 `schema !== 1`이면 `null`.
@@ -983,27 +1114,31 @@ export function registerTrendIpc(deps: {
 ### Task 8: 트렌드 카드
 
 **Files:**
+
 - Create: `apps/shell/src/renderer/src/home-board/trend-card.css`(`TrendCard.tsx`가 `import`한다, R21)
 - Modify: `apps/shell/src/renderer/src/home-board/TrendCard.tsx`(Task 1의 빈 카드를 채운다), `apps/shell/src/shared/trend-forecast.ts`. 문구 `hbTrendLine`, `hbTrendMore`, `hbTrendAsOf`, `hbTrendNoData`는 Task 1이 등록했다(R22). `home-board.css`는 건드리지 않는다(Task 4가 같은 때에 만든다).
 - Test: `apps/shell/tests/trend-forecast.test.ts`(더함), `apps/shell/tests/home-trend-card.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 7의 `TrendForecast`, `TrendField`, `TrendSnapshot`, `TrendApi`(`window.aiOfficeTrend`).
 - Produces:
 
 ```ts
 // shared/trend-forecast.ts
-export function kstDate(now: Date): string   // new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 10)
-export function trendAsOfText(forecast: TrendForecast, now: Date, locale: string): string   // hbTrendAsOf의 {when}
-export type TrendGlyph = 'sun' | 'sun-cloud' | 'cloud' | 'rain' | 'storm' | 'fire' | 'up' | 'flat' | 'down' | 'snow'
+export function kstDate(now: Date): string // new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 10)
+export function trendAsOfText(forecast: TrendForecast, now: Date, locale: string): string // hbTrendAsOf의 {when}
+export type TrendGlyph =
+  'sun' | 'sun-cloud' | 'cloud' | 'rain' | 'storm' | 'fire' | 'up' | 'flat' | 'down' | 'snow'
 export function trendGlyph(scale: TrendScale, s: TrendSignal): TrendGlyph
 
 // home-board/TrendCard.tsx
-export function TrendCard(props: { now?: () => Date }): ReactElement   // window.aiOfficeTrend를 스스로 읽는다
+export function TrendCard(props: { now?: () => Date }): ReactElement // window.aiOfficeTrend를 스스로 읽는다
 ```
 
 **정하는 규칙:**
-- `trendAsOfText`: `forecast.date === kstDate(now)`이면 `asOf`를 `Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Asia/Seoul' })`로 쓴다. 아니면 `` new Date(`${forecast.date}T00:00:00Z`) ``를 `Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', timeZone: 'UTC' })`로 쓴다.
+
+- `trendAsOfText`: `forecast.date === kstDate(now)`이면 `asOf`를 `Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Asia/Seoul' })`로 쓴다. 아니면 ``new Date(`${forecast.date}T00:00:00Z`)``를 `Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', timeZone: 'UTC' })`로 쓴다.
 - **Ruling R12:** 날짜를 붙일지는 마지막 받기가 실패했는지가 아니라 기상도의 날짜로 정한다. 같은 날 받은 결과는 오늘의 날씨이기 때문이다. 저장본이 아예 없으면 처음 그릴 때부터 오프라인 안내를 보인다. 도는 그림이나 빈칸은 두지 않는다(실패 조건 "빈칸이 남는 것").
 - `trendGlyph`(7.6): weather는 2 → sun, 1 → sun-cloud, 0 → cloud, −1 → rain, −2 → storm. market은 2 → fire, 1 → up, 0 → flat, −1 → down, −2 → snow.
 - TrendCard:
@@ -1047,14 +1182,17 @@ export function TrendCard(props: { now?: () => Date }): ReactElement   // window
 ### Task 9: 좁은 화면
 
 **Files:**
+
 - Modify: `apps/shell/src/renderer/src/home-board/board-geometry.ts`(`boardColumns`), `apps/shell/src/renderer/src/home-board/BoardGrid.tsx`(넓이를 잰다), `apps/shell/src/renderer/src/home-board/home-board.css`, `apps/shell/src/renderer/src/hanpan/hanpan.css:259-336`(시작 입력 줄)
 - Test: `apps/shell/tests/board-geometry.test.ts`, `apps/shell/tests/home-board-columns.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 4의 `cardSpan`, `BoardColumns`. Task 6의 모서리 조건(12칸일 때만).
 - Produces: `export function boardColumns(width: number): BoardColumns` — 960 이상이면 12, 700 이상이면 6, 그 밖은 1.
 
 **정하는 규칙:**
+
 - BoardGrid가 보드 요소의 `ResizeObserver`(`contentRect.width`)로 `boardColumns`를 구해 `data-cols`, `--cols`, 카드마다 `--span: cardSpan(w, cols)`를 바꾼다. `ResizeObserver`가 없으면(jsdom) 12다. 열 수가 바뀌어도 저장하지 않는다.
 - 1366 화면은 12칸 그대로다(7.9).
 - 글:
@@ -1082,13 +1220,16 @@ export function TrendCard(props: { now?: () => Date }): ReactElement   // window
 ### Task 10: 문구 확정, 번역, 도움말, 설명서
 
 **Files:**
+
 - Modify: `apps/shell/src/renderer/src/hanpan/home-strings.json`, `apps/shell/src/renderer/src/strings.ts`(도구로), `apps/shell/src/renderer/src/i18n/strings-home-custom.ts`, `apps/shell/src/renderer/src/i18n/help/topics/hanpan.<21개 언어>.md`, `apps/shell/src/renderer/src/i18n/help/topics/home-screen.<21개 언어>.md`, `docs/manual/한판-사용설명서.md`(1장, 5장, 6장)
 - Test: `apps/shell/tests/home-board-strings.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 2~8이 더하거나 바꾼 키(Global Constraints의 문구 표 전부).
 
 **정하는 규칙:**
+
 - 한국어 원문은 Global Constraints 문구 표로 확정됐다(R27). 사용자에게 다시 묻지 않는다. 표와 코드의 ko 값이 다르면 표에 맞춘다.
 - home-strings의 `hb*` 키는 11개 언어를 모두 채운다. 도구는 영어 자리표시를 그 언어 글로 바꾼다. home-custom의 새 키와 값을 바꾼 키(`widgetRecent`, `descFavorites`, `favoritesEmpty`, `pin`, `unpin`)는 21개 언어를 모두 채운다. 영어를 그대로 복사하지 않는다. 자리표시(`{n}`, `{when}`, `{w}`, `{h}`, `{name}`)는 모든 언어에 그대로 둔다.
 - **Ruling R20:** 스펙 7.12는 `docs/manual`만 적었다. 그러나 `apps/shell/AGENTS.md`는 한국어 도움말이 소개 사이트 질문 도우미의 지식이라 "기능을 바꾸면 도움말도 같이 고친다"고 정한다. 그래서 앱 안 도움말 `hanpan`과 `home-screen` 주제도 고친다. 21개 언어 모두 같은 구조를 유지한다(`npm run check:help-langs`).
@@ -1120,17 +1261,23 @@ export function TrendCard(props: { now?: () => Date }): ReactElement   // window
 ### Task 11: e2e 도우미와 기존 e2e 고치기
 
 **Files:**
+
 - Create: `e2e/assets/trend-forecast.json`
 - Modify: `e2e/helpers.ts`, `e2e/home.spec.ts`, `e2e/hanpan-home.spec.ts`, `e2e/home-widgets.spec.ts`, `e2e/home-search.spec.ts`, `e2e/mindmap-tab.spec.ts`, `e2e/markdown-tab.spec.ts`, `e2e/crash-recovery.spec.ts`, `e2e/hanpan-md-convert.spec.ts`, `e2e/rtl-document-direction.spec.ts`, `e2e/pdf-tools-window.spec.ts`, `e2e/hanpan-manual-tour.spec.ts`
 
 **Interfaces:**
+
 - Consumes: Global Constraints의 선택자 약속.
 - Produces (`e2e/helpers.ts`):
 
 ```ts
 export async function openFromAllApps(page: Page, key: string): Promise<void>
 // page.locator('[data-all-apps-open]').first().click() 뒤 page.locator(`[data-all-apps] [data-new="${key}"]`).click()
-export interface TrendServer { url: string; requests: Array<{ url: string; headers: IncomingHttpHeaders }>; close(): Promise<void> }
+export interface TrendServer {
+  url: string
+  requests: Array<{ url: string; headers: IncomingHttpHeaders }>
+  close(): Promise<void>
+}
 export async function startTrendServer(body: string): Promise<TrendServer>
 // node:http, 127.0.0.1의 빈 포트, 모든 요청을 기록하고 200 application/json으로 body를 준다. url = `http://127.0.0.1:<포트>/api/forecast`
 ```
@@ -1138,23 +1285,24 @@ export async function startTrendServer(body: string): Promise<TrendServer>
 - `launchShell`의 `env`는 `HANPAN_TREND_URL: ''`를 `...(options.env ?? {})` 앞에 둔다.
 
 **정하는 규칙:**
+
 - **Ruling R10(e2e):** e2e는 기본으로 기상도 주소가 없다(`HANPAN_TREND_URL=''`). 시험이 바깥 주소에 요청하지 않게 하기 위해서다. 트렌드를 보는 시험만 `startTrendServer`나 없는 주소를 넘긴다.
 - `e2e/assets/trend-forecast.json`: 판 1 형식. `asOf` `'2026-11-09T00:30:00Z'`, `date` `'2026-11-09'`, 분야 10개(계획 1의 `FORECAST_FIELDS` 순서와 제목·경로: `/ai` … `/crypto`). `local-ai`는 `s: null`, `label: '정보 없음'`. `realestate`는 `scale: 'market'`. 나머지는 −2~2를 섞는다. `line`은 80자 이하의 한 문장.
 - 조사 결과: 스펙 4절은 57개 파일이라 적었다. 지금 코드에서는 홈 선택자를 쓰는 e2e가 68개, `data-new`나 `.quick-card`를 쓰는 것이 50개다. R5(타일의 `quick-card`와 `data-hanpan`)와 기본 핀 때문에 고칠 것은 아래 11개 시험 파일과 `helpers.ts`뿐이다.
 
-| 파일 | 고칠 것 |
-|---|---|
-| `e2e/home.spec.ts` | 첫 시험: `.quick-card` 순서 기대값을 `['xmind', 'hwp', 'pptx', 'docx', 'xlsx', 'pdf', 'templates', 'photo', 'illust', 'design', 'html']`로. 메뉴 이름 `['Home', 'Recent', 'Starred', 'Ask AI', 'AI folder work']`. 에이전트 항목 `nth(3)` → `nth(4)`(두 곳). 둘째 시험: 58줄의 첫 메뉴 기대를 `.first()`에서 `.nth(1)`로(기대 글자는 그대로). |
-| `e2e/hanpan-home.spec.ts` | 16줄 `nth(3)`의 기대 `'templates'` → `'docx'`. |
-| `e2e/home-widgets.spec.ts` | 보드 흐름으로 다시 쓴다(아래). |
-| `e2e/home-search.spec.ts` | 106-108줄: `.recents-heading .section-label` 기대를 `[data-home-board]` 보임으로 바꾼다. 초점을 빼려고 누르는 곳은 `[data-card-type="apps"] .hb-card-title`. |
-| `e2e/mindmap-tab.spec.ts` | 290줄 앞에 `.nav-item` 'Recent' 누르기. 374-381줄: 홈에서 먼저 `.quick-card[data-new="xmind"] img`의 주소를 읽고, 'Recent'로 가서 줄을 찾아 비교한다. 거르기 단추(385-388)는 그 화면에 있다. 514줄 → `openFromAllApps(page, 'open')`(폴더 보기의 새로 만들기 카드에서). |
-| `e2e/markdown-tab.spec.ts` | 51-53줄: `openFromAllApps(page, 'md')`로 연다. 시험 이름의 'quick card'를 'from All apps'로. |
-| `e2e/crash-recovery.spec.ts` | 373줄, 728줄 → `openFromAllApps(shell, 'md')`. |
-| `e2e/hanpan-md-convert.spec.ts` | 42줄 → `openFromAllApps(page, 'md-convert')`. |
-| `e2e/rtl-document-direction.spec.ts` | 51줄: 모든 형식을 `openFromAllApps(launched.page, format)`로 연다(15줄의 "홈 배치와 언어에 기대지 않는다"에 맞다). |
-| `e2e/pdf-tools-window.spec.ts` | `openToolsWindow`(105-110줄)의 `home.getByRole('button', { name: card })`를 `openFromAllApps(home, 'pdf-tools')`로. `card` 인자를 지우고 부르는 곳 9곳(138, 245, 327, 371, 429, 478, 607, 672, 755줄)을 고친다. 24줄 주석을 'All apps'로. |
-| `e2e/hanpan-manual-tour.spec.ts` | `startTrendServer(고정 기상도)`를 띄우고 `env: { HANPAN_TREND_URL: server.url }`로 연다. 01-home을 찍기 전에 `[data-trend-field]` 10개를 기다린다. 끝에 서버를 닫는다. |
+| 파일                                 | 고칠 것                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `e2e/home.spec.ts`                   | 첫 시험: `.quick-card` 순서 기대값을 `['xmind', 'hwp', 'pptx', 'docx', 'xlsx', 'pdf', 'templates', 'photo', 'illust', 'design', 'html']`로. 메뉴 이름 `['Home', 'Recent', 'Starred', 'Ask AI', 'AI folder work']`. 에이전트 항목 `nth(3)` → `nth(4)`(두 곳). 둘째 시험: 58줄의 첫 메뉴 기대를 `.first()`에서 `.nth(1)`로(기대 글자는 그대로). |
+| `e2e/hanpan-home.spec.ts`            | 16줄 `nth(3)`의 기대 `'templates'` → `'docx'`.                                                                                                                                                                                                                                                                                                |
+| `e2e/home-widgets.spec.ts`           | 보드 흐름으로 다시 쓴다(아래).                                                                                                                                                                                                                                                                                                                |
+| `e2e/home-search.spec.ts`            | 106-108줄: `.recents-heading .section-label` 기대를 `[data-home-board]` 보임으로 바꾼다. 초점을 빼려고 누르는 곳은 `[data-card-type="apps"] .hb-card-title`.                                                                                                                                                                                  |
+| `e2e/mindmap-tab.spec.ts`            | 290줄 앞에 `.nav-item` 'Recent' 누르기. 374-381줄: 홈에서 먼저 `.quick-card[data-new="xmind"] img`의 주소를 읽고, 'Recent'로 가서 줄을 찾아 비교한다. 거르기 단추(385-388)는 그 화면에 있다. 514줄 → `openFromAllApps(page, 'open')`(폴더 보기의 새로 만들기 카드에서).                                                                       |
+| `e2e/markdown-tab.spec.ts`           | 51-53줄: `openFromAllApps(page, 'md')`로 연다. 시험 이름의 'quick card'를 'from All apps'로.                                                                                                                                                                                                                                                  |
+| `e2e/crash-recovery.spec.ts`         | 373줄, 728줄 → `openFromAllApps(shell, 'md')`.                                                                                                                                                                                                                                                                                                |
+| `e2e/hanpan-md-convert.spec.ts`      | 42줄 → `openFromAllApps(page, 'md-convert')`.                                                                                                                                                                                                                                                                                                 |
+| `e2e/rtl-document-direction.spec.ts` | 51줄: 모든 형식을 `openFromAllApps(launched.page, format)`로 연다(15줄의 "홈 배치와 언어에 기대지 않는다"에 맞다).                                                                                                                                                                                                                            |
+| `e2e/pdf-tools-window.spec.ts`       | `openToolsWindow`(105-110줄)의 `home.getByRole('button', { name: card })`를 `openFromAllApps(home, 'pdf-tools')`로. `card` 인자를 지우고 부르는 곳 9곳(138, 245, 327, 371, 429, 478, 607, 672, 755줄)을 고친다. 24줄 주석을 'All apps'로.                                                                                                     |
+| `e2e/hanpan-manual-tour.spec.ts`     | `startTrendServer(고정 기상도)`를 띄우고 `env: { HANPAN_TREND_URL: server.url }`로 연다. 01-home을 찍기 전에 `[data-trend-field]` 10개를 기다린다. 끝에 서버를 닫는다.                                                                                                                                                                        |
 
 - 그대로 통과해야 하는 것(고치지 않는다): `.quick-card[data-new="docx"|"xlsx"]`와 글자로 집는 'AI Docs'·'AI Sheets'·'AI Slides'·'AI HTML'·'AI PDF'·'Mind Map', photo·illust·hwp·xmind 타일, `[data-hanpan="design"|"templates"]`(디자인 시험 10개, `hanpan-templates`, `hanpan-official-forms`), 폴더 보기의 `home-folders`·`text-source`(R7), 즐겨찾기 보기의 `generate-window`, 메뉴를 글자로 집는 `kb-ask-group`, 시작판을 보는 `onboarding`, 어긋남을 넘기는 `menu-user-guide`.
 - `e2e/home-widgets.spec.ts` 새 흐름(`lang: 'ko'`, 주소 없음):
@@ -1179,13 +1327,16 @@ export async function startTrendServer(body: string): Promise<TrendServer>
 ### Task 12: 새 e2e, 실제 실행 비교, 설명서 그림, 결정 기록
 
 **Files:**
+
 - Create: `e2e/home-board.spec.ts`, `docs/tracking/decisions/0097-hanpan-home-board.md`
 - Modify: `docs/tracking/decisions/index.md`, `apps/shell/AGENTS.md`, `docs/manual/images/01-home.png`(투어로 다시 찍는다)
 
 **Interfaces:**
+
 - Consumes: Task 11의 `openFromAllApps`, `startTrendServer`, `e2e/assets/trend-forecast.json`.
 
 **정하는 규칙 (`e2e/home-board.spec.ts`, 스펙 8절의 새 e2e 9개):**
+
 - `'first run shows six cards in order and an offline trend card'`(1·2): `lang: 'ko'`, `env: { HANPAN_TREND_URL: 'http://127.0.0.1:9/api/forecast' }`.
   - `[data-card]`의 `data-card-type`이 `['start', 'trend', 'apps', 'recent', 'memo', 'favorites']`.
   - `[data-trend-offline]`이 '인터넷에 연결되면 오늘의 트렌드가 나옵니다'.
@@ -1245,33 +1396,33 @@ export async function startTrendServer(body: string): Promise<TrendServer>
 
 ## 스펙 대조
 
-| 스펙 | 작업 |
-|---|---|
-| 7.0 보드 머리 줄 | Task 4(검색), Task 5('홈 꾸미기' 단추와 안내 줄) |
-| 7.1 기본 배치 | Task 1, Task 12의 e2e 1 |
-| 7.2 카드 종류 | Task 1(크기·개수·정리), Task 5(빼기·추가) |
-| 7.3 시작 카드 | Task 3, Task 10(예시 칩 번역), Task 12의 e2e 8 |
-| 7.4 새로 만들기, 모든 앱, 새 앱, 한 줄 설명 | Task 2, Task 4(연결), Task 5·6(꾸미기) |
-| 7.5 이어서 하기, 왼쪽 메뉴 | Task 3, Task 4 |
-| 7.6 트렌드 카드 | Task 8, Task 12의 e2e 2·3 |
-| 7.7 위젯 카드, 즐겨찾기 앱 고정 없앰 | Task 3, Task 1(`pinnedApps` 옮기기) |
-| 7.8 홈 꾸미기 | Task 5, Task 6, Task 12의 e2e 4·5 |
-| 7.9 좁은 화면 | Task 9, Task 12의 e2e 7 |
-| 7.10 저장과 옮겨 오기 | Task 1, Task 12의 e2e 6 |
-| 7.11 한판 쪽(받기, 검사, 저장, 화면, 링크, 문서) | Task 7, Task 8 |
-| 보강: 일부만 받은 답의 분야별 병합과 표시(스펙에는 없음) | Task 7(R24), Task 8(R25), Review Focus 6 |
-| 7.12 문구, 번역, 설명서 | Task 1(ko·en·vi 등록, R22), Task 10, Task 12(그림) |
-| 8절 단위 시험 | `home-board.test.ts`(Task 1), `home-apps.test.ts`(Task 2), `home-board-edit.test.ts`(Task 3·5) — 셋으로 나눈 이유는 R21, `trend-forecast.test.ts`(Task 7·8) |
-| 8절 새 e2e 1~9 | Task 12 |
-| 8절 고칠 기존 e2e | Task 11 |
-| 2절 완료 기준 5(e2e) | Task 12 Step 2·3·8 |
+| 스펙                                                     | 작업                                                                                                                                                        |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 7.0 보드 머리 줄                                         | Task 4(검색), Task 5('홈 꾸미기' 단추와 안내 줄)                                                                                                            |
+| 7.1 기본 배치                                            | Task 1, Task 12의 e2e 1                                                                                                                                     |
+| 7.2 카드 종류                                            | Task 1(크기·개수·정리), Task 5(빼기·추가)                                                                                                                   |
+| 7.3 시작 카드                                            | Task 3, Task 10(예시 칩 번역), Task 12의 e2e 8                                                                                                              |
+| 7.4 새로 만들기, 모든 앱, 새 앱, 한 줄 설명              | Task 2, Task 4(연결), Task 5·6(꾸미기)                                                                                                                      |
+| 7.5 이어서 하기, 왼쪽 메뉴                               | Task 3, Task 4                                                                                                                                              |
+| 7.6 트렌드 카드                                          | Task 8, Task 12의 e2e 2·3                                                                                                                                   |
+| 7.7 위젯 카드, 즐겨찾기 앱 고정 없앰                     | Task 3, Task 1(`pinnedApps` 옮기기)                                                                                                                         |
+| 7.8 홈 꾸미기                                            | Task 5, Task 6, Task 12의 e2e 4·5                                                                                                                           |
+| 7.9 좁은 화면                                            | Task 9, Task 12의 e2e 7                                                                                                                                     |
+| 7.10 저장과 옮겨 오기                                    | Task 1, Task 12의 e2e 6                                                                                                                                     |
+| 7.11 한판 쪽(받기, 검사, 저장, 화면, 링크, 문서)         | Task 7, Task 8                                                                                                                                              |
+| 보강: 일부만 받은 답의 분야별 병합과 표시(스펙에는 없음) | Task 7(R24), Task 8(R25), Review Focus 6                                                                                                                    |
+| 7.12 문구, 번역, 설명서                                  | Task 1(ko·en·vi 등록, R22), Task 10, Task 12(그림)                                                                                                          |
+| 8절 단위 시험                                            | `home-board.test.ts`(Task 1), `home-apps.test.ts`(Task 2), `home-board-edit.test.ts`(Task 3·5) — 셋으로 나눈 이유는 R21, `trend-forecast.test.ts`(Task 7·8) |
+| 8절 새 e2e 1~9                                           | Task 12                                                                                                                                                     |
+| 8절 고칠 기존 e2e                                        | Task 11                                                                                                                                                     |
+| 2절 완료 기준 5(e2e)                                     | Task 12 Step 2·3·8                                                                                                                                          |
 
 ## 이 계획 밖에서 막는 것
 
-| 일 | 누가 | 언제까지 | 막는 것 |
-|---|---|---|---|
-| 기상도 API를 팀 Vercel에 배포하고 `trend.tenai.kr` 연결(계획 1, 스펙 9절 2·4) | 혁준(PR 확인·합치기·DNS) | 11/13 | 0.19.0 배포, Task 12 Step 6 |
-| 열린 문제 3: '홈에서 트렌드 소식 받기' 설정을 둘지 | 대표님 | 11/17 | 둔다면 `wanted()`에 조건 하나와 설정 줄을 더하는 후속 작업. 그때까지는 R9(카드를 빼면 받지 않음)가 끄는 법이다 |
-| 열린 문제 4: 사이트 개인정보처리방침의 '트렌드 소식 받기' 문구 | 혁준(Claude 초안) | 0.19.0 배포 전 | 0.19.0 배포 |
-| 최종 보고의 '정한 문구'(R27)와 `PRIVACY.md` 바뀐 글(R28) 사후 확인 | 혁준 | PR 전 | 바꾸면 ko를 고치고 Task 10 번역을 다시 한다 |
-| 열린 문제 5: 한국어가 아닌 화면에서 트렌드 카드를 기본에서 뺄지(이 계획은 스펙대로 뺀다) | 혁준 | 11/17 | 넣기로 하면 `defaultCardTypes`의 조건 하나를 바꾼다 |
+| 일                                                                                       | 누가                     | 언제까지       | 막는 것                                                                                                        |
+| ---------------------------------------------------------------------------------------- | ------------------------ | -------------- | -------------------------------------------------------------------------------------------------------------- |
+| 기상도 API를 팀 Vercel에 배포하고 `trend.tenai.kr` 연결(계획 1, 스펙 9절 2·4)            | 혁준(PR 확인·합치기·DNS) | 11/13          | 0.19.0 배포, Task 12 Step 6                                                                                    |
+| 열린 문제 3: '홈에서 트렌드 소식 받기' 설정을 둘지                                       | 대표님                   | 11/17          | 둔다면 `wanted()`에 조건 하나와 설정 줄을 더하는 후속 작업. 그때까지는 R9(카드를 빼면 받지 않음)가 끄는 법이다 |
+| 열린 문제 4: 사이트 개인정보처리방침의 '트렌드 소식 받기' 문구                           | 혁준(Claude 초안)        | 0.19.0 배포 전 | 0.19.0 배포                                                                                                    |
+| 최종 보고의 '정한 문구'(R27)와 `PRIVACY.md` 바뀐 글(R28) 사후 확인                       | 혁준                     | PR 전          | 바꾸면 ko를 고치고 Task 10 번역을 다시 한다                                                                    |
+| 열린 문제 5: 한국어가 아닌 화면에서 트렌드 카드를 기본에서 뺄지(이 계획은 스펙대로 뺀다) | 혁준                     | 11/17          | 넣기로 하면 `defaultCardTypes`의 조건 하나를 바꾼다                                                            |
