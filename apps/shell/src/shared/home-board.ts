@@ -146,7 +146,7 @@ export function defaultCardTypes(ctx: BoardContext): BoardCardType[] {
   return DEFAULT_CARD_ORDER.filter((type) => type !== 'trend' || (ctx.korean && ctx.trend))
 }
 
-function newCard(type: BoardCardType, id: string): BoardCard {
+export function newCard(type: BoardCardType, id: string): BoardCard {
   const base = { id, ...DEFAULT_SIZE[type], title: '' }
   switch (type) {
     case 'memo':
@@ -223,7 +223,7 @@ function appKeyList(raw: unknown, fallback: readonly string[], max = APP_KEYS.le
 }
 
 /** the type itself as the id, or `<type>-<time><random>` when that is taken */
-function newCardId(taken: (id: string) => boolean, type: BoardCardType): string {
+export function newCardId(taken: (id: string) => boolean, type: BoardCardType): string {
   if (!taken(type)) return type
   for (;;) {
     const id = `${type}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
@@ -232,7 +232,7 @@ function newCardId(taken: (id: string) => boolean, type: BoardCardType): string 
 }
 
 /** a default card of `type` in its default place: right after the closest earlier default type on the board, else first */
-function insertDefault(cards: BoardCard[], type: BoardCardType): BoardCard[] {
+export function insertDefault(cards: BoardCard[], type: BoardCardType): BoardCard[] {
   const card = newCard(
     type,
     newCardId((id) => cards.some((c) => c.id === id), type),
