@@ -1246,14 +1246,12 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
   })
   const hasAi = ai.available
   const picked = selected.length > 0
+  // the side stays on the helper only while it waits on the person: a run, the notice, or
+  // the connect prompt that answered a send. With no AI connected the prompt is always
+  // there, and someone editing by hand still needs the properties of what they picked.
+  const connectAsked = ai.gate.connectChoice !== null && ai.gate.connectAttention > 0
   useEffect(() => {
-    if (
-      picked &&
-      side === 'ai' &&
-      ai.busy === null &&
-      !ai.gate.connectChoice &&
-      !ai.gate.noticeDue
-    ) {
+    if (picked && side === 'ai' && ai.busy === null && !connectAsked && !ai.gate.noticeDue) {
       returnToAi.current = true
       setSide('props')
     } else if (!picked && returnToAi.current) {

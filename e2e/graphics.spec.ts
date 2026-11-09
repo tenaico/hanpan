@@ -4,7 +4,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { launchShell, closeAndSaveVideo, waitForPageWithUrl } from './helpers'
+import { graphicsGpuMissing, launchShell, closeAndSaveVideo, waitForPageWithUrl } from './helpers'
 
 /**
  * AI Illustration (decision 0093) with the web build the graphics package was
@@ -66,6 +66,8 @@ test.describe('AI Illustration tab', () => {
     try {
       await page.locator('.quick-card[data-new="illust"]').click()
       const tab = await waitForPageWithUrl(app, '://illust/')
+      const noGpu = await graphicsGpuMissing(tab)
+      test.skip(noGpu !== null, noGpu ?? '')
       await expect
         .poll(() => inApp<number>(tab, 'return (await vc.commands()).length').catch(() => 0), {
           timeout: 60_000,
@@ -171,6 +173,8 @@ test.describe('AI Illustration tab', () => {
     try {
       await page.locator('.quick-card[data-new="illust"]').click()
       const tab = await waitForPageWithUrl(app, '://illust/')
+      const noGpu = await graphicsGpuMissing(tab)
+      test.skip(noGpu !== null, noGpu ?? '')
       await expect
         .poll(() => inApp<number>(tab, 'return (await vc.commands()).length').catch(() => 0), {
           timeout: 60_000,
@@ -280,6 +284,8 @@ test.describe('AI Photo tab', () => {
         png,
       )
       const tab = await waitForPageWithUrl(app, '://photo/')
+      const noGpu = await graphicsGpuMissing(tab)
+      test.skip(noGpu !== null, noGpu ?? '')
       await expect
         .poll(
           () =>

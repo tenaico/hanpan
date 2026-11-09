@@ -27,6 +27,8 @@ const studio = join(
   core.rhwp.tag,
   'rhwp-studio',
 )
+// rhwp's own catalog is fetched by the studio build; a plain `npm test` (CI's test job) has none
+const fetched = existsSync(studio)
 const catalog = (locale: 'ko' | 'en') => {
   const file = join(studio, 'src', 'i18n', 'locales', `${locale}.ts`)
   if (!existsSync(file)) return {}
@@ -112,11 +114,14 @@ describe('menu names (#21, #23, #24)', () => {
   )
 
   it('name the paste of a copied format as the paste is named (붙이기)', () => {
-    expect(shown('ko', 'command.edit.paste.label')).toBe('붙이기')
     expect(words('ko')['command.edit.formatPaste.label']).toBe('모양 붙이기')
   })
 
-  it("name the cell's right-click item as the Table menu does", () => {
+  it.skipIf(!fetched)('name the paste itself 붙이기 in the fetched studio', () => {
+    expect(shown('ko', 'command.edit.paste.label')).toBe('붙이기')
+  })
+
+  it.skipIf(!fetched)("name the cell's right-click item as the Table menu does", () => {
     for (const locale of LOCALES) {
       const menu = shown(locale, 'command.table.cellProps.label')
       expect(words(locale)['hanpan.ctx.cellProps'].replace(/\.\.\.$/, ''), locale).toBe(menu)
