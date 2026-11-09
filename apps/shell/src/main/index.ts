@@ -156,6 +156,8 @@ import { readHomeLayout, writeHomeLayout } from './home-layout'
 import { openWidgetTarget, pathKind } from './home-widget-targets'
 import { KOREAN_DOC_FEATURES_KEY, readKoreanDocFeatures } from './korean-doc-features'
 import { trendForecastUrl } from './trend/trend-config'
+import { registerTrendIpc } from './trend/trend-ipc'
+import type { TrendService } from './trend/trend-service'
 import { fallbackUiLang } from './ui-lang-fallback'
 import {
   builtinSkillsDirFor,
@@ -831,8 +833,9 @@ registerPrivilegedSchemes([EPUB_ASSET_SCHEME_PRIVILEGE])
 const APP_SETTINGS_PATH = () => join(app.getPath('userData'), 'app-settings.json')
 /** Google Drive (decision 0033); registered once this instance holds the single-instance lock */
 let driveService: DriveService | null = null
+/** the Trend Radar forecast (spec 7.11); registered next to Drive */
+let trendService: TrendService | null = null
 /** told after every read or write of Home's board; the trend service hooks in here (plan R23) */
-// eslint-disable-next-line prefer-const -- the trend service swaps itself in once registered (plan R23)
 let onHomeBoardChanged: () => void = () => {}
 /** the forecast address of this run; null in a build without one (plan R10) */
 const TREND_URL = trendForecastUrl(process.env)
@@ -10193,6 +10196,15 @@ app.whenReady().then(async () => {
     parse: (path) => parseFileToText(path),
     theme: () => currentTheme(),
   })
+  trendService = registerTrendIpc({
+    userData: () => app.getPath('userData'),
+    settingsPath: APP_SETTINGS_PATH,
+    url: TREND_URL,
+    version: app.getVersion(),
+    window: () => shellWindow,
+  })
+  onHomeBoardChanged = () => trendService?.boardChanged()
+  trendService.start()
   // The "Attach documents" window: an editor's AI panel asks the shell for the
   // documents it already knows, and the shell hands back the paths it ticked.
   // One window at a time, over the window that asked. The same list, built for
@@ -10697,6 +10709,7 @@ app.on('will-quit', () => {
   // reads the same request to start the installer.
   if (updateRestartRequested()) markSessionUpdateRestart()
   else markSessionCleanExit()
+  trendService?.stop()
   releaseAppResources()
 })
 

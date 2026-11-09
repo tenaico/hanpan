@@ -19,3 +19,15 @@ export function trendForecastUrl(env: Record<string, string | undefined>): strin
     return null
   }
 }
+
+/**
+ * The request address: a web address carries client=hanpan and the app
+ * version (spec 7.11); a file: address for tests is read as it is.
+ */
+export function forecastRequestUrl(base: string, version: string): string {
+  const url = new URL(base)
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return base
+  url.searchParams.set('client', 'hanpan')
+  url.searchParams.set('v', version)
+  return url.href
+}

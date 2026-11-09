@@ -4,7 +4,8 @@
  * order, and the apps pinned to the favorites widget. Stored in
  * userData/app-settings.json under `homeLayout`; anything unreadable falls back
  * to the defaults one field (or one widget) at a time, so a damaged value never
- * blanks Home. No widget fetches anything from the network.
+ * blanks Home. Only the trend card shows data from the network: the forecast
+ * the main process fetched (src/main/trend, docs/security.md).
  */
 
 export const HOME_LAYOUT_SETTING_KEY = 'homeLayout'

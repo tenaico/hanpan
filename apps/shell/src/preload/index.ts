@@ -39,6 +39,7 @@ import type {
 import { HOME_CHANNELS } from '../shared/home-api'
 import { normalizeHomeLayout } from '../shared/home-layout'
 import { RECOVERY_LIST_CHANNELS } from '../shared/recovery-list-api'
+import { TREND_CHANNELS, parseTrendSnapshot, type TrendApi } from '../shared/trend-api'
 import type {
   RecoveryListApi,
   RecoveryListItem,
@@ -974,3 +975,20 @@ contextBridge.exposeInMainWorld('aiOfficeRecovery', recoveryListApi)
 
 // open documents dragged from the OS anywhere over Home or the tab strip
 installDropOpenBridge()
+
+// Home's trend card (spec 7.11): the forecast the main process stored, and its
+// links opened by the main process; both sides check what crosses
+const trendApi: TrendApi = {
+  get: async () => parseTrendSnapshot(await ipcRenderer.invoke(TREND_CHANNELS.get)),
+  onChanged: (handler) => {
+    const listener = (_event: IpcRendererEvent, raw: unknown): void =>
+      handler(parseTrendSnapshot(raw))
+    ipcRenderer.on(TREND_CHANNELS.changed, listener)
+    return () => ipcRenderer.removeListener(TREND_CHANNELS.changed, listener)
+  },
+  open: async (path) => {
+    if (path !== null && typeof path !== 'string') return
+    await ipcRenderer.invoke(TREND_CHANNELS.open, path)
+  },
+}
+contextBridge.exposeInMainWorld('aiOfficeTrend', trendApi)
