@@ -309,6 +309,7 @@ describe("trendScore", () => {
 
 - [ ] **Step 3: 함수 셋과 `route.ts`를 쓴다.**
   - README에 '한판 연동' 절을 짧게 더한다: 주소, 형식(`schema` 1), 저장 시간, '오늘의 한 줄' 규칙.
+  - 저장소 맨 위에 `vercel.json`을 `{ "regions": ["icn1"] }`로 만든다. 팀 Vercel 프로젝트의 기본 함수 지역은 `iad1`(미국)이다. 그래서 git으로 배포될 때도 서울에서 돌게 하려면 이 파일이 있어야 한다. 11/9 첫 배포는 CLI의 `--regions icn1`로 서울에 올렸다.
 
 - [ ] **Step 4: 통과를 확인한다.**
   - Run: `npm test && npm run lint && npm run build`
