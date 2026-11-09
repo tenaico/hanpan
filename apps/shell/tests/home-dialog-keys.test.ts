@@ -13,6 +13,7 @@ import {
   type MarkdownConverterApi,
 } from '../src/renderer/src/hanpan/MarkdownConverter'
 import { HomeCustomizePanel, WidgetGallery } from '../src/renderer/src/HomeWidgets'
+import { AllApps } from '../src/renderer/src/home-board/AllApps'
 import { LocaleProvider } from '../src/renderer/src/locale'
 import { DEFAULT_HOME_LAYOUT } from '../src/shared/home-layout'
 
@@ -88,6 +89,19 @@ const cases: [string, (onClose: () => void) => ReactElement][] = [
         lang: 'ko',
         themeLabels: { title: '테마', light: '밝게', dark: '어둡게', system: '시스템' },
         onOpenGallery: () => undefined,
+        onClose,
+      }),
+  ],
+  [
+    'all apps',
+    (onClose) =>
+      createElement(AllApps, {
+        apps: [],
+        pinned: [],
+        recent: [],
+        newKeys: new Set<string>(),
+        onLaunch: () => undefined,
+        onTogglePin: () => undefined,
         onClose,
       }),
   ],

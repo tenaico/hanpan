@@ -1,0 +1,237 @@
+/* The new card and "모든 앱" (spec 7.4). Colors come from the tokens only. */
+
+.hb-apps {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 160px));
+  grid-auto-rows: 1fr;
+  justify-content: center;
+  gap: 8px;
+}
+
+.hb-app-slot {
+  display: flex;
+  min-width: 0;
+}
+
+/* the old .quick-card look from home.css is overridden here (plan R5) */
+.hb-apps .quick-card.hb-app,
+.hb-apps .hb-all-apps {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  text-align: center;
+  box-shadow: none;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.hb-apps .quick-card.hb-app:hover,
+.hb-apps .hb-all-apps:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.hb-apps .quick-card.hb-app img,
+.hb-apps .quick-card.hb-app svg {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.hb-apps .hp-start-badge {
+  top: 4px;
+  right: 4px;
+  padding: 0 6px;
+  font-size: 10px;
+}
+
+.hb-app-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hb-all-apps {
+  color: var(--text-secondary);
+}
+
+.hb-all-apps-more {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.hb-new-mark {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.hb-apps .hb-new-mark {
+  margin-left: 0;
+}
+
+/* "모든 앱" */
+
+.modal.hb-all-apps-dialog {
+  width: min(560px, 92vw);
+  overflow-y: auto;
+}
+
+.hb-all-apps-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.hb-all-apps-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.hb-all-apps-search:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.hb-all-apps-section {
+  margin-top: 14px;
+}
+
+.hb-all-apps-group-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hb-all-apps-recent-row {
+  display: flex;
+  gap: 8px;
+}
+
+.hb-recent-app {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 160px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hb-all-apps-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hb-all-apps-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hb-all-apps-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hb-recent-app:hover,
+.hb-all-apps-item:hover {
+  background: var(--bg-hover);
+}
+
+.hb-recent-app img,
+.hb-recent-app svg,
+.hb-all-apps-item img,
+.hb-all-apps-item svg {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+.hb-all-apps-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hb-all-apps-sub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hb-pin {
+  flex: none;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hb-pin[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hb-all-apps-none {
+  margin: 18px 0 6px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hb-apps .quick-card.hb-app,
+  .hb-apps .hb-all-apps {
+    transition: none;
+  }
+}
