@@ -14,25 +14,122 @@ export interface TrendBriefing {
 
 const NO_DATA = '자료 없음'
 
-export const BRIEFING_SYSTEM = `당신은 한국어로 쓰는 트렌드 애널리스트입니다. 사용자가 보낸 오늘의 트렌드 기상도만 근거로 삼아 브리핑을 작성합니다.
+export const BRIEFING_SYSTEM = `당신은 한국어로 쓰는 트렌드 애널리스트입니다. 사용자가 보낸 오늘의 트렌드 기상도와 그 아래 재료(수치, 기사 제목, 요약)만 근거로 삼아 브리핑을 작성합니다.
 형식(마크다운 없이 아래 키를 가진 JSON 하나만 출력):
 {"headline":"한 문장 헤드라인","summary":["현황 요약 3~5개"],"outlook":["향후 1~3개월 전망 3~5개"],"watch":["체크포인트 2~4개"]}
-규칙: 숫자는 기상도에 있는 값만 인용하고, 기상도에 없는 사실은 만들지 않습니다. 투자 권유 표현은 쓰지 않습니다.`
+규칙: 숫자는 기상도와 재료에 있는 값만 그대로 인용하고, 없는 사실은 만들지 않습니다. 기사를 근거로 쓴 문장 끝에는 그 기사 번호를 [1]처럼 붙이고, 기사 제목에 없는 내용은 지어내지 않습니다. 투자 권유 표현은 쓰지 않습니다.`
 
-/** the AI's question: the forecast as plain lines, one per field */
-export function briefingPrompt(forecast: TrendForecast): { system: string; user: string } {
-  const lines = forecast.fields.map((f) =>
-    f.s === null
-      ? `- ${f.title}: ${NO_DATA}`
-      : `- ${f.title}: ${f.label}${f.head ? ` — ${f.head}` : ''}`,
+export interface BriefingArticle {
+  n: number
+  title: string
+  source: string
+  date: string
+  url: string
+}
+
+/** the articles of the forecast, numbered from 1 in field order, whatever the budget */
+export function briefingArticles(forecast: TrendForecast): BriefingArticle[] {
+  const out: BriefingArticle[] = []
+  for (const f of forecast.fields) {
+    for (const a of f.news ?? []) out.push({ n: out.length + 1, ...a })
+  }
+  return out
+}
+
+export interface BriefingBudget {
+  tokens: number
+  estimate(system: string, user: string): number
+}
+
+export interface BriefingPrompt {
+  system: string
+  user: string
+  /** the numbers of the articles the question holds */
+  articles: number[]
+}
+
+/** room kept for the answer */
+export const BRIEFING_ANSWER_TOKENS = 1024
+/** the same line agent-core warns at; the question stays under it */
+export const BRIEFING_WARNING_RATIO = 0.8
+
+/** the most tokens the question may take in a model with this context window */
+export function briefingBudget(contextTokens: number): number {
+  return Math.min(
+    contextTokens - BRIEFING_ANSWER_TOKENS,
+    Math.ceil(contextTokens * BRIEFING_WARNING_RATIO) - 1,
   )
+}
+
+/** how much of each field's material is in the question */
+interface Taken {
+  facts: number
+  news: number
+  points: number
+}
+
+function questionText(forecast: TrendForecast, taken: Taken[]): { user: string; articles: number[] } {
+  const articles: number[] = []
+  let n = 0
+  const lines: string[] = []
+  forecast.fields.forEach((f, i) => {
+    lines.push(
+      f.s === null
+        ? `- ${f.title}: ${NO_DATA}`
+        : `- ${f.title}: ${f.label}${f.head ? ` — ${f.head}` : ''}`,
+    )
+    const t = taken[i]
+    const facts = (f.facts ?? []).slice(0, t.facts)
+    if (facts.length > 0) lines.push(`  수치: ${facts.map((x) => `${x.label} ${x.value}`).join('; ')}`)
+    const all = f.news ?? []
+    // the number of an article is its place among all articles, shown or not
+    all.forEach((a, j) => {
+      n += 1
+      if (j >= t.news) return
+      articles.push(n)
+      lines.push(`  [${n}] ${a.date} ${a.title} — ${a.source}`)
+    })
+    const asOf = f.materialAsOf ? `(${f.materialAsOf} 기준)` : ''
+    for (const p of (f.points ?? []).slice(0, t.points)) lines.push(`  요약${asOf}: ${p}`)
+  })
   const user = [
     `기상도 날짜: ${forecast.date}`,
     '분야별 날씨(맑음이 가장 좋고 폭풍우가 가장 궂음, 부동산은 과열~침체):',
     ...lines,
     `오늘의 한 줄: ${forecast.line}`,
   ].join('\n')
-  return { system: BRIEFING_SYSTEM, user }
+  return { user, articles }
+}
+
+/**
+ * the AI's question: the forecast as plain lines, one per field, with the
+ * field's material under it. Material is added a stage at a time (facts, then
+ * articles, then points), one item per field per round, until the next item
+ * would pass the budget. The bare forecast is always sent.
+ */
+export function briefingPrompt(forecast: TrendForecast, budget?: BriefingBudget): BriefingPrompt {
+  const taken: Taken[] = forecast.fields.map(() => ({ facts: 0, news: 0, points: 0 }))
+  const stages: (keyof Taken)[] = ['facts', 'news', 'points']
+  const lengthOf = (f: TrendForecast['fields'][number], k: keyof Taken) =>
+    (k === 'facts' ? f.facts : k === 'news' ? f.news : f.points)?.length ?? 0
+  const fits = () =>
+    !budget ||
+    budget.estimate(BRIEFING_SYSTEM, questionText(forecast, taken).user) <= budget.tokens
+  stage: for (const k of stages) {
+    const rounds = Math.max(0, ...forecast.fields.map((f) => lengthOf(f, k)))
+    for (let r = 0; r < rounds; r++) {
+      for (let i = 0; i < forecast.fields.length; i++) {
+        if (r >= lengthOf(forecast.fields[i], k)) continue
+        taken[i][k] = r + 1
+        if (!fits()) {
+          taken[i][k] = r
+          break stage
+        }
+      }
+    }
+  }
+  const { user, articles } = questionText(forecast, taken)
+  return { system: BRIEFING_SYSTEM, user, articles }
 }
 
 const items = (value: unknown): string[] =>

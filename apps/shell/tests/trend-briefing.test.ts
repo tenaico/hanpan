@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { CONTEXT_WARNING_RATIO, estimatePromptTokens } from '@genoffice/agent-core'
 import {
   BRIEFING_FORMATS,
+  BRIEFING_WARNING_RATIO,
+  briefingArticles,
+  briefingBudget,
   briefingBlocks,
   briefingFormat,
   briefingMarkdown,
@@ -9,7 +13,7 @@ import {
   checkBriefing,
   parseBriefing,
 } from '../src/shared/trend-briefing'
-import type { TrendForecast } from '../src/shared/trend-forecast'
+import type { TrendField, TrendForecast } from '../src/shared/trend-forecast'
 
 /** 트렌드 카드의 'AI 브리핑' (0.19.1): 오늘의 기상도 → AI 한 번 → 새 Word 문서 */
 const forecast: TrendForecast = {
@@ -59,6 +63,124 @@ describe('briefingPrompt', () => {
     expect(user).toContain('반도체')
     // a field without data says so instead of an empty label
     expect(user).toContain('자료 없음')
+  })
+})
+
+/** the question 0.19.2 asked for the forecast above, kept as it was */
+const USER_0192 = [
+  '기상도 날짜: 2026-11-10',
+  '분야별 날씨(맑음이 가장 좋고 폭풍우가 가장 궂음, 부동산은 과열~침체):',
+  '- 반도체: 맑음 — 삼성전자 영업이익 107.4조 원',
+  '- 주식: 폭풍우 — 코스피 5,019 (-6.78%)',
+  '- 부동산: 자료 없음',
+  '오늘의 한 줄: 반도체·AI 트렌드 Big 5는 맑은 편이고, 주식은 궂은 편입니다.',
+].join('\n')
+
+const article = (title: string, source: string, date: string) => ({
+  title,
+  source,
+  date,
+  url: 'https://example.com/a',
+})
+const fx: TrendField = {
+  key: 'fx',
+  title: '환율',
+  scale: 'weather',
+  s: 0,
+  label: '흐림',
+  head: '원·달러 1,470원',
+  path: '/fx',
+  news: [article('F1', '한국경제', '2026-11-08')],
+  materialAsOf: '2026-10-30',
+}
+const withMaterial: TrendForecast = {
+  ...forecast,
+  fields: [
+    ...forecast.fields.map((f) =>
+      f.key === 'stocks'
+        ? {
+            ...f,
+            facts: [
+              { label: '코스피', value: '5,019 (-6.78%)' },
+              { label: '코스피 1개월', value: '-26.2%' },
+            ],
+            news: [article('S1', '연합뉴스', '2026-11-09'), article('S2', '매일경제', '2026-11-08')],
+            points: ['외국인 순매도가 9거래일째 이어졌다.'],
+            materialAsOf: '2026-10-30',
+          }
+        : f,
+    ),
+  ].flatMap((f) => (f.key === 'stocks' ? [f, fx] : [f])),
+}
+const withoutMaterial = (f: TrendForecast): TrendForecast => ({
+  ...f,
+  fields: f.fields.map((x): TrendField => {
+    const { facts, points, news, materialAsOf, ...rest } = x
+    void facts, points, news, materialAsOf
+    return rest
+  }),
+})
+const bigMaterial: TrendForecast = {
+  ...forecast,
+  fields: Array.from({ length: 10 }, (_, i) => ({
+    key: forecast.fields[0].key,
+    title: `분야${i}`,
+    scale: 'weather' as const,
+    s: 1 as const,
+    label: '맑음',
+    head: '한 줄',
+    path: '/x',
+    facts: Array.from({ length: 4 }, (_, j) => ({ label: `수치${j}`, value: '1,234 (+1.2%)' })),
+    news: Array.from({ length: 3 }, (_, j) =>
+      article('기'.repeat(40) + j, '연합뉴스', '2026-11-09'),
+    ),
+    points: Array.from({ length: 3 }, () => '요'.repeat(200)),
+    materialAsOf: '2026-10-30',
+  })),
+}
+const estimate = (s: string, u: string) => estimatePromptTokens(s, [{ role: 'user', text: u }], [])
+
+describe('briefingPrompt material', () => {
+  it('numbers the articles across fields in forecast order', () => {
+    expect(briefingArticles(withMaterial).map((a) => [a.n, a.title])).toEqual([
+      [1, 'S1'],
+      [2, 'S2'],
+      [3, 'F1'],
+    ])
+  })
+  it('puts every fact, article and point under its field without a budget', () => {
+    const p = briefingPrompt(withMaterial)
+    expect(p.user).toContain('\n  수치: 코스피 5,019 (-6.78%); 코스피 1개월 -26.2%\n')
+    expect(p.user).toContain('\n  [1] 2026-11-09 S1 — 연합뉴스\n')
+    expect(p.user).toContain('\n  요약(2026-10-30 기준): 외국인 순매도가 9거래일째 이어졌다.')
+    expect(p.articles).toEqual([1, 2, 3])
+  })
+  it('asks the 0.19.2 user text for a forecast without material', () => {
+    expect(briefingPrompt(forecast).user).toBe(USER_0192)
+    expect(briefingPrompt(withoutMaterial(withMaterial)).user).not.toContain('수치:')
+  })
+  it('adds material to a field whose weather is unknown', () => {
+    const f: TrendForecast = {
+      ...forecast,
+      fields: forecast.fields.map((x) =>
+        x.s === null ? { ...x, news: [article('N1', '연합뉴스', '2026-11-09')] } : x,
+      ),
+    }
+    expect(briefingPrompt(f).user).toContain('- 부동산: 자료 없음\n  [1] 2026-11-09 N1 — 연합뉴스')
+  })
+  it('stays under the confirm line of a 4,096-token local model, with articles before points', () => {
+    const p = briefingPrompt(bigMaterial, { tokens: briefingBudget(4096), estimate })
+    expect(estimate(p.system, p.user)).toBeLessThanOrEqual(3072)
+    expect(p.articles).toHaveLength(30)
+    expect(p.user.match(/요약\(/g)?.length ?? 0).toBeLessThan(30)
+  })
+  it('sends the bare forecast when even that passes the budget', () => {
+    const p = briefingPrompt(withMaterial, { tokens: 10, estimate })
+    expect([p.user, p.articles]).toEqual([briefingPrompt(withoutMaterial(withMaterial)).user, []])
+  })
+  it("sizes the budget from the context window with agent-core's warning line", () => {
+    expect([4096, 8192, 32768].map(briefingBudget)).toEqual([3072, 6553, 26214])
+    expect(BRIEFING_WARNING_RATIO).toBe(CONTEXT_WARNING_RATIO)
   })
 })
 
