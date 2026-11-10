@@ -43,6 +43,23 @@ describe('the illustration adapter', () => {
     ])
   })
 
+  it('saveCopyBytes writes a copy through file.saveCopy and leaves the document as it is', async () => {
+    const page = savingPage(new Uint8Array([9]))
+    // the engine may name the copy differently from the name asked for
+    page.handlers['file.saveCopy'] = (params, p) => {
+      const path = `${String(params.path).replace(/\.ai$/, '')} copy.ai`
+      p.captured.set(path, new Uint8Array([5, 6, 7]))
+      return { path, bytes: 3, format: 'ai', warnings: [] }
+    }
+    const adapter = createAdapter('illust', page)
+    const before = await adapter.docInfo()
+    const bytes = await adapter.saveCopyBytes!('logo.ai', 'ai')
+    expect([...bytes]).toEqual([5, 6, 7])
+    expect(page.executed).toEqual([['file.saveCopy', { path: 'logo.ai', options: {} }]])
+    expect(await adapter.docInfo()).toEqual(before)
+    expect(before).toEqual({ hasDocument: true, dirty: true, title: 'Untitled-1' })
+  })
+
   it('saveBytes fails when the captured size differs from what the app reported', async () => {
     const page = savingPage(new Uint8Array([1, 2]))
     page.handlers['file.save'] = (params, p) => {

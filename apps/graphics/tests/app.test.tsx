@@ -436,6 +436,10 @@ describe('printing (0.17)', () => {
   })
 })
 
+function beginSaveCalls(api: { beginSave: { mock: { calls: unknown[] } } }): number {
+  return api.beginSave.mock.calls.length
+}
+
 async function cleanup(): Promise<void> {
   await act(async () => root?.unmount())
   root = null
@@ -536,5 +540,33 @@ describe('the one-time note about .ai (5.4.1)', () => {
     })
     expect(notice()).not.toBe(NOTE)
     expect(localStorage.getItem(KEY)).toBeNull()
+  })
+
+  it('an .ai copy leaves the open drawing as it was: file.saveCopy, still changed, same title', async () => {
+    const fake = fakeApi()
+    fake.api.exportFile = vi.fn(async () => ({ ok: true, path: '/x/a.ai' })) as never
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('포스터.vectorcraft', true)
+    page.handlers['file.saveCopy'] = (params, p) => {
+      p.captured.set(String(params.path), new Uint8Array([4, 4]))
+      return { path: params.path, bytes: 2 }
+    }
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => fake.api.setDirty.mock.calls.some(([d]) => d === true))
+    const button = () => host.querySelector<HTMLButtonElement>('[data-quick="exportAi"]')!
+    await until(() => button() !== null && !button().disabled)
+    await act(async () => button().click())
+    await until(() => fake.api.exportFile.mock.calls.length === 1)
+    expect(fake.api.exportFile).toHaveBeenCalledWith({
+      bytes: new Uint8Array([4, 4]),
+      defaultName: '포스터.ai',
+      format: 'ai',
+    })
+    expect(page.executed.map(([id]) => id)).toContain('file.saveCopy')
+    expect(page.executed.map(([id]) => id)).not.toContain('file.save')
+    expect(page.documents).toEqual([{ title: '포스터.vectorcraft', dirty: true }])
+    expect(fake.api.setDirty.mock.calls.at(-1)?.[0]).toBe(true)
+    expect(beginSaveCalls(fake.api)).toBe(0)
   })
 })

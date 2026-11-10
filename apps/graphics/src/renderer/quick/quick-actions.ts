@@ -29,7 +29,7 @@ export interface ExportChoice {
 }
 
 export interface QuickDeps {
-  adapter: Pick<GraphicsAdapter, 'api' | 'placeImage' | 'exportBytes' | 'saveBytes' | 'docInfo'>
+  adapter: Pick<GraphicsAdapter, 'api' | 'placeImage' | 'exportBytes' | 'saveCopyBytes' | 'docInfo'>
   pickImage(): Promise<PickedImage | null>
   exportFile(request: ExportRequest): Promise<ExportResult>
   /** the export dialog: null when the person canceled */
@@ -172,7 +172,8 @@ async function handOver(deps: QuickDeps, request: ExportRequest): Promise<QuickR
 async function exportAiCopy(deps: QuickDeps): Promise<QuickResult> {
   const title = (await deps.adapter.docInfo()).title
   const name = `${baseName(title, untitledName('illust', deps))}.ai`
-  const bytes = await deps.adapter.saveBytes(name, 'ai')
+  if (!deps.adapter.saveCopyBytes) throw new Error('this app cannot write a copy')
+  const bytes = await deps.adapter.saveCopyBytes(name, 'ai')
   return handOver(deps, { bytes, defaultName: name, format: 'ai' })
 }
 

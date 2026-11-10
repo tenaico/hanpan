@@ -25,7 +25,7 @@ function fakeApp(
       placed.push(name)
     }),
     exportBytes: vi.fn(async () => new Uint8Array([1, 2, 3])),
-    saveBytes: vi.fn(async () => new Uint8Array([7, 8])),
+    saveCopyBytes: vi.fn(async () => new Uint8Array([7, 8])),
     docInfo: async () =>
       hasDocument
         ? { hasDocument: true, dirty: false, title: 'logo.svg' }
@@ -276,7 +276,7 @@ describe('the quick actions', () => {
     })
     const d = deps(app.adapter)
     const r = await runQuickAction('exportAi', d)
-    expect(app.adapter.saveBytes).toHaveBeenCalledWith('포스터.ai', 'ai')
+    expect(app.adapter.saveCopyBytes).toHaveBeenCalledWith('포스터.ai', 'ai')
     expect(d.askExport).not.toHaveBeenCalled()
     expect(d.exportFile).toHaveBeenCalledWith({
       bytes: new Uint8Array([7, 8]),
@@ -315,7 +315,7 @@ describe('the quick actions', () => {
       messageKey: 'quickExportFailed',
     })
     const broken = fakeApp()
-    broken.adapter.saveBytes = vi.fn(async () => {
+    broken.adapter.saveCopyBytes = vi.fn(async () => {
       throw new Error('app refused')
     })
     expect(await runQuickAction('exportAi', deps(broken.adapter))).toEqual({

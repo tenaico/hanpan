@@ -25,6 +25,11 @@ export interface GraphicsAdapter {
   docInfo(): Promise<DocInfo>
   /** Saves through the app, so the document turns clean and takes the name; returns the file's bytes. */
   saveBytes(fileName: string, format: string): Promise<Uint8Array>
+  /**
+   * A copy in another format, the document left as it is (path, title and changed
+   * mark unchanged); returns the file's bytes. Only the Illustration app has it.
+   */
+  saveCopyBytes?(fileName: string, format: string): Promise<Uint8Array>
   /** A picture or SVG of the document; the document itself is left as it is. */
   exportBytes(format: 'png' | 'jpg' | 'svg'): Promise<Uint8Array>
   /**
