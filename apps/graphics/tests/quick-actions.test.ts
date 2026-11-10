@@ -25,6 +25,7 @@ function fakeApp(
       placed.push(name)
     }),
     exportBytes: vi.fn(async () => new Uint8Array([1, 2, 3])),
+    saveBytes: vi.fn(async () => new Uint8Array([7, 8])),
     docInfo: async () =>
       hasDocument
         ? { hasDocument: true, dirty: false, title: 'logo.svg' }
@@ -50,9 +51,14 @@ function deps(adapter: GraphicsAdapter, overrides: Partial<QuickDeps> = {}): Qui
 const ids = (executed: Array<[string, unknown]>) => executed.map(([id]) => id)
 
 describe('the quick actions', () => {
-  it('are three per app', () => {
+  it('are three for the photo tab and four for the illustration tab', () => {
     expect(QUICK_ACTIONS.photo).toEqual(['removeBackground', 'autoTone', 'exportAtSize'])
-    expect(QUICK_ACTIONS.illust).toEqual(['traceImage', 'centerOnArtboard', 'exportPngSvg'])
+    expect(QUICK_ACTIONS.illust).toEqual([
+      'traceImage',
+      'centerOnArtboard',
+      'exportPngSvg',
+      'exportAi',
+    ])
   })
 
   it('removeBackground runs layer.removeBackground; a refusal gets a plain message, not the app text', async () => {
@@ -259,6 +265,63 @@ describe('the quick actions', () => {
     expect(d.exportFile).toHaveBeenCalledWith(
       expect.objectContaining({ defaultName: 'logo.svg', format: 'svg' }),
     )
+  })
+
+  it('exportAi saves an .ai copy through the export dialog', async () => {
+    const app = fakeApp()
+    app.adapter.docInfo = async () => ({
+      hasDocument: true,
+      dirty: true,
+      title: '포스터.vectorcraft',
+    })
+    const d = deps(app.adapter)
+    const r = await runQuickAction('exportAi', d)
+    expect(app.adapter.saveBytes).toHaveBeenCalledWith('포스터.ai', 'ai')
+    expect(d.askExport).not.toHaveBeenCalled()
+    expect(d.exportFile).toHaveBeenCalledWith({
+      bytes: new Uint8Array([7, 8]),
+      defaultName: '포스터.ai',
+      format: 'ai',
+    })
+    expect(r).toEqual({ ok: true, messageKey: 'quickExported' })
+  })
+
+  it('exportAi names an untitled drawing by the tab name', async () => {
+    const app = fakeApp()
+    app.adapter.docInfo = async () => ({ hasDocument: true, dirty: true, title: 'Untitled-1' })
+    const d = deps(app.adapter, { untitledName: '제목 없는 일러스트' })
+    await runQuickAction('exportAi', d)
+    expect(d.exportFile).toHaveBeenCalledWith(
+      expect.objectContaining({ defaultName: '제목 없는 일러스트.ai' }),
+    )
+  })
+
+  it('exportAi does not touch the document: no commands, a canceled dialog writes nothing', async () => {
+    const app = fakeApp()
+    const d = deps(app.adapter, {
+      exportFile: vi.fn(async () => ({ ok: true as const, canceled: true as const })),
+    })
+    expect(await runQuickAction('exportAi', d)).toEqual({ ok: true, messageKey: null })
+    expect(app.executed).toEqual([])
+  })
+
+  it('a failed .ai export says so plainly', async () => {
+    const app = fakeApp()
+    const d = deps(app.adapter, {
+      exportFile: vi.fn(async () => ({ ok: false as const, error: 'EACCES' })),
+    })
+    expect(await runQuickAction('exportAi', d)).toEqual({
+      ok: false,
+      messageKey: 'quickExportFailed',
+    })
+    const broken = fakeApp()
+    broken.adapter.saveBytes = vi.fn(async () => {
+      throw new Error('app refused')
+    })
+    expect(await runQuickAction('exportAi', deps(broken.adapter))).toEqual({
+      ok: false,
+      messageKey: 'quickExportFailed',
+    })
   })
 
   it('a canceled export dialog writes nothing', async () => {

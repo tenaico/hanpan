@@ -382,6 +382,27 @@ describe('saving', () => {
     expect(graphicsFilePath(wc.id)).toBe(path)
   })
 
+  it('export of an .ai copy asks with the Illustrator name and leaves the document path alone', async () => {
+    const path = join(dir, 'logo.vectorcraft')
+    writeFileSync(path, '{}')
+    const wc = viewFor('illust', path)
+    await opened(wc, path)
+    const out = join(dir, 'logo.ai')
+    showSaveDialog.mockResolvedValue({ canceled: false, filePath: out })
+    const result = await call<ExportResult>(GRAPHICS_CHANNELS.exportFile, wc, {
+      bytes: new Uint8Array([5, 6]),
+      defaultName: 'logo.ai',
+      format: 'ai',
+    })
+    expect(result).toEqual({ ok: true, path: out })
+    expect([...readFileSync(out)]).toEqual([5, 6])
+    expect(graphicsFilePath(wc.id)).toBe(path)
+    const options = showSaveDialog.mock.calls.at(-1)!.at(-1) as {
+      filters: Array<{ name: string; extensions: string[] }>
+    }
+    expect(options.filters).toEqual([{ name: formatLabel('ai'), extensions: ['ai'] }])
+  })
+
   it('picks an image through the open dialog', async () => {
     const wc = viewFor('illust')
     const pic = join(dir, 'dot.png')

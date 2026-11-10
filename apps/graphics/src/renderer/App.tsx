@@ -18,6 +18,7 @@ import { watchDoc, type DocWatch } from './doc/doc-watch'
 import { openPending } from './doc/open-flow'
 import { startRecoveryLoop } from './doc/recovery-loop'
 import { runSave, type SaveNoticeKey } from './doc/save-flow'
+import { takeAiHint } from './doc/ai-hint'
 import { singleFlight } from './doc/single-flight'
 import { copyBytes } from './frame/bytes'
 import { appFrameUrl, connectPageApi, type GraphicsPageApi } from './frame/page-api'
@@ -94,6 +95,8 @@ export default function App({
   const docWatchRef = useRef<DocWatch | null>(null)
   const titleRef = useRef<string | null>(null)
   const hostOps = useRef(0)
+  /** the document is a file on disk (opened from one, or saved once): its first save is not a new drawing's */
+  const hasFileRef = useRef(false)
   /** runs that own the document now (the AI's, a quick action's): the capture watch ignores the app */
   const appLocks = useRef(0)
 
@@ -174,6 +177,11 @@ export default function App({
       },
       savedAs: (name) => {
         savedName = name
+      },
+      saved: ({ format }) => {
+        const hadFile = hasFileRef.current
+        hasFileRef.current = true
+        if (takeAiHint(kind, { hadFile, format })) notify('illustAiHint')
       },
     })
     if (savedName !== null) await capturesRef.current?.noteHostSave(savedName)
@@ -279,7 +287,12 @@ export default function App({
         setAiAdapter(adapter)
         const opened = await openPending(
           adapter,
-          () => graphicsApi().consumeOpen(),
+          async () => {
+            const pending = await graphicsApi().consumeOpen()
+            // a recovered copy comes back without a path: still a drawing with no file
+            if (pending?.path) hasFileRef.current = true
+            return pending
+          },
           (path) => graphicsApi().confirmOpened(path),
         )
         if (!live) return

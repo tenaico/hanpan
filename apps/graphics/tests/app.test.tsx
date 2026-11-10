@@ -435,3 +435,106 @@ describe('printing (0.17)', () => {
     await until(() => host.querySelector('[data-hanpan="image-print"]') === null)
   })
 })
+
+async function cleanup(): Promise<void> {
+  await act(async () => root?.unmount())
+  root = null
+  host?.remove()
+}
+
+describe('the one-time note about .ai (5.4.1)', () => {
+  const KEY = 'hanpan.illust.aiHintSeen'
+  const NOTE =
+    "AI 일러스트 문서로 저장했습니다. 일러스트레이터에서 열려면 '일러스트레이터용 .ai로 보내기'를 쓰세요."
+
+  /** an illustration tab with a document, then one save asked for from Hanpan's menu */
+  async function saveOnce(setup?: (api: ReturnType<typeof fakeApi>['api']) => void) {
+    const fake = fakeApi()
+    setup?.(fake.api)
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('Untitled-1', true)
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(
+      () => fake.api.setDirty.mock.calls.some(([d]) => d === true) || page.opened.length > 0,
+    )
+    // an opened file is handed over before the save is asked for
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 150))
+    })
+    await act(async () => fake.listeners.save!('save' as never))
+    await until(() => fake.api.sendSaveRequestAck.mock.calls.length === 1)
+    return { ...fake, page }
+  }
+
+  const notice = () => host.querySelector('.gx-notice')?.textContent ?? null
+
+  it('says once, after the first save of a new drawing as .vectorcraft', async () => {
+    await saveOnce()
+    expect(notice()).toBe(NOTE)
+    expect(localStorage.getItem(KEY)).toBe('1')
+  })
+
+  it('never says it again once seen', async () => {
+    localStorage.setItem(KEY, '1')
+    await saveOnce()
+    expect(notice()).toBeNull()
+  })
+
+  it('does not say it for a file opened from .svg or .vectorcraft', async () => {
+    for (const name of ['a.svg', 'a.vectorcraft']) {
+      localStorage.clear()
+      await saveOnce((api) => {
+        api.consumeOpen = vi.fn(async () => ({
+          name,
+          path: `/x/${name}`,
+          bytes: new Uint8Array([1]),
+        })) as never
+        api.beginSave = vi.fn(async () => ({
+          ok: true,
+          path: `/x/${name}`,
+          format: name.split('.')[1]!,
+        })) as never
+      })
+      expect(notice(), name).toBeNull()
+      expect(localStorage.getItem(KEY), name).toBeNull()
+      await cleanup()
+    }
+  })
+
+  it('keeps saving an opened .ai as .ai, with no note', async () => {
+    const { page } = await saveOnce((api) => {
+      api.consumeOpen = vi.fn(async () => ({
+        name: 'a.ai',
+        path: '/x/a.ai',
+        bytes: new Uint8Array([1]),
+      })) as never
+      api.beginSave = vi.fn(async () => ({ ok: true, path: '/x/a.ai', format: 'ai' })) as never
+    })
+    expect(page.executed).toContainEqual(['file.save', { path: 'a.ai', options: {} }])
+    expect(notice()).toBeNull()
+    expect(localStorage.getItem(KEY)).toBeNull()
+  })
+
+  it('does not say it after a new drawing saved as .ai or .svg', async () => {
+    await saveOnce((api) => {
+      api.beginSave = vi.fn(async () => ({ ok: true, path: '/x/a.ai', format: 'ai' })) as never
+    })
+    expect(notice()).toBeNull()
+    expect(localStorage.getItem(KEY)).toBeNull()
+  })
+
+  it('does not say it after a canceled or failed save', async () => {
+    await saveOnce((api) => {
+      api.beginSave = vi.fn(async () => ({ ok: true, canceled: true })) as never
+    })
+    expect(notice()).toBeNull()
+    expect(localStorage.getItem(KEY)).toBeNull()
+    await cleanup()
+    await saveOnce((api) => {
+      api.commitSave = vi.fn(async () => ({ ok: false, error: 'disk' })) as never
+    })
+    expect(notice()).not.toBe(NOTE)
+    expect(localStorage.getItem(KEY)).toBeNull()
+  })
+})

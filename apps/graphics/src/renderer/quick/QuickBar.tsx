@@ -11,6 +11,7 @@ const LABELS: Record<QuickActionId, StringKey> = {
   traceImage: 'quickTraceImage',
   centerOnArtboard: 'quickCenter',
   exportPngSvg: 'quickExportPngSvg',
+  exportAi: 'quickExportAi',
 }
 
 export function QuickBar({

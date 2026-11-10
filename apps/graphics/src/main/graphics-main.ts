@@ -574,7 +574,9 @@ function registerGraphicsIpc(): void {
       }
       const bytes = bytesOf(rawBytes)
       const fmt =
-        format === 'png' || format === 'jpg' || format === 'svg' ? (format as ExportFormat) : null
+        format === 'png' || format === 'jpg' || format === 'svg' || format === 'ai'
+          ? (format as ExportFormat)
+          : null
       if (!bytes || !fmt) return { ok: false, error: 'graphics: bad export request' }
       const current = savePathByWc.get(wcId)
       const name =

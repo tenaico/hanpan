@@ -17,12 +17,15 @@ export const ja = {
   quickTraceImage: '画像をトレース',
   quickCenter: 'アートボードの中央に配置',
   quickExportPngSvg: 'PNG・SVG で書き出し',
+  quickExportAi: 'Illustrator 用に .ai で書き出し',
   quickDone: '完了しました。',
   quickNoDocument: '先に画像を開くか新規作成してください。',
   quickFailed:
     'この操作はできませんでした。変更する画像かレイヤーを選んでから、もう一度お試しください。',
   quickExportFailed: '書き出せませんでした。別のフォルダーか名前でもう一度お試しください。',
   quickExported: 'コピーを保存しました。',
+  illustAiHint:
+    'AI イラスト文書として保存しました。Illustrator で開くには「Illustrator 用に .ai で書き出し」を使ってください。',
   exportDialogTitle: '書き出し',
   exportFormat: '形式',
   exportWidth: '幅（px）',
