@@ -5,6 +5,8 @@ export const zhTW = {
   failed: '應用程式無法啟動。',
   retry: '重試',
   notInstalled: '此安裝版本不包含這個應用程式。',
+  noGpu:
+    '這台電腦無法使用圖形加速（WebGPU 或 WebGL2），因此無法開啟此應用程式。請更新顯示卡驅動程式，或在非遠端桌面、非虛擬機器的電腦上開啟。',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: '無法儲存。文件仍標示為未儲存。',
   layeredSaveNotice: '為保留圖層和編輯資訊，將儲存為 PSD。',

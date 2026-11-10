@@ -5,6 +5,8 @@ export const pl = {
   failed: 'Nie udało się uruchomić aplikacji.',
   retry: 'Spróbuj ponownie',
   notInstalled: 'Ta instalacja nie zawiera tej aplikacji.',
+  noGpu:
+    'Ten komputer nie ma akceleracji grafiki (WebGPU ani WebGL2), więc nie można otworzyć tej aplikacji. Zaktualizuj sterownik grafiki albo otwórz ją na komputerze, który nie jest pulpitem zdalnym ani maszyną wirtualną.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Nie udało się zapisać. Dokument pozostaje niezapisany.',
   layeredSaveNotice: 'Zapis jako PSD, aby zachować warstwy i dane edycji.',

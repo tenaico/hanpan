@@ -5,6 +5,8 @@ export const pt = {
   failed: 'Não foi possível iniciar o app.',
   retry: 'Tentar novamente',
   notInstalled: 'Esta instalação não inclui este app.',
+  noGpu:
+    'Este PC não tem aceleração gráfica (WebGPU ou WebGL2), por isso este aplicativo não pode abrir. Atualize o driver gráfico ou abra-o em um PC que não seja área de trabalho remota nem máquina virtual.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Não foi possível salvar. O documento continua marcado como não salvo.',
   layeredSaveNotice: 'Salvando como PSD para manter as camadas e os dados de edição.',

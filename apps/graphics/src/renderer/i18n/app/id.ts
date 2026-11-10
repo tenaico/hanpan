@@ -5,6 +5,8 @@ export const id = {
   failed: 'Aplikasi tidak dapat dimulai.',
   retry: 'Coba lagi',
   notInstalled: 'Instalasi ini tidak menyertakan aplikasi ini.',
+  noGpu:
+    'PC ini tidak memiliki akselerasi grafis (WebGPU atau WebGL2), jadi aplikasi ini tidak dapat dibuka. Perbarui driver grafis, atau buka di PC yang bukan desktop jarak jauh atau mesin virtual.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Tidak dapat menyimpan. Dokumen tetap ditandai belum disimpan.',
   layeredSaveNotice: 'Disimpan sebagai PSD agar lapisan dan data penyuntingan tetap ada.',

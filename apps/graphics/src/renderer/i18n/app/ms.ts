@@ -5,6 +5,8 @@ export const ms = {
   failed: 'Aplikasi tidak dapat dimulakan.',
   retry: 'Cuba lagi',
   notInstalled: 'Pemasangan ini tidak termasuk aplikasi ini.',
+  noGpu:
+    'PC ini tiada pecutan grafik (WebGPU atau WebGL2), jadi aplikasi ini tidak dapat dibuka. Kemas kini pemacu grafik, atau bukanya pada PC yang bukan desktop jauh atau mesin maya.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Tidak dapat menyimpan. Dokumen kekal bertanda belum disimpan.',
   layeredSaveNotice: 'Disimpan sebagai PSD untuk mengekalkan lapisan dan data suntingan.',

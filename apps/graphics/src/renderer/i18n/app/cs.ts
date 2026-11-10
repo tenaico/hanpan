@@ -5,6 +5,8 @@ export const cs = {
   failed: 'Aplikaci se nepodařilo spustit.',
   retry: 'Zkusit znovu',
   notInstalled: 'Tato instalace tuto aplikaci neobsahuje.',
+  noGpu:
+    'Tento počítač nemá grafickou akceleraci (WebGPU ani WebGL2), proto tuto aplikaci nelze otevřít. Aktualizujte grafický ovladač nebo ji otevřete na počítači, který není vzdálenou plochou ani virtuálním počítačem.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Uložení se nezdařilo. Dokument zůstává neuložený.',
   layeredSaveNotice: 'Ukládá se jako PSD, aby zůstaly vrstvy a data úprav.',

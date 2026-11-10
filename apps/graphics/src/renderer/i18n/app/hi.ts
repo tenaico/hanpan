@@ -5,6 +5,8 @@ export const hi = {
   failed: 'ऐप शुरू नहीं हो सका।',
   retry: 'फिर से कोशिश करें',
   notInstalled: 'इस इंस्टॉलेशन में यह ऐप शामिल नहीं है।',
+  noGpu:
+    'इस पीसी में ग्राफ़िक्स एक्सेलेरेशन (WebGPU या WebGL2) नहीं है, इसलिए यह ऐप नहीं खुल सकता। ग्राफ़िक्स ड्राइवर अपडेट करें, या इसे ऐसे पीसी पर खोलें जो रिमोट डेस्कटॉप या वर्चुअल मशीन न हो।',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'सहेजा नहीं जा सका। दस्तावेज़ बिना सहेजा ही रहेगा।',
   layeredSaveNotice: 'लेयर और संपादन जानकारी रखने के लिए PSD के रूप में सहेजा जा रहा है।',

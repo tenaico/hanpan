@@ -5,6 +5,8 @@ export const th = {
   failed: 'ไม่สามารถเริ่มแอปได้',
   retry: 'ลองอีกครั้ง',
   notInstalled: 'การติดตั้งนี้ไม่มีแอปนี้',
+  noGpu:
+    'พีซีเครื่องนี้ไม่มีการเร่งกราฟิก (WebGPU หรือ WebGL2) จึงเปิดแอปนี้ไม่ได้ โปรดอัปเดตไดรเวอร์กราฟิก หรือเปิดบนพีซีที่ไม่ใช่เดสก์ท็อประยะไกลหรือเครื่องเสมือน',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'บันทึกไม่ได้ เอกสารยังคงเป็นยังไม่ได้บันทึก',
   layeredSaveNotice: 'บันทึกเป็น PSD เพื่อเก็บเลเยอร์และข้อมูลการแก้ไขไว้',

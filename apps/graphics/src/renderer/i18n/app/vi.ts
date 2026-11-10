@@ -5,6 +5,8 @@ export const vi = {
   failed: 'Không thể khởi động ứng dụng.',
   retry: 'Thử lại',
   notInstalled: 'Bản cài đặt này không có ứng dụng này.',
+  noGpu:
+    'Máy tính này không dùng được tăng tốc đồ họa (WebGPU hoặc WebGL2), nên không mở được ứng dụng này. Hãy cập nhật trình điều khiển đồ họa, hoặc mở trên máy không phải máy tính từ xa hay máy ảo.',
   editorLangOnReopen: 'Ngôn ngữ của trình chỉnh sửa sẽ đổi khi mở lại thẻ này.',
   saveFailed: 'Không lưu được. Tài liệu vẫn được đánh dấu là chưa lưu.',
   layeredSaveNotice: 'Lưu dưới dạng PSD để giữ các lớp và dữ liệu chỉnh sửa.',

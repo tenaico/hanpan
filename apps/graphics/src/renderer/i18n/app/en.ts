@@ -5,6 +5,8 @@ export const en = {
   failed: 'The app could not start.',
   retry: 'Try again',
   notInstalled: 'This installation does not include this app.',
+  noGpu:
+    'This PC has no graphics acceleration (WebGPU or WebGL2), so this app cannot open. Update the graphics driver, or open it on a PC that is not a remote desktop or a virtual machine.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Could not save. The document stays marked as unsaved.',
   layeredSaveNotice: 'Saving as PSD to keep the layers and editing data.',

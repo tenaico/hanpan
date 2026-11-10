@@ -5,6 +5,8 @@ export const ko = {
   failed: '앱을 띄우지 못했습니다.',
   retry: '다시 시도',
   notInstalled: '이 설치본에는 이 앱이 들어 있지 않습니다.',
+  noGpu:
+    '이 PC에서는 그래픽 가속(WebGPU·WebGL2)을 쓸 수 없어 이 앱을 열 수 없습니다. 그래픽 드라이버를 업데이트하거나, 원격 데스크톱이나 가상 PC가 아닌 곳에서 열어 주세요.',
   editorLangOnReopen: '편집기 언어는 이 탭을 다시 열면 바뀝니다.',
   saveFailed: '저장하지 못했습니다. 문서는 저장 안 됨으로 남습니다.',
   layeredSaveNotice: '레이어와 편집 정보를 지키려고 PSD로 저장합니다.',

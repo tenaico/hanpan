@@ -5,6 +5,8 @@ export const de = {
   failed: 'Die App konnte nicht gestartet werden.',
   retry: 'Erneut versuchen',
   notInstalled: 'Diese Installation enthält diese App nicht.',
+  noGpu:
+    'Dieser PC hat keine Grafikbeschleunigung (WebGPU oder WebGL2), daher kann diese App nicht geöffnet werden. Aktualisieren Sie den Grafiktreiber oder öffnen Sie sie auf einem PC, der kein Remotedesktop und keine virtuelle Maschine ist.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Speichern fehlgeschlagen. Das Dokument bleibt als nicht gespeichert markiert.',
   layeredSaveNotice:

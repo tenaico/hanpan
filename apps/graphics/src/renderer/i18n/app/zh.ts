@@ -3,6 +3,8 @@ export const zh = {
   failed: '应用无法启动。',
   retry: '重试',
   notInstalled: '此安装中不包含此应用。',
+  noGpu:
+    '此电脑无法使用图形加速（WebGPU 或 WebGL2），因此无法打开此应用。请更新显卡驱动，或在非远程桌面、非虚拟机的电脑上打开。',
   editorLangOnReopen: '重新打开此标签页后，编辑器语言才会更改。',
   saveFailed: '无法保存。文档仍标记为未保存。',
   layeredSaveNotice: '为保留图层和编辑信息，将保存为 PSD。',
