@@ -35,6 +35,10 @@ import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { atomicWriteFile } from '../atomic-write'
+import { buildTargetDocument } from '../send-to-app/from-markdown'
+
+/** a briefing is a page or two; anything far longer is not one */
+const BRIEFING_MAX_CHARS = 100_000
 import { buildDeck } from '../generate/convert'
 import { outlineToOps } from '../mcp/pptx-outline'
 import { readStoredAiSettings, writeStoredAiSettings } from '../../../../docs/src/main/docs-main'
@@ -208,6 +212,11 @@ export interface HanpanSetup {
   newMap(topic: unknown): Promise<{ ok: true } | { ok: false; error: string }>
   /** 내 양식: 보관한 파일의 사본을 제목 없는 새 워드·한글 문서로 연다(보관한 파일은 건드리지 않는다) */
   openMyForm(form: MyForm, bytes: Uint8Array): Promise<boolean>
+  /**
+   * 트렌드 카드의 AI 브리핑(0.19.1): Home이 쓴 Markdown을 제목 없는 새 워드 문서로 연다.
+   * 사본은 임시 폴더에만 있고, 첫 저장 때 어디에 둘지 묻는다
+   */
+  openBriefing(request: unknown): Promise<{ ok: true } | { ok: false; error: string }>
   sync: ReturnType<typeof createSyncService>
   /** the Markdown converter on Home: one text into every ticked format, in `folder` */
   convertMarkdown(request: unknown, folder: string): Promise<ConvertResult>
@@ -433,6 +442,26 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
           : ''
       if (!topic) return { ok: false, error: 'no topic' }
       return openMap(`- ${topic}\n`, topic)
+    },
+    openBriefing: async (raw) => {
+      const request = raw as { markdown?: unknown; title?: unknown } | null
+      const markdown = typeof request?.markdown === 'string' ? request.markdown : ''
+      const title =
+        typeof request?.title === 'string'
+          ? request.title.replace(/\s+/g, ' ').trim().slice(0, 80)
+          : ''
+      if (!markdown.trim() || !title) return { ok: false, error: 'no briefing' }
+      if (markdown.length > BRIEFING_MAX_CHARS)
+        return { ok: false, error: 'the briefing is too long' }
+      const built = await buildTargetDocument(markdown, 'docs', {
+        title,
+        untitled: title,
+        korean: true,
+        loadHwpEngine,
+      })
+      return (await openBytesCopy('docs', built.bytes, built.fileName, built.title))
+        ? { ok: true }
+        : { ok: false, error: 'the new tab did not open' }
     },
     openMyForm: (form, bytes) =>
       openBytesCopy(

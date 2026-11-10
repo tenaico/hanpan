@@ -9860,6 +9860,12 @@ ipcMain.handle('hanpan:new-map', (_event, topic: unknown) =>
     error: error instanceof Error ? error.message : String(error),
   })),
 )
+ipcMain.handle('hanpan:open-briefing', (_event, request: unknown) =>
+  hanpan.openBriefing(request).catch((error: unknown) => ({
+    ok: false as const,
+    error: error instanceof Error ? error.message : String(error),
+  })),
+)
 ipcMain.handle('hanpan:open-template', (_event, id: unknown, target: unknown) =>
   hanpan.openTemplate(id, target).catch((error: unknown) => ({
     ok: false as const,
@@ -10487,6 +10493,8 @@ app.whenReady().then(async () => {
       list: () => sendOpenDocuments(),
       send: (tabId, target) => sendTabToApp(tabId, target),
     },
+    // read_trend_forecast: the copy the Home trend card stored; nothing is fetched for it
+    trendForecast: () => trendService?.snapshot().forecast ?? null,
     logFilePath: join(app.getPath('userData'), 'mcp-log.txt'),
   })
   // Agent mode (decision 0032): the person's Claude Code or Codex with its own tools in a

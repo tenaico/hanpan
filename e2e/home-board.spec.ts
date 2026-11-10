@@ -8,6 +8,7 @@ import {
   launchShell,
   screenshotPath,
   startTrendServer,
+  stubAiReady,
   waitForPageWithUrl,
 } from './helpers'
 
@@ -25,6 +26,7 @@ const DEAD_URL = 'http://127.0.0.1:9/api/forecast'
 interface Tab {
   id: string
   kind: string
+  title?: string
 }
 interface TabsOnWindow {
   aiOfficeTabs: {
@@ -185,6 +187,73 @@ test('a fixed forecast shows ten fields and opens Trend Radar with UTM', async (
     console.log(`[home-board] forecast request headers: ${Object.keys(first.headers).join(', ')}`)
   } finally {
     await closeAndSaveVideo(launched, 'home-board-trend')
+    await server.close()
+  }
+})
+
+/** what the stubbed AI answers for the briefing: the JSON the prompt asks for */
+const BRIEF_HEADLINE = 'AI와 반도체는 맑고 암호화폐는 비가 옵니다'
+const BRIEF_ANSWER = JSON.stringify({
+  headline: BRIEF_HEADLINE,
+  summary: ['AI 트렌드가 맑습니다', '암호화폐에 비가 옵니다'],
+  outlook: ['맑은 흐름이 이어질 수 있습니다'],
+  watch: ['환율'],
+})
+
+test('the AI briefing writes the forecast into a new Word document (0.19.1)', async () => {
+  test.setTimeout(150_000)
+  const server = await startTrendServer(await readFile(FORECAST, 'utf8'))
+  const launched = await launchShell({
+    onboardingSeen: true,
+    videoDir: 'home-board-briefing',
+    lang: 'ko',
+    env: { HANPAN_TREND_URL: server.url },
+  })
+  const { app, page } = launched
+  try {
+    await expect(page.locator('[data-trend-field]')).toHaveCount(10, { timeout: 30_000 })
+    // a connected AI that never reaches a real program; its one reply is the briefing
+    await stubAiReady(app)
+    const asked = await app.evaluate(({ ipcMain, webContents }, answer) => {
+      const proto = Object.getPrototypeOf(webContents.getAllWebContents()[0]) as {
+        send: (channel: string, ...args: unknown[]) => void
+      }
+      const g = globalThis as unknown as { briefPrompts: unknown[] }
+      g.briefPrompts = []
+      ipcMain.removeHandler('ai:stream')
+      ipcMain.handle('ai:stream', (event, request: { requestId: string }) => {
+        g.briefPrompts.push(request)
+        const send = (chunk: Record<string, unknown>) =>
+          proto.send.call(event.sender, 'ai:stream-chunk', {
+            requestId: request.requestId,
+            ...chunk,
+          })
+        send({ type: 'delta', text: answer })
+        send({ type: 'done' })
+      })
+      return true
+    }, BRIEF_ANSWER)
+    expect(asked).toBe(true)
+
+    const button = page.locator('[data-trend-brief]')
+    await expect(button).toHaveText('AI 브리핑')
+    await button.click()
+    const doc = await waitForPageWithUrl(app, '://docs/')
+    await expect
+      .poll(async () => (await listTabs(page)).find((t) => t.kind === 'docs')?.title ?? '', {
+        timeout: 30_000,
+      })
+      .toContain('트렌드 브리핑')
+    await expect(doc.locator('body')).toContainText(BRIEF_HEADLINE, { timeout: 30_000 })
+    await expect(doc.locator('body')).toContainText('투자 권유가 아닙니다')
+    // the forecast went to the AI once; nothing new was fetched for it
+    const prompts = await app.evaluate(
+      () => (globalThis as unknown as { briefPrompts: unknown[] }).briefPrompts.length,
+    )
+    expect(prompts).toBe(1)
+    await doc.screenshot({ path: screenshotPath('home-board-briefing') })
+  } finally {
+    await closeAndSaveVideo(launched, 'home-board-briefing')
     await server.close()
   }
 })

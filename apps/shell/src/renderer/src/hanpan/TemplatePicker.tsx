@@ -30,6 +30,11 @@ export interface HanpanApi extends Partial<MarkdownConverterApi>, Partial<MyForm
   openDesign?(): Promise<void>
   /** a new mind map with `topic` as its central topic */
   newMap?(topic: string): Promise<{ ok: true } | { ok: false; error: string }>
+  /** the trend card's AI briefing as a new untitled Word document */
+  openBriefing?(request: {
+    markdown: string
+    title: string
+  }): Promise<{ ok: true } | { ok: false; error: string }>
   /** a tab's "내 양식으로 저장…": open this dialog ready to save that tab; returns unsubscribe */
   onSaveMyFormRequest?(listener: (tabId: string) => void): () => void
   onOpenTemplatesRequest?(listener: () => void): () => void

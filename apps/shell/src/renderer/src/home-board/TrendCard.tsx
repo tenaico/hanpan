@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 import type { TrendApi, TrendSnapshot } from '../../../shared/trend-api'
 import {
   kstDate,
@@ -8,6 +8,13 @@ import {
   type TrendForecast,
   type TrendGlyph,
 } from '../../../shared/trend-forecast'
+import {
+  briefingMarkdown,
+  briefingPrompt,
+  briefingTitle,
+  parseBriefing,
+} from '../../../shared/trend-briefing'
+import { runDesignAi, type AiTurn, type DesignAiApi } from '../design/ai-run'
 import { useI18n } from '../locale'
 import './trend-card.css'
 
@@ -89,14 +96,84 @@ function WeatherIcon({ glyph }: { glyph: TrendGlyph }): ReactElement {
   )
 }
 
+/** one AI turn for the briefing: the system and user prompt in, the answer (or why not) out */
+export type BriefRunner = (
+  prompt: { system: string; user: string },
+  signal: AbortSignal,
+) => Promise<AiTurn>
+
+/** the AI the person chose in Settings, through Home's AI bridge (the design board's one-turn run) */
+function homeBriefRunner(lang: string, failed: string): BriefRunner | null {
+  const home = window.aiOffice
+  if (!home?.aiGetSettings || !home.aiStream || !home.aiStreamCancel || !home.onAiStream)
+    return null
+  const api: DesignAiApi = {
+    getAiSettings: () => home.aiGetSettings(),
+    aiStream: (request) => home.aiStream(request as never),
+    aiStreamCancel: (requestId) => home.aiStreamCancel(requestId),
+    onAiStream: (handler) => home.onAiStream(handler as never),
+  }
+  const words = {
+    unknown: failed,
+    timeout: failed,
+    credits: failed,
+    network: failed,
+    overloaded: failed,
+    noSettings: failed,
+  }
+  return (prompt, signal) => runDesignAi(api, lang, words, prompt, { signal, maxChars: 20_000 })
+}
+
 /**
  * The trend card (spec 7.6): Trend Radar's forecast for today, read from the
  * copy the main process stored. It draws at once (the offline line until a
- * forecast is there) and redraws when a new one arrives.
+ * forecast is there) and redraws when a new one arrives. 'AI 브리핑' (0.19.1)
+ * sends that forecast to the person's AI once and opens the answer as a new
+ * untitled Word document; nothing new is fetched.
  */
-export function TrendCard({ now = () => new Date() }: { now?: () => Date } = {}): ReactElement {
-  const { t, dateLocale } = useI18n()
+export function TrendCard({
+  now = () => new Date(),
+  brief,
+}: { now?: () => Date; brief?: BriefRunner } = {}): ReactElement {
+  const { t, lang, dateLocale } = useI18n()
   const [forecast, setForecast] = useState<TrendForecast | null>(null)
+  const [briefing, setBriefing] = useState(false)
+  const [briefError, setBriefError] = useState<string | null>(null)
+  const briefStop = useRef<AbortController | null>(null)
+  useEffect(() => () => briefStop.current?.abort(), [])
+  const runner = brief ?? homeBriefRunner(lang, t('hbTrendBriefFailed'))
+  const canBrief = Boolean(runner && window.hanpanApi?.openBriefing)
+
+  const writeBriefing = async () => {
+    if (!forecast || !runner || briefing) return
+    const stop = new AbortController()
+    briefStop.current = stop
+    setBriefing(true)
+    setBriefError(null)
+    try {
+      const turn = await runner(briefingPrompt(forecast), stop.signal)
+      if (stop.signal.aborted) return
+      if (!turn.ok) {
+        setBriefError(turn.error || t('hbTrendBriefFailed'))
+        return
+      }
+      const parsed = parseBriefing(turn.text)
+      if (!parsed) {
+        setBriefError(t('hbTrendBriefFailed'))
+        return
+      }
+      const opened = await window.hanpanApi?.openBriefing?.({
+        markdown: briefingMarkdown(parsed, forecast),
+        title: briefingTitle(forecast),
+      })
+      if (!opened?.ok) setBriefError(t('hbTrendBriefFailed'))
+    } catch {
+      if (!stop.signal.aborted) setBriefError(t('hbTrendBriefFailed'))
+    } finally {
+      if (briefStop.current === stop) briefStop.current = null
+      setBriefing(false)
+    }
+  }
 
   useEffect(() => {
     const api = window.aiOfficeTrend
@@ -141,6 +218,19 @@ export function TrendCard({ now = () => new Date() }: { now?: () => Date } = {})
             {t('hbTrendAsOf', { when: trendAsOfText(forecast, now(), dateLocale) })}
           </span>
         )}
+        {forecast && canBrief && (
+          <button
+            type="button"
+            className="hb-trend-more"
+            data-trend-brief
+            data-tip={t('hbTrendBriefTip')}
+            disabled={briefing}
+            aria-busy={briefing}
+            onClick={() => void writeBriefing()}
+          >
+            {briefing ? t('hbTrendBriefBusy') : t('hbTrendBrief')}
+          </button>
+        )}
         <button type="button" className="hb-trend-more" data-trend-more onClick={() => open(null)}>
           {t('hbTrendMore')}
         </button>
@@ -177,9 +267,15 @@ export function TrendCard({ now = () => new Date() }: { now?: () => Date } = {})
               })}
             </div>
           </div>
-          <p className="hb-trend-line" data-trend-line>
-            <span className="hb-trend-line-head">{t('hbTrendLine')}</span> {forecast.line}
-          </p>
+          {briefError ? (
+            <p className="hb-trend-line hb-trend-brief-error" role="alert" data-trend-brief-error>
+              {briefError}
+            </p>
+          ) : (
+            <p className="hb-trend-line" data-trend-line>
+              <span className="hb-trend-line-head">{t('hbTrendLine')}</span> {forecast.line}
+            </p>
+          )}
         </>
       ) : (
         <p className="hb-trend-offline" data-trend-offline>

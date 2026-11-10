@@ -46,6 +46,16 @@
   text-decoration: underline;
 }
 
+.hb-trend-more:disabled {
+  color: var(--text-muted);
+  cursor: progress;
+  text-decoration: none;
+}
+
+.hb-trend-brief-error {
+  color: var(--danger, var(--text-secondary));
+}
+
 /* one column below 300px of card width, two from there (spec 7.9); a 1280 window's card is
    about 330px wide, and one column there hid half the fields behind a scroll */
 .hb-trend-fields {
