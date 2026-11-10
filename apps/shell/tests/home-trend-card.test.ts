@@ -89,13 +89,14 @@ async function flush(): Promise<void> {
 async function render(
   now = new Date('2026-11-09T03:00:00Z'),
   brief?: Parameters<typeof TrendCard>[0] extends infer P ? NonNullable<P>['brief'] : never,
+  koreanDocs = false,
 ): Promise<void> {
   await act(async () =>
     root.render(
       createElement(
         LocaleProvider,
         { initial: 'ko' },
-        createElement(TrendCard, { now: () => now, ...(brief ? { brief } : {}) }),
+        createElement(TrendCard, { now: () => now, koreanDocs, ...(brief ? { brief } : {}) }),
       ),
     ),
   )
@@ -223,6 +224,7 @@ describe('TrendCard', () => {
     let openBriefing: ReturnType<typeof vi.fn>
 
     beforeEach(() => {
+      localStorage.clear()
       openBriefing = vi.fn(async () => ({ ok: true }))
       window.hanpanApi = { openBriefing } as unknown as NonNullable<typeof window.hanpanApi>
     })
@@ -244,10 +246,52 @@ describe('TrendCard', () => {
       expect(prompt.user).toContain('ai-title')
       expect(prompt.user).toContain('오늘은 맑음')
       expect(openBriefing).toHaveBeenCalledTimes(1)
-      const sent = openBriefing.mock.calls[0]![0] as { markdown: string; title: string }
-      expect(sent.title).toBe('트렌드 브리핑 2026-11-09')
-      expect(sent.markdown).toContain('오늘은 대체로 맑습니다')
+      const sent = openBriefing.mock.calls[0]![0] as {
+        format: string
+        brief: { headline: string }
+        forecast: { date: string }
+      }
+      // Word unless the person picked another format
+      expect(sent.format).toBe('docx')
+      expect(sent.brief.headline).toBe('오늘은 대체로 맑습니다')
+      expect(sent.forecast.date).toBe('2026-11-09')
       expect(button()!.disabled).toBe(false)
+    })
+
+    it('offers the formats, writes in the one picked and remembers it (0.19.2)', async () => {
+      snapshot = { available: true, forecast: forecast(TEN()) }
+      const brief = vi.fn(async () => ({ ok: true as const, text: ANSWER }))
+      await render(undefined, brief)
+      await act(async () =>
+        host.querySelector<HTMLButtonElement>('[data-trend-brief-menu]')!.click(),
+      )
+      const options = [...host.querySelectorAll<HTMLButtonElement>('[data-trend-brief-format]')]
+      expect(options.map((o) => o.dataset.trendBriefFormat)).toEqual([
+        'docx',
+        'mindmap',
+        'pptx',
+        'pdf',
+      ])
+      await act(async () => options.find((o) => o.dataset.trendBriefFormat === 'pdf')!.click())
+      await flush()
+      expect((openBriefing.mock.calls[0]![0] as { format: string }).format).toBe('pdf')
+      expect(host.querySelector('[data-trend-brief-format]')).toBeNull()
+      // the next plain click makes a PDF again
+      await act(async () => button()!.click())
+      await flush()
+      expect((openBriefing.mock.calls[1]![0] as { format: string }).format).toBe('pdf')
+    })
+
+    it('offers HWP when the Korean document features are on', async () => {
+      snapshot = { available: true, forecast: forecast(TEN()) }
+      await render(undefined, async () => ({ ok: true as const, text: ANSWER }), true)
+      await act(async () =>
+        host.querySelector<HTMLButtonElement>('[data-trend-brief-menu]')!.click(),
+      )
+      const formats = [
+        ...host.querySelectorAll<HTMLButtonElement>('[data-trend-brief-format]'),
+      ].map((o) => o.dataset.trendBriefFormat)
+      expect(formats).toEqual(['docx', 'hwp', 'mindmap', 'pptx', 'pdf'])
     })
 
     it('says why when the AI cannot write it, and opens nothing', async () => {

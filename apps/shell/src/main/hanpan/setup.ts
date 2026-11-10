@@ -17,10 +17,12 @@ import {
   markHwpReview,
   tidyGongmun,
   blocksToDocx,
+  blocksToHtml,
   blocksToHwp,
   documentFileName,
   markdownToBlocks,
   styledDeckOps,
+  type DocBlock,
   type HwpEngine,
   type MarkdownPicture,
   type SlidePlan,
@@ -36,9 +38,14 @@ import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { atomicWriteFile } from '../atomic-write'
 import { buildTargetDocument } from '../send-to-app/from-markdown'
-
-/** a briefing is a page or two; anything far longer is not one */
-const BRIEFING_MAX_CHARS = 100_000
+import {
+  briefingBlocks,
+  briefingFormat,
+  briefingMarkdown,
+  briefingTitle,
+  checkBriefing,
+} from '../../shared/trend-briefing'
+import { parseTrendForecast } from '../../shared/trend-forecast'
 import { buildDeck } from '../generate/convert'
 import { outlineToOps } from '../mcp/pptx-outline'
 import { readStoredAiSettings, writeStoredAiSettings } from '../../../../docs/src/main/docs-main'
@@ -213,8 +220,8 @@ export interface HanpanSetup {
   /** 내 양식: 보관한 파일의 사본을 제목 없는 새 워드·한글 문서로 연다(보관한 파일은 건드리지 않는다) */
   openMyForm(form: MyForm, bytes: Uint8Array): Promise<boolean>
   /**
-   * 트렌드 카드의 AI 브리핑(0.19.1): Home이 쓴 Markdown을 제목 없는 새 워드 문서로 연다.
-   * 사본은 임시 폴더에만 있고, 첫 저장 때 어디에 둘지 묻는다
+   * 트렌드 카드의 AI 브리핑(0.19.1, 형식은 0.19.2): Home이 받은 브리핑과 기상도로 고른 형식의
+   * 제목 없는 새 문서를 연다. 사본은 임시 폴더에만 있고, 첫 저장 때 어디에 둘지 묻는다
    */
   openBriefing(request: unknown): Promise<{ ok: true } | { ok: false; error: string }>
   sync: ReturnType<typeof createSyncService>
@@ -289,7 +296,7 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
   }
   /** a copy of a file's bytes as a new untitled document in its own temp folder */
   const openBytesCopy = async (
-    editor: 'hwp' | 'docs',
+    editor: 'hwp' | 'docs' | 'pdf' | 'mindmap' | 'slides',
     bytes: Uint8Array,
     fileName: string,
     title: string,
@@ -444,24 +451,49 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
       return openMap(`- ${topic}\n`, topic)
     },
     openBriefing: async (raw) => {
-      const request = raw as { markdown?: unknown; title?: unknown } | null
-      const markdown = typeof request?.markdown === 'string' ? request.markdown : ''
-      const title =
-        typeof request?.title === 'string'
-          ? request.title.replace(/\s+/g, ' ').trim().slice(0, 80)
-          : ''
-      if (!markdown.trim() || !title) return { ok: false, error: 'no briefing' }
-      if (markdown.length > BRIEFING_MAX_CHARS)
-        return { ok: false, error: 'the briefing is too long' }
-      const built = await buildTargetDocument(markdown, 'docs', {
-        title,
-        untitled: title,
-        korean: true,
-        loadHwpEngine,
-      })
-      return (await openBytesCopy('docs', built.bytes, built.fileName, built.title))
-        ? { ok: true }
-        : { ok: false, error: 'the new tab did not open' }
+      const request = (raw ?? {}) as { format?: unknown; brief?: unknown; forecast?: unknown }
+      // what the page sends is checked as if it came from the network: the same checks as the
+      // AI's answer and the stored forecast
+      const brief = checkBriefing(request.brief)
+      const forecast = parseTrendForecast(request.forecast)
+      if (!brief || !forecast) return { ok: false, error: 'no briefing' }
+      const format = briefingFormat(request.format)
+      const title = briefingTitle(forecast)
+      const blocks = briefingBlocks(brief, forecast) as DocBlock[]
+      const theme = DOC_THEMES.gongmun!
+      const open = (editor: Parameters<typeof openBytesCopy>[0], bytes: Uint8Array, ext: string) =>
+        openBytesCopy(editor, bytes, documentFileName(title, ext), title)
+      let opened: boolean
+      switch (format) {
+        case 'hwp':
+          opened = await open(
+            'hwp',
+            blocksToHwp(await loadHwpEngine(), blocks, theme, 'hwp').bytes,
+            'hwp',
+          )
+          break
+        case 'pdf':
+          opened = await open('pdf', await printHtmlToPdf(blocksToHtml(blocks, theme)), 'pdf')
+          break
+        case 'mindmap':
+        case 'pptx': {
+          const built = await buildTargetDocument(
+            briefingMarkdown(brief, forecast),
+            format === 'pptx' ? 'slides' : 'mindmap',
+            { title, untitled: title, korean: true, loadHwpEngine },
+          )
+          opened = await openBytesCopy(
+            built.editor as 'mindmap' | 'slides',
+            built.bytes,
+            built.fileName,
+            built.title,
+          )
+          break
+        }
+        default:
+          opened = await open('docs', await blocksToDocx(blocks, theme), 'docx')
+      }
+      return opened ? { ok: true } : { ok: false, error: 'the new tab did not open' }
     },
     openMyForm: (form, bytes) =>
       openBytesCopy(

@@ -54,6 +54,11 @@ export function parseBriefing(text: string): TrendBriefing | null {
   } catch {
     return null
   }
+  return checkBriefing(raw)
+}
+
+/** a briefing object (the AI's JSON, or what the Home page hands to main), or null */
+export function checkBriefing(raw: unknown): TrendBriefing | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   const headline = typeof r.headline === 'string' ? r.headline.trim() : ''
@@ -67,8 +72,69 @@ export function parseBriefing(text: string): TrendBriefing | null {
   return brief
 }
 
+/** what the briefing can open as (0.19.2): Word first, the one a click with no choice makes */
+export const BRIEFING_FORMATS = ['docx', 'hwp', 'mindmap', 'pptx', 'pdf'] as const
+export type BriefingFormat = (typeof BRIEFING_FORMATS)[number]
+
+export function briefingFormat(raw: unknown): BriefingFormat {
+  return BRIEFING_FORMATS.includes(raw as BriefingFormat) ? (raw as BriefingFormat) : 'docx'
+}
+
 export function briefingTitle(forecast: TrendForecast): string {
   return `트렌드 브리핑 ${forecast.date}`
+}
+
+/** One page block of the briefing: the shape of @genoffice/hanpan-core's DocBlock it uses */
+export type BriefingBlock =
+  | { kind: 'title'; text: string }
+  | { kind: 'meta'; text: string }
+  | { kind: 'chapter'; label: string; text: string }
+  | { kind: 'item'; depth: 0; marker: string; text: string }
+  | { kind: 'para'; depth: 0; role: 'lead'; bold: true; text: string }
+  | { kind: 'table'; rows: string[][]; header: true }
+  | { kind: 'reference'; depth: 0; text: string }
+
+const CHAPTER_LABELS = ['Ⅰ.', 'Ⅱ.', 'Ⅲ.', 'Ⅳ.', 'Ⅴ.']
+
+/**
+ * The briefing as report blocks for the Word, HWP and PDF writers: the date
+ * line, the headline in bold, numbered chapters (an empty one left out), the
+ * forecast table and the source line.
+ */
+export function briefingBlocks(brief: TrendBriefing, forecast: TrendForecast): BriefingBlock[] {
+  const out: BriefingBlock[] = [
+    { kind: 'title', text: briefingTitle(forecast) },
+    { kind: 'meta', text: `TEN AI 트렌드 레이더 · ${forecast.date} 기상도` },
+    { kind: 'para', depth: 0, role: 'lead', bold: true, text: brief.headline },
+  ]
+  let n = 0
+  const chapter = (text: string) =>
+    out.push({ kind: 'chapter', label: CHAPTER_LABELS[n++] ?? '', text })
+  chapter('오늘의 기상도')
+  out.push({
+    kind: 'table',
+    header: true,
+    rows: [
+      ['분야', '날씨', '한 줄'],
+      ...forecast.fields.map((f) =>
+        f.s === null ? [f.title, NO_DATA, ''] : [f.title, f.label, f.head],
+      ),
+    ],
+  })
+  const list = (text: string, values: string[]) => {
+    if (values.length === 0) return
+    chapter(text)
+    for (const v of values) out.push({ kind: 'item', depth: 0, marker: '○', text: v })
+  }
+  list('현황', brief.summary)
+  list('1~3개월 전망', brief.outlook)
+  list('체크포인트', brief.watch)
+  out.push({
+    kind: 'reference',
+    depth: 0,
+    text: `자료: TEN AI 트렌드 레이더(trend.tenai.kr) ${forecast.date} 기상도. AI가 기상도만 보고 쓴 글이며 투자 권유가 아닙니다.`,
+  })
+  return out
 }
 
 /** a table cell: no pipe or line break breaks the table */

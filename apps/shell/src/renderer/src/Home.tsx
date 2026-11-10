@@ -2247,7 +2247,7 @@ export function Home({
       case 'start':
         return renderStartBody()
       case 'trend':
-        return <TrendCard />
+        return <TrendCard koreanDocs={koreanDocs} />
       case 'apps':
         return renderAppsCard(apps, card, true) ?? <></>
       case 'recent':
