@@ -328,12 +328,12 @@ jobs:
           sudo dpkg -i ~/ci-font-debs/*.deb
           fc-list | grep -ciE 'carlito|caladea|noto (sans|serif) cjk'
 
-      # CSS layout tests use standalone Chromium in addition to Electron.
+      # CSS layout tests use standalone Chromium in addition to Electron, in
+      # every shard (the e2e layout specs land wherever the split puts them).
       # Keep the pinned document font stack unchanged: --with-deps adds fonts
       # that alter the existing pixel baselines. Electron already supplies the
       # required system libraries on this runner.
       - name: Install Chromium for layout tests
-        if: matrix.shard == 1
         run: npx playwright install chromium
 
       - name: Markdown browser tests
