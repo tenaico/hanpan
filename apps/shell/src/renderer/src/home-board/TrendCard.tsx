@@ -19,7 +19,21 @@ import {
 import { runDesignAi, type AiTurn, type DesignAiApi } from '../design/ai-run'
 import { useI18n } from '../locale'
 import type { StringKey } from '../locale'
+import iconDocx from '../assets/file-docx.svg'
+import iconHwp from '../assets/file-hwp.svg'
+import iconMindmap from '../assets/file-mindmap.svg'
+import iconPdf from '../assets/file-pdf.svg'
+import iconPptx from '../assets/file-pptx.svg'
 import './trend-card.css'
+
+/** the same document pages the Home app list uses */
+const FORMAT_ICON: Record<BriefingFormat, string> = {
+  docx: iconDocx,
+  hwp: iconHwp,
+  mindmap: iconMindmap,
+  pptx: iconPptx,
+  pdf: iconPdf,
+}
 
 declare global {
   interface Window {
@@ -293,6 +307,7 @@ export function TrendCard({
                     data-trend-brief-format={f}
                     onClick={() => pick(f)}
                   >
+                    <img src={FORMAT_ICON[f]} alt="" width={16} height={16} />
                     {t(FORMAT_WORD[f])}
                   </button>
                 ))}

@@ -265,6 +265,11 @@ test('the AI briefing writes the forecast into a new Word document (0.19.1)', as
       )
       await page.locator('[data-trend-brief-menu]').click()
       await expect(page.locator('[data-trend-brief-format]')).toHaveCount(5)
+      if (format === 'pdf') {
+        await page
+          .locator('[data-card-type="trend"]')
+          .screenshot({ path: screenshotPath('home-board-briefing-menu') })
+      }
       await page.locator(`[data-trend-brief-format="${format}"]`).click()
       const tab = await waitForPageWithUrl(app, url)
       await expect
