@@ -122,8 +122,11 @@ const withMaterial: TrendForecast = {
 const withoutMaterial = (f: TrendForecast): TrendForecast => ({
   ...f,
   fields: f.fields.map((x): TrendField => {
-    const { facts, points, news, materialAsOf, ...rest } = x
-    ;(void facts, points, news, materialAsOf)
+    const rest: TrendField = { ...x }
+    delete rest.facts
+    delete rest.points
+    delete rest.news
+    delete rest.materialAsOf
     return rest
   }),
 })
