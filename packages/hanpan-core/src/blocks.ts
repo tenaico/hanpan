@@ -25,6 +25,8 @@ export type DocBlock =
       depth: number
       text: string
       role: 'note' | 'body' | 'lead'
+      /** the whole paragraph in bold (a headline) */
+      bold?: boolean | undefined
       key?: string | undefined
     }
   /** a reference line (※ ...) */
