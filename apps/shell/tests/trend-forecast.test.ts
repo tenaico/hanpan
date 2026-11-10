@@ -121,15 +121,15 @@ describe('parseTrendForecast', () => {
     const f = parse(
       answer({
         fields: [
-          field('ai', { title: 'T'.repeat(25), label: 'L'.repeat(15), head: 'H'.repeat(100) }),
+          field('ai', { title: 'T'.repeat(25), label: 'L'.repeat(15), head: 'H'.repeat(250) }),
         ],
-        line: 'X'.repeat(100),
+        line: 'X'.repeat(250),
       }),
     )
     expect(f.fields[0].title).toHaveLength(20)
     expect(f.fields[0].label).toHaveLength(10)
-    expect(f.fields[0].head).toHaveLength(80)
-    expect(f.line).toHaveLength(80)
+    expect(f.fields[0].head).toHaveLength(200)
+    expect(f.line).toHaveLength(200)
   })
 
   it('reads only the first 12 fields', () => {
@@ -295,5 +295,13 @@ describe('trendGlyph (spec 7.6)', () => {
       'down',
       'snow',
     ])
+  })
+})
+
+describe('the stored head (0.19.2)', () => {
+  it('keeps a head of 150 characters whole: the AI briefing reads it, the card cuts it on screen', () => {
+    const head = '가'.repeat(150)
+    const parsed = parseTrendForecast(answer({ fields: [field('ai', { head })] }))
+    expect(parsed?.fields[0]?.head).toBe(head)
   })
 })

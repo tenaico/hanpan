@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BRIEFING_FORMATS,
+  briefingBlocks,
+  briefingFormat,
   briefingMarkdown,
   briefingPrompt,
   briefingTitle,
+  checkBriefing,
   parseBriefing,
 } from '../src/shared/trend-briefing'
 import type { TrendForecast } from '../src/shared/trend-forecast'
@@ -111,5 +115,66 @@ describe('briefingMarkdown', () => {
 
   it('titles the briefing with the forecast day', () => {
     expect(briefingTitle(forecast)).toBe('트렌드 브리핑 2026-11-10')
+  })
+})
+
+const brief = {
+  headline: '반도체는 맑고 주식은 폭풍우입니다',
+  summary: ['반도체 실적이 강합니다'],
+  outlook: ['변동성이 이어질 수 있습니다'],
+  watch: ['환율'],
+}
+
+describe('briefingBlocks (0.19.2)', () => {
+  it('lays the briefing out as a report: date line, bold headline, numbered chapters, the table, the source', () => {
+    const blocks = briefingBlocks(brief, forecast)
+    expect(blocks[0]).toEqual({ kind: 'title', text: '트렌드 브리핑 2026-11-10' })
+    expect(blocks[1]).toMatchObject({ kind: 'meta' })
+    expect((blocks[1] as { text: string }).text).toContain('2026-11-10')
+    expect(blocks[2]).toEqual({
+      kind: 'para',
+      depth: 0,
+      role: 'lead',
+      bold: true,
+      text: brief.headline,
+    })
+    const chapters = blocks.filter((b) => b.kind === 'chapter') as { label: string; text: string }[]
+    expect(chapters.map((c) => `${c.label} ${c.text}`)).toEqual([
+      'Ⅰ. 오늘의 기상도',
+      'Ⅱ. 현황',
+      'Ⅲ. 1~3개월 전망',
+      'Ⅳ. 체크포인트',
+    ])
+    const table = blocks.find((b) => b.kind === 'table') as { rows: string[][]; header: boolean }
+    expect(table.header).toBe(true)
+    expect(table.rows[0]).toEqual(['분야', '날씨', '한 줄'])
+    expect(table.rows).toContainEqual(['부동산', '자료 없음', ''])
+    expect(blocks).toContainEqual({ kind: 'item', depth: 0, marker: '○', text: '환율' })
+    const last = blocks.at(-1) as { kind: string; text: string }
+    expect(last.kind).toBe('reference')
+    expect(last.text).toContain('투자 권유가 아닙니다')
+  })
+
+  it('leaves out an empty outlook or checkpoint chapter and keeps the numbering in order', () => {
+    const blocks = briefingBlocks({ ...brief, outlook: [] }, forecast)
+    const chapters = blocks.filter((b) => b.kind === 'chapter') as { label: string; text: string }[]
+    expect(chapters.map((c) => c.label)).toEqual(['Ⅰ.', 'Ⅱ.', 'Ⅲ.'])
+    expect(chapters.at(-1)!.text).toBe('체크포인트')
+  })
+})
+
+describe('checkBriefing and briefingFormat', () => {
+  it('accepts a briefing object and drops what is not text', () => {
+    expect(checkBriefing(brief)).toEqual(brief)
+    expect(checkBriefing({ ...brief, summary: ['ok', 3, ''] })?.summary).toEqual(['ok'])
+    expect(checkBriefing({ headline: '', summary: ['x'] })).toBeNull()
+    expect(checkBriefing('text')).toBeNull()
+  })
+
+  it('knows the five formats and falls back to Word for anything else', () => {
+    expect(BRIEFING_FORMATS).toEqual(['docx', 'hwp', 'mindmap', 'pptx', 'pdf'])
+    expect(briefingFormat('pdf')).toBe('pdf')
+    expect(briefingFormat('exe')).toBe('docx')
+    expect(briefingFormat(undefined)).toBe('docx')
   })
 })

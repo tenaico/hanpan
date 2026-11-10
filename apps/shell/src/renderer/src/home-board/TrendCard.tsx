@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react'
+import { useDismissablePopover } from '@genoffice/ui'
 import type { TrendApi, TrendSnapshot } from '../../../shared/trend-api'
 import {
   kstDate,
@@ -9,14 +10,30 @@ import {
   type TrendGlyph,
 } from '../../../shared/trend-forecast'
 import {
-  briefingMarkdown,
+  BRIEFING_FORMATS,
+  briefingFormat,
   briefingPrompt,
-  briefingTitle,
   parseBriefing,
+  type BriefingFormat,
 } from '../../../shared/trend-briefing'
 import { runDesignAi, type AiTurn, type DesignAiApi } from '../design/ai-run'
 import { useI18n } from '../locale'
+import type { StringKey } from '../locale'
+import iconDocx from '../assets/file-docx.svg'
+import iconHwp from '../assets/file-hwp.svg'
+import iconMindmap from '../assets/file-mindmap.svg'
+import iconPdf from '../assets/file-pdf.svg'
+import iconPptx from '../assets/file-pptx.svg'
 import './trend-card.css'
+
+/** the same document pages the Home app list uses */
+const FORMAT_ICON: Record<BriefingFormat, string> = {
+  docx: iconDocx,
+  hwp: iconHwp,
+  mindmap: iconMindmap,
+  pptx: iconPptx,
+  pdf: iconPdf,
+}
 
 declare global {
   interface Window {
@@ -131,20 +148,59 @@ function homeBriefRunner(lang: string, failed: string): BriefRunner | null {
  * sends that forecast to the person's AI once and opens the answer as a new
  * untitled Word document; nothing new is fetched.
  */
+/** the format a plain click on 'AI 브리핑' makes: the last one picked on this PC */
+const FORMAT_KEY = 'hanpan.trendBriefFormat'
+const storedFormat = (): BriefingFormat => {
+  try {
+    return briefingFormat(localStorage.getItem(FORMAT_KEY))
+  } catch {
+    return 'docx'
+  }
+}
+
+/** the menu's words for each format */
+const FORMAT_WORD: Record<BriefingFormat, StringKey> = {
+  docx: 'hbBriefDocx',
+  hwp: 'hbBriefHwp',
+  mindmap: 'hbBriefMindmap',
+  pptx: 'hbBriefPptx',
+  pdf: 'hbBriefPdf',
+}
+
 export function TrendCard({
   now = () => new Date(),
   brief,
-}: { now?: () => Date; brief?: BriefRunner } = {}): ReactElement {
+  koreanDocs = false,
+}: { now?: () => Date; brief?: BriefRunner; koreanDocs?: boolean } = {}): ReactElement {
   const { t, lang, dateLocale } = useI18n()
   const [forecast, setForecast] = useState<TrendForecast | null>(null)
   const [briefing, setBriefing] = useState(false)
+  const formats = BRIEFING_FORMATS.filter((f) => f !== 'hwp' || koreanDocs)
+  const [format, setFormat] = useState<BriefingFormat>(storedFormat)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const briefRef = useRef<HTMLSpanElement | null>(null)
+  // a press outside, Esc and the window losing focus close the format menu
+  useDismissablePopover(menuOpen, () => setMenuOpen(false), { inside: () => [briefRef.current] })
+  // HWP picked earlier, Korean document features turned off since: Word
+  const current: BriefingFormat = formats.includes(format) ? format : 'docx'
   const [briefError, setBriefError] = useState<string | null>(null)
   const briefStop = useRef<AbortController | null>(null)
   useEffect(() => () => briefStop.current?.abort(), [])
   const runner = brief ?? homeBriefRunner(lang, t('hbTrendBriefFailed'))
   const canBrief = Boolean(runner && window.hanpanApi?.openBriefing)
 
-  const writeBriefing = async () => {
+  const pick = (next: BriefingFormat) => {
+    setMenuOpen(false)
+    setFormat(next)
+    try {
+      localStorage.setItem(FORMAT_KEY, next)
+    } catch {
+      // the choice holds for this session only
+    }
+    void writeBriefing(next)
+  }
+
+  const writeBriefing = async (as: BriefingFormat) => {
     if (!forecast || !runner || briefing) return
     const stop = new AbortController()
     briefStop.current = stop
@@ -162,10 +218,7 @@ export function TrendCard({
         setBriefError(t('hbTrendBriefFailed'))
         return
       }
-      const opened = await window.hanpanApi?.openBriefing?.({
-        markdown: briefingMarkdown(parsed, forecast),
-        title: briefingTitle(forecast),
-      })
+      const opened = await window.hanpanApi?.openBriefing?.({ format: as, brief: parsed, forecast })
       if (!opened?.ok) setBriefError(t('hbTrendBriefFailed'))
     } catch {
       if (!stop.signal.aborted) setBriefError(t('hbTrendBriefFailed'))
@@ -219,17 +272,48 @@ export function TrendCard({
           </span>
         )}
         {forecast && canBrief && (
-          <button
-            type="button"
-            className="hb-trend-more"
-            data-trend-brief
-            data-tip={t('hbTrendBriefTip')}
-            disabled={briefing}
-            aria-busy={briefing}
-            onClick={() => void writeBriefing()}
-          >
-            {briefing ? t('hbTrendBriefBusy') : t('hbTrendBrief')}
-          </button>
+          <span className="hb-trend-brief" ref={briefRef}>
+            <button
+              type="button"
+              className="hb-trend-more"
+              data-trend-brief
+              data-tip={t('hbTrendBriefTip', { format: t(FORMAT_WORD[current]) })}
+              disabled={briefing}
+              aria-busy={briefing}
+              onClick={() => void writeBriefing(current)}
+            >
+              {briefing ? t('hbTrendBriefBusy') : t('hbTrendBrief')}
+            </button>
+            <button
+              type="button"
+              className="hb-trend-more hb-trend-brief-menu"
+              data-trend-brief-menu
+              aria-label={t('hbTrendBriefFormat')}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              disabled={briefing}
+              onClick={() => setMenuOpen((on) => !on)}
+            >
+              ▾
+            </button>
+            {menuOpen && (
+              <span className="hb-trend-brief-list" role="menu">
+                {formats.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={f === current}
+                    data-trend-brief-format={f}
+                    onClick={() => pick(f)}
+                  >
+                    <img src={FORMAT_ICON[f]} alt="" width={16} height={16} />
+                    {t(FORMAT_WORD[f])}
+                  </button>
+                ))}
+              </span>
+            )}
+          </span>
         )}
         <button type="button" className="hb-trend-more" data-trend-more onClick={() => open(null)}>
           {t('hbTrendMore')}

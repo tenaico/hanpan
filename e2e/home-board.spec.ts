@@ -252,6 +252,42 @@ test('the AI briefing writes the forecast into a new Word document (0.19.1)', as
     )
     expect(prompts).toBe(1)
     await doc.screenshot({ path: screenshotPath('home-board-briefing') })
+
+    // the format menu (0.19.2): the briefing as a PDF and as a mind map, each in a tab of its own
+    const home = (await listTabs(page)).find((t) => t.kind === 'home')!
+    for (const [format, url, kind] of [
+      ['pdf', '://pdf/', 'pdf'],
+      ['mindmap', '://mindmap/', 'mindmap'],
+    ] as const) {
+      await page.evaluate(
+        (id) => (window as unknown as TabsOnWindow).aiOfficeTabs.activate(id),
+        home.id,
+      )
+      await page.locator('[data-trend-brief-menu]').click()
+      await expect(page.locator('[data-trend-brief-format]')).toHaveCount(5)
+      if (format === 'pdf') {
+        await page
+          .locator('[data-card-type="trend"]')
+          .screenshot({ path: screenshotPath('home-board-briefing-menu') })
+      }
+      await page.locator(`[data-trend-brief-format="${format}"]`).click()
+      const tab = await waitForPageWithUrl(app, url)
+      await expect
+        .poll(async () => (await listTabs(page)).find((t) => t.kind === kind)?.title ?? '', {
+          timeout: 30_000,
+        })
+        .toContain('트렌드 브리핑')
+      // drawn, not still opening
+      await expect(tab.getByText('여는 중')).toHaveCount(0, { timeout: 30_000 })
+      await expect(tab.locator('body')).toContainText('트렌드 브리핑', { timeout: 30_000 })
+      await tab.screenshot({ path: screenshotPath(`home-board-briefing-${format}`) })
+    }
+    // the last pick is what a plain click makes next
+    await page.evaluate(
+      (id) => (window as unknown as TabsOnWindow).aiOfficeTabs.activate(id),
+      home.id,
+    )
+    await expect(page.locator('[data-trend-brief]')).toHaveAttribute('data-tip', /마인드맵/)
   } finally {
     await closeAndSaveVideo(launched, 'home-board-briefing')
     await server.close()
