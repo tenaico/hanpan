@@ -61,6 +61,13 @@ body,
   font-size: 14px;
 }
 
+/* a sentence or two: kept to a readable width */
+.gx-cover[data-no-gpu] {
+  padding: 0 max(24px, calc(50% - 18em));
+  line-height: 1.6;
+  text-align: center;
+}
+
 .gx-notice {
   /* a toast over the bottom of the app: it never pushes the canvas or the AI panel */
   position: fixed;

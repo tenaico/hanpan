@@ -5,6 +5,8 @@ export const fr = {
   failed: 'L’application n’a pas pu démarrer.',
   retry: 'Réessayer',
   notInstalled: 'Cette installation ne contient pas cette application.',
+  noGpu:
+    "Ce PC n'a pas d'accélération graphique (WebGPU ou WebGL2) : cette application ne peut pas s'ouvrir. Mettez à jour le pilote graphique ou ouvrez-la sur un PC qui n'est ni un bureau à distance ni une machine virtuelle.",
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Enregistrement impossible. Le document reste marqué comme non enregistré.',
   layeredSaveNotice:

@@ -68,14 +68,25 @@ function sameWindowApi(kind: 'photo' | 'illust') {
     })
 }
 
-async function mount(kind: 'photo' | 'illust', probe = async () => true): Promise<void> {
+async function mount(
+  kind: 'photo' | 'illust',
+  probe = async () => true,
+  gpu = async () => true,
+): Promise<void> {
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
   await act(async () => {
     root!.render(
       <LocaleProvider initial="ko">
-        <App kind={kind} lang="ko" probeWeb={probe} pollMs={20} connect={sameWindowApi(kind)} />
+        <App
+          kind={kind}
+          lang="ko"
+          probeWeb={probe}
+          probeGpu={gpu}
+          pollMs={20}
+          connect={sameWindowApi(kind)}
+        />
       </LocaleProvider>,
     )
   })
@@ -132,6 +143,20 @@ describe('the host page', () => {
     await mount('illust', async () => false)
     await until(() => host.textContent!.includes('들어 있지 않습니다'))
     expect(frame()).toBeNull()
+  })
+
+  it('says in plain words that the PC cannot draw it, with no frame and no AI panel', async () => {
+    fakeApi()
+    await mount(
+      'photo',
+      async () => true,
+      async () => false,
+    )
+    await until(() => host.textContent!.includes('그래픽 가속'))
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain('그래픽 가속')
+    expect(frame()).toBeNull()
+    expect(host.querySelector('.ai-dock')).toBeNull()
+    expect(host.textContent).not.toContain('WebGPU or WebGL2 is required')
   })
 
   it('keeps following the document after it is ready', async () => {

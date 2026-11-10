@@ -27,23 +27,37 @@ import type { GraphicsKind } from '../shared/kinds'
 import type { ExportFormat, SaveMode } from '../shared/ipc'
 import { graphicsApi } from './bridge'
 
-type Status = 'checking' | 'loading' | 'ready' | 'failed' | 'notInstalled'
+type Status = 'checking' | 'loading' | 'ready' | 'failed' | 'notInstalled' | 'noGpu'
 
 export interface AppProps {
   kind: GraphicsKind
   lang: Lang
   /** Whether this install carries the app's web build. */
   probeWeb: () => Promise<boolean>
+  /** Whether this PC can draw for the app (WebGPU or WebGL2); without, the app cannot start. */
+  probeGpu?: () => Promise<boolean>
   /** How often the document state is asked for. */
   pollMs?: number
   /** tests only: how the host reaches the app in the frame (the app runs on its own origin) */
   connect?: (frame: HTMLIFrameElement) => Promise<GraphicsPageApi>
 }
 
+/**
+ * Whether this page can draw with WebGPU or WebGL2. The tab's page runs with the same switches as
+ * the app's frame, so its answer is the app's (the e2e graphicsGpuMissing asks the same way).
+ */
+export async function hasGraphicsGpu(): Promise<boolean> {
+  const gpu = (navigator as { gpu?: { requestAdapter(): Promise<unknown> } }).gpu
+  const adapter = await Promise.resolve(gpu?.requestAdapter()).catch(() => null)
+  if (adapter) return true
+  return Boolean(document.createElement('canvas').getContext('webgl2'))
+}
+
 export default function App({
   kind,
   lang,
   probeWeb,
+  probeGpu = hasGraphicsGpu,
   pollMs = 1000,
   connect = (frame) => connectPageApi(frame),
 }: AppProps) {
@@ -178,12 +192,19 @@ export default function App({
         setStatus('notInstalled')
         return
       }
+      // the app would only print its own error in English and still take the AI's requests
+      const drawable = await probeGpu().catch(() => false)
+      if (!live) return
+      if (!drawable) {
+        setStatus('noGpu')
+        return
+      }
       setStatus('loading')
     })()
     return () => {
       live = false
     }
-  }, [kind, probeWeb, attempt])
+  }, [kind, probeWeb, probeGpu, attempt])
 
   // Hanpan's language changed: a tab without a document starts its editor again in the new
   // language; a tab with one keeps it (reloading would drop it) and says when it changes (G9)
@@ -374,6 +395,11 @@ export default function App({
               <button type="button" onClick={() => setAttempt((n) => n + 1)}>
                 {t('retry')}
               </button>
+            </div>
+          )}
+          {status === 'noGpu' && (
+            <div className="gx-cover" role="alert" data-no-gpu="">
+              {t('noGpu')}
             </div>
           )}
           {status === 'notInstalled' && (

@@ -5,6 +5,8 @@ export const it = {
   failed: 'Impossibile avviare l’app.',
   retry: 'Riprova',
   notInstalled: 'Questa installazione non include questa app.',
+  noGpu:
+    "Questo PC non ha l'accelerazione grafica (WebGPU o WebGL2), quindi questa app non può aprirsi. Aggiorna il driver grafico o aprila su un PC che non sia un desktop remoto o una macchina virtuale.",
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Salvataggio non riuscito. Il documento resta non salvato.',
   layeredSaveNotice: 'Salvataggio in PSD per conservare livelli e dati di modifica.',

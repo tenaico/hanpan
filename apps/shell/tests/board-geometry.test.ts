@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   boardColumns,
   cardSpan,
+  narrowOrder,
   recentRows,
   sizeFromDrag,
 } from '../src/renderer/src/home-board/board-geometry'
@@ -53,4 +54,20 @@ describe('cardSpan on narrow boards', () => {
     expect(cardSpan(12, 6)).toBe(6)
   })
   it('gives every card the one column', () => expect(cardSpan(7, 1)).toBe(1))
+})
+
+/** a narrowed board shows the cards that make documents before the trend card (0.19.0 review) */
+describe('narrowOrder', () => {
+  const types = ['start', 'trend', 'apps', 'recent', 'memo', 'favorites'] as const
+  it('keeps the stored order on twelve columns', () => {
+    expect(narrowOrder([...types], 12)).toBeNull()
+  })
+  it('puts the apps card before the trend card on six columns and on one', () => {
+    expect(narrowOrder([...types], 6)).toEqual([0, 2, 1, 3, 4, 5])
+    expect(narrowOrder([...types], 1)).toEqual([0, 2, 1, 3, 4, 5])
+  })
+  it('leaves a board whose apps card already comes first, or that has none, as it is', () => {
+    expect(narrowOrder(['start', 'apps', 'trend', 'memo'], 6)).toBeNull()
+    expect(narrowOrder(['trend', 'memo', 'recent'], 6)).toBeNull()
+  })
 })

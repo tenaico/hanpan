@@ -5,6 +5,8 @@ export const nl = {
   failed: 'De app kon niet starten.',
   retry: 'Opnieuw proberen',
   notInstalled: 'Deze installatie bevat deze app niet.',
+  noGpu:
+    'Deze pc heeft geen grafische versnelling (WebGPU of WebGL2), dus deze app kan niet openen. Werk het grafische stuurprogramma bij of open hem op een pc die geen extern bureaublad of virtuele machine is.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'Opslaan mislukt. Het document blijft gemarkeerd als niet opgeslagen.',
   layeredSaveNotice: 'Opslaan als PSD om de lagen en bewerkingsgegevens te behouden.',

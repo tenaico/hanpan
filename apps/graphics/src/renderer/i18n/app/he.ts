@@ -5,6 +5,8 @@ export const he = {
   failed: 'לא ניתן היה להפעיל את האפליקציה.',
   retry: 'ניסיון חוזר',
   notInstalled: 'התקנה זו אינה כוללת את האפליקציה הזו.',
+  noGpu:
+    'במחשב הזה אין האצה גרפית (WebGPU או WebGL2), ולכן אי אפשר לפתוח את האפליקציה. עדכנו את מנהל ההתקן הגרפי, או פתחו אותה במחשב שאינו שולחן עבודה מרוחק או מכונה וירטואלית.',
   editorLangOnReopen: "The editor's language changes when this tab is opened again.",
   saveFailed: 'השמירה נכשלה. המסמך נשאר מסומן כלא שמור.',
   layeredSaveNotice: 'נשמר כ-PSD כדי לשמור על השכבות ונתוני העריכה.',

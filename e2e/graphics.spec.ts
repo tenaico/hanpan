@@ -371,3 +371,30 @@ test.describe('AI Photo tab', () => {
     }
   })
 })
+
+test.describe('a PC that cannot draw for the graphics apps', () => {
+  test.skip(!existsSync(ILLUST_WEB), 'no illustration web build in apps/graphics/out')
+
+  // CI's runner is such a PC; with a GPU the tab opens as usual and shows no notice
+  test('the tab says so in plain words and offers no AI panel', async () => {
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'graphics-no-gpu' })
+    const { app, page } = launched
+    try {
+      await page.locator('.quick-card[data-new="illust"]').click()
+      const tab = await waitForPageWithUrl(app, '://illust/')
+      const noGpu = await graphicsGpuMissing(tab)
+      if (noGpu !== null) {
+        await expect(tab.locator('[data-no-gpu]')).toContainText('graphics acceleration', {
+          timeout: 30_000,
+        })
+        await expect(tab.locator('.ai-dock')).toHaveCount(0)
+        await expect(tab.locator('iframe')).toHaveCount(0)
+      } else {
+        await expect(tab.locator('iframe')).toHaveCount(1, { timeout: 30_000 })
+        await expect(tab.locator('[data-no-gpu]')).toHaveCount(0)
+      }
+    } finally {
+      await closeAndSaveVideo(launched, 'graphics-no-gpu')
+    }
+  })
+})
