@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   TREND_FIELD_KEYS,
+  TREND_MATERIAL_MAX,
   cutText,
   kstDate,
   mergeTrendForecast,
@@ -255,6 +256,101 @@ describe('mergeTrendForecast (R24)', () => {
     const reread = parse(broken)
     expect(byKey(reread, 'fx')).not.toHaveProperty('asOf')
     expect(byKey(reread, 'local-ai')?.asOf).toBe('2026-11-09T00:30:00Z')
+  })
+})
+
+describe('material fields (facts, points, news, materialAsOf)', () => {
+  const F = { label: 'KOSPI', value: '2,600' }
+  const N = { title: 'Rates held', source: 'Daily', date: '2026-10-30', url: 'https://x.kr/a' }
+  const N2 = { ...N, title: 'Other news', url: 'https://x.kr/b' }
+  const withField = (over: Record<string, unknown>) =>
+    answer({ fields: [field('stocks', over)] })
+  const PARSED_STOCKS = parse(withField({})).fields[0]!
+
+  it('reads facts, points, news and materialAsOf within their limits', () => {
+    const f = parse(
+      withField({
+        facts: [F, F, F, F, F],
+        points: ['가'.repeat(301), 'p'],
+        news: [
+          N,
+          { ...N, url: 'http://x.kr/a' },
+          { ...N, url: 'https://x.kr/' + 'a'.repeat(1000) },
+          N,
+        ],
+        materialAsOf: '2026-10-30',
+      }),
+    ).fields[0]!
+    expect([f.facts?.length, f.points, f.news, f.materialAsOf]).toEqual([
+      TREND_MATERIAL_MAX.facts,
+      ['p'],
+      [N],
+      '2026-10-30',
+    ])
+  })
+
+  it('cuts a long fact label and article title with an ellipsis', () => {
+    const f = parse(
+      withField({
+        facts: [{ label: 'L'.repeat(25), value: 'v' }],
+        news: [{ ...N, title: 'T'.repeat(130) }],
+      }),
+    ).fields[0]!
+    expect(f.facts![0]!.label).toBe('L'.repeat(19) + '…')
+    expect(f.news![0]!.title).toBe('T'.repeat(119) + '…')
+  })
+
+  it('drops a news item with an empty title, a bad date, or an unparsable url', () => {
+    const f = parse(
+      withField({
+        news: [N, { ...N, title: '' }, { ...N, date: '10/30' }, { ...N, url: 'not a url' }],
+      }),
+    ).fields[0]!
+    expect(f.news).toEqual([N])
+  })
+
+  it('reads a field without material exactly as before', () => {
+    expect(PARSED_STOCKS).not.toHaveProperty('facts')
+    expect(PARSED_STOCKS).not.toHaveProperty('news')
+    expect(PARSED_STOCKS).not.toHaveProperty('points')
+    expect(PARSED_STOCKS).not.toHaveProperty('materialAsOf')
+  })
+
+  it('drops a material value of the wrong shape and keeps the field', () => {
+    const f = parse(withField({ facts: 'x', news: [{ title: 1 }], materialAsOf: '10/30' })).fields[0]!
+    expect(Object.keys(f)).toEqual(Object.keys(PARSED_STOCKS))
+  })
+
+  const fresh = (extra: Record<string, unknown>) =>
+    parse(answer({ asOf: '2026-11-09T06:30:00Z', fields: [field('stocks', { s: null, label: '', head: '', ...extra })] }))
+  const stored = (extra: Record<string, unknown>) =>
+    parse(answer({ asOf: '2026-11-09T00:30:00Z', fields: [field('stocks', extra)] }))
+
+  it('carries the earlier material with a carried field (R24)', () => {
+    const merged = mergeTrendForecast(
+      fresh({ news: [N2] }),
+      stored({ facts: [F], news: [N], points: ['p'], materialAsOf: '2026-11-08' }),
+    )
+    expect(merged.fields[0]).toMatchObject({
+      facts: [F],
+      news: [N],
+      points: ['p'],
+      materialAsOf: '2026-11-08',
+    })
+    expect(merged.fields[0]!.news).not.toContainEqual(N2)
+  })
+
+  it('does not keep the new material when the carried field had none', () => {
+    const merged = mergeTrendForecast(fresh({ news: [N2] }), stored({}))
+    expect(merged.fields[0]).not.toHaveProperty('news')
+  })
+
+  it('keeps the new material on a field the new answer knows', () => {
+    const known = parse(
+      answer({ asOf: '2026-11-09T06:30:00Z', fields: [field('stocks', { news: [N2] })] }),
+    )
+    const merged = mergeTrendForecast(known, stored({ news: [N] }))
+    expect(merged.fields[0]!.news).toEqual([N2])
   })
 })
 

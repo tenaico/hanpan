@@ -21,6 +21,18 @@ export type TrendFieldKey = (typeof TREND_FIELD_KEYS)[number]
 export type TrendSignal = -2 | -1 | 0 | 1 | 2
 export type TrendScale = 'weather' | 'market'
 
+export interface TrendFact {
+  label: string
+  value: string
+}
+
+export interface TrendNews {
+  title: string
+  source: string
+  date: string
+  url: string
+}
+
 export interface TrendField {
   key: TrendFieldKey
   title: string
@@ -36,6 +48,12 @@ export interface TrendField {
    * forecast's own asOf.
    */
   asOf?: string
+  /** optional briefing material the server may send; each is absent when empty */
+  facts?: TrendFact[]
+  points?: string[]
+  news?: TrendNews[]
+  /** the date (YYYY-MM-DD) the material is as of */
+  materialAsOf?: string
 }
 
 export interface TrendForecast {
@@ -49,6 +67,20 @@ export interface TrendForecast {
 /** head and line stay whole for the AI briefing (0.19.2); the card cuts them on screen */
 export const TREND_TEXT_MAX = { title: 20, label: 10, head: 200, line: 200 } as const
 export const TREND_FIELDS_MAX = 12
+/** limits of the optional material: counts, and characters per item */
+export const TREND_MATERIAL_MAX = {
+  facts: 4,
+  factLabel: 20,
+  factValue: 40,
+  points: 3,
+  pointChars: 300,
+  news: 3,
+  newsTitle: 120,
+  newsSource: 30,
+  urlChars: 1000,
+} as const
+
+const MATERIAL_KEYS = ['facts', 'points', 'news', 'materialAsOf'] as const
 /** a stored field value older than this is not carried into a new forecast (plan R24) */
 export const TREND_CARRY_MAX_MS = 48 * 60 * 60 * 1000
 
@@ -88,6 +120,54 @@ function readText(value: unknown, max: number): string {
   return typeof value === 'string' ? cutText(value, max) : ''
 }
 
+function readFacts(raw: unknown): TrendFact[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const facts: TrendFact[] = []
+  for (const item of raw.slice(0, TREND_MATERIAL_MAX.facts)) {
+    if (!isRecord(item)) continue
+    const label = readText(item.label, TREND_MATERIAL_MAX.factLabel)
+    const value = readText(item.value, TREND_MATERIAL_MAX.factValue)
+    if (label && value) facts.push({ label, value })
+  }
+  return facts.length > 0 ? facts : undefined
+}
+
+function readPoints(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  // points are never cut: an item over the limit is dropped
+  const points = raw
+    .slice(0, TREND_MATERIAL_MAX.points)
+    .filter(
+      (p): p is string =>
+        typeof p === 'string' && p !== '' && Array.from(p).length <= TREND_MATERIAL_MAX.pointChars,
+    )
+  return points.length > 0 ? points : undefined
+}
+
+function isHttpsUrl(url: string): boolean {
+  if (url.length > TREND_MATERIAL_MAX.urlChars) return false
+  try {
+    return new URL(url).protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+function readNews(raw: unknown): TrendNews[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const news: TrendNews[] = []
+  for (const item of raw.slice(0, TREND_MATERIAL_MAX.news)) {
+    if (!isRecord(item)) continue
+    const title = readText(item.title, TREND_MATERIAL_MAX.newsTitle)
+    const source = readText(item.source, TREND_MATERIAL_MAX.newsSource)
+    const { date, url } = item
+    if (!title || typeof date !== 'string' || !DATE_PATTERN.test(date)) continue
+    if (typeof url !== 'string' || !isHttpsUrl(url)) continue
+    news.push({ title, source, date, url })
+  }
+  return news.length > 0 ? news : undefined
+}
+
 function readField(raw: unknown): TrendField | null {
   if (!isRecord(raw) || !isFieldKey(raw.key)) return null
   const title = readText(raw.title, TREND_TEXT_MAX.title)
@@ -103,6 +183,15 @@ function readField(raw: unknown): TrendField | null {
     path,
   }
   if (isTime(raw.asOf)) field.asOf = raw.asOf
+  const facts = readFacts(raw.facts)
+  if (facts) field.facts = facts
+  const points = readPoints(raw.points)
+  if (points) field.points = points
+  const news = readNews(raw.news)
+  if (news) field.news = news
+  if (typeof raw.materialAsOf === 'string' && DATE_PATTERN.test(raw.materialAsOf)) {
+    field.materialAsOf = raw.materialAsOf
+  }
   return field
 }
 
@@ -131,6 +220,15 @@ export function parseTrendForecast(raw: unknown): TrendForecast | null {
   }
 }
 
+function pickMaterial(f: TrendField): Partial<TrendField> {
+  const out: Partial<TrendField> = {}
+  if (f.facts) out.facts = f.facts
+  if (f.points) out.points = f.points
+  if (f.news) out.news = f.news
+  if (f.materialAsOf) out.materialAsOf = f.materialAsOf
+  return out
+}
+
 /**
  * Field by field merge (plan R24): a field with no data in the new answer
  * takes the stored value of the same key when that value is at most 48 hours
@@ -152,7 +250,16 @@ export function mergeTrendForecast(
     const madeAt = prev.asOf ?? stored.asOf
     const age = freshAt - Date.parse(madeAt)
     if (!(age >= 0 && age <= TREND_CARRY_MAX_MS)) return plain
-    return { ...plain, s: prev.s, label: prev.label, head: prev.head, asOf: madeAt }
+    const carried: TrendField = {
+      ...plain,
+      s: prev.s,
+      label: prev.label,
+      head: prev.head,
+      asOf: madeAt,
+    }
+    // the material goes with the value it belongs to: the new answer's is dropped
+    for (const key of MATERIAL_KEYS) delete carried[key]
+    return { ...carried, ...pickMaterial(prev) }
   })
   return { ...fresh, fields }
 }
