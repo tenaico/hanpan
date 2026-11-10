@@ -1,6 +1,6 @@
 # AI 브리핑에 근거를 싣는다 (설계)
 
-작성 2026-11-10. 대상: 트렌드 레이더(`tenaico/tenai-trend`, `/api/forecast`)와 한판(`apps/shell`의 트렌드 카드·AI 브리핑·`read_trend_forecast`).
+작성·승인 2026-11-10(혁준). 대상: 트렌드 레이더(`tenaico/tenai-trend`, `/api/forecast`)와 한판(`apps/shell`의 트렌드 카드·AI 브리핑·`read_trend_forecast`).
 싣는 판: 한판 0.19.3(AI 포토·일러스트 생김새와 함께). 트렌드 레이더는 그보다 먼저 배포한다.
 
 ## 1. 왜 하는가
