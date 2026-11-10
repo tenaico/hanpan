@@ -50,7 +50,14 @@ export function createTrendTools(deps: TrendToolsDeps): McpToolDefinition[] {
             ...(f.facts ? { facts: f.facts } : {}),
             ...(f.points ? { points: f.points } : {}),
             ...(f.news
-              ? { news: f.news.map((n) => ({ title: n.title, source: n.source, date: n.date, link: n.url })) }
+              ? {
+                  news: f.news.map((n) => ({
+                    title: n.title,
+                    source: n.source,
+                    date: n.date,
+                    link: n.url,
+                  })),
+                }
               : {}),
             ...(f.materialAsOf ? { materialAsOf: f.materialAsOf } : {}),
           })),

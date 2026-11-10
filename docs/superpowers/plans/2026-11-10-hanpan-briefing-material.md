@@ -5,6 +5,7 @@
 **Goal:** 트렌드 레이더 기상도의 분야마다 핵심 수치·요약·기사(링크)를 싣고, 한판 0.19.3의 AI 브리핑이 그 재료를 근거로 쓰며, 재료에 없는 숫자를 걸러 내고, 문서 끝에 참고 자료를 붙인다.
 
 **Architecture:** 두 저장소에 나눠 만든다.
+
 - **Part A (tenai-trend):** `/api/forecast`의 분야에 선택 칸 `facts`·`points`·`news`·`materialAsOf`를 더한다. schema는 1 그대로다.
 - **Part B (한판):** 받은 칸을 검사해 저장한다. 브리핑 질문은 AI 문맥 창 예산 안에서 단계별로 쌓는다. 답에 질문에 없던 숫자가 있으면 한 번 다시 묻고, 그래도 남으면 그 문장을 뺀다. 문서 끝에 참고 자료 장을 단다. 링크는 Word·PDF에서 누를 수 있게 하고, 한글·PPT·마인드맵에는 주소를 글자로 적는다.
 
@@ -56,6 +57,7 @@
 ## Part A — 트렌드 레이더 (tenai-trend)
 
 명령은 저장소 뿌리에서 실행한다.
+
 - 파일 하나: `npx vitest run <파일>`
 - 전체 테스트: `npm test`
 - 타입 검사: `npm run build`
@@ -64,11 +66,13 @@
 ### Task 1: 분야별 핵심 수치(facts)
 
 **Files:**
+
 - Modify: `src/lib/forecast.ts` (`Calc`, `ForecastRow`, `computeForecast`, `ForecastPayload`, `toForecastPayload`)
 - Create: `src/lib/test-quotes.ts` (`forecast.test.ts`의 `quote()` 도우미를 옮긴다. Task 3에서도 쓴다.)
 - Test: `src/lib/forecast.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `export type Fact = { label: string; value: string }`
   - `ForecastRow.facts: Fact[]`
@@ -77,50 +81,68 @@
 
 facts는 지금 `head`를 만드는 입력과 같은 값에서 뽑는다. 숫자가 null이면 그 fact는 넣지 않는다.
 
-| 분야 | label → value | 넣는 조건 |
-|---|---|---|
-| ai | `AI 관련주 1개월 평균` → ret1m 평균 `${fmtSigned(v, 1)}%` | `q.ai`에 ret1m이 있는 종목이 있을 때 |
-| opensource | `허깅페이스 트렌딩 1위` → 모델 이름(id의 `/` 뒤)<br>`최근 7일 신규(상위 60개 중)` → `${fresh}개` | 모델이 1개 이상일 때 |
-| local-ai | `GGUF 트렌딩` → `${n}개`<br>`${PC_GB}GB 안에서 실행` → `${pc.length}개`<br>`PC급 1위` → 모델 이름 | `loc`이 있을 때(PC급 1위는 `locBest`가 있을 때) |
-| ai-safety | 게이지 4개 각각: `g.label` → `signalLabel(g.s, "weather")` | 항상 |
-| stocks | `코스피` → `${fmt(price,0)} (${fmtSigned(changePct)}%)`<br>`코스피 1개월` → `${fmtSigned(ret1m,1)}%`<br>`S&P 500` → 코스피와 같은 꼴 | `ks`가 있을 때(S&P 500은 `sp`가 있을 때) |
-| economy | `실질 GDP 성장률` → `${fmt(v,1)}% (${t})`<br>`소비자물가 상승률` → 같은 꼴<br>`경상수지` → `${fmt(v,1)}억달러 (${t})` | 시리즈마다 값이 있을 때 |
-| semiconductor | `한국 반도체 수출` → `${fmt(value,0)}${unit} (${month}, 전년 대비 ${fmtSigned(yoyPct,1)}%)` | 항상 |
-| realestate | `서울 아파트 매매 전월 대비` → `${fmtSigned(mom,2)}% (${t}, KB)`<br>`서울 아파트 매매 1년` → `${fmtSigned(yoy,1)}%`<br>`전국 아파트 매매 전월 대비` → `${fmtSigned(mom,2)}%` | `seoulApt`가 있을 때 |
-| fx | `원/달러` → `${fmt(price,1)}원 (${fmtSigned(change,1)}원)`<br>`원/달러 1개월` → `${fmtSigned(ret1m,1)}%`<br>`원/달러 연초 대비` → `${fmtSigned(retYtd,1)}%`<br>`달러 인덱스` → `fmt(price,1)` | `fx`가 있을 때(달러 인덱스는 `dxy`가 있을 때) |
-| crypto | `비트코인` → `$${fmt(price,0)} (${fmtSigned(changePct)}%)`<br>`비트코인 1개월` → `${fmtSigned(ret1m,1)}%`<br>`공포·탐욕 지수` → `${v}` | `btc`가 있을 때(지수는 `fng`가 있을 때) |
+| 분야          | label → value                                                                                                                                                                                 | 넣는 조건                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| ai            | `AI 관련주 1개월 평균` → ret1m 평균 `${fmtSigned(v, 1)}%`                                                                                                                                     | `q.ai`에 ret1m이 있는 종목이 있을 때            |
+| opensource    | `허깅페이스 트렌딩 1위` → 모델 이름(id의 `/` 뒤)<br>`최근 7일 신규(상위 60개 중)` → `${fresh}개`                                                                                              | 모델이 1개 이상일 때                            |
+| local-ai      | `GGUF 트렌딩` → `${n}개`<br>`${PC_GB}GB 안에서 실행` → `${pc.length}개`<br>`PC급 1위` → 모델 이름                                                                                             | `loc`이 있을 때(PC급 1위는 `locBest`가 있을 때) |
+| ai-safety     | 게이지 4개 각각: `g.label` → `signalLabel(g.s, "weather")`                                                                                                                                    | 항상                                            |
+| stocks        | `코스피` → `${fmt(price,0)} (${fmtSigned(changePct)}%)`<br>`코스피 1개월` → `${fmtSigned(ret1m,1)}%`<br>`S&P 500` → 코스피와 같은 꼴                                                          | `ks`가 있을 때(S&P 500은 `sp`가 있을 때)        |
+| economy       | `실질 GDP 성장률` → `${fmt(v,1)}% (${t})`<br>`소비자물가 상승률` → 같은 꼴<br>`경상수지` → `${fmt(v,1)}억달러 (${t})`                                                                         | 시리즈마다 값이 있을 때                         |
+| semiconductor | `한국 반도체 수출` → `${fmt(value,0)}${unit} (${month}, 전년 대비 ${fmtSigned(yoyPct,1)}%)`                                                                                                   | 항상                                            |
+| realestate    | `서울 아파트 매매 전월 대비` → `${fmtSigned(mom,2)}% (${t}, KB)`<br>`서울 아파트 매매 1년` → `${fmtSigned(yoy,1)}%`<br>`전국 아파트 매매 전월 대비` → `${fmtSigned(mom,2)}%`                  | `seoulApt`가 있을 때                            |
+| fx            | `원/달러` → `${fmt(price,1)}원 (${fmtSigned(change,1)}원)`<br>`원/달러 1개월` → `${fmtSigned(ret1m,1)}%`<br>`원/달러 연초 대비` → `${fmtSigned(retYtd,1)}%`<br>`달러 인덱스` → `fmt(price,1)` | `fx`가 있을 때(달러 인덱스는 `dxy`가 있을 때)   |
+| crypto        | `비트코인` → `$${fmt(price,0)} (${fmtSigned(changePct)}%)`<br>`비트코인 1개월` → `${fmtSigned(ret1m,1)}%`<br>`공포·탐욕 지수` → `${v}`                                                        | `btc`가 있을 때(지수는 `fng`가 있을 때)         |
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
 ```ts
-it("splits the stocks head into facts", () => {
-  const rows = computeForecast({ ...allNull, quotes: { ...allNull.quotes,
-    korea: [quote("^KS11", { price: 5019, changePct: -6.78, ret1m: -26.2 })],
-    global: [quote("^GSPC", { price: 6000, changePct: 0.5 })] } }, data);
-  expect(rows.find((r) => r.key === "stocks")!.facts).toEqual([
-    { label: "코스피", value: "5,019 (-6.78%)" },
-    { label: "코스피 1개월", value: "-26.2%" },
-    { label: "S&P 500", value: "6,000 (+0.50%)" },
-  ]);
-});
-it("gives no facts to a field whose inputs are missing", () => {
-  const rows = computeForecast(allNull, data);
-  for (const key of ["ai", "opensource", "local-ai", "stocks", "economy", "realestate", "fx", "crypto"])
-    expect(rows.find((r) => r.key === key)!.facts).toEqual([]);
-  expect(rows.find((r) => r.key === "ai-safety")!.facts).toHaveLength(4);
-});
-it("keeps at most 4 facts per field, labels within 20 and values within 40 characters", () => {
+it('splits the stocks head into facts', () => {
+  const rows = computeForecast(
+    {
+      ...allNull,
+      quotes: {
+        ...allNull.quotes,
+        korea: [quote('^KS11', { price: 5019, changePct: -6.78, ret1m: -26.2 })],
+        global: [quote('^GSPC', { price: 6000, changePct: 0.5 })],
+      },
+    },
+    data,
+  )
+  expect(rows.find((r) => r.key === 'stocks')!.facts).toEqual([
+    { label: '코스피', value: '5,019 (-6.78%)' },
+    { label: '코스피 1개월', value: '-26.2%' },
+    { label: 'S&P 500', value: '6,000 (+0.50%)' },
+  ])
+})
+it('gives no facts to a field whose inputs are missing', () => {
+  const rows = computeForecast(allNull, data)
+  for (const key of [
+    'ai',
+    'opensource',
+    'local-ai',
+    'stocks',
+    'economy',
+    'realestate',
+    'fx',
+    'crypto',
+  ])
+    expect(rows.find((r) => r.key === key)!.facts).toEqual([])
+  expect(rows.find((r) => r.key === 'ai-safety')!.facts).toHaveLength(4)
+})
+it('keeps at most 4 facts per field, labels within 20 and values within 40 characters', () => {
   // FULL: quote로 korea·global·macro(KRW=X, DX-Y.NYB)·crypto(BTC-USD)·ai를 채우고, hf 모델 1개, fng, ecos 5개 시리즈를 넣은 입력
   for (const r of computeForecast(FULL, data)) {
-    expect(r.facts.length).toBeLessThanOrEqual(4);
-    for (const f of r.facts) expect([[...f.label].length <= 20, [...f.value].length <= 40]).toEqual([true, true]);
+    expect(r.facts.length).toBeLessThanOrEqual(4)
+    for (const f of r.facts)
+      expect([[...f.label].length <= 20, [...f.value].length <= 40]).toEqual([true, true])
   }
-});
-it("adds facts to the payload only where a field has some", () => {
-  const p = toForecastPayload(computeForecast(allNull, data), new Date());
-  expect(p.fields.find((f) => f.key === "stocks")).not.toHaveProperty("facts");
-  expect(p.fields.find((f) => f.key === "ai-safety")!.facts).toHaveLength(4);
-});
+})
+it('adds facts to the payload only where a field has some', () => {
+  const p = toForecastPayload(computeForecast(allNull, data), new Date())
+  expect(p.fields.find((f) => f.key === 'stocks')).not.toHaveProperty('facts')
+  expect(p.fields.find((f) => f.key === 'ai-safety')!.facts).toHaveLength(4)
+})
 ```
 
 - [ ] **Step 2: 테스트가 실패하는지 확인한다**
@@ -140,11 +162,13 @@ it("adds facts to the payload only where a field has some", () => {
 ### Task 2: 요약(points)과 기사(news) 재료
 
 **Files:**
+
 - Create: `src/lib/news-queries.ts`, `src/lib/forecast-material.ts`
 - Modify: `src/lib/forecast.ts` (`ForecastPayload` 분야에 `points?: string[]`, `news?: NewsRef[]`, `materialAsOf?: string`을 더한다)
 - Test: `src/lib/forecast-material.test.ts`
 
 **Interfaces:**
+
 - Consumes: `FieldKey`, `ForecastData`, `ForecastPayload`(forecast.ts), `NewsItem`(news.ts)
 - Produces:
   - `export const FIELD_NEWS_QUERY: Record<FieldKey, string>`
@@ -163,72 +187,99 @@ it("adds facts to the payload only where a field has some", () => {
 규칙:
 
 `fieldPoints`
+
 - 분야별 출처:
 
-| 분야 | 요약을 읽는 곳 |
-|---|---|
-| ai | `ai.overview.summary` |
-| ai-safety | `safety.overview.summary` |
-| economy | `macro.economy.summary` |
-| stocks | `macro.market.summary` |
-| semiconductor | `semi.overview.summary` |
-| fx | `fx.overview.summary` |
-| realestate | `realestate.overview.summary` |
-| crypto | `crypto.overview.summary` |
+| 분야          | 요약을 읽는 곳                |
+| ------------- | ----------------------------- |
+| ai            | `ai.overview.summary`         |
+| ai-safety     | `safety.overview.summary`     |
+| economy       | `macro.economy.summary`       |
+| stocks        | `macro.market.summary`        |
+| semiconductor | `semi.overview.summary`       |
+| fx            | `fx.overview.summary`         |
+| realestate    | `realestate.overview.summary` |
+| crypto        | `crypto.overview.summary`     |
 
 - `Array.from` 길이로 300자를 넘는 항목은 건너뛰고, 앞에서 3개를 담는다.
 - `asOf`는 파일 맨 위의 `asOf`다.
 
 `fieldNews`
+
 - 분야마다 `get(FIELD_NEWS_QUERY[key], 3)`을 동시에 부르고, 각 요청을 `timeoutMs`와 경주시킨다. 실패하거나 시간이 넘은 분야는 빼고 끝낸다. 오류를 밖으로 던지지 않는다.
 - `title`·`source`가 상한을 넘으면 앞 (max−1)자에 `…`를 붙인다.
 - `date`는 `pubDate`(ISO)를 한국 날짜로 바꾼다. 날짜가 읽히지 않으면 그 기사를 버린다.
 - `url`은 `link`가 `https://`로 시작하고 1,000자 이하일 때만 쓴다. 아니면 그 기사를 버린다.
 
 `withMaterial`
+
 - 분야에 요약이 있으면 `points`와 `materialAsOf`를, 기사가 있으면 `news`를 더한다. 빈 것은 칸을 두지 않는다.
 - `Buffer.byteLength(JSON.stringify(p))`가 `PAYLOAD_MAX_BYTES`를 넘으면 모든 분야에서 `news`를 뺀다. 그래도 넘으면 `points`와 `materialAsOf`도 뺀다.
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
 견본(Task 3도 쓴다):
+
 - `mdata`: 자료 JSON 7개 `{ ai, safety, macro, semi, fx, realestate, crypto }`
 - `ARTICLE`: https 링크가 있는 `NewsItem` 하나
 
 ```ts
 it("takes the first three summary items of each field's research file", () => {
-  const p = fieldPoints(mdata);
-  expect(p.fx).toEqual({ points: fx.overview.summary.slice(0, 3), asOf: fx.asOf });
-  expect(p.stocks!.points[0]).toBe(macro.market.summary[0]);
-  expect(p.economy!.points[0]).toBe(macro.economy.summary[0]);
-  expect([p.opensource, p["local-ai"]]).toEqual([undefined, undefined]);
-});
-it("skips a summary item over 300 characters instead of cutting it", () => {
-  const long = { ...fx, overview: { ...fx.overview, summary: ["가".repeat(301), "a", "b", "c"] } };
-  expect(fieldPoints({ ...mdata, fx: long }).fx!.points).toEqual(["a", "b", "c"]);
-});
-it("asks the shared query for three articles per field and keeps short https links only", async () => {
+  const p = fieldPoints(mdata)
+  expect(p.fx).toEqual({ points: fx.overview.summary.slice(0, 3), asOf: fx.asOf })
+  expect(p.stocks!.points[0]).toBe(macro.market.summary[0])
+  expect(p.economy!.points[0]).toBe(macro.economy.summary[0])
+  expect([p.opensource, p['local-ai']]).toEqual([undefined, undefined])
+})
+it('skips a summary item over 300 characters instead of cutting it', () => {
+  const long = { ...fx, overview: { ...fx.overview, summary: ['가'.repeat(301), 'a', 'b', 'c'] } }
+  expect(fieldPoints({ ...mdata, fx: long }).fx!.points).toEqual(['a', 'b', 'c'])
+})
+it('asks the shared query for three articles per field and keeps short https links only', async () => {
   const get = vi.fn(async () => [
-    { title: "코스피 5000선 위태", link: "https://news.google.com/rss/articles/a", source: "연합뉴스", date: "2026-11-09T16:30:00.000Z" },
-    { title: "http", link: "http://example.com/b", source: "x", date: "2026-11-09T00:00:00.000Z" },
-    { title: "긴 주소", link: "https://e.com/" + "a".repeat(1000), source: "x", date: "2026-11-09T00:00:00.000Z" },
-  ]);
-  const news = await fieldNews(get);
-  expect(get).toHaveBeenCalledTimes(10);
-  expect(get).toHaveBeenCalledWith("코스피 증시 마감", 3);
-  expect(news.stocks).toEqual([{ title: "코스피 5000선 위태", source: "연합뉴스", date: "2026-11-10", url: "https://news.google.com/rss/articles/a" }]);
-});
-it("leaves only a failing or slow field without news", async () => {
-  const get = (q: string) => q === FIELD_NEWS_QUERY.stocks ? Promise.reject(new Error("rss"))
-    : q === FIELD_NEWS_QUERY.crypto ? new Promise<never>(() => {}) : Promise.resolve([ARTICLE]);
-  const news = await fieldNews(get, 20);
-  expect([news.stocks, news.crypto, news.fx?.length]).toEqual([undefined, undefined, 1]);
-});
-it("adds material only where a field has some, keeping schema 1 and every old key", () => { /* toForecastPayload 결과와 비교: 옛 칸 값이 같고, points 없는 opensource에는 points·materialAsOf가 없다 */ });
+    {
+      title: '코스피 5000선 위태',
+      link: 'https://news.google.com/rss/articles/a',
+      source: '연합뉴스',
+      date: '2026-11-09T16:30:00.000Z',
+    },
+    { title: 'http', link: 'http://example.com/b', source: 'x', date: '2026-11-09T00:00:00.000Z' },
+    {
+      title: '긴 주소',
+      link: 'https://e.com/' + 'a'.repeat(1000),
+      source: 'x',
+      date: '2026-11-09T00:00:00.000Z',
+    },
+  ])
+  const news = await fieldNews(get)
+  expect(get).toHaveBeenCalledTimes(10)
+  expect(get).toHaveBeenCalledWith('코스피 증시 마감', 3)
+  expect(news.stocks).toEqual([
+    {
+      title: '코스피 5000선 위태',
+      source: '연합뉴스',
+      date: '2026-11-10',
+      url: 'https://news.google.com/rss/articles/a',
+    },
+  ])
+})
+it('leaves only a failing or slow field without news', async () => {
+  const get = (q: string) =>
+    q === FIELD_NEWS_QUERY.stocks
+      ? Promise.reject(new Error('rss'))
+      : q === FIELD_NEWS_QUERY.crypto
+        ? new Promise<never>(() => {})
+        : Promise.resolve([ARTICLE])
+  const news = await fieldNews(get, 20)
+  expect([news.stocks, news.crypto, news.fx?.length]).toEqual([undefined, undefined, 1])
+})
+it('adds material only where a field has some, keeping schema 1 and every old key', () => {
+  /* toForecastPayload 결과와 비교: 옛 칸 값이 같고, points 없는 opensource에는 points·materialAsOf가 없다 */
+})
 it("drops every field's news, then the points, when the answer passes 64KB", () => {
   // 기사 주소 900자 × 3 × 10분야로 64KB를 넘긴다 → news 없음, points 있음
   // 거기에 요약 300자 × 3 × 10분야 × 10배 크기를 더한다 → points·materialAsOf도 없음
-});
+})
 ```
 
 - [ ] **Step 2:** `npx vitest run src/lib/forecast-material.test.ts` → 기대: 실패(모듈이 없음).
@@ -239,6 +290,7 @@ it("drops every field's news, then the points, when the answer passes 64KB", () 
 ### Task 3: 응답에 재료를 싣고, 검색어를 한곳에서 쓰고, PR을 연다
 
 **Files:**
+
 - Create: `src/lib/forecast-response.ts`, `src/lib/forecast-response.test.ts`
 - Modify:
   - `src/app/api/forecast/route.ts`
@@ -246,6 +298,7 @@ it("drops every field's news, then the points, when the answer passes 64KB", () 
   - `README.md`('한판 연동' 절)
 
 **Interfaces:**
+
 - Consumes: Task 1·2의 모든 것, `loadForecastInputs`, `getNews`
 - Produces: `export async function forecastResponse(deps: { load: () => Promise<ForecastInputs>; news: (q: string, limit: number) => Promise<NewsItem[]>; data: MaterialData; now: Date }): Promise<{ body: ForecastPayload; status: 200 | 503; cacheControl: string }>`
   - `load()`와 `fieldNews(news)`를 동시에 기다린다.
@@ -256,18 +309,35 @@ it("drops every field's news, then the points, when the answer passes 64KB", () 
 `SEVEN_KNOWN`은 `quote`로 korea `^KS11`, macro `KRW=X`, crypto `BTC-USD`, ai `MSFT`를 채우고 hf 모델 1개를 넣은 입력이다. 알려진 분야가 7개이므로 200이고 `s-maxage=60`이다.
 
 ```ts
-it("answers with the material when news works", async () => {
-  const r = await forecastResponse({ load: async () => SEVEN_KNOWN, news: async () => [ARTICLE], data: mdata, now: NOW });
-  expect(r.status).toBe(200);
-  expect(r.body.fields.find((f) => f.key === "stocks")!.news).toHaveLength(1);
-});
-it("keeps the status and cache when every news request fails", async () => {
-  const ok = await forecastResponse({ load: async () => SEVEN_KNOWN, news: async () => [ARTICLE], data: mdata, now: NOW });
-  const down = await forecastResponse({ load: async () => SEVEN_KNOWN, news: async () => { throw new Error("rss down"); }, data: mdata, now: NOW });
-  expect([down.status, down.cacheControl]).toEqual([ok.status, ok.cacheControl]);
-  expect(down.body.fields.some((f) => "news" in f)).toBe(false);
-  expect(down.body.fields.find((f) => f.key === "fx")!.points).toHaveLength(3);
-});
+it('answers with the material when news works', async () => {
+  const r = await forecastResponse({
+    load: async () => SEVEN_KNOWN,
+    news: async () => [ARTICLE],
+    data: mdata,
+    now: NOW,
+  })
+  expect(r.status).toBe(200)
+  expect(r.body.fields.find((f) => f.key === 'stocks')!.news).toHaveLength(1)
+})
+it('keeps the status and cache when every news request fails', async () => {
+  const ok = await forecastResponse({
+    load: async () => SEVEN_KNOWN,
+    news: async () => [ARTICLE],
+    data: mdata,
+    now: NOW,
+  })
+  const down = await forecastResponse({
+    load: async () => SEVEN_KNOWN,
+    news: async () => {
+      throw new Error('rss down')
+    },
+    data: mdata,
+    now: NOW,
+  })
+  expect([down.status, down.cacheControl]).toEqual([ok.status, ok.cacheControl])
+  expect(down.body.fields.some((f) => 'news' in f)).toBe(false)
+  expect(down.body.fields.find((f) => f.key === 'fx')!.points).toHaveLength(3)
+})
 ```
 
 - [ ] **Step 2:** `npx vitest run src/lib/forecast-response.test.ts` → 기대: 실패.
@@ -297,16 +367,19 @@ it("keeps the status and cache when every news request fails", async () => {
 ## Part B — 한판
 
 명령:
+
 - 테스트: `npm test -w apps/shell -- <파일 이름 일부>`, `npm test -w @genoffice/hanpan-core -- <파일 이름 일부>`
 - 검사: `npm run typecheck -w apps/shell`, `npm run lint`, `npm run check:english-comments`, `npm run format:check`
 
 ### Task 4: 기상도 재료를 받아 검사하고 잇는다
 
 **Files:**
+
 - Modify: `apps/shell/src/shared/trend-forecast.ts`
 - Test: `apps/shell/tests/trend-forecast.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `export interface TrendFact { label: string; value: string }`
   - `export interface TrendNews { title: string; source: string; date: string; url: string }`
@@ -314,6 +387,7 @@ it("keeps the status and cache when every news request fails", async () => {
   - `export const TREND_MATERIAL_MAX = { facts: 4, factLabel: 20, factValue: 40, points: 3, pointChars: 300, news: 3, newsTitle: 120, newsSource: 30, urlChars: 1000 } as const`
 
 규칙:
+
 - 배열은 먼저 `slice(0, 상한)`으로 자르고, 그다음 틀린 것을 버린다.
 - 글자는 `cutText`로 자른다. 다만 points는 자르지 않는다. 300자를 넘는 항목은 버린다.
 - 다음 중 하나라도 해당하는 기사는 버린다: `title`이 비었다, `date`가 YYYY-MM-DD가 아니다, `url`이 1,000자를 넘는다, `new URL(url).protocol !== 'https:'`이다(`new URL`이 던져도 버린다).
@@ -327,25 +401,44 @@ it("keeps the status and cache when every news request fails", async () => {
 
 ```ts
 it('reads facts, points, news and materialAsOf within their limits', () => {
-  const f = parseTrendForecast(withField({ facts: [F, F, F, F, F], points: ['가'.repeat(301), 'p'],
-    news: [N, { ...N, url: 'http://x.kr/a' }, { ...N, url: 'https://x.kr/' + 'a'.repeat(1000) }, N],
-    materialAsOf: '2026-10-30' }))!.fields[0]!
+  const f = parseTrendForecast(
+    withField({
+      facts: [F, F, F, F, F],
+      points: ['가'.repeat(301), 'p'],
+      news: [
+        N,
+        { ...N, url: 'http://x.kr/a' },
+        { ...N, url: 'https://x.kr/' + 'a'.repeat(1000) },
+        N,
+      ],
+      materialAsOf: '2026-10-30',
+    }),
+  )!.fields[0]!
   expect([f.facts?.length, f.points, f.news, f.materialAsOf]).toEqual([4, ['p'], [N], '2026-10-30'])
 })
-it('cuts a long fact label and article title with an ellipsis', () => { /* label 25자 → 20자이고 '…'로 끝남, title 130자 → 120자 */ })
+it('cuts a long fact label and article title with an ellipsis', () => {
+  /* label 25자 → 20자이고 '…'로 끝남, title 130자 → 120자 */
+})
 it('reads a field without material exactly as before', () => {
-  expect(parseTrendForecast(withField({}))!.fields[0]).toEqual(PARSED_STOCKS)  // 재료 칸이 하나도 없다
+  expect(parseTrendForecast(withField({}))!.fields[0]).toEqual(PARSED_STOCKS) // 재료 칸이 하나도 없다
 })
 it('drops a material value of the wrong shape and keeps the field', () => {
-  const f = parseTrendForecast(withField({ facts: 'x', news: [{ title: 1 }], materialAsOf: '10/30' }))!.fields[0]!
+  const f = parseTrendForecast(
+    withField({ facts: 'x', news: [{ title: 1 }], materialAsOf: '10/30' }),
+  )!.fields[0]!
   expect(Object.keys(f)).toEqual(Object.keys(PARSED_STOCKS))
 })
 it('carries the earlier material with a carried field (R24)', () => {
-  const merged = mergeTrendForecast(freshUnknown({ news: [N2] }), storedKnown({ facts: [F], news: [N] }))
+  const merged = mergeTrendForecast(
+    freshUnknown({ news: [N2] }),
+    storedKnown({ facts: [F], news: [N] }),
+  )
   expect(merged.fields[0]).toMatchObject({ facts: [F], news: [N] })
   expect(merged.fields[0]!.news).not.toContainEqual(N2)
 })
-it('keeps the new material on a field the new answer knows', () => { /* 새 응답이 아는 분야는 새 재료 */ })
+it('keeps the new material on a field the new answer knows', () => {
+  /* 새 응답이 아는 분야는 새 재료 */
+})
 ```
 
 - [ ] **Step 2:** `npm test -w apps/shell -- trend-forecast` → 기대: 새 테스트가 실패한다.
@@ -356,10 +449,12 @@ it('keeps the new material on a field the new answer knows', () => { /* 새 응�
 ### Task 5: 브리핑 질문 — 재료, 기사 번호, 예산
 
 **Files:**
+
 - Modify: `apps/shell/src/shared/trend-briefing.ts`
 - Test: `apps/shell/tests/trend-briefing.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 4의 형식
 - Produces:
   - `export interface BriefingArticle { n: number; title: string; source: string; date: string; url: string }`
@@ -397,6 +492,7 @@ it('keeps the new material on a field the new answer knows', () => { /* 새 응�
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
 견본(Task 6·7·9도 쓴다):
+
 - `withMaterial`: 기존 견본 `forecast`의 주식과 환율에 재료를 붙인 것.
   - 주식: 수치 `코스피 5,019 (-6.78%)`, `코스피 1개월 -26.2%`. 기사 S1(연합뉴스, 2026-11-09), S2. 요약 `외국인 순매도가 9거래일째 이어졌다.`
   - 환율: 기사 F1(한국경제, 2026-11-08).
@@ -407,7 +503,11 @@ it('keeps the new material on a field the new answer knows', () => { /* 새 응�
 
 ```ts
 it('numbers the articles across fields in forecast order', () => {
-  expect(briefingArticles(withMaterial).map((a) => [a.n, a.title])).toEqual([[1, 'S1'], [2, 'S2'], [3, 'F1']])
+  expect(briefingArticles(withMaterial).map((a) => [a.n, a.title])).toEqual([
+    [1, 'S1'],
+    [2, 'S2'],
+    [3, 'F1'],
+  ])
 })
 it('puts every fact, article and point under its field without a budget', () => {
   const p = briefingPrompt(withMaterial)
@@ -417,9 +517,11 @@ it('puts every fact, article and point under its field without a budget', () => 
   expect(p.articles).toEqual([1, 2, 3])
 })
 it('asks the 0.19.2 user text for a forecast without material', () => {
-  expect(briefingPrompt(forecast).user).toBe(USER_0192)  // 기존 견본에 0.19.2 코드가 만든 글을 그대로 적어 둔다
+  expect(briefingPrompt(forecast).user).toBe(USER_0192) // 기존 견본에 0.19.2 코드가 만든 글을 그대로 적어 둔다
 })
-it('adds material to a field whose weather is unknown', () => { /* s: null인 분야의 기사 줄이 user에 있다 */ })
+it('adds material to a field whose weather is unknown', () => {
+  /* s: null인 분야의 기사 줄이 user에 있다 */
+})
 it('stays under the confirm line of a 4,096-token local model, with articles before points', () => {
   const p = briefingPrompt(bigMaterial, { tokens: briefingBudget(4096), estimate })
   expect(estimate(p.system, p.user)).toBeLessThanOrEqual(3072)
@@ -430,7 +532,7 @@ it('sends the bare forecast when even that passes the budget', () => {
   const p = briefingPrompt(withMaterial, { tokens: 10, estimate })
   expect([p.user, p.articles]).toEqual([briefingPrompt(withoutMaterial(withMaterial)).user, []])
 })
-it('sizes the budget from the context window with agent-core\'s warning line', () => {
+it("sizes the budget from the context window with agent-core's warning line", () => {
   expect([4096, 8192, 32768].map(briefingBudget)).toEqual([3072, 6553, 26214])
   expect(BRIEFING_WARNING_RATIO).toBe(CONTEXT_WARNING_RATIO)
 })
@@ -444,10 +546,12 @@ it('sizes the budget from the context window with agent-core\'s warning line', (
 ### Task 6: 숫자 검사와 한 번 다시 묻기
 
 **Files:**
+
 - Create: `apps/shell/src/shared/briefing-numbers.ts`, `apps/shell/src/shared/briefing-run.ts`
 - Test: `apps/shell/tests/briefing-numbers.test.ts`, `apps/shell/tests/briefing-run.test.ts`
 
 **Interfaces:**
+
 - Consumes: `briefingPrompt`, `BriefingPrompt`, `BriefingBudget`, `parseBriefing`, `checkBriefing`, `TrendBriefing` (Task 5)
 - Produces:
   - `export function allowedNumbers(user: string, date: string): Set<string>`
@@ -462,6 +566,7 @@ it('sizes the budget from the context window with agent-core\'s warning line', (
   - `export async function groundedBriefing(forecast: TrendForecast, ask: (prompt: { system: string; user: string }) => Promise<BriefingTurn>, budget?: BriefingBudget): Promise<GroundedBriefing>`
 
 숫자 규칙(스펙 5.5의 세부를 이렇게 정한다):
+
 1. `[n]`(`/\[\d{1,3}\]/g`)을 지운다.
 2. 면제 구간을 지운다: `/(?<!\d)(?:1[0-2]|[1-9])(?:\s*[~∼\-–]\s*(?:1[0-2]|[1-9]))?\s*(?:개월|분기|가지|월|주|일|개|위)/g`.
 3. 숫자 덩어리를 찾는다: `/[+\-−]?\d[\d,]*(?:\.\d+)?%?/g`. 덩어리 바로 앞이나 뒤가 영문자면 숫자로 보지 않는다(HBM3E, H100, GPT-5).
@@ -470,6 +575,7 @@ it('sizes the budget from the context window with agent-core\'s warning line', (
 5. 기상도 날짜의 연·월·일(같은 모양으로 바꾼 값)은 늘 허용한다.
 
 빼기:
+
 - 모르는 숫자가 든 현황·전망·체크포인트 항목을 뺀다.
 - 헤드라인에 모르는 숫자가 있으면 헤드라인을 `line`으로 바꾼다.
 - `dropped` = 뺀 항목 수 + (헤드라인을 바꿨으면 1).
@@ -488,6 +594,7 @@ it('sizes the budget from the context window with agent-core\'s warning line', (
 ```
 
 `groundedBriefing`의 흐름:
+
 1. `briefingPrompt`로 질문을 만들어 묻는다.
 2. 첫 답이 실패하면 `{ ok: false, error }`, 해석되지 않으면 `{ ok: false, error: '' }`를 돌려준다.
 3. 첫 답에 `keepCitations`를 적용한다.
@@ -551,6 +658,7 @@ it('passes the AI error through when the first answer fails', ...)  // { ok: fal
 ### Task 7: 참고 자료 장, 링크, 안내 문구
 
 **Files:**
+
 - Modify (hanpan-core): `packages/hanpan-core/src/blocks.ts`(`item`에 `href?: string | undefined`를 더한다), `docx-writer.ts`, `html-writer.ts`, `hwp-writer.ts`
 - Modify (shell):
   - `apps/shell/src/shared/trend-briefing.ts`: `BriefingBlock`의 item에 `href?: string`을 더하고, `citedArticles`, `briefingDropped`를 만들고, `briefingBlocks`·`briefingMarkdown`이 `dropped`를 받게 한다.
@@ -559,6 +667,7 @@ it('passes the AI error through when the first answer fails', ...)  // { ok: fal
 - Test: `packages/hanpan-core/tests/docx-writer-layout.test.ts`, `html-writer.test.ts`, `hwp-writer.test.ts`, `apps/shell/tests/trend-briefing.test.ts`
 
 **Interfaces:**
+
 - Consumes: `briefingArticles`, `BriefingArticle` (Task 5)
 - Produces:
   - `export function citedArticles(brief: TrendBriefing, forecast: TrendForecast): BriefingArticle[]`. 글에 있는 `[n]` 가운데 실제로 있는 번호만, 오름차순, 중복 없이 돌려준다.
@@ -566,12 +675,14 @@ it('passes the AI error through when the first answer fails', ...)  // { ok: fal
   - `briefingBlocks(brief, forecast, dropped = 0)`, `briefingMarkdown(brief, forecast, dropped = 0)`
 
 작성기 규칙:
+
 - `href`는 `https://`로 시작할 때만 쓴다.
 - Word: 항목 글을 `ExternalHyperlink`로 감싼다(글자 모양 'Hyperlink'). 표지 `[n]`은 링크 밖에 둔다.
 - HTML: 항목 글을 `<a href="…">`로 감싼다. 주소와 글은 `escapeHtml`로 처리한다.
 - 한글: 글 뒤에 ` ` + 주소를 그대로 붙인다.
 
 문서 규칙:
+
 - **참고 자료 장:** 인용된 기사가 있을 때만 둔다. 위치는 체크포인트 뒤, 자료 줄 앞이다.
   - 기사마다 항목 하나: `{ kind: 'item', depth: 0, marker: '[n]', text: '{제목} — {언론사}, {날짜}', href: url }`
   - 그 뒤에, `materialAsOf`가 있는 분야가 있으면 기준일 줄을 붙인다: `{ kind: 'reference', depth: 0, text: '정리 자료 기준일: 주식·환율 2026-10-30, AI 보안·윤리 2026-11-06' }`. 같은 날짜의 분야 이름은 `·`로 잇고, 처음 나온 순서를 따른다.
@@ -627,10 +738,12 @@ it('reads the dropped count from the page as a small whole number', () => {
 ### Task 8: MCP `read_trend_forecast`도 재료를 돌려준다
 
 **Files:**
+
 - Modify: `apps/shell/src/main/mcp/tools/trend-tools.ts`
 - Test: `apps/shell/tests/mcp/trend-tools.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 4의 형식
 - Produces: 분야 항목에 `facts`, `points`, `news`(`{ title, source, date, link }`), `materialAsOf`를 더한다. 저장본 분야에 그 칸이 있을 때만 둔다.
 
@@ -641,11 +754,21 @@ it('reads the dropped count from the page as a small whole number', () => {
 
 ```ts
 it("returns a field's facts, points, news and their date", () => {
-  expect(fieldOf(handlerWith(STORED_WITH_MATERIAL))).toMatchObject({ facts: [F], points: ['p'],
-    news: [{ title: N.title, source: N.source, date: N.date, link: N.url }], materialAsOf: '2026-10-30' })
+  expect(fieldOf(handlerWith(STORED_WITH_MATERIAL))).toMatchObject({
+    facts: [F],
+    points: ['p'],
+    news: [{ title: N.title, source: N.source, date: N.date, link: N.url }],
+    materialAsOf: '2026-10-30',
+  })
 })
 it('leaves the material keys out of a field without material', () => {
-  expect(Object.keys(fieldOf(handlerWith(STORED)))).toEqual(['field', 'signal', 'weather', 'headline', 'link'])
+  expect(Object.keys(fieldOf(handlerWith(STORED)))).toEqual([
+    'field',
+    'signal',
+    'weather',
+    'headline',
+    'link',
+  ])
 })
 it('tells the AI to ground claims in the material', () => {
   expect(tool.description).toContain('quote numbers only from this forecast')
@@ -660,10 +783,12 @@ it('tells the AI to ground claims in the material', () => {
 ### Task 9: 트렌드 카드가 예산과 숫자 검사를 쓴다
 
 **Files:**
+
 - Modify: `apps/shell/src/renderer/src/home-board/TrendCard.tsx`
 - Test: `apps/shell/tests/home-trend-card.test.ts`
 
 **Interfaces:**
+
 - Consumes: `groundedBriefing`(Task 6), `briefingBudget`, `BriefingBudget`(Task 5), `estimatePromptTokens`(`@genoffice/agent-core`), `localContextLimit`(`@genoffice/ai-provider/browser`)
 - Produces:
   - `TrendCard`의 prop `briefContext?: () => Promise<{ limit: number; known: boolean } | undefined>`
@@ -672,6 +797,7 @@ it('tells the AI to ground claims in the material', () => {
   - `openBriefing` 요청에 `dropped`를 넣는다.
 
 흐름:
+
 1. `ctx = await briefContext()`
 2. `budget = ctx ? { tokens: briefingBudget(ctx.limit), estimate: (s, u) => estimatePromptTokens(s, [{ role: 'user', text: u }], []) } : undefined`
 3. `groundedBriefing(forecast, (p) => runner(p, stop.signal), budget)`
@@ -687,7 +813,10 @@ estimate 함수는 AI 호출 경로(`streamText` → 확인 창 검사)가 쓰�
 
 ```ts
 it('asks the AI a second time when the answer has a number the forecast does not carry', async () => {
-  const brief = vi.fn().mockResolvedValueOnce({ ok: true, text: WITH_5100 }).mockResolvedValueOnce({ ok: true, text: ANSWER })
+  const brief = vi
+    .fn()
+    .mockResolvedValueOnce({ ok: true, text: WITH_5100 })
+    .mockResolvedValueOnce({ ok: true, text: ANSWER })
   // 렌더 → 브리핑 단추를 누른다
   expect(brief).toHaveBeenCalledTimes(2)
   expect(openBriefing.mock.calls[0]![0]).toMatchObject({ dropped: 0 })
@@ -709,6 +838,7 @@ it('sends all the material to an AI without a context limit', async () => {
 ### Task 10: e2e, 실제 응답 확인, PR
 
 **Files:**
+
 - Create: `e2e/assets/trend-forecast-material.json`
   - `trend-forecast.json`에 주식·반도체·환율 세 분야의 재료를 더한 것이다: 수치 2~3개, 기사 2개(https 링크, 제목에 숫자 없음), 요약 2개, `materialAsOf`.
   - 재료 어디에도 `5,100`이 없어야 한다.

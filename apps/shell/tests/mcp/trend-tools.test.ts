@@ -94,7 +94,13 @@ describe('read_trend_forecast', () => {
 
   it('leaves the material keys out of a field without material', async () => {
     const answer = (await run(() => forecast)) as { fields: Record<string, unknown>[] }
-    expect(Object.keys(answer.fields[0]!)).toEqual(['field', 'signal', 'weather', 'headline', 'link'])
+    expect(Object.keys(answer.fields[0]!)).toEqual([
+      'field',
+      'signal',
+      'weather',
+      'headline',
+      'link',
+    ])
   })
 
   it('tells the AI to ground claims in the material', () => {
