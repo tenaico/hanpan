@@ -276,7 +276,10 @@ describe('the quick actions', () => {
     })
     const d = deps(app.adapter)
     const r = await runQuickAction('exportAi', d)
-    expect(app.adapter.saveCopyBytes).toHaveBeenCalledWith('포스터.ai', 'ai')
+    expect(app.adapter.saveCopyBytes).toHaveBeenCalledWith(
+      expect.stringMatching(/^\.hanpan-export-.+-포스터\.ai$/),
+      'ai',
+    )
     expect(d.askExport).not.toHaveBeenCalled()
     expect(d.exportFile).toHaveBeenCalledWith({
       bytes: new Uint8Array([7, 8]),
@@ -284,6 +287,27 @@ describe('the quick actions', () => {
       format: 'ai',
     })
     expect(r).toEqual({ ok: true, messageKey: 'quickExported' })
+  })
+
+  it("exportAi writes an opened .ai drawing's copy under a name of its own", async () => {
+    // the app's capture of `drawing.ai` is the document's own file: writing the copy there
+    // would ask before losing import losses, and a later OK would read as the app's save
+    const app = fakeApp()
+    app.adapter.docInfo = async () => ({ hasDocument: true, dirty: false, title: 'drawing.ai' })
+    const d = deps(app.adapter)
+    await runQuickAction('exportAi', d)
+    await runQuickAction('exportAi', d)
+    const names = vi.mocked(app.adapter.saveCopyBytes!).mock.calls.map(([name]) => name)
+    expect(names).toHaveLength(2)
+    for (const name of names) {
+      expect(name).not.toBe('drawing.ai')
+      expect(name.startsWith('.hanpan-export-')).toBe(true)
+      expect(name.endsWith('.ai')).toBe(true)
+    }
+    expect(names[0]).not.toBe(names[1])
+    expect(d.exportFile).toHaveBeenCalledWith(
+      expect.objectContaining({ defaultName: 'drawing.ai', format: 'ai' }),
+    )
   })
 
   it('exportAi names an untitled drawing by the tab name', async () => {

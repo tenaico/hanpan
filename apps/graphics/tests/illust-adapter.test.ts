@@ -60,6 +60,29 @@ describe('the illustration adapter', () => {
     expect(before).toEqual({ hasDocument: true, dirty: true, title: 'Untitled-1' })
   })
 
+  it('a write the app has not done (a dialog asks first) is a failure, not stale bytes', async () => {
+    // an opened drawing.ai: writing over it asks before losing what the import dropped
+    const page = savingPage(new Uint8Array([1]))
+    page.captured.set('drawing.ai', new Uint8Array([4, 4, 4]))
+    page.handlers['file.saveCopy'] = () => ({ pending: 'confirm' })
+    page.handlers['file.save'] = () => ({ pending: 'confirm' })
+    const adapter = createAdapter('illust', page)
+    await expect(adapter.saveCopyBytes!('drawing.ai', 'ai')).rejects.toThrow(/pending|not written/)
+    await expect(adapter.saveBytes('drawing.ai', 'ai')).rejects.toThrow(/pending|not written/)
+  })
+
+  it('an answer without the written path or size is a failure', async () => {
+    const page = savingPage(new Uint8Array([1]))
+    page.captured.set('a.ai', new Uint8Array([4, 4, 4]))
+    const adapter = createAdapter('illust', page)
+    page.handlers['file.saveCopy'] = () => ({ bytes: 3, format: 'ai' })
+    await expect(adapter.saveCopyBytes!('a.ai', 'ai')).rejects.toThrow(/no path/)
+    page.handlers['file.saveCopy'] = () => ({ path: 'a.ai', format: 'ai' })
+    await expect(adapter.saveCopyBytes!('a.ai', 'ai')).rejects.toThrow(/no size/)
+    page.handlers['file.saveCopy'] = () => null
+    await expect(adapter.saveCopyBytes!('a.ai', 'ai')).rejects.toThrow(/no path/)
+  })
+
   it('saveBytes fails when the captured size differs from what the app reported', async () => {
     const page = savingPage(new Uint8Array([1, 2]))
     page.handlers['file.save'] = (params, p) => {

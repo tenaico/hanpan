@@ -4,7 +4,7 @@
  * the app's history holds the action's edits only and its own Undo takes
  * them back.
  */
-import type { GraphicsAdapter } from '../adapters'
+import { hostExportName, type GraphicsAdapter } from '../adapters'
 import type { ExportRequest, ExportResult, PickedImage } from '../../shared/ipc'
 import type { GraphicsKind } from '../../shared/kinds'
 import { t, type StringKey } from '../i18n/locale'
@@ -167,13 +167,15 @@ async function handOver(deps: QuickDeps, request: ExportRequest): Promise<QuickR
 
 /**
  * A copy for Illustrator: the app writes the .ai, the save dialog takes it. The
- * document's own file and format stay as they were (design 5.4.1).
+ * document's own file and format stay as they were (design 5.4.1). The app writes
+ * it under a host export name: an opened `drawing.ai` is captured as `drawing.ai`,
+ * and a copy there would be a save over the source.
  */
 async function exportAiCopy(deps: QuickDeps): Promise<QuickResult> {
   const title = (await deps.adapter.docInfo()).title
   const name = `${baseName(title, untitledName('illust', deps))}.ai`
   if (!deps.adapter.saveCopyBytes) throw new Error('this app cannot write a copy')
-  const bytes = await deps.adapter.saveCopyBytes(name, 'ai')
+  const bytes = await deps.adapter.saveCopyBytes(hostExportName(name), 'ai')
   return handOver(deps, { bytes, defaultName: name, format: 'ai' })
 }
 

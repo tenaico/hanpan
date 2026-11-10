@@ -206,6 +206,37 @@ describe('the host page', () => {
     ])
   })
 
+  it('a theme the app did not take is sent again with the next change', async () => {
+    fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('Untitled-1', false)
+    let refuse = true
+    page.requestHandlers['hanpan.theme'] = (params) => {
+      if (refuse) throw new Error('the app is busy')
+      return params
+    }
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => !host.textContent!.includes('앱을 불러오는 중'))
+    const sent = () => page.requested.filter(([m]) => m === 'hanpan.theme').map(([, p]) => p)
+    await setTheme('illust', 'dark')
+    await until(() => sent().length === 1)
+    // refused: the app still shows light, so going back to light sends nothing
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 30))
+    })
+    refuse = false
+    await setTheme('illust', 'light')
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 30))
+    })
+    expect(sent()).toEqual([{ mode: 'dark' }])
+    // and dark is sent again
+    await setTheme('illust', 'dark')
+    await until(() => sent().length === 2)
+    expect(sent()).toEqual([{ mode: 'dark' }, { mode: 'dark' }])
+  })
+
   it('says the app is missing when the web build is not there', async () => {
     fakeApi()
     await mount('illust', async () => false)

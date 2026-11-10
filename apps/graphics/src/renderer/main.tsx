@@ -1,4 +1,3 @@
-import { useEffect, useState, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { htmlDir, htmlLang, type Lang } from '@genoffice/i18n'
 import { installScreenTips } from '@genoffice/ui'
@@ -9,7 +8,8 @@ import '@genoffice/ui/tokens.css'
 import '@genoffice/ui/screentip.css'
 import './styles.css'
 import { graphicsApi, takeGraphicsApi } from './bridge'
-import { watchTheme, type ResolvedTheme, type ThemeWatch } from './theme'
+import { watchTheme, type ResolvedTheme } from './theme'
+import { ThemeRoot } from './theme-root'
 
 installScreenTips()
 
@@ -19,21 +19,6 @@ if (!takeGraphicsApi()) throw new Error('the graphics bridge is missing or was a
 /** The tab's own bar, AI panel and dialogs take their colours from this attribute. */
 function applyTheme(theme: ResolvedTheme): void {
   document.documentElement.setAttribute('data-theme', theme)
-}
-
-/** Renders the tab and re-renders it when Hanpan's theme changes (the frame is not restarted). */
-function Root({
-  watch,
-  subscribe,
-  children,
-}: {
-  watch: ThemeWatch
-  subscribe: (set: (theme: ResolvedTheme) => void) => void
-  children: (theme: ResolvedTheme) => ReactNode
-}) {
-  const [theme, setTheme] = useState<ResolvedTheme>(watch.theme)
-  useEffect(() => subscribe(setTheme), [subscribe])
-  return <>{children(theme)}</>
 }
 
 const requested = new URLSearchParams(location.search).get('kind')
@@ -64,14 +49,14 @@ void (async () => {
   applyTheme(watch.theme)
   createRoot(document.getElementById('root')!).render(
     <LocaleProvider initial={lang}>
-      <Root
+      <ThemeRoot
         watch={watch}
         subscribe={(set) => {
           setTheme = set
         }}
       >
         {(theme) => <App kind={kind} lang={lang} theme={theme} probeWeb={probeWeb} />}
-      </Root>
+      </ThemeRoot>
     </LocaleProvider>,
   )
 })()

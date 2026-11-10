@@ -13,8 +13,8 @@ export function resolveTheme(setting: UiTheme, prefersDark: boolean): ResolvedTh
 }
 
 export interface ThemeWatch {
-  /** the theme of the moment */
-  theme: ResolvedTheme
+  /** the theme of the moment (read when asked, so it is never the first value alone) */
+  readonly theme: ResolvedTheme
   stop(): void
 }
 
@@ -43,7 +43,9 @@ export async function watchTheme(
   })
   media?.addEventListener('change', update)
   return {
-    theme: current,
+    get theme() {
+      return current
+    },
     stop: () => {
       offApp()
       media?.removeEventListener('change', update)

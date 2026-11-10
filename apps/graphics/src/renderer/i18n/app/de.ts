@@ -18,7 +18,7 @@ export const de = {
   quickTraceImage: 'Bild nachzeichnen',
   quickCenter: 'Auf Zeichenfläche zentrieren',
   quickExportPngSvg: 'Als PNG oder SVG exportieren',
-  quickExportAi: 'Als .ai für Illustrator senden',
+  quickExportAi: 'Als .ai für Illustrator exportieren',
   quickDone: 'Fertig.',
   quickNoDocument: 'Öffnen oder erstellen Sie zuerst ein Bild.',
   quickFailed:
@@ -26,7 +26,7 @@ export const de = {
   quickExportFailed: 'Export nicht möglich. Versuchen Sie einen anderen Ordner oder Namen.',
   quickExported: 'Kopie gespeichert.',
   illustAiHint:
-    'Als KI-Illustration-Dokument gespeichert. Um es in Illustrator zu öffnen, nutzen Sie „Als .ai für Illustrator senden“.',
+    'Als KI-Illustrationsdokument gespeichert. Um es in Illustrator zu öffnen, nutzen Sie „Als .ai für Illustrator exportieren“.',
   exportDialogTitle: 'Exportieren',
   exportFormat: 'Format',
   exportWidth: 'Breite (px)',

@@ -51,6 +51,8 @@ describe('watchTheme', () => {
     expect(seen).toEqual(['dark', 'light'])
     push('system')
     expect(seen.at(-1)).toBe('dark')
+    // the watch reads the theme of the moment, not the first one
+    expect(watch.theme).toBe('dark')
     watch.stop()
   })
 

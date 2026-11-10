@@ -2242,7 +2242,7 @@ const tMain = createI18n({
     untitledPhoto: 'Unbenanntes Foto',
     untitledIllust: 'Unbenannte Illustration',
     filterPhoto: 'Fotos und Bilder (PSD, PNG, JPG…)',
-    filterIllust: 'Illustrationen (SVG, .ai, KI-Illustration-Dokument)',
+    filterIllust: 'Illustrationen (SVG, .ai, KI-Illustrationsdokument)',
     menuExportImage: 'Als Bild exportieren…',
     menuFind: 'Suchen…',
     menuReplace: 'Ersetzen…',

@@ -1,6 +1,6 @@
 # AI Photo e AI Illustration
 
-Due schede per le immagini. **AI Photo** apre foto e immagini a livelli (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** apre disegni vettoriali (SVG, SVGZ, AI, VectorCraft). Ogni scheda esegue l'app gratuita PhotoCraft o VectorCraft dentro GenOffice, con un assistente IA accanto.
+Due schede per le immagini. **AI Photo** apre foto e immagini a livelli (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** apre disegni vettoriali (SVG, SVGZ, file Illustrator .ai, documento Illustrazione IA .vectorcraft). Ogni scheda esegue l'app gratuita PhotoCraft o VectorCraft dentro GenOffice, con un assistente IA accanto.
 
 ## Aprire e creare
 
@@ -17,6 +17,7 @@ Due schede per le immagini. **AI Photo** apre foto e immagini a livelli (PSD, PS
 
 - I pulsanti sopra l'app svolgono compiti comuni senza IA. AI Photo: **Rimuovi sfondo**, **Tono automatico** ed **Esporta a una dimensione**. AI Illustration: **Ricalca immagine**, **Centra sulla tavola da disegno** ed **Esporta PNG o SVG**.
 - L'esportazione chiede formato e dimensione, poi dove salvare la copia. L'immagine non cambia.
+- **Invia .ai a Illustrator** salva una copia del disegno come file Illustrator (.ai) nel punto scelto. Il disegno e il suo file restano invariati; nella copia alcuni effetti diventano immagini.
 
 ## Assistente IA
 

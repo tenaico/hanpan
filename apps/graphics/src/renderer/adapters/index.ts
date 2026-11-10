@@ -5,7 +5,7 @@ import { createPhotoAdapter } from './photo'
 import type { GraphicsAdapter } from './types'
 
 export type { DocInfo, GraphicsAdapter } from './types'
-export { HOST_EXPORT_PREFIX } from './types'
+export { HOST_EXPORT_PREFIX, hostExportName } from './types'
 
 /** The adapter for a tab's app. */
 export function createAdapter(kind: GraphicsKind, api: GraphicsPageApi): GraphicsAdapter {

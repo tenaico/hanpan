@@ -230,8 +230,13 @@ export default function App({
   const pushTheme = (): void => {
     const api = pageApiRef.current
     if (!api || appThemeRef.current === themeRef.current) return
-    appThemeRef.current = themeRef.current
-    void api.request('hanpan.theme', { mode: themeRef.current }).catch(() => {})
+    const mode = themeRef.current
+    const shown = appThemeRef.current
+    appThemeRef.current = mode
+    void api.request('hanpan.theme', { mode }).catch(() => {
+      // not taken: the app still shows the theme it had, so the next change sends again
+      if (appThemeRef.current === mode) appThemeRef.current = shown
+    })
   }
   useEffect(() => {
     themeRef.current = theme

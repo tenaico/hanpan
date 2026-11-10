@@ -148,7 +148,7 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Eine Datei mit diesem Namen ist bereits vorhanden.',
     replaceExistingDetail: 'Möchten Sie sie ersetzen?',
     btnReplace: 'Ersetzen',
-    fmtVectorcraft: 'KI-Illustration-Dokument (.vectorcraft) — zum Weiterbearbeiten in Hanpan',
+    fmtVectorcraft: 'KI-Illustrationsdokument (.vectorcraft) — zum Weiterbearbeiten in Hanpan',
     fmtAi:
       'Illustrator-Datei (.ai) — zum Austausch mit Illustrator; einige Effekte werden zu Bildern fixiert',
   },

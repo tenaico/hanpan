@@ -96,10 +96,21 @@ export function createIllustAdapter(api: GraphicsPageApi): GraphicsAdapter {
     if (format === 'svg' || format === 'svgz') params.svg = {}
     if (format === 'ai') params.options = {}
     const result = asRecord(await api.execute(command, params))
-    // a copy may come back under another name than the one asked for
-    const path = typeof result.path === 'string' ? result.path : fileName
-    const bytes = copyBytes(await api.readFile(path))
-    if (typeof result.bytes === 'number' && result.bytes !== bytes.length) {
+    // a dialog the app opened instead (it asks before writing over a file it lost
+    // something from): nothing is written yet, and a capture under that name is stale
+    if (result.pending !== undefined && result.pending !== null) {
+      throw new Error(
+        `${command}: not written, the app is asking first (${String(result.pending)})`,
+      )
+    }
+    // the written file's own name (a copy may come back under another name than the
+    // one asked for) and size; without them the capture read could be an older file
+    if (typeof result.path !== 'string' || !result.path) {
+      throw new Error(`${command}: no path in the answer`)
+    }
+    if (typeof result.bytes !== 'number') throw new Error(`${command}: no size in the answer`)
+    const bytes = copyBytes(await api.readFile(result.path))
+    if (result.bytes !== bytes.length) {
       throw new Error(
         `capture size mismatch: the app wrote ${result.bytes} bytes, read ${bytes.length}`,
       )
