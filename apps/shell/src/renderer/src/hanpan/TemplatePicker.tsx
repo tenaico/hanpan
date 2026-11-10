@@ -5,6 +5,8 @@
  * mind map of its headings and lists. The official forms (서식) open as a copy of
  * the HWP file the law publishes, so they offer HWP only.
  */
+import type { BriefingFormat, TrendBriefing } from '../../../shared/trend-briefing'
+import type { TrendForecast } from '../../../shared/trend-forecast'
 import { useEffect, useMemo, useState } from 'react'
 import { useDialogKeys } from '../dialog-keys'
 import { useI18n } from '../locale'
@@ -30,10 +32,11 @@ export interface HanpanApi extends Partial<MarkdownConverterApi>, Partial<MyForm
   openDesign?(): Promise<void>
   /** a new mind map with `topic` as its central topic */
   newMap?(topic: string): Promise<{ ok: true } | { ok: false; error: string }>
-  /** the trend card's AI briefing as a new untitled Word document */
+  /** the trend card's AI briefing as a new untitled document of the format picked */
   openBriefing?(request: {
-    markdown: string
-    title: string
+    format: BriefingFormat
+    brief: TrendBriefing
+    forecast: TrendForecast
   }): Promise<{ ok: true } | { ok: false; error: string }>
   /** a tab's "내 양식으로 저장…": open this dialog ready to save that tab; returns unsubscribe */
   onSaveMyFormRequest?(listener: (tabId: string) => void): () => void

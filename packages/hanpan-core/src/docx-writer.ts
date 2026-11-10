@@ -21,6 +21,7 @@ import {
   type IRunOptions,
 } from 'docx'
 import type { DocBlock } from './blocks'
+import { tableColumnWidths } from './hwp-writer'
 import { itemLook, type DocTheme, type ParaLook, type TextLook } from './doc-theme'
 
 export const DOCX_BOOKMARK_PREFIX = 'hp_'
@@ -68,14 +69,18 @@ function paragraph(
     alignment: alignmentOf(look.align),
     indent: {
       left: Math.round(margin * TWIPS_PER_PT),
-      ...(indent < 0 ? { hanging: Math.round(-indent * TWIPS_PER_PT) } : { firstLine: Math.round(indent * TWIPS_PER_PT) }),
+      ...(indent < 0
+        ? { hanging: Math.round(-indent * TWIPS_PER_PT) }
+        : { firstLine: Math.round(indent * TWIPS_PER_PT) }),
     },
     spacing: {
       before: Math.round((look.spacingBefore ?? 0) * TWIPS_PER_PT),
       after: Math.round((look.spacingAfter ?? 0) * TWIPS_PER_PT),
       ...(look.lineSpacing ? { line: Math.round(look.lineSpacing * 2.4) } : {}),
     },
-    children: bookmark ? [new Bookmark({ id: docxBookmarkName(bookmark), children: [content] })] : [content],
+    children: bookmark
+      ? [new Bookmark({ id: docxBookmarkName(bookmark), children: [content] })]
+      : [content],
   })
 }
 
@@ -86,20 +91,29 @@ function imageTypeOf(mime: string): 'png' | 'jpg' | 'gif' | null {
   return null
 }
 
+/** the A4 page's text width between the 2 cm margins, in twips */
+const TEXT_WIDTH_TWIPS = 11906 - 2 * 1134
+
 function table(rows: readonly (readonly string[])[], header: boolean, look: TextLook): Table {
   const border = { style: BorderStyle.SINGLE, size: 4, color: '000000' }
   const borders = { top: border, bottom: border, left: border, right: border }
+  // columns share the width by how much they hold, as in the HWP and HTML writers
+  const widths = tableColumnWidths(rows, TEXT_WIDTH_TWIPS)
   return new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
+    width: { size: TEXT_WIDTH_TWIPS, type: WidthType.DXA },
+    columnWidths: widths,
     rows: rows.map(
       (r, i) =>
         new TableRow({
           tableHeader: header && i === 0,
           children: r.map(
-            (cell) =>
+            (cell, c) =>
               new TableCell({
                 borders,
-                ...(header && i === 0 ? { shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'E8E8E8' } } : {}),
+                width: { size: widths[c] ?? 0, type: WidthType.DXA },
+                ...(header && i === 0
+                  ? { shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'E8E8E8' } }
+                  : {}),
                 children: [
                   new Paragraph({
                     alignment: header && i === 0 ? AlignmentType.CENTER : AlignmentType.LEFT,
@@ -133,7 +147,7 @@ export function blocksToDocxDocument(blocks: readonly DocBlock[], theme: DocThem
         push(paragraph(b.text, theme.meta, 0, 0))
         break
       case 'chapter':
-        push(paragraph(`${b.label} ${b.text}`, theme.chapter, 0, 0, b.key))
+        push(paragraph([b.label, b.text].filter(Boolean).join(' '), theme.chapter, 0, 0, b.key))
         break
       case 'item': {
         const look = itemLook(theme, b.depth)
@@ -142,15 +156,29 @@ export function blocksToDocxDocument(blocks: readonly DocBlock[], theme: DocThem
         push(paragraph(`${marker}${b.text}`, look, b.depth * step + hang, -hang, b.key))
         break
       }
-      case 'para':
+      case 'para': {
+        const bold = b.bold ? { bold: true } : {}
         push(
           b.role === 'lead'
-            ? paragraph(b.text, theme.body, 0, 0)
-            : paragraph(b.text, { ...theme.body, size: itemLook(theme, b.depth + 1).size }, (b.depth + 1) * step, 0),
+            ? paragraph(b.text, { ...theme.body, ...bold }, 0, 0)
+            : paragraph(
+                b.text,
+                { ...theme.body, size: itemLook(theme, b.depth + 1).size, ...bold },
+                (b.depth + 1) * step,
+                0,
+              ),
         )
         break
+      }
       case 'reference':
-        push(paragraph(`※ ${b.text}`, theme.reference, (b.depth + 1) * step + theme.reference.size, -theme.reference.size))
+        push(
+          paragraph(
+            `※ ${b.text}`,
+            theme.reference,
+            (b.depth + 1) * step + theme.reference.size,
+            -theme.reference.size,
+          ),
+        )
         break
       case 'image': {
         const type = imageTypeOf(b.image.mime)
@@ -161,7 +189,13 @@ export function blocksToDocxDocument(blocks: readonly DocBlock[], theme: DocThem
         push(
           new Paragraph({
             indent: { left: Math.round((b.depth + 1) * step * TWIPS_PER_PT) },
-            children: [new ImageRun({ type, data: b.image.bytes, transformation: { width, height: Math.round((width * h) / w) } })],
+            children: [
+              new ImageRun({
+                type,
+                data: b.image.bytes,
+                transformation: { width, height: Math.round((width * h) / w) },
+              }),
+            ],
           }),
         )
         break
@@ -193,7 +227,10 @@ export function blocksToDocxDocument(blocks: readonly DocBlock[], theme: DocThem
   })
 }
 
-export async function blocksToDocx(blocks: readonly DocBlock[], theme: DocTheme): Promise<Uint8Array> {
+export async function blocksToDocx(
+  blocks: readonly DocBlock[],
+  theme: DocTheme,
+): Promise<Uint8Array> {
   const buffer = await Packer.toArrayBuffer(blocksToDocxDocument(blocks, theme))
   return new Uint8Array(buffer)
 }

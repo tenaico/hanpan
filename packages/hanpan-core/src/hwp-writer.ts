@@ -33,7 +33,9 @@ const HWPUNIT_PER_PT = 100
 interface PlannedPara extends ParaLayout {
   text: string
   bookmark?: string | undefined
-  object?: { kind: 'image'; block: Extract<DocBlock, { kind: 'image' }> } | { kind: 'table'; block: Extract<DocBlock, { kind: 'table' }> }
+  object?:
+    | { kind: 'image'; block: Extract<DocBlock, { kind: 'image' }> }
+    | { kind: 'table'; block: Extract<DocBlock, { kind: 'table' }> }
 }
 
 export interface ParaLayout {
@@ -53,7 +55,11 @@ export function itemLayout(theme: DocTheme, depth: number, marker: string): Para
 
 /** How prose under an item at `depth` is laid out. */
 export function bodyLayout(theme: DocTheme, depth: number): ParaLayout {
-  return { look: { ...theme.body, size: itemLook(theme, depth + 1).size }, margin: (depth + 1) * theme.indentStep, indent: 0 }
+  return {
+    look: { ...theme.body, size: itemLook(theme, depth + 1).size },
+    margin: (depth + 1) * theme.indentStep,
+    indent: 0,
+  }
 }
 
 function planParagraphs(blocks: readonly DocBlock[], theme: DocTheme): PlannedPara[] {
@@ -68,26 +74,58 @@ function planParagraphs(blocks: readonly DocBlock[], theme: DocTheme): PlannedPa
         out.push({ text: b.text, look: theme.meta, margin: 0, indent: 0 })
         break
       case 'chapter':
-        out.push({ text: `${b.label} ${b.text}`, look: theme.chapter, margin: 0, indent: 0, bookmark: b.key })
+        out.push({
+          text: [b.label, b.text].filter(Boolean).join(' '),
+          look: theme.chapter,
+          margin: 0,
+          indent: 0,
+          bookmark: b.key,
+        })
         break
       case 'item':
-        out.push({ text: `${b.marker ? `${b.marker} ` : ''}${b.text}`, ...itemLayout(theme, b.depth, b.marker), bookmark: b.key })
+        out.push({
+          text: `${b.marker ? `${b.marker} ` : ''}${b.text}`,
+          ...itemLayout(theme, b.depth, b.marker),
+          bookmark: b.key,
+        })
         break
-      case 'para':
-        out.push(
+      case 'para': {
+        const layout =
           b.role === 'lead'
-            ? { text: b.text, look: theme.body, margin: 0, indent: 0 }
-            : { text: b.text, ...bodyLayout(theme, b.depth) },
-        )
+            ? { look: theme.body, margin: 0, indent: 0 }
+            : bodyLayout(theme, b.depth)
+        out.push({
+          text: b.text,
+          ...layout,
+          look: b.bold ? { ...layout.look, bold: true } : layout.look,
+        })
         break
+      }
       case 'reference':
-        out.push({ text: `※ ${b.text}`, look: theme.reference, margin: (b.depth + 1) * step + theme.reference.size, indent: -theme.reference.size })
+        out.push({
+          text: `※ ${b.text}`,
+          look: theme.reference,
+          margin: (b.depth + 1) * step + theme.reference.size,
+          indent: -theme.reference.size,
+        })
         break
       case 'image':
-        out.push({ text: '', look: theme.body, margin: (b.depth + 1) * step, indent: 0, object: { kind: 'image', block: b } })
+        out.push({
+          text: '',
+          look: theme.body,
+          margin: (b.depth + 1) * step,
+          indent: 0,
+          object: { kind: 'image', block: b },
+        })
         break
       case 'table':
-        out.push({ text: '', look: theme.body, margin: 0, indent: 0, object: { kind: 'table', block: b } })
+        out.push({
+          text: '',
+          look: theme.body,
+          margin: 0,
+          indent: 0,
+          object: { kind: 'table', block: b },
+        })
         break
       case 'closing':
         out.push({ text: b.text, look: theme.body, margin: 0, indent: 0 })
@@ -102,7 +140,9 @@ function planParagraphs(blocks: readonly DocBlock[], theme: DocTheme): PlannedPa
 }
 
 /** Formats paragraph `i` (section 0) with a layout; fonts are looked up once per formatter. */
-export function paragraphFormatter(doc: HwpEngineDocument): (i: number, layout: ParaLayout) => void {
+export function paragraphFormatter(
+  doc: HwpEngineDocument,
+): (i: number, layout: ParaLayout) => void {
   const fontCache = new Map<string, number[]>()
   const idsOf = (font: string) => {
     let ids = fontCache.get(font)
@@ -160,7 +200,10 @@ function textEms(text: string): number {
 export function tableColumnWidths(rows: readonly (readonly string[])[], total: number): number[] {
   const cols = Math.max(0, ...rows.map((r) => r.length))
   if (!cols) return []
-  const need = Array.from({ length: cols }, (_, c) => Math.max(...rows.map((r) => Math.min(textEms(r[c] ?? ''), 24))) + 2)
+  const need = Array.from(
+    { length: cols },
+    (_, c) => Math.max(...rows.map((r) => Math.min(textEms(r[c] ?? ''), 24))) + 2,
+  )
   const sum = need.reduce((x, y) => x + y, 0)
   const raw = need.map((n) => Math.max(total / 7, (n / sum) * total))
   const scale = total / raw.reduce((x, y) => x + y, 0)
@@ -176,9 +219,28 @@ export function tableColumnWidths(rows: readonly (readonly string[])[], total: n
  * one line, which Hangul squeezes until the letters overlap.) A header row is
  * bold and centred; columns share the width by how much they hold.
  */
-function insertTable(doc: HwpEngineDocument, para: number, rows: readonly (readonly string[])[], header: boolean, font: number[], size: number): void {
+function insertTable(
+  doc: HwpEngineDocument,
+  para: number,
+  rows: readonly (readonly string[])[],
+  header: boolean,
+  font: number[],
+  size: number,
+): void {
   const cols = Math.max(1, ...rows.map((r) => r.length))
-  const made = expectOk(doc.createTableEx(JSON.stringify({ sectionIdx: 0, paraIdx: para, charOffset: 0, rowCount: rows.length, colCount: cols, treatAsChar: false })), 'insert a table')
+  const made = expectOk(
+    doc.createTableEx(
+      JSON.stringify({
+        sectionIdx: 0,
+        paraIdx: para,
+        charOffset: 0,
+        rowCount: rows.length,
+        colCount: cols,
+        treatAsChar: false,
+      }),
+    ),
+    'insert a table',
+  )
   const at = Number(made.paraIdx ?? para)
   const control = Number(made.controlIdx ?? 0)
   rows.forEach((row, r) => {
@@ -189,20 +251,50 @@ function insertTable(doc: HwpEngineDocument, para: number, rows: readonly (reado
       if (text) {
         expectOk(doc.insertTextInCell(0, at, control, cell, 0, 0, text), 'fill a table cell')
         expectOk(
-          doc.applyCharFormatInCell(0, at, control, cell, 0, 0, text.length, JSON.stringify({ fontSize: Math.round(size * 100), bold: head, fontIds: font })),
+          doc.applyCharFormatInCell(
+            0,
+            at,
+            control,
+            cell,
+            0,
+            0,
+            text.length,
+            JSON.stringify({ fontSize: Math.round(size * 100), bold: head, fontIds: font }),
+          ),
           'format a table cell',
         )
       }
       expectOk(
-        doc.applyParaFormatInCell(0, at, control, cell, 0, JSON.stringify({ alignment: head ? 'center' : 'left', lineSpacing: 130, lineSpacingType: 'Percent' })),
+        doc.applyParaFormatInCell(
+          0,
+          at,
+          control,
+          cell,
+          0,
+          JSON.stringify({
+            alignment: head ? 'center' : 'left',
+            lineSpacing: 130,
+            lineSpacingType: 'Percent',
+          }),
+        ),
         'format a table cell',
       )
     }
   })
-  const current = Array.from({ length: cols }, (_, c) => Number(expectOk(doc.getCellOwnProperties(0, at, control, c), 'read a table cell').width ?? 0))
-  const wanted = tableColumnWidths(rows, current.reduce((x, y) => x + y, 0))
-  const deltas = rows.flatMap((_, r) => wanted.map((w, c) => ({ cellIdx: r * cols + c, widthDelta: w - current[c]! }))).filter((d) => d.widthDelta !== 0)
-  if (deltas.length) expectOk(doc.resizeTableCells(0, at, control, JSON.stringify(deltas)), 'size the table columns')
+  const current = Array.from({ length: cols }, (_, c) =>
+    Number(expectOk(doc.getCellOwnProperties(0, at, control, c), 'read a table cell').width ?? 0),
+  )
+  const wanted = tableColumnWidths(
+    rows,
+    current.reduce((x, y) => x + y, 0),
+  )
+  const deltas = rows
+    .flatMap((_, r) =>
+      wanted.map((w, c) => ({ cellIdx: r * cols + c, widthDelta: w - current[c]! })),
+    )
+    .filter((d) => d.widthDelta !== 0)
+  if (deltas.length)
+    expectOk(doc.resizeTableCells(0, at, control, JSON.stringify(deltas)), 'size the table columns')
 }
 
 function extensionOf(mime: string): string | null {
@@ -213,7 +305,11 @@ function extensionOf(mime: string): string | null {
 }
 
 /** Writes the blocks into a fresh engine document. The caller exports and frees it. */
-export function writeBlocks(engine: HwpEngine, blocks: readonly DocBlock[], theme: DocTheme): HwpEngineDocument {
+export function writeBlocks(
+  engine: HwpEngine,
+  blocks: readonly DocBlock[],
+  theme: DocTheme,
+): HwpEngineDocument {
   const doc = engine.HwpDocument.createEmpty()
   try {
     doc.createBlankDocument()
@@ -226,7 +322,11 @@ export function writeBlocks(engine: HwpEngine, blocks: readonly DocBlock[], them
       else paras.push(p)
     }
     paras.forEach((p, i) => {
-      if (i > 0) expectOk(doc.splitParagraph(0, i - 1, doc.getParagraphLength(0, i - 1)), 'split a paragraph')
+      if (i > 0)
+        expectOk(
+          doc.splitParagraph(0, i - 1, doc.getParagraphLength(0, i - 1)),
+          'split a paragraph',
+        )
       if (p.text) expectOk(doc.insertText(0, i, 0, p.text), 'insert text')
     })
     const format = paragraphFormatter(doc)
@@ -236,7 +336,14 @@ export function writeBlocks(engine: HwpEngine, blocks: readonly DocBlock[], them
       const object = paras[i]!.object
       if (!object) continue
       if (object.kind === 'table') {
-        insertTable(doc, i, object.block.rows, object.block.header, fontIds(doc, theme.body.font), theme.body.size - 1)
+        insertTable(
+          doc,
+          i,
+          object.block.rows,
+          object.block.header,
+          fontIds(doc, theme.body.font),
+          theme.body.size - 1,
+        )
       } else {
         const { image } = object.block
         const extension = extensionOf(image.mime)
@@ -248,14 +355,28 @@ export function writeBlocks(engine: HwpEngine, blocks: readonly DocBlock[], them
         const height = Math.max(HWPUNIT_PER_PT, Math.round((width * naturalH) / naturalW))
         const placed = expectOk(
           doc.insertPictureEx(
-            JSON.stringify({ sectionIdx: 0, paraIdx: i, charOffset: 0, width, height, naturalWidthPx: naturalW, naturalHeightPx: naturalH, extension }),
+            JSON.stringify({
+              sectionIdx: 0,
+              paraIdx: i,
+              charOffset: 0,
+              width,
+              height,
+              naturalWidthPx: naturalW,
+              naturalHeightPx: naturalH,
+              extension,
+            }),
             image.bytes,
           ),
           'insert a picture',
         )
         // in the line like a character: a floating picture lands over the text around it in Hangul
         expectOk(
-          doc.setPictureProperties(0, Number(placed.paraIdx ?? i), Number(placed.controlIdx ?? 0), JSON.stringify({ treatAsChar: true, width, height })),
+          doc.setPictureProperties(
+            0,
+            Number(placed.paraIdx ?? i),
+            Number(placed.controlIdx ?? 0),
+            JSON.stringify({ treatAsChar: true, width, height }),
+          ),
           'place a picture in the line',
         )
       }
@@ -268,7 +389,10 @@ export function writeBlocks(engine: HwpEngine, blocks: readonly DocBlock[], them
     for (const at of [...breaksBefore].sort((a, b) => b - a)) {
       if (at > 0 && at < paras.length && doc.insertPageBreak) {
         // a page break at the end of the paragraph before starts `at` on a new page
-        expectOk(doc.insertPageBreak(0, at - 1, doc.getParagraphLength(0, at - 1)), 'insert a page break')
+        expectOk(
+          doc.insertPageBreak(0, at - 1, doc.getParagraphLength(0, at - 1)),
+          'insert a page break',
+        )
       }
     }
     return doc
@@ -283,7 +407,12 @@ export interface WrittenDocument {
   format: 'hwpx' | 'hwp'
 }
 
-export function blocksToHwp(engine: HwpEngine, blocks: readonly DocBlock[], theme: DocTheme, format: 'hwpx' | 'hwp' = 'hwpx'): WrittenDocument {
+export function blocksToHwp(
+  engine: HwpEngine,
+  blocks: readonly DocBlock[],
+  theme: DocTheme,
+  format: 'hwpx' | 'hwp' = 'hwpx',
+): WrittenDocument {
   const doc = writeBlocks(engine, blocks, theme)
   try {
     return { bytes: format === 'hwpx' ? doc.exportHwpx() : doc.exportHwp(), format }

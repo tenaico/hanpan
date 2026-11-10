@@ -10,13 +10,18 @@ import type { DocTheme, ParaLook, TextLook } from './doc-theme'
 import { bodyLayout, itemLayout, tableColumnWidths } from './hwp-writer'
 
 export function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
+  return text.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  )
 }
 
 /** The theme's font first; a PC without the Hancom fonts falls back to Windows' and then the generic family. */
 export function fontStack(font: string): string {
   const serif = /명조|바탕|Batang|Myeongjo/i.test(font)
-  const fallback = serif ? ["'Batang'", "'Noto Serif KR'", 'serif'] : ["'Malgun Gothic'", "'Apple SD Gothic Neo'", "'Noto Sans KR'", 'sans-serif']
+  const fallback = serif
+    ? ["'Batang'", "'Noto Serif KR'", 'serif']
+    : ["'Malgun Gothic'", "'Apple SD Gothic Neo'", "'Noto Sans KR'", 'sans-serif']
   return [`'${font.replace(/'/g, '')}'`, ...fallback].join(', ')
 }
 
@@ -38,7 +43,8 @@ function css(look: TextLook & ParaLook, margin = 0, indent = 0): string {
 
 function base64(bytes: Uint8Array): string {
   let binary = ''
-  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  for (let i = 0; i < bytes.length; i += 0x8000)
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
   return btoa(binary)
 }
 
@@ -69,20 +75,28 @@ export function blocksToHtml(blocks: readonly DocBlock[], theme: DocTheme): stri
         out.push(`<p style="${css(theme.meta)}">${escapeHtml(b.text)}</p>`)
         break
       case 'chapter':
-        out.push(`<h2 style="${css(theme.chapter)}">${escapeHtml([b.label, b.text].filter(Boolean).join(' '))}</h2>`)
+        out.push(
+          `<h2 style="${css(theme.chapter)}">${escapeHtml([b.label, b.text].filter(Boolean).join(' '))}</h2>`,
+        )
         break
       case 'item': {
         const layout = itemLayout(theme, b.depth, b.marker)
-        out.push(`<p style="${css(layout.look, layout.margin, layout.indent)}">${escapeHtml(`${b.marker ? `${b.marker} ` : ''}${b.text}`)}</p>`)
+        out.push(
+          `<p style="${css(layout.look, layout.margin, layout.indent)}">${escapeHtml(`${b.marker ? `${b.marker} ` : ''}${b.text}`)}</p>`,
+        )
         break
       }
       case 'para': {
-        const layout = b.role === 'lead' ? { look: theme.body, margin: 0 } : bodyLayout(theme, b.depth)
-        out.push(`<p style="${css(layout.look, layout.margin)}">${escapeHtml(b.text)}</p>`)
+        const layout =
+          b.role === 'lead' ? { look: theme.body, margin: 0 } : bodyLayout(theme, b.depth)
+        const look = b.bold ? { ...layout.look, bold: true } : layout.look
+        out.push(`<p style="${css(look, layout.margin)}">${escapeHtml(b.text)}</p>`)
         break
       }
       case 'reference':
-        out.push(`<p style="${css(theme.reference, (b.depth + 1) * step + theme.reference.size, -theme.reference.size)}">※ ${escapeHtml(b.text)}</p>`)
+        out.push(
+          `<p style="${css(theme.reference, (b.depth + 1) * step + theme.reference.size, -theme.reference.size)}">※ ${escapeHtml(b.text)}</p>`,
+        )
         break
       case 'image':
         out.push(

@@ -46,7 +46,8 @@ export interface TrendForecast {
   line: string
 }
 
-export const TREND_TEXT_MAX = { title: 20, label: 10, head: 80, line: 80 } as const
+/** head and line stay whole for the AI briefing (0.19.2); the card cuts them on screen */
+export const TREND_TEXT_MAX = { title: 20, label: 10, head: 200, line: 200 } as const
 export const TREND_FIELDS_MAX = 12
 /** a stored field value older than this is not carried into a new forecast (plan R24) */
 export const TREND_CARRY_MAX_MS = 48 * 60 * 60 * 1000
