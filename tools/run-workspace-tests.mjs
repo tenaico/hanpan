@@ -30,7 +30,23 @@ function testWorkspaces() {
   return names
 }
 
-const WORKSPACES = testWorkspaces()
+/**
+ * TEST_ONLY=<a,b>: just these workspaces, still in the root order (CI's pull requests run
+ * the ones tools/ci-changes.mjs picks). Unset or empty: all of them.
+ */
+function onlyWanted(names) {
+  const only = (process.env.TEST_ONLY ?? '')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+  if (only.length === 0) return names
+  const unknown = only.filter((name) => !names.includes(name))
+  if (unknown.length > 0)
+    throw new Error(`TEST_ONLY names no test workspace: ${unknown.join(', ')}`)
+  return names.filter((name) => only.includes(name))
+}
+
+const WORKSPACES = onlyWanted(testWorkspaces())
 
 /**
  * Workspaces that must wait for another one to finish. The sheets test script

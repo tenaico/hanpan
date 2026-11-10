@@ -1,10 +1,18 @@
 name: CI
 
 # Test gate for every PR and push: changed-file formatting, lint, typecheck across
-# all workspaces, and the full unit-test suite (engine packages and app tests; the
-# sheets suite also runs the Rust xlsx-sidecar tests). Installers are built and
-# published by hand (docs/releasing.ko.md) — this workflow never builds or uploads
-# one, and it uses no repository secret.
+# all workspaces, the unit-test suites (engine packages and app tests; the sheets
+# suite also runs the Rust xlsx-sidecar tests) and the Electron e2e. Installers are
+# built and published by hand (docs/releasing.ko.md) — this workflow never builds or
+# uploads one, and it uses no repository secret.
+#
+# What runs (tools/ci-changes.mjs, the `changes` job):
+# - a PR that touches only docs/, site/, .claude/ or root notes: the `docs` job
+#   (formatting, English-only comments) instead of `test` and `e2e`;
+# - any other PR: `test` with the unit suites of the touched workspaces and of
+#   every workspace that uses them, and the e2e in three parallel shards;
+# - a push to main, a manual run, or a PR touching anything shared (lockfile,
+#   tools/, workflows, fixtures, tsconfig): every unit suite, as before.
 
 on:
   push:
@@ -21,7 +29,65 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.pick.outputs.code }}
+      full: ${{ steps.pick.outputs.full }}
+      workspaces: ${{ steps.pick.outputs.workspaces }}
+      sheets: ${{ steps.pick.outputs.sheets }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # a PR's checkout is its merge commit: HEAD^1 is the main it was built against
+          fetch-depth: 2
+
+      - name: Pick what this change runs
+        id: pick
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            node tools/ci-changes.mjs --event pull_request --base "$(git rev-parse HEAD^1)" >> "$GITHUB_OUTPUT"
+          else
+            node tools/ci-changes.mjs --event "${{ github.event_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  # A PR with no code: the checks that read docs, without installing the build
+  docs:
+    needs: changes
+    if: needs.changes.outputs.code != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        # electron's binary is not needed to format or read comments
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        run: npm ci --ignore-scripts
+
+      - name: Check formatting
+        run: |
+          FORMAT_BASE_REF=$(git rev-parse HEAD^1) npm run format:check
+
+      - name: Check comments/docs are English-only
+        run: npm run check:english-comments
+
   test:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -146,23 +212,41 @@ jobs:
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libxml2-utils
 
+      - name: Check what CI picks to run
+        run: node --test tools/ci-changes.test.mjs
+
+      # Every picked suite runs to its end and a summary names each failure: one
+      # workspace failing no longer hides the ones after it (npm test stops there).
       - name: Test
-        run: npm test
+        if: needs.changes.outputs.full == 'true' || needs.changes.outputs.workspaces != ''
+        env:
+          TEST_ONLY: ${{ needs.changes.outputs.full != 'true' && needs.changes.outputs.workspaces || '' }}
+          TEST_JOBS: '1'
+        run: node tools/run-workspace-tests.mjs
 
       # Preservation gate: a no-op-adjacent edit through the OOXML gateway must
       # leave every untouched package entry byte-identical (fails closed otherwise).
       - name: Sheets compatibility gate
+        if: needs.changes.outputs.sheets == 'true'
         run: |
           npm run fixtures -w @genoffice/sheets
           npm run compat -w @genoffice/sheets
 
   e2e:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    name: e2e (${{ matrix.shard }}/3)
     # 22.04, not -latest: 24.04's AppArmor hardening blocks Electron renderer
     # spawn under xvfb even with --no-sandbox and the userns sysctl lifted
     runs-on: ubuntu-22.04
-    # A cold font install took 24m in #124; leave room for the full serial
-    # Electron suite as well as setup. Individual test timeouts stay unchanged.
+    # A cold font install took 24m in #124; leave room for it as well as setup.
+    # Individual test timeouts stay unchanged.
     timeout-minutes: 60
+    # the serial Electron suite split by spec file across three runners
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -222,20 +306,38 @@ jobs:
       # Pixel baselines (docs-visual.spec.ts) depend on the font stack: pin
       # Calibri/Cambria metric-compatible faces and CJK glyphs so renders are
       # reproducible across runner images and contributor machines.
+      # The same packages as an apt install, kept as .deb files: downloading
+      # them took about ten minutes a run. Installing the very packages keeps
+      # their fontconfig rules too, so the pixel baselines see the same fonts.
+      - name: Cache document fonts
+        id: fonts
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/ci-font-debs
+          key: font-debs-ubuntu-22.04-carlito-caladea-noto-cjk-v1
+
       - name: Install document fonts (visual baselines)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            fonts-crosextra-carlito fonts-crosextra-caladea fonts-noto-cjk
+          if [ "${{ steps.fonts.outputs.cache-hit }}" != "true" ]; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends --download-only \
+              fonts-crosextra-carlito fonts-crosextra-caladea fonts-noto-cjk
+            mkdir -p ~/ci-font-debs
+            cp /var/cache/apt/archives/*.deb ~/ci-font-debs/
+          fi
+          sudo dpkg -i ~/ci-font-debs/*.deb
+          fc-list | grep -ciE 'carlito|caladea|noto (sans|serif) cjk'
 
       # CSS layout tests use standalone Chromium in addition to Electron.
       # Keep the pinned document font stack unchanged: --with-deps adds fonts
       # that alter the existing pixel baselines. Electron already supplies the
       # required system libraries on this runner.
       - name: Install Chromium for layout tests
+        if: matrix.shard == 1
         run: npx playwright install chromium
 
       - name: Markdown browser tests
+        if: matrix.shard == 1
         run: npx playwright test --config apps/markdown/playwright.config.ts
 
       # Electron needs a display server on Linux runners. DEBUG=pw:browser
@@ -244,13 +346,13 @@ jobs:
       - name: E2E (Electron shell)
         env:
           DEBUG: 'pw:browser'
-        run: xvfb-run --auto-servernum -- npm run test:e2e
+        run: xvfb-run --auto-servernum -- npm run test:e2e -- --shard=${{ matrix.shard }}/3
 
       - name: Upload E2E artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: e2e-artifacts
+          name: e2e-artifacts-${{ matrix.shard }}
           path: |
             e2e/artifacts
             e2e/test-results
