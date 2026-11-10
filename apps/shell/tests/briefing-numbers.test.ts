@@ -41,7 +41,11 @@ describe('unknownNumbers', () => {
   })
   it('reads a number with a Latin unit after it, such as 0.25%p and 3nm', () => {
     expect(
-      unknownNumbers(brief({ headline: '금리 0.25%p 인하, 3nm 공정, HBM3E와 H100, GPT-5' }), allowed, D),
+      unknownNumbers(
+        brief({ headline: '금리 0.25%p 인하, 3nm 공정, HBM3E와 H100, GPT-5' }),
+        allowed,
+        D,
+      ),
     ).toEqual(['0.25%', '3'])
     const a = allowedNumbers('- 반도체: 맑음 — 3nm 양산', D)
     expect(unknownNumbers(brief({ headline: '3nm 공정' }), a, D)).toEqual([])
@@ -83,5 +87,53 @@ describe('dropUnknownNumbers', () => {
     const r = dropUnknownNumbers(brief({ summary: ['환율 1,400원'] }), allowed, D, LINE)
     expect(r.brief.summary).toEqual([LINE])
     expect(checkBriefing(r.brief)).not.toBeNull()
+  })
+})
+
+describe('grouped citations (I1)', () => {
+  const a = allowedNumbers('  수치: 코스피 4,012.35', D)
+  it('reads [1, 2] and [1,2] as citations, not as numbers', () => {
+    expect(unknownNumbers(brief({ headline: '코스피 4,012.35 [1, 2]' }), a, D)).toEqual([])
+    expect(unknownNumbers(brief({ headline: '코스피 4,012.35 [1,2]' }), a, D)).toEqual([])
+  })
+})
+
+describe('dates in the question (I2)', () => {
+  const question = [
+    '기상도 날짜: 2026-11-10',
+    '  [1] 2026-11-08 외국인 순매도 — 연합뉴스',
+    '  요약(2026-10-30 기준): 외국인 순매도가 이어졌다.',
+  ].join('\n')
+  const a = allowedNumbers(question, D)
+  it('does not allow the parts of an article or research date as values', () => {
+    expect(unknownNumbers(brief({ headline: '코스피 8% 급락' }), a, D)).toEqual(['8%'])
+    expect(unknownNumbers(brief({ headline: '30% 하락' }), a, D)).toEqual(['30%'])
+  })
+  it('still allows the forecast date parts', () => {
+    expect(unknownNumbers(brief({ headline: '2026년 11월 10일, 지수 10' }), a, D)).toEqual([])
+  })
+  it('lets a month and day of a date in the question pass, and no other', () => {
+    expect(unknownNumbers(brief({ headline: '10월 30일 기준' }), a, D)).toEqual([])
+    expect(unknownNumbers(brief({ headline: '11월 8일 기사, 10/30 자료' }), a, D)).toEqual([])
+    expect(unknownNumbers(brief({ headline: '10월 25일 기준' }), a, D)).toEqual(['25'])
+  })
+})
+
+describe('written dates and decimal spans (M1, M2)', () => {
+  it('reads 2026.11.09, 2026/11/09 and 2026.11 as dates, not decimals', () => {
+    const a = allowedNumbers('코스피 5,019', D)
+    for (const headline of [
+      '2026.11.09 기준',
+      '2026/11/09 기준',
+      '2026.11 기준',
+      '2026-11-09 기준',
+    ]) {
+      expect(unknownNumbers(brief({ headline }), a, D)).toEqual([])
+    }
+  })
+  it('reads 1.5개월 as the value 1.5, not as 1 and an exempt 5개월', () => {
+    const a = allowedNumbers('기간 1.5', D)
+    expect(unknownNumbers(brief({ headline: '1.5개월 지연' }), a, D)).toEqual([])
+    expect(unknownNumbers(brief({ headline: '2.5개월 지연' }), a, D)).toEqual(['2.5'])
   })
 })

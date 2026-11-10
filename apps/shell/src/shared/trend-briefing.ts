@@ -91,7 +91,7 @@ function questionText(
       n += 1
       if (j >= t.news) return
       articles.push(n)
-      lines.push(`  [${n}] ${a.date} ${a.title} — ${a.source}`)
+      lines.push(`  [${n}] ${a.date} ${a.title}${a.source ? ` — ${a.source}` : ''}`)
     })
     const asOf = f.materialAsOf ? `(${f.materialAsOf} 기준)` : ''
     for (const p of (f.points ?? []).slice(0, t.points)) lines.push(`  요약${asOf}: ${p}`)
@@ -194,9 +194,24 @@ export type BriefingBlock =
   | { kind: 'table'; rows: string[][]; header: true }
   | { kind: 'reference'; depth: 0; text: string }
 
+/** a grouped citation such as [1, 2] or [1,2] */
+const CITATION_GROUP = /\[(\d{1,3}(?:\s*,\s*\d{1,3})+)\]/g
+
+/** the text with each grouped citation written one by one: [1, 2] becomes [1][2] */
+export function expandCitations(text: string): string {
+  return text.replace(CITATION_GROUP, (_all, list: string) =>
+    list
+      .split(',')
+      .map((n) => `[${n.trim()}]`)
+      .join(''),
+  )
+}
+
 /** the numbers `[n]` the briefing cites, in its text */
 function citedNumbers(brief: TrendBriefing): Set<number> {
-  const text = [brief.headline, ...brief.summary, ...brief.outlook, ...brief.watch].join('\n')
+  const text = expandCitations(
+    [brief.headline, ...brief.summary, ...brief.outlook, ...brief.watch].join('\n'),
+  )
   return new Set([...text.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])))
 }
 
@@ -206,12 +221,19 @@ export function citedArticles(brief: TrendBriefing, forecast: TrendForecast): Br
   return briefingArticles(forecast).filter((a) => cited.has(a.n))
 }
 
-/** the dropped-sentence count the page sends: a whole number from 0 to 20, else 0 */
+/** the most dropped sentences the note names */
+const DROPPED_MAX = 20
+
+/** the dropped-sentence count the page sends: a whole number, one over 20 as 20, else 0 */
 export function briefingDropped(raw: unknown): number {
-  return typeof raw === 'number' && Number.isInteger(raw) && raw >= 0 && raw <= 20 ? raw : 0
+  return typeof raw === 'number' && Number.isInteger(raw) && raw >= 0
+    ? Math.min(raw, DROPPED_MAX)
+    : 0
 }
 
-const articleText = (a: BriefingArticle) => `${a.title} — ${a.source}, ${a.date}`
+/** an article as the document lists it; no separator when the source is empty */
+const articleText = (a: BriefingArticle) =>
+  a.source ? `${a.title} — ${a.source}, ${a.date}` : `${a.title}, ${a.date}`
 
 /** 'AI 보안·윤리 2026-11-06' per research date, fields with one date joined, first seen first */
 function materialDatesLine(forecast: TrendForecast): string | null {

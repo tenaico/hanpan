@@ -6,6 +6,7 @@
 import { allowedNumbers, dropUnknownNumbers, unknownNumbers } from './briefing-numbers'
 import {
   briefingPrompt,
+  expandCitations,
   parseBriefing,
   type BriefingBudget,
   type BriefingPrompt,
@@ -15,8 +16,7 @@ import type { TrendForecast } from './trend-forecast'
 
 export type BriefingTurn = { ok: true; text: string } | { ok: false; error: string }
 export type GroundedBriefing =
-  | { ok: true; brief: TrendBriefing; dropped: number }
-  | { ok: false; error: string }
+  { ok: true; brief: TrendBriefing; dropped: number } | { ok: false; error: string }
 
 /**
  * the briefing without the [n] of an article not in the list, with the space
@@ -24,7 +24,7 @@ export type GroundedBriefing =
  */
 export function keepCitations(brief: TrendBriefing, articles: readonly number[]): TrendBriefing {
   const keep = (text: string) =>
-    text
+    expandCitations(text)
       .replace(/ ?\[(\d{1,3})\]/g, (all, n: string) => (articles.includes(Number(n)) ? all : ''))
       .trim()
   const list = (values: string[]) => values.map(keep).filter(Boolean)
@@ -34,6 +34,15 @@ export function keepCitations(brief: TrendBriefing, articles: readonly number[])
     outlook: list(brief.outlook),
     watch: list(brief.watch),
   }
+}
+
+/** the text an emptied headline or summary takes: the line, else the first head, else a fixed one */
+export function fallbackLine(forecast: TrendForecast): string {
+  return (
+    forecast.line.trim() ||
+    forecast.fields.find((f) => f.head.trim())?.head.trim() ||
+    '오늘의 트렌드 기상도'
+  )
 }
 
 /** an emptied headline or summary becomes the line, so the briefing still opens */
@@ -73,7 +82,8 @@ export async function groundedBriefing(
   if (!first.ok) return { ok: false, error: first.error }
   const parsed = parseBriefing(first.text)
   if (!parsed) return { ok: false, error: '' }
-  let brief = opening(keepCitations(parsed, prompt.articles), forecast.line)
+  const line = fallbackLine(forecast)
+  let brief = opening(keepCitations(parsed, prompt.articles), line)
   const allowed = allowedNumbers(prompt.user, forecast.date)
   const unknown = unknownNumbers(brief, allowed, forecast.date)
   if (unknown.length === 0) return { ok: true, brief, dropped: 0 }
@@ -82,7 +92,7 @@ export async function groundedBriefing(
   if (!budget || budget.estimate(fix.system, fix.user) <= budget.tokens) {
     const second = await ask(fix)
     const again = second.ok ? parseBriefing(second.text) : null
-    if (again) brief = opening(keepCitations(again, prompt.articles), forecast.line)
+    if (again) brief = opening(keepCitations(again, prompt.articles), line)
   }
-  return { ok: true, ...dropUnknownNumbers(brief, allowed, forecast.date, forecast.line) }
+  return { ok: true, ...dropUnknownNumbers(brief, allowed, forecast.date, line) }
 }

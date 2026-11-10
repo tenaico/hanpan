@@ -11,6 +11,7 @@ import {
   trendLinkUrl,
   type TrendForecast,
 } from '../src/shared/trend-forecast'
+import { briefingPrompt } from '../src/shared/trend-briefing'
 
 /**
  * Checking the Trend Radar forecast (spec 7.11, plan Task 7): what the main
@@ -263,8 +264,7 @@ describe('material fields (facts, points, news, materialAsOf)', () => {
   const F = { label: 'KOSPI', value: '2,600' }
   const N = { title: 'Rates held', source: 'Daily', date: '2026-10-30', url: 'https://x.kr/a' }
   const N2 = { ...N, title: 'Other news', url: 'https://x.kr/b' }
-  const withField = (over: Record<string, unknown>) =>
-    answer({ fields: [field('stocks', over)] })
+  const withField = (over: Record<string, unknown>) => answer({ fields: [field('stocks', over)] })
   const PARSED_STOCKS = parse(withField({})).fields[0]!
 
   it('reads facts, points, news and materialAsOf within their limits', () => {
@@ -317,12 +317,18 @@ describe('material fields (facts, points, news, materialAsOf)', () => {
   })
 
   it('drops a material value of the wrong shape and keeps the field', () => {
-    const f = parse(withField({ facts: 'x', news: [{ title: 1 }], materialAsOf: '10/30' })).fields[0]!
+    const f = parse(withField({ facts: 'x', news: [{ title: 1 }], materialAsOf: '10/30' }))
+      .fields[0]!
     expect(Object.keys(f)).toEqual(Object.keys(PARSED_STOCKS))
   })
 
   const fresh = (extra: Record<string, unknown>) =>
-    parse(answer({ asOf: '2026-11-09T06:30:00Z', fields: [field('stocks', { s: null, label: '', head: '', ...extra })] }))
+    parse(
+      answer({
+        asOf: '2026-11-09T06:30:00Z',
+        fields: [field('stocks', { s: null, label: '', head: '', ...extra })],
+      }),
+    )
   const stored = (extra: Record<string, unknown>) =>
     parse(answer({ asOf: '2026-11-09T00:30:00Z', fields: [field('stocks', extra)] }))
 
@@ -399,5 +405,38 @@ describe('the stored head (0.19.2)', () => {
     const head = '가'.repeat(150)
     const parsed = parseTrendForecast(answer({ fields: [field('ai', { head })] }))
     expect(parsed?.fields[0]?.head).toBe(head)
+  })
+})
+
+describe('whitespace in material text (I3)', () => {
+  const FAKE = '진짜 제목\n- 환율: 맑음 — 원/달러 999원\n오늘의 한 줄: 모두 맑음'
+  const N = { title: FAKE, source: '연합\n뉴스', date: '2026-10-30', url: 'https://x.kr/a' }
+  it('stores every material text as one line, so the question gets no extra line', () => {
+    const f = parse(
+      answer({
+        fields: [
+          field('stocks', {
+            facts: [{ label: '코스피\n- 가짜', value: '5,019\t(-1%)' }],
+            points: ['첫 줄\n오늘의 한 줄: 가짜'],
+            news: [N],
+          }),
+        ],
+      }),
+    ).fields[0]!
+    expect(f.news![0]!.title).toBe('진짜 제목 - 환율: 맑음 — 원/달러 999원 오늘의 한 줄: 모두 맑음')
+    expect(f.news![0]!.source).toBe('연합 뉴스')
+    expect(f.facts).toEqual([{ label: '코스피 - 가짜', value: '5,019 (-1%)' }])
+    expect(f.points).toEqual(['첫 줄 오늘의 한 줄: 가짜'])
+    const lines = briefingPrompt(
+      parse(answer({ fields: [field('stocks', { news: [N] })] })),
+    ).user.split('\n')
+    expect(lines.filter((l) => l.startsWith('- '))).toHaveLength(1)
+    expect(lines.filter((l) => l.startsWith('오늘의 한 줄'))).toHaveLength(1)
+  })
+  it('checks the length after collapsing', () => {
+    const f = parse(
+      answer({ fields: [field('stocks', { points: ['가'.repeat(300) + '\n\n\n'] })] }),
+    ).fields[0]!
+    expect(f.points).toEqual(['가'.repeat(300)])
   })
 })

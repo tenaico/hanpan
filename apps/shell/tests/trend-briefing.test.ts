@@ -368,7 +368,36 @@ describe('참고 자료 chapter', () => {
     expect(briefingMarkdown(brief, withMaterial)).not.toContain('## 참고 자료')
   })
 
-  it('reads the dropped count from the page as a small whole number', () => {
-    expect([2, -1, 1.5, 99, '3', undefined].map(briefingDropped)).toEqual([2, 0, 0, 0, 0, 0])
+  it('reads the dropped count from the page as a whole number, capped at 20', () => {
+    expect([2, -1, 1.5, 99, '3', undefined].map(briefingDropped)).toEqual([2, 0, 0, 20, 0, 0])
+    expect([20, 21].map(briefingDropped)).toEqual([20, 20])
+  })
+})
+
+describe('grouped citations and an empty source (I1, M6)', () => {
+  it('reads [1, 2] and [1,2] as two citations', () => {
+    for (const s of ['코스피 4,012.35 [1, 2]', '코스피 [1,2]']) {
+      expect(citedArticles({ ...brief, summary: [s] }, withMaterial).map((a) => a.n)).toEqual([
+        1, 2,
+      ])
+    }
+  })
+  it('leaves out the separator when an article has no source', () => {
+    const f: TrendForecast = {
+      ...forecast,
+      fields: forecast.fields.map((x) =>
+        x.key === 'stocks' ? { ...x, news: [article('S1', '', '2026-11-09', S1_URL)] } : x,
+      ),
+    }
+    const cites = { ...brief, summary: ['a [1]'] }
+    expect(briefingBlocks(cites, f)).toContainEqual({
+      kind: 'item',
+      depth: 0,
+      marker: '[1]',
+      text: 'S1, 2026-11-09',
+      href: S1_URL,
+    })
+    expect(briefingMarkdown(cites, f).split('\n')).toContain(`- [1] S1, 2026-11-09 ${S1_URL}`)
+    expect(briefingPrompt(f).user.split('\n')).toContain('  [1] 2026-11-09 S1')
   })
 })

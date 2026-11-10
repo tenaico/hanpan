@@ -120,13 +120,20 @@ function readText(value: unknown, max: number): string {
   return typeof value === 'string' ? cutText(value, max) : ''
 }
 
+/** material text on one line: a line break in it could pass for a line of the AI's question */
+const oneLine = (text: string) => text.replace(/\s+/g, ' ').trim()
+
+function readMaterialText(value: unknown, max: number): string {
+  return typeof value === 'string' ? cutText(oneLine(value), max) : ''
+}
+
 function readFacts(raw: unknown): TrendFact[] | undefined {
   if (!Array.isArray(raw)) return undefined
   const facts: TrendFact[] = []
   for (const item of raw.slice(0, TREND_MATERIAL_MAX.facts)) {
     if (!isRecord(item)) continue
-    const label = readText(item.label, TREND_MATERIAL_MAX.factLabel)
-    const value = readText(item.value, TREND_MATERIAL_MAX.factValue)
+    const label = readMaterialText(item.label, TREND_MATERIAL_MAX.factLabel)
+    const value = readMaterialText(item.value, TREND_MATERIAL_MAX.factValue)
     if (label && value) facts.push({ label, value })
   }
   return facts.length > 0 ? facts : undefined
@@ -137,10 +144,9 @@ function readPoints(raw: unknown): string[] | undefined {
   // points are never cut: an item over the limit is dropped
   const points = raw
     .slice(0, TREND_MATERIAL_MAX.points)
-    .filter(
-      (p): p is string =>
-        typeof p === 'string' && p !== '' && Array.from(p).length <= TREND_MATERIAL_MAX.pointChars,
-    )
+    .filter((p): p is string => typeof p === 'string')
+    .map(oneLine)
+    .filter((p) => p !== '' && Array.from(p).length <= TREND_MATERIAL_MAX.pointChars)
   return points.length > 0 ? points : undefined
 }
 
@@ -158,8 +164,8 @@ function readNews(raw: unknown): TrendNews[] | undefined {
   const news: TrendNews[] = []
   for (const item of raw.slice(0, TREND_MATERIAL_MAX.news)) {
     if (!isRecord(item)) continue
-    const title = readText(item.title, TREND_MATERIAL_MAX.newsTitle)
-    const source = readText(item.source, TREND_MATERIAL_MAX.newsSource)
+    const title = readMaterialText(item.title, TREND_MATERIAL_MAX.newsTitle)
+    const source = readMaterialText(item.source, TREND_MATERIAL_MAX.newsSource)
     const { date, url } = item
     if (!title || typeof date !== 'string' || !DATE_PATTERN.test(date)) continue
     if (typeof url !== 'string' || !isHttpsUrl(url)) continue

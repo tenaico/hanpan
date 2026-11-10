@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { briefingFixPrompt, groundedBriefing } from '../src/shared/briefing-run'
+import { briefingFixPrompt, groundedBriefing, keepCitations } from '../src/shared/briefing-run'
 import { checkBriefing } from '../src/shared/trend-briefing'
 import type { TrendField, TrendForecast } from '../src/shared/trend-forecast'
 
@@ -152,5 +152,73 @@ describe('briefingFixPrompt', () => {
         'U\n\n앞선 답:\nA\n\n앞선 답에 재료에 없는 숫자가 있습니다: 5,100, 7%\n' +
         '재료에 있는 값으로 고치거나 그 문장을 빼고, 같은 JSON 형식으로 다시 쓰세요.',
     })
+  })
+})
+
+describe('grouped citations (I1)', () => {
+  const b = (headline: string) => ({ headline, summary: ['x'], outlook: [], watch: [] })
+  it('keeps the sent articles of a group and removes the others', () => {
+    expect(keepCitations(b('코스피 [1, 2]'), [1, 2]).headline).toBe('코스피 [1][2]')
+    expect(keepCitations(b('코스피 [1,9]'), [1, 2]).headline).toBe('코스피 [1]')
+    expect(keepCitations(b('코스피 [8, 9]'), [1, 2]).headline).toBe('코스피')
+  })
+  it('keeps a correct sentence with a grouped citation', async () => {
+    const f: TrendForecast = {
+      ...withMaterial,
+      fields: [{ ...stocks, facts: [{ label: '코스피', value: '4,012.35' }] }, fx],
+    }
+    const text = JSON.stringify({
+      headline: '코스피가 폭풍우입니다',
+      summary: ['코스피 4,012.35 [1, 2]'],
+      outlook: [],
+      watch: [],
+    })
+    const ask = vi.fn().mockResolvedValue({ ok: true, text })
+    const r = await groundedBriefing(f, ask)
+    expect(ask).toHaveBeenCalledTimes(1)
+    expect(r).toEqual({
+      ok: true,
+      brief: {
+        headline: '코스피가 폭풍우입니다',
+        summary: ['코스피 4,012.35 [1][2]'],
+        outlook: [],
+        watch: [],
+      },
+      dropped: 0,
+    })
+  })
+})
+
+describe('an empty line of the day (M5)', () => {
+  const empty = JSON.stringify({ headline: '[9]', summary: ['[9]'], outlook: [], watch: [] })
+  it("falls back to the first field's head", async () => {
+    const ask = vi.fn().mockResolvedValue({ ok: true, text: empty })
+    const r = await groundedBriefing({ ...withMaterial, line: '' }, ask)
+    expect(r.ok && r.brief.headline).toBe(stocks.head)
+    expect(r.ok && r.brief.summary).toEqual([stocks.head])
+    expect(r.ok && checkBriefing(r.brief)).toEqual(r.ok && r.brief)
+  })
+  it('falls back to a fixed text when no field has a head', async () => {
+    const ask = vi.fn().mockResolvedValue({ ok: true, text: empty })
+    const f: TrendForecast = {
+      ...withMaterial,
+      line: '',
+      fields: withMaterial.fields.map((x) => ({ ...x, head: '' })),
+    }
+    const r = await groundedBriefing(f, ask)
+    expect(r.ok && r.brief.headline).toBe('오늘의 트렌드 기상도')
+    expect(r.ok && checkBriefing(r.brief)).toEqual(r.ok && r.brief)
+  })
+  it('replaces a headline with an unknown number by the fallback too', async () => {
+    const text = JSON.stringify({
+      headline: '코스피 7,777',
+      summary: ['코스피 7,777'],
+      outlook: [],
+      watch: [],
+    })
+    const ask = vi.fn().mockResolvedValue({ ok: true, text })
+    const r = await groundedBriefing({ ...withMaterial, line: '' }, ask)
+    expect(r.ok && r.brief.headline).toBe(stocks.head)
+    expect(r.ok && checkBriefing(r.brief)).toEqual(r.ok && r.brief)
   })
 })
