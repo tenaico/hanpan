@@ -49,6 +49,8 @@ export const BLOCKED_PREFIXES: readonly string[] = [
   'window.',
   'ui.',
   'updates.',
+  // the app's embedding controls (theme, status): Hanpan's, not the AI's
+  'hanpan.',
 ]
 
 export function isBlockedCommand(id: string): boolean {

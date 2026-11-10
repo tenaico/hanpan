@@ -276,6 +276,11 @@ describe('the blocked commands, checked against the real command list', () => {
       expect(isBlockedCommand(id), id).toBe(true)
   })
 
+  it('the AI may not change the theme or call any hanpan. command', () => {
+    expect(isBlockedCommand('hanpan.theme')).toBe(true)
+    expect(isBlockedCommand('hanpan.status')).toBe(true)
+  })
+
   it('shape., object., text., path., select. and paint. commands stay available', () => {
     const editing = FIXTURE.filter((c) => /^(shape|object|text|path|select|paint)\./.test(c.id))
     expect(editing.length).toBeGreaterThan(200)

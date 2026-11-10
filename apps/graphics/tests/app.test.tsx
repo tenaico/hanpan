@@ -72,16 +72,27 @@ async function mount(
   kind: 'photo' | 'illust',
   probe = async () => true,
   gpu = async () => true,
+  theme: 'light' | 'dark' = 'light',
 ): Promise<void> {
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
+  await render(kind, probe, gpu, theme)
+}
+
+async function render(
+  kind: 'photo' | 'illust',
+  probe: () => Promise<boolean>,
+  gpu: () => Promise<boolean>,
+  theme: 'light' | 'dark',
+): Promise<void> {
   await act(async () => {
     root!.render(
       <LocaleProvider initial="ko">
         <App
           kind={kind}
           lang="ko"
+          theme={theme}
           probeWeb={probe}
           probeGpu={gpu}
           pollMs={20}
@@ -90,6 +101,16 @@ async function mount(
       </LocaleProvider>,
     )
   })
+}
+
+/** Hanpan's theme changes while the tab runs (same props otherwise: the frame must not restart). */
+async function setTheme(kind: 'photo' | 'illust', theme: 'light' | 'dark'): Promise<void> {
+  await render(
+    kind,
+    async () => true,
+    async () => true,
+    theme,
+  )
 }
 
 function frame(): HTMLIFrameElement | null {
@@ -128,7 +149,9 @@ describe('the host page', () => {
     fakeApi()
     await mount('illust')
     await until(() => frame() !== null)
-    expect(frame()!.getAttribute('src')).toBe('./web/illust/index.html?embedded=hanpan&lang=ko')
+    expect(frame()!.getAttribute('src')).toBe(
+      './web/illust/index.html?embedded=hanpan&lang=ko&theme=light',
+    )
     // the app reads the PC's fonts (queryLocalFonts) inside the frame
     expect(frame()!.getAttribute('allow')).toBe('clipboard-read; clipboard-write; local-fonts')
     expect(host.textContent).toContain('앱을 불러오는 중')
@@ -136,6 +159,51 @@ describe('the host page', () => {
     ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
     await until(() => !host.textContent!.includes('앱을 불러오는 중'))
     expect(page.capturing).toBe(true)
+  })
+
+  it('starts the frame in the theme of the moment', async () => {
+    fakeApi()
+    await mount(
+      'illust',
+      async () => true,
+      async () => true,
+      'dark',
+    )
+    await until(() => frame() !== null)
+    expect(frame()!.getAttribute('src')).toBe(
+      './web/illust/index.html?embedded=hanpan&lang=ko&theme=dark',
+    )
+  })
+
+  it('sends a theme change to the app without reloading the frame', async () => {
+    fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('Untitled-1', false)
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => !host.textContent!.includes('앱을 불러오는 중'))
+    const before = frame()
+    await setTheme('illust', 'dark')
+    await until(() => page.requested.some(([m]) => m === 'hanpan.theme'))
+    expect(page.requested).toContainEqual(['hanpan.theme', { mode: 'dark' }])
+    // src unchanged: no reload, the open document stays
+    expect(frame()).toBe(before)
+    expect(frame()!.getAttribute('src')).toContain('theme=light')
+  })
+
+  it('sends a change made before the app was ready once it is ready', async () => {
+    fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    await setTheme('illust', 'dark')
+    expect(frame()!.getAttribute('src')).toContain('theme=light')
+    const page = readyPage()
+    page.requestHandlers['hanpan.theme'] = () => ({ mode: 'dark' })
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => page.requested.some(([m]) => m === 'hanpan.theme'))
+    expect(page.requested.filter(([m]) => m === 'hanpan.theme')).toEqual([
+      ['hanpan.theme', { mode: 'dark' }],
+    ])
   })
 
   it('says the app is missing when the web build is not there', async () => {

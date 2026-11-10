@@ -9,6 +9,15 @@ body,
   font-family: system-ui, sans-serif;
 }
 
+/* the app's accent (design 5.1): the same colour in the light and the dark theme */
+.gx-app[data-kind='photo'] {
+  --accent: #a3449e;
+}
+
+.gx-app[data-kind='illust'] {
+  --accent: #3e9150;
+}
+
 .gx-app {
   display: flex;
   flex-direction: column;

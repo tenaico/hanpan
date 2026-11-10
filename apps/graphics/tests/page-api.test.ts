@@ -16,17 +16,21 @@ describe('withTimeout', () => {
 
 describe('the frame address', () => {
   it('opens the app in embedded mode with its language', () => {
-    expect(appFrameUrl('illust', 'ko')).toBe('./web/illust/index.html?embedded=hanpan&lang=ko')
-    expect(appFrameUrl('photo', 'zh')).toBe('./web/photo/index.html?embedded=hanpan&lang=en')
+    expect(appFrameUrl('illust', 'ko', 'dark')).toBe(
+      './web/illust/index.html?embedded=hanpan&lang=ko&theme=dark',
+    )
+    expect(appFrameUrl('photo', 'zh', 'light')).toBe(
+      './web/photo/index.html?embedded=hanpan&lang=en&theme=light',
+    )
   })
 
   it('in the installed app the web build runs on its own origin, apart from the host page', () => {
     const packaged = { protocol: 'genoffice-app:' }
-    expect(appFrameUrl('photo', 'ko', packaged)).toBe(
-      'genoffice-app://photo-app/web/photo/index.html?embedded=hanpan&lang=ko',
+    expect(appFrameUrl('photo', 'ko', 'light', packaged)).toBe(
+      'genoffice-app://photo-app/web/photo/index.html?embedded=hanpan&lang=ko&theme=light',
     )
-    expect(appFrameUrl('illust', 'ko', packaged)).toBe(
-      'genoffice-app://illust-app/web/illust/index.html?embedded=hanpan&lang=ko',
+    expect(appFrameUrl('illust', 'ko', 'dark', packaged)).toBe(
+      'genoffice-app://illust-app/web/illust/index.html?embedded=hanpan&lang=ko&theme=dark',
     )
   })
 })
