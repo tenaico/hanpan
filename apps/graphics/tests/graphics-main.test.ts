@@ -88,6 +88,7 @@ vi.mock('electron', () => ({
 import {
   configureGraphicsRuntime,
   createGraphicsView,
+  formatLabel,
   graphicsFilePath,
   graphicsIsDirty,
   requestGraphicsClose,
@@ -95,6 +96,7 @@ import {
   setGraphicsFileSavedHook,
   shortcutFor,
 } from '../src/main/graphics-main'
+import { LANGS, getUiLang, setUiLang } from '@genoffice/i18n'
 import { GRAPHICS_CHANNELS } from '../src/shared/ipc'
 import type { BeginSaveResult, CommitSaveResult, ExportResult } from '../src/shared/ipc'
 
@@ -554,5 +556,37 @@ describe('printing the picture', () => {
       await call<{ ok: boolean }>(GRAPHICS_CHANNELS.print, stranger, { bytes: PNG, sheet }),
     ).toMatchObject({ ok: false })
     expect(printHtml).not.toHaveBeenCalled()
+  })
+})
+
+describe('save dialog format names', () => {
+  const original = getUiLang()
+  afterEach(() => setUiLang(original))
+
+  it('name the formats by what they are for (ko)', () => {
+    setUiLang('ko')
+    expect(formatLabel('vectorcraft')).toBe(
+      'AI 일러스트 문서 (.vectorcraft) — 한판에서 계속 고칠 때',
+    )
+    expect(formatLabel('ai')).toBe(
+      '일러스트레이터 파일 (.ai) — 일러스트레이터와 주고받을 때, 일부 효과는 그림으로 굳음',
+    )
+    expect(formatLabel('svg')).toBe('SVG')
+    expect(formatLabel('psd')).toBe('PSD')
+  })
+
+  it('exist in all 21 languages, translated, without the old product name', () => {
+    setUiLang('en')
+    const en = { vectorcraft: formatLabel('vectorcraft'), ai: formatLabel('ai') }
+    expect(LANGS).toHaveLength(21)
+    for (const lang of LANGS) {
+      setUiLang(lang)
+      for (const format of ['vectorcraft', 'ai'] as const) {
+        const label = formatLabel(format)
+        expect(label, `${lang}.${format}`).toContain(`(.${format})`)
+        expect(label, `${lang}.${format}`).not.toMatch(/VectorCraft/)
+        if (lang !== 'en') expect(label, `${lang}.${format}`).not.toBe(en[format])
+      }
+    }
   })
 })

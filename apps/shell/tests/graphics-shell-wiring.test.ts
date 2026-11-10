@@ -154,6 +154,17 @@ describe('menus', () => {
   })
 })
 
+describe('the open filter for illustrations', () => {
+  it('names the formats by what they are, in every language, without the old product name', () => {
+    expect(mainString('ko', 'filterIllust')).toBe('일러스트 (SVG, .ai, AI 일러스트 문서)')
+    for (const lang of LANGS) {
+      const text = mainString(lang, 'filterIllust')!
+      expect(text, lang).toContain('(SVG, .ai, ')
+      expect(text, lang).not.toMatch(/VectorCraft/)
+    }
+  })
+})
+
 describe('Home', () => {
   it('starts the two graphics apps from the board, in the selected folder', () => {
     // 0.19: the new card's apps come in APP_GROUPS order; each starts as the old card did
