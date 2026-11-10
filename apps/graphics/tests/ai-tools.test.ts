@@ -71,7 +71,19 @@ describe('the graphics skill', () => {
       'pc_fonts',
     ])
     expect(skill.buildContext?.()).toBe('CONTEXT')
-    expect(skill.systemPrompt).toMatch(/VectorCraft/)
+    expect(skill.systemPrompt).toMatch(/AI 일러스트/)
+  })
+
+  // the person's UI calls the apps AI 포토 / AI 일러스트, so the assistant must too
+  it('names the apps as Hanpan does, not by their upstream names', () => {
+    for (const [kind, name] of [
+      ['photo', 'AI 포토'],
+      ['illust', 'AI 일러스트'],
+    ] as const) {
+      const prompt = setup(kind).skill.systemPrompt
+      expect(prompt).not.toMatch(/PhotoCraft|VectorCraft/i)
+      expect(prompt).toContain(name)
+    }
   })
 
   // the web builds read the PC's fonts in embedded mode: request('fonts.local', {family?})
