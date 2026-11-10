@@ -15,7 +15,15 @@ export type DocBlock =
   /** a chapter heading (Ⅰ. 추진 배경) */
   | { kind: 'chapter'; label: string; text: string; key?: string | undefined }
   /** a marked item; `depth` 0 is the top item level under the title or chapter */
-  | { kind: 'item'; depth: number; marker: string; text: string; key?: string | undefined }
+  | {
+      kind: 'item'
+      depth: number
+      marker: string
+      text: string
+      /** an https link on the item's text; the writers that cannot link print it after the text */
+      href?: string | undefined
+      key?: string | undefined
+    }
   /**
    * Prose under an item: `note` from the map note, `body` from the AI's flesh-out
    * or the user's typing. `depth` is the owning item's depth.
@@ -47,6 +55,11 @@ export interface BlockOptions {
   includeNotes?: boolean | undefined
   /** put AI/hand-written prose under its item (default true) */
   includeBodies?: boolean | undefined
+}
+
+/** the link of an item, only when it is an https address */
+export function httpsHref(href: string | undefined): string | undefined {
+  return href?.startsWith('https://') ? href : undefined
 }
 
 /** A note line starting with ※ is a reference line, anything else is prose. */

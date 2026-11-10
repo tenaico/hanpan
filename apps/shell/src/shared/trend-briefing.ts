@@ -68,7 +68,10 @@ interface Taken {
   points: number
 }
 
-function questionText(forecast: TrendForecast, taken: Taken[]): { user: string; articles: number[] } {
+function questionText(
+  forecast: TrendForecast,
+  taken: Taken[],
+): { user: string; articles: number[] } {
   const articles: number[] = []
   let n = 0
   const lines: string[] = []
@@ -80,7 +83,8 @@ function questionText(forecast: TrendForecast, taken: Taken[]): { user: string; 
     )
     const t = taken[i]
     const facts = (f.facts ?? []).slice(0, t.facts)
-    if (facts.length > 0) lines.push(`  수치: ${facts.map((x) => `${x.label} ${x.value}`).join('; ')}`)
+    if (facts.length > 0)
+      lines.push(`  수치: ${facts.map((x) => `${x.label} ${x.value}`).join('; ')}`)
     const all = f.news ?? []
     // the number of an article is its place among all articles, shown or not
     all.forEach((a, j) => {
@@ -113,8 +117,7 @@ export function briefingPrompt(forecast: TrendForecast, budget?: BriefingBudget)
   const lengthOf = (f: TrendForecast['fields'][number], k: keyof Taken) =>
     (k === 'facts' ? f.facts : k === 'news' ? f.news : f.points)?.length ?? 0
   const fits = () =>
-    !budget ||
-    budget.estimate(BRIEFING_SYSTEM, questionText(forecast, taken).user) <= budget.tokens
+    !budget || budget.estimate(BRIEFING_SYSTEM, questionText(forecast, taken).user) <= budget.tokens
   stage: for (const k of stages) {
     const rounds = Math.max(0, ...forecast.fields.map((f) => lengthOf(f, k)))
     for (let r = 0; r < rounds; r++) {
@@ -186,10 +189,46 @@ export type BriefingBlock =
   | { kind: 'title'; text: string }
   | { kind: 'meta'; text: string }
   | { kind: 'chapter'; label: string; text: string }
-  | { kind: 'item'; depth: 0; marker: string; text: string }
+  | { kind: 'item'; depth: 0; marker: string; text: string; href?: string }
   | { kind: 'para'; depth: 0; role: 'lead'; bold: true; text: string }
   | { kind: 'table'; rows: string[][]; header: true }
   | { kind: 'reference'; depth: 0; text: string }
+
+/** the numbers `[n]` the briefing cites, in its text */
+function citedNumbers(brief: TrendBriefing): Set<number> {
+  const text = [brief.headline, ...brief.summary, ...brief.outlook, ...brief.watch].join('\n')
+  return new Set([...text.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])))
+}
+
+/** the articles the briefing cites that the forecast really has: ascending, once each */
+export function citedArticles(brief: TrendBriefing, forecast: TrendForecast): BriefingArticle[] {
+  const cited = citedNumbers(brief)
+  return briefingArticles(forecast).filter((a) => cited.has(a.n))
+}
+
+/** the dropped-sentence count the page sends: a whole number from 0 to 20, else 0 */
+export function briefingDropped(raw: unknown): number {
+  return typeof raw === 'number' && Number.isInteger(raw) && raw >= 0 && raw <= 20 ? raw : 0
+}
+
+const articleText = (a: BriefingArticle) => `${a.title} — ${a.source}, ${a.date}`
+
+/** 'AI 보안·윤리 2026-11-06' per research date, fields with one date joined, first seen first */
+function materialDatesLine(forecast: TrendForecast): string | null {
+  const byDate = new Map<string, string[]>()
+  for (const f of forecast.fields) {
+    if (!f.materialAsOf) continue
+    byDate.set(f.materialAsOf, [...(byDate.get(f.materialAsOf) ?? []), f.title])
+  }
+  if (byDate.size === 0) return null
+  return `정리 자료 기준일: ${[...byDate].map(([date, titles]) => `${titles.join('·')} ${date}`).join(', ')}`
+}
+
+/** the source line, with the note when sentences were dropped */
+function sourceLine(forecast: TrendForecast, dropped: number): string {
+  const note = dropped >= 1 ? ` 재료로 확인되지 않은 숫자가 있던 문장 ${dropped}개를 뺐습니다.` : ''
+  return `자료: TEN AI 트렌드 레이더(trend.tenai.kr) ${forecast.date} 기상도. AI가 기상도와 재료만 보고 쓴 글이며 투자 권유가 아닙니다.${note}`
+}
 
 const CHAPTER_LABELS = ['Ⅰ.', 'Ⅱ.', 'Ⅲ.', 'Ⅳ.', 'Ⅴ.']
 
@@ -198,7 +237,11 @@ const CHAPTER_LABELS = ['Ⅰ.', 'Ⅱ.', 'Ⅲ.', 'Ⅳ.', 'Ⅴ.']
  * line, the headline in bold, numbered chapters (an empty one left out), the
  * forecast table and the source line.
  */
-export function briefingBlocks(brief: TrendBriefing, forecast: TrendForecast): BriefingBlock[] {
+export function briefingBlocks(
+  brief: TrendBriefing,
+  forecast: TrendForecast,
+  dropped = 0,
+): BriefingBlock[] {
   const out: BriefingBlock[] = [
     { kind: 'title', text: briefingTitle(forecast) },
     { kind: 'meta', text: `TEN AI 트렌드 레이더 · ${forecast.date} 기상도` },
@@ -226,11 +269,16 @@ export function briefingBlocks(brief: TrendBriefing, forecast: TrendForecast): B
   list('현황', brief.summary)
   list('1~3개월 전망', brief.outlook)
   list('체크포인트', brief.watch)
-  out.push({
-    kind: 'reference',
-    depth: 0,
-    text: `자료: TEN AI 트렌드 레이더(trend.tenai.kr) ${forecast.date} 기상도. AI가 기상도만 보고 쓴 글이며 투자 권유가 아닙니다.`,
-  })
+  const sources = citedArticles(brief, forecast)
+  if (sources.length > 0) {
+    chapter('참고 자료')
+    for (const a of sources) {
+      out.push({ kind: 'item', depth: 0, marker: `[${a.n}]`, text: articleText(a), href: a.url })
+    }
+    const asOf = materialDatesLine(forecast)
+    if (asOf) out.push({ kind: 'reference', depth: 0, text: asOf })
+  }
+  out.push({ kind: 'reference', depth: 0, text: sourceLine(forecast, dropped) })
   return out
 }
 
@@ -238,7 +286,13 @@ export function briefingBlocks(brief: TrendBriefing, forecast: TrendForecast): B
 const cell = (text: string) => text.replace(/\|/g, '/').replace(/\s+/g, ' ').trim()
 
 /** the briefing as Markdown, which the shell turns into a Word document */
-export function briefingMarkdown(brief: TrendBriefing, forecast: TrendForecast): string {
+export function briefingMarkdown(
+  brief: TrendBriefing,
+  forecast: TrendForecast,
+  dropped = 0,
+): string {
+  const sources = citedArticles(brief, forecast)
+  const asOf = materialDatesLine(forecast)
   const list = (values: string[]) => values.map((v) => `- ${v}`).join('\n')
   const rows = forecast.fields.map(
     (f) =>
@@ -261,7 +315,16 @@ export function briefingMarkdown(brief: TrendBriefing, forecast: TrendForecast):
     '',
     ...(brief.outlook.length ? ['## 1~3개월 전망', '', list(brief.outlook), ''] : []),
     ...(brief.watch.length ? ['## 체크포인트', '', list(brief.watch), ''] : []),
-    `자료: TEN AI 트렌드 레이더(trend.tenai.kr) ${forecast.date} 기상도. AI가 기상도만 보고 쓴 글이며 투자 권유가 아닙니다.`,
+    ...(sources.length
+      ? [
+          '## 참고 자료',
+          '',
+          sources.map((a) => `- [${a.n}] ${articleText(a)} ${a.url}`).join('\n'),
+          '',
+          ...(asOf ? [asOf, ''] : []),
+        ]
+      : []),
+    sourceLine(forecast, dropped),
     '',
   ].join('\n')
 }

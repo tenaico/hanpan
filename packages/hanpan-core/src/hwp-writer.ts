@@ -6,7 +6,7 @@
  * gets a bookmark `hp-<key>` at its start. Bookmarks survive saving as .hwp and
  * .hwpx (checked by tests) and are what the sync reads back.
  */
-import type { DocBlock } from './blocks'
+import { httpsHref, type DocBlock } from './blocks'
 import { itemLook, type DocTheme, type ParaLook, type TextLook } from './doc-theme'
 import { expectOk, type HwpEngine, type HwpEngineDocument } from './hwp-engine'
 
@@ -84,7 +84,7 @@ function planParagraphs(blocks: readonly DocBlock[], theme: DocTheme): PlannedPa
         break
       case 'item':
         out.push({
-          text: `${b.marker ? `${b.marker} ` : ''}${b.text}`,
+          text: `${b.marker ? `${b.marker} ` : ''}${b.text}${httpsHref(b.href) ? ` ${b.href}` : ''}`,
           ...itemLayout(theme, b.depth, b.marker),
           bookmark: b.key,
         })

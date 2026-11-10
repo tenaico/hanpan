@@ -40,6 +40,7 @@ import { atomicWriteFile } from '../atomic-write'
 import { buildTargetDocument } from '../send-to-app/from-markdown'
 import {
   briefingBlocks,
+  briefingDropped,
   briefingFormat,
   briefingMarkdown,
   briefingTitle,
@@ -451,7 +452,12 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
       return openMap(`- ${topic}\n`, topic)
     },
     openBriefing: async (raw) => {
-      const request = (raw ?? {}) as { format?: unknown; brief?: unknown; forecast?: unknown }
+      const request = (raw ?? {}) as {
+        format?: unknown
+        brief?: unknown
+        forecast?: unknown
+        dropped?: unknown
+      }
       // what the page sends is checked as if it came from the network: the same checks as the
       // AI's answer and the stored forecast
       const brief = checkBriefing(request.brief)
@@ -459,7 +465,8 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
       if (!brief || !forecast) return { ok: false, error: 'no briefing' }
       const format = briefingFormat(request.format)
       const title = briefingTitle(forecast)
-      const blocks = briefingBlocks(brief, forecast) as DocBlock[]
+      const dropped = briefingDropped(request.dropped)
+      const blocks = briefingBlocks(brief, forecast, dropped) as DocBlock[]
       const theme = DOC_THEMES.gongmun!
       const open = (editor: Parameters<typeof openBytesCopy>[0], bytes: Uint8Array, ext: string) =>
         openBytesCopy(editor, bytes, documentFileName(title, ext), title)
@@ -478,7 +485,7 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
         case 'mindmap':
         case 'pptx': {
           const built = await buildTargetDocument(
-            briefingMarkdown(brief, forecast),
+            briefingMarkdown(brief, forecast, dropped),
             format === 'pptx' ? 'slides' : 'mindmap',
             { title, untitled: title, korean: true, loadHwpEngine },
           )

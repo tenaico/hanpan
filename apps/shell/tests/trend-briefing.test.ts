@@ -5,12 +5,14 @@ import {
   BRIEFING_WARNING_RATIO,
   briefingArticles,
   briefingBudget,
+  briefingDropped,
   briefingBlocks,
   briefingFormat,
   briefingMarkdown,
   briefingPrompt,
   briefingTitle,
   checkBriefing,
+  citedArticles,
   parseBriefing,
 } from '../src/shared/trend-briefing'
 import type { TrendField, TrendForecast } from '../src/shared/trend-forecast'
@@ -76,11 +78,13 @@ const USER_0192 = [
   '오늘의 한 줄: 반도체·AI 트렌드 Big 5는 맑은 편이고, 주식은 궂은 편입니다.',
 ].join('\n')
 
-const article = (title: string, source: string, date: string) => ({
+const S1_URL = 'https://news.google.com/rss/articles/s1?a=1&b=2'
+const F1_URL = 'https://news.google.com/rss/articles/f1'
+const article = (title: string, source: string, date: string, url = 'https://example.com/a') => ({
   title,
   source,
   date,
-  url: 'https://example.com/a',
+  url,
 })
 const fx: TrendField = {
   key: 'fx',
@@ -90,7 +94,7 @@ const fx: TrendField = {
   label: '흐림',
   head: '원·달러 1,470원',
   path: '/fx',
-  news: [article('F1', '한국경제', '2026-11-08')],
+  news: [article('F1', '한국경제', '2026-11-08', F1_URL)],
   materialAsOf: '2026-10-30',
 }
 const withMaterial: TrendForecast = {
@@ -104,7 +108,10 @@ const withMaterial: TrendForecast = {
               { label: '코스피', value: '5,019 (-6.78%)' },
               { label: '코스피 1개월', value: '-26.2%' },
             ],
-            news: [article('S1', '연합뉴스', '2026-11-09'), article('S2', '매일경제', '2026-11-08')],
+            news: [
+              article('S1', '연합뉴스', '2026-11-09', S1_URL),
+              article('S2', '매일경제', '2026-11-08'),
+            ],
             points: ['외국인 순매도가 9거래일째 이어졌다.'],
             materialAsOf: '2026-10-30',
           }
@@ -116,7 +123,7 @@ const withoutMaterial = (f: TrendForecast): TrendForecast => ({
   ...f,
   fields: f.fields.map((x): TrendField => {
     const { facts, points, news, materialAsOf, ...rest } = x
-    void facts, points, news, materialAsOf
+    ;(void facts, points, news, materialAsOf)
     return rest
   }),
 })
@@ -247,6 +254,10 @@ const brief = {
   watch: ['환율'],
 }
 
+const SOURCE_LINE =
+  '자료: TEN AI 트렌드 레이더(trend.tenai.kr) 2026-11-10 기상도. AI가 기상도와 재료만 보고 쓴 글이며 투자 권유가 아닙니다.'
+const NOTE = '재료로 확인되지 않은 숫자가 있던 문장 2개를 뺐습니다.'
+
 describe('briefingBlocks (0.19.2)', () => {
   it('lays the briefing out as a report: date line, bold headline, numbered chapters, the table, the source', () => {
     const blocks = briefingBlocks(brief, forecast)
@@ -274,7 +285,7 @@ describe('briefingBlocks (0.19.2)', () => {
     expect(blocks).toContainEqual({ kind: 'item', depth: 0, marker: '○', text: '환율' })
     const last = blocks.at(-1) as { kind: string; text: string }
     expect(last.kind).toBe('reference')
-    expect(last.text).toContain('투자 권유가 아닙니다')
+    expect(last.text).toBe(SOURCE_LINE)
   })
 
   it('leaves out an empty outlook or checkpoint chapter and keeps the numbering in order', () => {
@@ -298,5 +309,63 @@ describe('checkBriefing and briefingFormat', () => {
     expect(briefingFormat('pdf')).toBe('pdf')
     expect(briefingFormat('exe')).toBe('docx')
     expect(briefingFormat(undefined)).toBe('docx')
+  })
+})
+
+describe('참고 자료 chapter', () => {
+  const cited = { ...brief, summary: ['코스피 5,019 [3]', '반도체 [1][3]'] }
+
+  it('lists the cited articles with links in a 참고 자료 chapter, then the research dates', () => {
+    const blocks = briefingBlocks(cited, withMaterial)
+    const i = blocks.findIndex((b) => b.kind === 'chapter' && b.text === '참고 자료')
+    expect(blocks.slice(i + 1, i + 4)).toEqual([
+      { kind: 'item', depth: 0, marker: '[1]', text: 'S1 — 연합뉴스, 2026-11-09', href: S1_URL },
+      { kind: 'item', depth: 0, marker: '[3]', text: 'F1 — 한국경제, 2026-11-08', href: F1_URL },
+      { kind: 'reference', depth: 0, text: '정리 자료 기준일: 주식·환율 2026-10-30' },
+    ])
+    // after the checkpoints, before the source line
+    expect(blocks.at(-1)).toMatchObject({ kind: 'reference', text: SOURCE_LINE })
+    expect(blocks.findIndex((b) => b.kind === 'chapter' && b.text === '체크포인트')).toBeLessThan(i)
+  })
+
+  it('joins fields with the same date and keeps first-seen order', () => {
+    const f: TrendForecast = {
+      ...withMaterial,
+      fields: withMaterial.fields.map((x) =>
+        x.key === 'fx' ? { ...x, materialAsOf: '2026-11-06' } : x,
+      ),
+    }
+    const blocks = briefingBlocks({ ...cited, summary: ['a [1]'] }, f)
+    expect(blocks).toContainEqual({
+      kind: 'reference',
+      depth: 0,
+      text: '정리 자료 기준일: 주식 2026-10-30, 환율 2026-11-06',
+    })
+  })
+
+  it('has no 참고 자료 chapter when nothing is cited', () => {
+    const blocks = briefingBlocks({ ...brief, summary: ['인용 없음 [9]'] }, withMaterial)
+    expect(blocks.some((b) => b.kind === 'chapter' && b.text === '참고 자료')).toBe(false)
+    expect(citedArticles(cited, withMaterial).map((a) => a.n)).toEqual([1, 3])
+    expect(citedArticles({ ...brief, summary: ['x [9]'] }, withMaterial)).toEqual([])
+  })
+
+  it('adds the note about dropped sentences to the source line', () => {
+    const last = briefingBlocks(brief, forecast, 2).at(-1) as { text: string }
+    expect(last.text).toBe(`${SOURCE_LINE} ${NOTE}`)
+    expect((briefingBlocks(brief, forecast).at(-1) as { text: string }).text).toBe(SOURCE_LINE)
+    expect(briefingMarkdown(brief, forecast, 2)).toContain(`${SOURCE_LINE} ${NOTE}`)
+  })
+
+  it('prints the article links in the Markdown for PPT and the mind map', () => {
+    const md = briefingMarkdown(cited, withMaterial)
+    expect(md).toContain('## 참고 자료')
+    expect(md.split('\n')).toContain(`- [1] S1 — 연합뉴스, 2026-11-09 ${S1_URL}`)
+    expect(md).toContain('정리 자료 기준일: 주식·환율 2026-10-30')
+    expect(briefingMarkdown(brief, withMaterial)).not.toContain('## 참고 자료')
+  })
+
+  it('reads the dropped count from the page as a small whole number', () => {
+    expect([2, -1, 1.5, 99, '3', undefined].map(briefingDropped)).toEqual([2, 0, 0, 0, 0, 0])
   })
 })

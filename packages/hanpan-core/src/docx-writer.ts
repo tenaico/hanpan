@@ -9,6 +9,7 @@ import {
   Bookmark,
   BorderStyle,
   Document,
+  ExternalHyperlink,
   ImageRun,
   Packer,
   Paragraph,
@@ -20,7 +21,7 @@ import {
   WidthType,
   type IRunOptions,
 } from 'docx'
-import type { DocBlock } from './blocks'
+import { httpsHref, type DocBlock } from './blocks'
 import { tableColumnWidths } from './hwp-writer'
 import { itemLook, type DocTheme, type ParaLook, type TextLook } from './doc-theme'
 
@@ -46,9 +47,10 @@ function alignmentOf(align: ParaLook['align']) {
   }
 }
 
-function run(text: string, look: TextLook): TextRun {
+function run(text: string, look: TextLook, style?: string): TextRun {
   const options: IRunOptions = {
     text,
+    ...(style ? { style } : {}),
     font: { name: look.font, eastAsia: look.font },
     size: Math.round(look.size * 2),
     bold: !!look.bold,
@@ -63,8 +65,15 @@ function paragraph(
   margin: number,
   indent: number,
   bookmark?: string,
+  /** a link on the text after `plain`, which stays outside it */
+  link?: { plain: string; href: string },
 ): Paragraph {
-  const content = run(text, look)
+  const content: (TextRun | ExternalHyperlink)[] = link
+    ? [
+        ...(link.plain ? [run(link.plain, look)] : []),
+        new ExternalHyperlink({ link: link.href, children: [run(text, look, 'Hyperlink')] }),
+      ]
+    : [run(text, look)]
   return new Paragraph({
     alignment: alignmentOf(look.align),
     indent: {
@@ -79,8 +88,8 @@ function paragraph(
       ...(look.lineSpacing ? { line: Math.round(look.lineSpacing * 2.4) } : {}),
     },
     children: bookmark
-      ? [new Bookmark({ id: docxBookmarkName(bookmark), children: [content] })]
-      : [content],
+      ? [new Bookmark({ id: docxBookmarkName(bookmark), children: content })]
+      : content,
   })
 }
 
@@ -153,7 +162,12 @@ export function blocksToDocxDocument(blocks: readonly DocBlock[], theme: DocThem
         const look = itemLook(theme, b.depth)
         const marker = b.marker ? `${b.marker} ` : ''
         const hang = marker ? look.size * (b.marker.length > 1 ? 1.2 : 1) : 0
-        push(paragraph(`${marker}${b.text}`, look, b.depth * step + hang, -hang, b.key))
+        const href = httpsHref(b.href)
+        push(
+          href
+            ? paragraph(b.text, look, b.depth * step + hang, -hang, b.key, { plain: marker, href })
+            : paragraph(`${marker}${b.text}`, look, b.depth * step + hang, -hang, b.key),
+        )
         break
       }
       case 'para': {

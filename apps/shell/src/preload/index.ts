@@ -879,8 +879,12 @@ contextBridge.exposeInMainWorld('hanpanApi', {
   openDesign: () => ipcRenderer.invoke('hanpan:open-design'),
   newMap: (topic: string) => ipcRenderer.invoke('hanpan:new-map', topic),
   // 트렌드 카드의 AI 브리핑: 형식, 브리핑, 기상도를 넘기고 main이 다시 검사해 임시 폴더에 문서를 만든다
-  openBriefing: (request: { format: string; brief: unknown; forecast: unknown }) =>
-    ipcRenderer.invoke('hanpan:open-briefing', request),
+  openBriefing: (request: {
+    format: string
+    brief: unknown
+    forecast: unknown
+    dropped?: number
+  }) => ipcRenderer.invoke('hanpan:open-briefing', request),
   // 내 양식: ids and names only; the main process picks every path
   myForms: () => ipcRenderer.invoke('hanpan:my-forms'),
   myFormSources: () => ipcRenderer.invoke('hanpan:my-forms-sources'),

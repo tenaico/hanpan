@@ -60,3 +60,38 @@ describe('the HTML writer', () => {
     expect(html).toMatch(/font-weight:700[^>]*>헤드라인/)
   })
 })
+
+const LINKED: DocBlock = {
+  kind: 'item',
+  depth: 0,
+  marker: '[1]',
+  text: '제목 — 연합뉴스, 2026-11-09',
+  href: 'https://news.google.com/rss/articles/x?a=1&b=2',
+}
+
+describe('item links', () => {
+  it('makes an item with an https link a Word hyperlink, the marker outside it', async () => {
+    const zip = await JSZip.loadAsync(await blocksToDocx([LINKED], GONGMUN_THEME))
+    const xml = await zip.file('word/document.xml')!.async('string')
+    expect(xml).toContain('<w:hyperlink')
+    expect(xml).toContain('<w:rStyle w:val="Hyperlink"/>')
+    // the style the link names is defined, so Word shows it as a link
+    expect(await zip.file('word/styles.xml')!.async('string')).toContain('w:styleId="Hyperlink"')
+    expect(xml).toMatch(/>\[1\] <\/w:t><\/w:r><w:hyperlink/)
+    expect(await zip.file('word/_rels/document.xml.rels')!.async('string')).toContain(
+      'Target="https://news.google.com/rss/articles/x?a=1&amp;b=2" TargetMode="External"',
+    )
+  })
+
+  it('links an item in the page the PDF prints, escaping the address', () => {
+    expect(blocksToHtml([LINKED], GONGMUN_THEME)).toContain(
+      '<a href="https://news.google.com/rss/articles/x?a=1&amp;b=2">제목 — 연합뉴스, 2026-11-09</a>',
+    )
+  })
+
+  it('ignores a link that is not https', async () => {
+    const bad: DocBlock = { ...LINKED, href: 'javascript:alert(1)' } as DocBlock
+    expect(blocksToHtml([bad], GONGMUN_THEME)).not.toContain('<a ')
+    expect(await xmlOf([bad])).not.toContain('w:hyperlink')
+  })
+})
