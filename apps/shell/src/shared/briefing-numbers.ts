@@ -27,9 +27,9 @@ function numbersIn(text: string): { raw: string; value: string }[] {
   const out: { raw: string; value: string }[] = []
   for (const m of plain.matchAll(NUMBER)) {
     const start = m.index ?? 0
-    const end = start + m[0].length
-    // digits inside a Latin word are a name, not a value: HBM3E, H100, GPT-5
-    if (LATIN.test(plain.charAt(start - 1)) || LATIN.test(plain.charAt(end))) continue
+    // digits after a Latin letter are a name, not a value: HBM3E, H100, GPT-5;
+    // a Latin unit after the digits is still a value: 0.25%p, 3nm, 128GB
+    if (LATIN.test(plain.charAt(start - 1))) continue
     const raw = m[0].replace(/,+$/, '')
     out.push({ raw, value: valueOf(raw) })
   }

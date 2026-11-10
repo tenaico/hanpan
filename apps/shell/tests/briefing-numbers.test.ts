@@ -39,6 +39,13 @@ describe('unknownNumbers', () => {
   it('does not read digits inside Latin words', () => {
     expect(unknownNumbers(brief({ headline: 'HBM3E와 H100, GPT-5 수요' }), allowed, D)).toEqual([])
   })
+  it('reads a number with a Latin unit after it, such as 0.25%p and 3nm', () => {
+    expect(
+      unknownNumbers(brief({ headline: '금리 0.25%p 인하, 3nm 공정, HBM3E와 H100, GPT-5' }), allowed, D),
+    ).toEqual(['0.25%', '3'])
+    const a = allowedNumbers('- 반도체: 맑음 — 3nm 양산', D)
+    expect(unknownNumbers(brief({ headline: '3nm 공정' }), a, D)).toEqual([])
+  })
   it('finds a number the question did not carry, as the briefing wrote it', () => {
     expect(
       unknownNumbers(

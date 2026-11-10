@@ -18,17 +18,30 @@ export type GroundedBriefing =
   | { ok: true; brief: TrendBriefing; dropped: number }
   | { ok: false; error: string }
 
-/** the briefing without the [n] of an article not in the list, with the space before it */
+/**
+ * the briefing without the [n] of an article not in the list, with the space
+ * before it; an item left empty is dropped
+ */
 export function keepCitations(brief: TrendBriefing, articles: readonly number[]): TrendBriefing {
   const keep = (text: string) =>
-    text.replace(/ ?\[(\d{1,3})\]/g, (all, n: string) => (articles.includes(Number(n)) ? all : ''))
+    text
+      .replace(/ ?\[(\d{1,3})\]/g, (all, n: string) => (articles.includes(Number(n)) ? all : ''))
+      .trim()
+  const list = (values: string[]) => values.map(keep).filter(Boolean)
   return {
     headline: keep(brief.headline),
-    summary: brief.summary.map(keep),
-    outlook: brief.outlook.map(keep),
-    watch: brief.watch.map(keep),
+    summary: list(brief.summary),
+    outlook: list(brief.outlook),
+    watch: list(brief.watch),
   }
 }
+
+/** an emptied headline or summary becomes the line, so the briefing still opens */
+const opening = (brief: TrendBriefing, line: string): TrendBriefing => ({
+  ...brief,
+  headline: brief.headline || line,
+  summary: brief.summary.length > 0 ? brief.summary : [line],
+})
 
 /** the second question: the first, the earlier answer and the numbers to fix */
 export function briefingFixPrompt(
@@ -60,7 +73,7 @@ export async function groundedBriefing(
   if (!first.ok) return { ok: false, error: first.error }
   const parsed = parseBriefing(first.text)
   if (!parsed) return { ok: false, error: '' }
-  let brief = keepCitations(parsed, prompt.articles)
+  let brief = opening(keepCitations(parsed, prompt.articles), forecast.line)
   const allowed = allowedNumbers(prompt.user, forecast.date)
   const unknown = unknownNumbers(brief, allowed, forecast.date)
   if (unknown.length === 0) return { ok: true, brief, dropped: 0 }
@@ -69,7 +82,7 @@ export async function groundedBriefing(
   if (!budget || budget.estimate(fix.system, fix.user) <= budget.tokens) {
     const second = await ask(fix)
     const again = second.ok ? parseBriefing(second.text) : null
-    if (again) brief = keepCitations(again, prompt.articles)
+    if (again) brief = opening(keepCitations(again, prompt.articles), forecast.line)
   }
   return { ok: true, ...dropUnknownNumbers(brief, allowed, forecast.date, forecast.line) }
 }

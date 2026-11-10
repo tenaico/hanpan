@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { briefingFixPrompt, groundedBriefing } from '../src/shared/briefing-run'
+import { checkBriefing } from '../src/shared/trend-briefing'
 import type { TrendField, TrendForecast } from '../src/shared/trend-forecast'
 
 const article = (title: string, source: string, date: string) => ({
@@ -120,6 +121,17 @@ describe('groundedBriefing', () => {
       dropped: 0,
     })
     expect(JSON.stringify(r)).not.toContain('[9]')
+  })
+  it('still opens when a citation was all an item or the headline held', async () => {
+    const text = JSON.stringify({ headline: '[9]', summary: ['[9]'], outlook: ['[9]'], watch: [] })
+    const ask = vi.fn().mockResolvedValue({ ok: true, text })
+    const r = await groundedBriefing(withMaterial, ask)
+    expect(r).toEqual({
+      ok: true,
+      brief: { headline: withMaterial.line, summary: [withMaterial.line], outlook: [], watch: [] },
+      dropped: 0,
+    })
+    expect(r.ok && checkBriefing(r.brief)).toEqual(r.ok && r.brief)
   })
   it('passes the AI error through when the first answer fails', async () => {
     const ask = vi.fn().mockResolvedValue({ ok: false, error: '연결 끊김' })
