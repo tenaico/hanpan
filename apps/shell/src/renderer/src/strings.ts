@@ -57,7 +57,7 @@ export const strings = {
     newMindmap: '思维导图',
     newHwp: 'AI HWP',
     pdfToolsCard: 'PDF 工具',
-    pdfToolsCardSub: '合并 · 拆分 · 整理',
+    pdfToolsCardSub: '合并 · 拆分 · 压缩 PDF',
     setKoreanDocs: '韩国文档功能',
     setKoreanDocsDesc:
       'HWP 文档、公文工具、Hanpan 模板、设计板和 Gongu。关闭后将在主页和编辑器中隐藏。',
@@ -765,7 +765,7 @@ export const strings = {
     newMindmap: 'Mind Map',
     newHwp: 'AI HWP',
     pdfToolsCard: 'PDF tools',
-    pdfToolsCardSub: 'Merge · split · organize',
+    pdfToolsCardSub: 'Merge · split · shrink PDFs',
     setKoreanDocs: 'Korean document features',
     setKoreanDocsDesc:
       'HWP documents, official-letter tools, Hanpan templates, the design board and Gongu. Turn off to hide them on Home and in the editors.',
@@ -1503,7 +1503,7 @@ export const strings = {
     newMindmap: 'Sơ đồ tư duy',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Công cụ PDF',
-    pdfToolsCardSub: 'Gộp · tách · sắp xếp',
+    pdfToolsCardSub: 'Gộp · tách · giảm dung lượng PDF',
     setKoreanDocs: 'Tính năng tài liệu Hàn Quốc',
     setKoreanDocsDesc:
       'Tài liệu HWP, công cụ công văn, mẫu Hanpan, bảng thiết kế và Gongu. Tắt để ẩn chúng ở Trang chủ và trong các trình soạn thảo.',
@@ -2244,7 +2244,7 @@ export const strings = {
     newMindmap: 'マインドマップ',
     newHwp: 'AI HWP',
     pdfToolsCard: 'PDF ツール',
-    pdfToolsCardSub: '結合・分割・整理',
+    pdfToolsCardSub: 'PDFの結合・分割・圧縮',
     setKoreanDocs: '韓国の文書機能',
     setKoreanDocsDesc:
       'HWP 文書、公文書ツール、Hanpan テンプレート、デザインボード、Gongu。オフにするとホームとエディターで非表示になります。',
@@ -2999,7 +2999,7 @@ export const strings = {
     newMindmap: '마인드맵',
     newHwp: 'AI 한글',
     pdfToolsCard: 'PDF 도구',
-    pdfToolsCardSub: '병합 · 분할 · 정리',
+    pdfToolsCardSub: 'PDF 합치기 · 나누기 · 용량 줄이기',
     setKoreanDocs: '한국 문서 기능',
     setKoreanDocsDesc:
       '한글 문서, 공문 도구, 한판 양식, 디자인 보드, 공유마당. 끄면 홈과 편집기에서 숨깁니다.',
@@ -3736,7 +3736,7 @@ export const strings = {
     newMindmap: 'Carte mentale',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Outils PDF',
-    pdfToolsCardSub: 'Fusionner · diviser · organiser',
+    pdfToolsCardSub: 'Fusionner · diviser · compresser des PDF',
     setKoreanDocs: 'Fonctions de documents coréens',
     setKoreanDocsDesc:
       'Documents HWP, outils pour courriers officiels, modèles Hanpan, tableau de design et Gongu. Désactivez-les pour les masquer sur l’accueil et dans les éditeurs.',
@@ -4497,7 +4497,7 @@ export const strings = {
     newMindmap: 'Mindmap',
     newHwp: 'AI HWP',
     pdfToolsCard: 'PDF-Werkzeuge',
-    pdfToolsCardSub: 'Zusammenfügen · teilen · ordnen',
+    pdfToolsCardSub: 'PDFs zusammenfügen · teilen · verkleinern',
     setKoreanDocs: 'Koreanische Dokumentfunktionen',
     setKoreanDocsDesc:
       'HWP-Dokumente, Werkzeuge für Behördenschreiben, Hanpan-Vorlagen, das Design-Board und Gongu. Schalten Sie sie aus, um sie auf der Startseite und in den Editoren auszublenden.',
@@ -5267,7 +5267,7 @@ export const strings = {
     newMindmap: 'Mapa mental',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Herramientas PDF',
-    pdfToolsCardSub: 'Combinar · dividir · organizar',
+    pdfToolsCardSub: 'Combinar · dividir · comprimir PDF',
     setKoreanDocs: 'Funciones de documentos coreanos',
     setKoreanDocsDesc:
       'Documentos HWP, herramientas para oficios, plantillas de Hanpan, el tablero de diseño y Gongu. Desactívalos para ocultarlos en Inicio y en los editores.',
@@ -6023,7 +6023,7 @@ export const strings = {
     newMindmap: 'แผนที่ความคิด',
     newHwp: 'AI HWP',
     pdfToolsCard: 'เครื่องมือ PDF',
-    pdfToolsCardSub: 'รวม · แยก · จัดระเบียบ',
+    pdfToolsCardSub: 'รวม · แยก · ลดขนาด PDF',
     setKoreanDocs: 'ฟีเจอร์เอกสารเกาหลี',
     setKoreanDocsDesc:
       'เอกสาร HWP เครื่องมือหนังสือราชการ เทมเพลต Hanpan บอร์ดออกแบบ และ Gongu ปิดเพื่อซ่อนในหน้าแรกและในตัวแก้ไข',
@@ -6759,7 +6759,7 @@ export const strings = {
     newMindmap: 'Peta pikiran',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Alat PDF',
-    pdfToolsCardSub: 'Gabung · pisah · atur',
+    pdfToolsCardSub: 'Gabung · pisah · perkecil PDF',
     setKoreanDocs: 'Fitur dokumen Korea',
     setKoreanDocsDesc:
       'Dokumen HWP, alat surat resmi, templat Hanpan, papan desain, dan Gongu. Matikan untuk menyembunyikannya di Beranda dan di editor.',
@@ -7513,7 +7513,7 @@ export const strings = {
     newMindmap: 'Интеллект-карта',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Инструменты PDF',
-    pdfToolsCardSub: 'Объединить · разделить · упорядочить',
+    pdfToolsCardSub: 'Объединить · разделить · сжать PDF',
     setKoreanDocs: 'Функции для корейских документов',
     setKoreanDocsDesc:
       'Документы HWP, инструменты для официальных писем, шаблоны Hanpan, доска дизайна и Gongu. Выключите, чтобы скрыть их на главной странице и в редакторах.',
@@ -8267,7 +8267,7 @@ export const strings = {
     newMindmap: 'خريطة ذهنية',
     newHwp: 'AI HWP',
     pdfToolsCard: 'أدوات PDF',
-    pdfToolsCardSub: 'دمج · تقسيم · تنظيم',
+    pdfToolsCardSub: 'دمج · تقسيم · ضغط ملفات PDF',
     setKoreanDocs: 'ميزات المستندات الكورية',
     setKoreanDocsDesc:
       'مستندات HWP وأدوات الخطابات الرسمية وقوالب Hanpan ولوحة التصميم وGongu. أوقفها لإخفائها من الصفحة الرئيسية والمحررات.',
@@ -9002,7 +9002,7 @@ export const strings = {
     newMindmap: 'Mapa mental',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Ferramentas de PDF',
-    pdfToolsCardSub: 'Combinar · dividir · organizar',
+    pdfToolsCardSub: 'Combinar · dividir · compactar PDF',
     setKoreanDocs: 'Recursos de documentos coreanos',
     setKoreanDocsDesc:
       'Documentos HWP, ferramentas para ofícios, modelos do Hanpan, o quadro de design e o Gongu. Desative para ocultá-los no Início e nos editores.',
@@ -9750,7 +9750,7 @@ export const strings = {
     newMindmap: 'Mappa mentale',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Strumenti PDF',
-    pdfToolsCardSub: 'Unisci · dividi · organizza',
+    pdfToolsCardSub: 'Unisci · dividi · comprimi PDF',
     setKoreanDocs: 'Funzioni per documenti coreani',
     setKoreanDocsDesc:
       'Documenti HWP, strumenti per lettere ufficiali, modelli Hanpan, la bacheca di design e Gongu. Disattivali per nasconderli nella Home e negli editor.',
@@ -10498,7 +10498,7 @@ export const strings = {
     newMindmap: 'Mapa myśli',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Narzędzia PDF',
-    pdfToolsCardSub: 'Łącz · dziel · porządkuj',
+    pdfToolsCardSub: 'Łącz · dziel · zmniejszaj PDF',
     setKoreanDocs: 'Funkcje dokumentów koreańskich',
     setKoreanDocsDesc:
       'Dokumenty HWP, narzędzia do pism urzędowych, szablony Hanpan, tablica projektowa i Gongu. Wyłącz, aby ukryć je na stronie głównej i w edytorach.',
@@ -11242,7 +11242,7 @@ export const strings = {
     newMindmap: 'Myšlenková mapa',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Nástroje PDF',
-    pdfToolsCardSub: 'Spojit · rozdělit · uspořádat',
+    pdfToolsCardSub: 'Spojit · rozdělit · zmenšit PDF',
     setKoreanDocs: 'Funkce korejských dokumentů',
     setKoreanDocsDesc:
       'Dokumenty HWP, nástroje pro úřední dopisy, šablony Hanpan, návrhová tabule a Gongu. Vypnutím je skryjete na domovské obrazovce a v editorech.',
@@ -11982,7 +11982,7 @@ export const strings = {
     newMindmap: 'Mindmap',
     newHwp: 'AI HWP',
     pdfToolsCard: 'PDF-hulpmiddelen',
-    pdfToolsCardSub: 'Samenvoegen · splitsen · ordenen',
+    pdfToolsCardSub: 'PDF samenvoegen · splitsen · verkleinen',
     setKoreanDocs: 'Koreaanse documentfuncties',
     setKoreanDocsDesc:
       'HWP-documenten, hulpmiddelen voor officiële brieven, Hanpan-sjablonen, het ontwerpbord en Gongu. Zet ze uit om ze te verbergen op Start en in de editors.',
@@ -12729,7 +12729,7 @@ export const strings = {
     newMindmap: 'Peta minda',
     newHwp: 'AI HWP',
     pdfToolsCard: 'Alat PDF',
-    pdfToolsCardSub: 'Gabung · pisah · susun',
+    pdfToolsCardSub: 'Gabung · pisah · kecilkan PDF',
     setKoreanDocs: 'Ciri dokumen Korea',
     setKoreanDocsDesc:
       'Dokumen HWP, alat surat rasmi, templat Hanpan, papan reka bentuk dan Gongu. Matikan untuk menyembunyikannya di Laman Utama dan dalam editor.',
@@ -13475,7 +13475,7 @@ export const strings = {
     newMindmap: 'מפת חשיבה',
     newHwp: 'AI HWP',
     pdfToolsCard: 'כלי PDF',
-    pdfToolsCardSub: 'איחוד · פיצול · סידור',
+    pdfToolsCardSub: 'איחוד · פיצול · דחיסת PDF',
     setKoreanDocs: 'תכונות מסמכים קוריאניים',
     setKoreanDocsDesc:
       'מסמכי HWP, כלים למכתבים רשמיים, תבניות Hanpan, לוח העיצוב ו-Gongu. כבו כדי להסתיר אותם במסך הבית ובעורכים.',
@@ -14192,7 +14192,7 @@ export const strings = {
     newMindmap: 'माइंड मैप',
     newHwp: 'AI HWP',
     pdfToolsCard: 'PDF टूल',
-    pdfToolsCardSub: 'जोड़ें · बाँटें · व्यवस्थित करें',
+    pdfToolsCardSub: 'PDF जोड़ें · बाँटें · छोटा करें',
     setKoreanDocs: 'कोरियाई दस्तावेज़ सुविधाएँ',
     setKoreanDocsDesc:
       'HWP दस्तावेज़, आधिकारिक पत्र टूल, Hanpan टेम्पलेट, डिज़ाइन बोर्ड और Gongu. होम और संपादकों में छिपाने के लिए बंद करें.',
@@ -14927,7 +14927,7 @@ export const strings = {
     newMindmap: '心智圖',
     newHwp: 'AI HWP',
     pdfToolsCard: 'PDF 工具',
-    pdfToolsCardSub: '合併 · 分割 · 整理',
+    pdfToolsCardSub: '合併 · 分割 · 壓縮 PDF',
     setKoreanDocs: '韓國文件功能',
     setKoreanDocsDesc:
       'HWP 文件、公文工具、Hanpan 範本、設計板與 Gongu。關閉後會在首頁與編輯器中隱藏。',

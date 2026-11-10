@@ -48,7 +48,11 @@ import iconHwp from './assets/file-hwp.svg'
 import iconEpub from './assets/file-epub.svg'
 import iconPhoto from './assets/file-photo.svg'
 import iconIllust from './assets/file-illust.svg'
-import { GraphicsIcon } from './hanpan/GraphicsIcon'
+import iconDesign from './assets/file-design.svg'
+import iconMdConvert from './assets/file-md-convert.svg'
+import iconPdfTools from './assets/file-pdf-tools.svg'
+import iconOpen from './assets/file-open.svg'
+import iconTemplates from './assets/file-templates.svg'
 import { placeFolderMenu } from './folder-menu-position'
 import type {
   FolderEntry,
@@ -123,6 +127,18 @@ const GREET_ASK_KEYS = [
   'greetAsk5',
   'greetAsk6',
 ] as const satisfies readonly StringKey[]
+
+/** Hanpan apps on Home that are not a file format: the same page as the file icons */
+const APP_ICONS = {
+  templates: iconTemplates,
+  design: iconDesign,
+  'md-convert': iconMdConvert,
+  'pdf-tools': iconPdfTools,
+  open: iconOpen,
+  // AI Photo and AI Illustration: the icons their files wear (FILE_ICONS is keyed by extension)
+  photo: iconPhoto,
+  illust: iconIllust,
+}
 
 const FILE_ICONS: Record<string, string> = {
   docx: iconDocx,
@@ -1120,31 +1136,6 @@ function DropToOpenOverlay(): ReactElement | null {
 // ── Main component ──────────────────────────────────────
 
 /** 한판 양식 card: a ruled form page with a red seal */
-function TemplatesBadge() {
-  return (
-    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true" data-badge="templates">
-      <rect
-        x="6"
-        y="3"
-        width="22"
-        height="28"
-        rx="3"
-        fill="#fff"
-        stroke="#3b5ba5"
-        strokeWidth="1.6"
-      />
-      <path
-        d="M10 10h14M10 14.5h14M10 19h9"
-        stroke="#3b5ba5"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <circle cx="23" cy="25" r="4.6" fill="none" stroke="#d1383d" strokeWidth="1.8" />
-      <path d="M21 25h4" stroke="#d1383d" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 export function Home({
   connection,
   aiSettings,
@@ -2096,36 +2087,17 @@ export function Home({
   /** each app's icon on the new card and in "모든 앱" */
   function appIcon(key: AppKey): ReactElement {
     switch (key) {
+      // the Hanpan apps that are not a file format wear the same page as the documents
+      // (tools/gen-file-association-icons.mjs, 0.19.2): a form to fill in, not AI 한글's "가"
+      // (0.17 리뷰 v2 shell #29); the converter keeps Markdown's slate
       case 'templates':
-        // a form with a seal, not AI 한글's "가" (0.17 리뷰 v2 shell #29)
-        return <TemplatesBadge />
       case 'design':
-        return (
-          <span className="quick-folder hp-design-badge" aria-hidden="true">
-            ✦
-          </span>
-        )
       case 'md-convert':
-        return (
-          <span className="quick-folder hp-conv-badge" aria-hidden="true">
-            ⇄
-          </span>
-        )
       case 'pdf-tools':
-        return <FileBadge ext="pdf" size={28} />
+      case 'open':
       case 'photo':
       case 'illust':
-        return (
-          <span className="quick-folder" aria-hidden="true">
-            <GraphicsIcon kind={key} />
-          </span>
-        )
-      case 'open':
-        return (
-          <span className="quick-folder">
-            <FolderIcon size={16} />
-          </span>
-        )
+        return <img src={APP_ICONS[key]} width={28} height={28} alt="" aria-hidden="true" />
       default:
         return <FileBadge ext={key} size={28} />
     }
