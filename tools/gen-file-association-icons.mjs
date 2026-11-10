@@ -69,10 +69,10 @@ const GLYPH_FONT = join(root, 'packages/ui/template-fonts/Pretendard-Bold.otf')
  * color.
  */
 const FORMATS = {
-  docx: { color: '#5160BE', picto: 'paragraphs' }, // indigo
+  docx: { color: '#5160BE', picto: 'underlined' }, // indigo
   xlsx: { color: '#2A8572', picto: 'cells' }, // teal green
-  pptx: { color: '#C27630', picto: 'slide' }, // amber
-  pdf: { color: '#B84A5C', picto: 'stamp' }, // crimson
+  pptx: { color: '#C27630', picto: 'easel' }, // amber
+  pdf: { color: '#B84A5C', picto: 'dogear' }, // crimson
   hwp: { color: '#2E7FAA', picto: 'syllable' }, // cyan blue
   md: { color: '#4A5568', picto: 'hash' }, // slate
   html: { color: '#8257B6', picto: 'tag' }, // violet
@@ -80,12 +80,30 @@ const FORMATS = {
   epub: { color: '#8E5B3E', picto: 'book' }, // leather brown
   txt: { color: '#858D9B', picto: 'lines' }, // gray
   json: { color: '#977A2E', picto: 'braces' }, // ochre
-  photo: { color: '#C0466F', picto: 'picture' }, // rose (AI Photo, decision 0093)
-  illust: { color: '#2E8F9A', picto: 'pen' }, // sea teal (AI Illustration)
+  // AI Photo and AI Illustration (decision 0093) moved off the reds (pdf, mindmap) and the
+  // teals (xlsx, hwp) they sat between on Home's app list
+  photo: { color: '#A3449E', picto: 'picture' }, // magenta
+  illust: { color: '#3E9150', picto: 'pen' }, // green
+  // Hanpan's Home apps that are not a file format, on the same page (0.19.2): the converter
+  // and the PDF tools keep their format's color (they start from Markdown and PDF), the
+  // forms take the ochre nothing else on Home uses, opening a file stays neutral
+  'md-convert': { color: '#4A5568', picto: 'swap' }, // slate, as md
+  'pdf-tools': { color: '#B84A5C', picto: 'wrench' }, // crimson, as pdf
+  design: { color: '#D9603B', picto: 'sparkle' }, // coral
+  templates: { color: '#A8862A', picto: 'clipboard' }, // ochre
+  open: { color: '#858D9B', picto: 'folder' }, // gray
 }
 
 /** Formats shown only inside the app (tabs, menus, Home): no OS file association, so no .ico or .icns. */
-const TAB_ONLY = new Set(['photo', 'illust'])
+const TAB_ONLY = new Set([
+  'photo',
+  'illust',
+  'md-convert',
+  'design',
+  'templates',
+  'pdf-tools',
+  'open',
+])
 
 /** Attachment kinds that are not a single format. */
 const GENERIC = {
@@ -284,6 +302,92 @@ function pictogram(kind, b, fg, bg, sw, small) {
         (small ? '' : line(0.06, 0.78, 0.4, 0.78)) +
         `<circle cx="${num(X(1) - radius)}" cy="${num(Y(1) - radius)}" r="${num(radius)}" fill="${fg}"/>`
       )
+    }
+    // Pictograms that stay apart at 16 px by their outline, not by a few lines inside it
+    // (0.19.2: Word, PDF, PowerPoint, the forms and the PDF tools read alike in a file list)
+    case 'underlined': {
+      // an underlined A: text set and styled, no vendor's letter
+      return stroke(
+        `M${X(0.16)} ${Y(0.74)}L${X(0.5)} ${Y(0.02)}L${X(0.84)} ${Y(0.74)}` +
+          (small ? '' : `M${X(0.3)} ${Y(0.46)}H${X(0.7)}`) +
+          `M${X(0.06)} ${Y(0.96)}H${X(0.94)}`,
+        sw * (small ? 1 : 0.95),
+      )
+    }
+    case 'easel': {
+      // a slide on a stand: the screen, its title cut out above 16 px, and three legs
+      const screen = rect(X(0), Y(0), b.w, b.h * 0.6, sw * 0.7)
+      const title = small ? '' : stroke(`M${X(0.2)} ${Y(0.22)}H${X(0.62)}`, sw * 0.8, bg)
+      return (
+        screen +
+        title +
+        stroke(
+          `M${X(0.5)} ${Y(0.6)}V${Y(0.98)}M${X(0.5)} ${Y(0.66)}L${X(0.18)} ${Y(0.98)}M${X(0.5)} ${Y(0.66)}L${X(0.82)} ${Y(0.98)}`,
+          sw * 0.8,
+        )
+      )
+    }
+    case 'dogear': {
+      // a printed page with its corner folded down, text cut out of it above 16 px
+      // the fold is larger at 16 px, or the page reads as a plain block there
+      const cx = small ? 0.5 : 0.6
+      const cy = small ? 0.4 : 0.3
+      const page = `<path d="M${X(0.14)} ${Y(0)}H${X(cx)}L${X(0.9)} ${Y(cy)}V${Y(1)}H${X(0.14)}Z" fill="${fg}"/>`
+      const fold = `<path d="M${X(cx)} ${Y(0)}V${Y(cy)}H${X(0.9)}" fill="${bg}" stroke="${bg}" stroke-width="${num(sw * 0.35)}" stroke-linejoin="round"/>`
+      const text = small
+        ? ''
+        : stroke(`M${X(0.3)} ${Y(0.5)}H${X(0.74)}M${X(0.3)} ${Y(0.72)}H${X(0.62)}`, sw * 0.6, bg)
+      return page + fold + text
+    }
+    case 'wrench': {
+      // a wrench: the tools that work on whole PDF files (join, split, shrink)
+      const r = b.w * 0.27
+      const [hx, hy] = [b.x + b.w * 0.68, b.y + b.h * 0.3]
+      return (
+        stroke(`M${X(0.16)} ${Y(0.86)}L${num(hx)} ${num(hy)}`, sw * 1.35) +
+        `<circle cx="${num(hx)}" cy="${num(hy)}" r="${num(r)}" fill="${fg}"/>` +
+        stroke(`M${num(hx)} ${num(hy)}L${num(hx + r * 1.2)} ${num(hy - r * 1.2)}`, r * 0.85, bg)
+      )
+    }
+    case 'clipboard': {
+      // a form on a clipboard: the board, its clip and, above 16 px, a ticked line
+      const t = sw * (small ? 0.9 : 0.75)
+      const board = `<rect x="${num(b.x + t / 2)}" y="${num(Y(0.1) + t / 2)}" width="${num(b.w - t)}" height="${num(b.h * 0.9 - t)}" rx="${num(sw * 0.7)}" fill="none" stroke="${fg}" stroke-width="${num(t)}"/>`
+      const clip = rect(X(0.28), Y(0), b.w * 0.44, b.h * 0.22, sw * 0.4)
+      const marks = small
+        ? stroke(`M${X(0.28)} ${Y(0.56)}L${X(0.44)} ${Y(0.72)}L${X(0.74)} ${Y(0.42)}`, sw * 0.8)
+        : stroke(`M${X(0.24)} ${Y(0.5)}L${X(0.38)} ${Y(0.63)}L${X(0.66)} ${Y(0.36)}`, sw * 0.7) +
+          line(0.24, 0.8, 0.76, 0.8, sw * 0.7)
+      return board + clip + marks
+    }
+    case 'folder': {
+      // a folder: opening a file from this PC
+      return (
+        `<path d="M${X(0.02)} ${Y(0.12)}H${X(0.38)}L${X(0.5)} ${Y(0.26)}H${X(0.98)}V${Y(0.9)}H${X(0.02)}Z" fill="${fg}"/>` +
+        stroke(`M${X(0.02)} ${Y(0.4)}H${X(0.98)}`, sw * 0.45, bg)
+      )
+    }
+    case 'swap':
+      // one text into the other formats: an arrow out and an arrow back
+      return stroke(
+        `M${X(0.06)} ${Y(0.28)}H${X(0.9)}M${X(0.68)} ${Y(0.06)}L${X(0.92)} ${Y(0.28)}L${X(0.68)} ${Y(0.5)}` +
+          `M${X(0.94)} ${Y(0.72)}H${X(0.1)}M${X(0.32)} ${Y(0.5)}L${X(0.08)} ${Y(0.72)}L${X(0.32)} ${Y(0.94)}`,
+      )
+    case 'sparkle': {
+      // a four-pointed spark, and a smaller one beside it above 16 px
+      const spark = (cx, cy, r) => {
+        const k = r * 0.12
+        return (
+          `<path d="M${num(cx)} ${num(cy - r)}C${num(cx + k)} ${num(cy - k)} ${num(cx + k)} ${num(cy - k)} ${num(cx + r)} ${num(cy)}` +
+          `C${num(cx + k)} ${num(cy + k)} ${num(cx + k)} ${num(cy + k)} ${num(cx)} ${num(cy + r)}` +
+          `C${num(cx - k)} ${num(cy + k)} ${num(cx - k)} ${num(cy + k)} ${num(cx - r)} ${num(cy)}` +
+          `C${num(cx - k)} ${num(cy - k)} ${num(cx - k)} ${num(cy - k)} ${num(cx)} ${num(cy - r)}Z" fill="${fg}"/>`
+        )
+      }
+      return small
+        ? spark(b.x + b.w * 0.5, b.y + b.h * 0.5, b.w * 0.66)
+        : spark(b.x + b.w * 0.42, b.y + b.h * 0.56, b.w * 0.58) +
+            spark(b.x + b.w * 0.88, b.y + b.h * 0.12, b.w * 0.22)
     }
     case 'syllable':
       // a plain Hangul syllable, Korean text and nothing more; at 16 px the
