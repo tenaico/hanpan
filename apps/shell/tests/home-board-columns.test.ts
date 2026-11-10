@@ -59,6 +59,9 @@ async function widthIs(width: number): Promise<void> {
   await act(async () => report!([{ contentRect: { width } }]))
 }
 
+const order = (id: string) =>
+  host.querySelector<HTMLElement>(`[data-card="${id}"]`)!.style.getPropertyValue('--order')
+
 const boardEl = () => host.querySelector<HTMLElement>('[data-home-board]')!
 const span = (id: string) =>
   host.querySelector<HTMLElement>(`[data-card="${id}"]`)!.style.getPropertyValue('--span')
@@ -101,6 +104,16 @@ describe('board columns', () => {
     expect(span('start')).toBe('7')
     expect(span('trend')).toBe('5')
     expect(update).not.toHaveBeenCalled()
+  })
+
+  it('shows the apps card before the trend card once the board narrows', async () => {
+    await show(vi.fn())
+    expect(order('trend')).toBe('')
+    await widthIs(800)
+    expect(Number(order('apps'))).toBeLessThan(Number(order('trend')))
+    expect(Number(order('start'))).toBeLessThan(Number(order('apps')))
+    await widthIs(1060)
+    expect(order('trend')).toBe('')
   })
 
   it('has no resize corner on six columns while customizing (R15)', async () => {

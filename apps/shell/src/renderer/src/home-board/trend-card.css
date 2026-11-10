@@ -46,7 +46,8 @@
   text-decoration: underline;
 }
 
-/* one column below 360px of card width, two from there (spec 7.9) */
+/* one column below 300px of card width, two from there (spec 7.9); a 1280 window's card is
+   about 330px wide, and one column there hid half the fields behind a scroll */
 .hb-trend-fields {
   container-type: inline-size;
   flex: 1;
@@ -57,10 +58,10 @@
 .hb-trend-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1px 12px;
+  gap: 1px 8px;
 }
 
-@container (min-width: 360px) {
+@container (min-width: 300px) {
   .hb-trend-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -69,10 +70,10 @@
 .hb-trend-field {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
-  /* five 22px rows: the ten fields fit the default 5×2 card with the head and the line */
-  padding: 2px 6px;
+  /* five 20px rows: the ten fields fit the default 5×2 card with the head and two lines */
+  padding: 1px 4px;
   border: 0;
   border-radius: 6px;
   background: none;
@@ -121,12 +122,15 @@
 }
 
 .hb-trend-line {
+  /* up to two lines: the service's line is about as long as two lines of a 1366 window's card */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   margin: 0;
   font-size: 13px;
+  line-height: 1.4;
   color: var(--text);
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .hb-trend-line-head {
@@ -139,6 +143,19 @@
   font-size: 13px;
   color: var(--text-muted);
   text-align: center;
+}
+
+/* two columns on a narrow card: smaller words, so 'AI 트렌드 Big 5 구름 조금' fits whole */
+@container (min-width: 300px) and (max-width: 419px) {
+  .hb-trend-field {
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  .hb-trend-icon {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -65,6 +65,20 @@ const scrollsSideways = (page: Page) =>
 const trendFits = (page: Page) =>
   page.locator('.hb-trend-fields').evaluate((el) => el.scrollHeight <= el.clientHeight + 1)
 
+/** no field name and no line of the trend card is cut short with an ellipsis */
+const trendWordsWhole = (page: Page) =>
+  page.locator('.hb-trend').evaluate((card) => {
+    const over = (el: HTMLElement) =>
+      el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1
+    return [...card.querySelectorAll<HTMLElement>('.hb-trend-name, .hb-trend-line')]
+      .filter(over)
+      .map((el) => (el.classList.contains('hb-trend-line') ? 'line' : el.textContent))
+  })
+
+/** the live service's line is about this long; the fixture's is shorter */
+const LONG_LINE =
+  '반도체·AI 트렌드 Big 5는 맑은 편이고, AI 보안·윤리·주식은 궂은 편입니다. 부동산은 상승 흐름입니다.'
+
 /** the start card's chalkboard fits its two rows: nothing of it is cut off at the bottom */
 const startFits = (page: Page) =>
   page
@@ -309,7 +323,8 @@ test('fits a 1366×728 window without horizontal scrolling', async () => {
   const docs = realpathSync(mkdtempSync(join(tmpdir(), 'hanpan-e2e-board-')))
   const report = join(docs, '주간 업무 보고.md')
   writeFileSync(report, '# 주간 업무 보고\n\n- 시설 점검\n')
-  const server = await startTrendServer(await readFile(FORECAST, 'utf8'))
+  const forecast = JSON.parse(await readFile(FORECAST, 'utf8')) as { line: string }
+  const server = await startTrendServer(JSON.stringify({ ...forecast, line: LONG_LINE }))
   try {
     const launched = await launchShell({
       onboardingSeen: true,
@@ -358,14 +373,27 @@ test('fits a 1366×728 window without horizontal scrolling', async () => {
       for (const width of widths) expect(width).toBeLessThanOrEqual(160)
       expect(await startFits(page)).toBe(true)
       expect(await trendFits(page)).toBe(true)
+      expect(await trendWordsWhole(page)).toEqual([])
       await page.screenshot({ path: screenshotPath('home-board-1366') })
       await expectStartToolsClear(page)
+
+      // a 1280 window keeps twelve columns: the trend card is narrower but still two columns
+      await setWindowSize(app, 1280, 728)
+      await expect(board).toHaveAttribute('data-cols', '12')
+      await page.waitForTimeout(300)
+      expect(await trendFits(page)).toBe(true)
+      expect(await trendWordsWhole(page)).toEqual([])
+      await page.screenshot({ path: screenshotPath('home-board-1280') })
 
       await setWindowSize(app, 900, 700)
       await expect(board).not.toHaveAttribute('data-cols', '12')
       await page.waitForTimeout(300)
       expect(await scrollsSideways(page)).toBe(false)
       expect(await startFits(page)).toBe(true)
+      // narrowed, the apps come before the trend card so they stay near the top
+      const apps = await page.locator('[data-card-type="apps"]').boundingBox()
+      const narrowTrend = await page.locator('[data-card-type="trend"]').boundingBox()
+      expect(apps!.y).toBeLessThan(narrowTrend!.y)
       await page.screenshot({ path: screenshotPath('home-board-900') })
     } finally {
       await closeAndSaveVideo(launched, 'home-board-1366')

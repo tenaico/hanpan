@@ -28,6 +28,7 @@ import {
   boardColumns,
   cardPixels,
   cardSpan,
+  narrowOrder,
   columnPixels,
   sizeFromDrag,
   type BoardColumns,
@@ -342,6 +343,11 @@ export function BoardGrid(props: {
     )
   }
 
+  const shownOrder = narrowOrder(
+    props.board.cards.map((card) => card.type),
+    cols,
+  )
+
   return (
     <section
       ref={boardRef}
@@ -351,7 +357,8 @@ export function BoardGrid(props: {
       data-customizing={customizing ? 'true' : undefined}
       style={{ '--cols': cols } as CSSProperties}
     >
-      {props.board.cards.map((card) => {
+      {props.board.cards.map((card, index) => {
+        const shownAt = shownOrder?.[index]
         const name = props.cardName(card)
         const quiet = customizing && card.type !== 'apps' && props.editing !== card.id
         const preview = resizing?.id === card.id ? resizing : null
@@ -366,7 +373,13 @@ export function BoardGrid(props: {
             data-drop-target={dropTarget === card.id ? '' : undefined}
             data-resize-preview={preview ? sizeKey(preview.preview) : undefined}
             aria-label={name}
-            style={{ '--span': cardSpan(card.w, cols), '--rows': card.h } as CSSProperties}
+            style={
+              {
+                '--span': cardSpan(card.w, cols),
+                '--rows': card.h,
+                ...(shownAt === undefined ? {} : { '--order': shownAt }),
+              } as CSSProperties
+            }
             {...dropHandlers(card)}
           >
             <div className="hb-card-body" inert={quiet}>

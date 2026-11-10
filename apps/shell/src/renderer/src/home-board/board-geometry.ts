@@ -28,6 +28,26 @@ export function cardSpan(w: number, cols: BoardColumns): number {
   return 1
 }
 
+/**
+ * Where each card shows on a narrowed board (6 or 1 columns), or null to keep the stored
+ * order: there a trend card before the apps card would push the apps below the first screen,
+ * so the apps card moves up to just before it. The stored order is not touched.
+ */
+export function narrowOrder(types: readonly string[], cols: BoardColumns): number[] | null {
+  if (cols === 12) return null
+  const trend = types.indexOf('trend')
+  const apps = types.indexOf('apps')
+  if (trend < 0 || apps < 0 || apps < trend) return null
+  const shown = types.map((_, i) => i)
+  shown.splice(apps, 1)
+  shown.splice(trend, 0, apps)
+  const order = new Array<number>(types.length)
+  shown.forEach((index, position) => {
+    order[index] = position
+  })
+  return order
+}
+
 /** the files the recent card lists: six on a card three rows high, else three */
 export function recentRows(h: number): number {
   return h >= 3 ? 6 : 3

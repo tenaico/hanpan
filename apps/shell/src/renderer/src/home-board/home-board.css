@@ -29,6 +29,8 @@
 
 .hb-card {
   grid-column: span var(--span);
+  /* set only on a narrowed board (narrowOrder) */
+  order: var(--order, 0);
   grid-row: span var(--rows);
   min-width: 0;
   min-height: 0;
