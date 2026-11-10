@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react'
+import { estimatePromptTokens } from '@genoffice/agent-core'
+import { localContextLimit } from '@genoffice/ai-provider/browser'
 import { useDismissablePopover } from '@genoffice/ui'
 import type { TrendApi, TrendSnapshot } from '../../../shared/trend-api'
 import {
@@ -11,11 +13,12 @@ import {
 } from '../../../shared/trend-forecast'
 import {
   BRIEFING_FORMATS,
+  briefingBudget,
   briefingFormat,
-  briefingPrompt,
-  parseBriefing,
+  type BriefingBudget,
   type BriefingFormat,
 } from '../../../shared/trend-briefing'
+import { groundedBriefing } from '../../../shared/briefing-run'
 import { runDesignAi, type AiTurn, type DesignAiApi } from '../design/ai-run'
 import { useI18n } from '../locale'
 import type { StringKey } from '../locale'
@@ -119,6 +122,18 @@ export type BriefRunner = (
   signal: AbortSignal,
 ) => Promise<AiTurn>
 
+/** the context window of the AI the person chose; undefined when it has none or cannot be read */
+export type BriefContext = () => Promise<{ limit: number; known: boolean } | undefined>
+
+const settingsContext: BriefContext = async () => {
+  try {
+    const settings = await window.aiOffice?.aiGetSettings?.()
+    return settings ? localContextLimit(settings) : undefined
+  } catch {
+    return undefined
+  }
+}
+
 /** the AI the person chose in Settings, through Home's AI bridge (the design board's one-turn run) */
 function homeBriefRunner(lang: string, failed: string): BriefRunner | null {
   const home = window.aiOffice
@@ -171,7 +186,13 @@ export function TrendCard({
   now = () => new Date(),
   brief,
   koreanDocs = false,
-}: { now?: () => Date; brief?: BriefRunner; koreanDocs?: boolean } = {}): ReactElement {
+  briefContext = settingsContext,
+}: {
+  now?: () => Date
+  brief?: BriefRunner
+  koreanDocs?: boolean
+  briefContext?: BriefContext
+} = {}): ReactElement {
   const { t, lang, dateLocale } = useI18n()
   const [forecast, setForecast] = useState<TrendForecast | null>(null)
   const [briefing, setBriefing] = useState(false)
@@ -207,18 +228,27 @@ export function TrendCard({
     setBriefing(true)
     setBriefError(null)
     try {
-      const turn = await runner(briefingPrompt(forecast), stop.signal)
+      // the same estimate the send path uses, so the confirm dialog stays quiet within budget
+      const ctx = await briefContext().catch(() => undefined)
+      const budget: BriefingBudget | undefined = ctx
+        ? {
+            tokens: briefingBudget(ctx.limit),
+            estimate: (system, user) =>
+              estimatePromptTokens(system, [{ role: 'user', text: user }], []),
+          }
+        : undefined
+      const result = await groundedBriefing(forecast, (p) => runner(p, stop.signal), budget)
       if (stop.signal.aborted) return
-      if (!turn.ok) {
-        setBriefError(turn.error || t('hbTrendBriefFailed'))
+      if (!result.ok) {
+        setBriefError(result.error || t('hbTrendBriefFailed'))
         return
       }
-      const parsed = parseBriefing(turn.text)
-      if (!parsed) {
-        setBriefError(t('hbTrendBriefFailed'))
-        return
-      }
-      const opened = await window.hanpanApi?.openBriefing?.({ format: as, brief: parsed, forecast })
+      const opened = await window.hanpanApi?.openBriefing?.({
+        format: as,
+        brief: result.brief,
+        forecast,
+        dropped: result.dropped,
+      })
       if (!opened?.ok) setBriefError(t('hbTrendBriefFailed'))
     } catch {
       if (!stop.signal.aborted) setBriefError(t('hbTrendBriefFailed'))
