@@ -219,6 +219,65 @@ test.describe('AI Illustration tab', () => {
       await closeAndSaveVideo(launched, 'graphics-quick')
     }
   })
+
+  test("the graphics tabs follow Hanpan's theme", async () => {
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'graphics-theme' })
+    const { app, page } = launched
+    const setTheme = (theme: 'light' | 'dark'): Promise<void> =>
+      page.evaluate(
+        (t) =>
+          (
+            window as unknown as { aiOffice: { setTheme(v: string): Promise<void> } }
+          ).aiOffice.setTheme(t),
+        theme,
+      )
+    try {
+      // light on purpose, not "system": the OS of the PC running the suite does not decide
+      await setTheme('light')
+      await page.locator('.quick-card[data-new="illust"]').click()
+      const tab = await waitForPageWithUrl(app, '://illust/')
+      const noGpu = await graphicsGpuMissing(tab)
+      test.skip(noGpu !== null, noGpu ?? '')
+      await expect
+        .poll(() => inApp<number>(tab, 'return (await vc.commands()).length').catch(() => 0), {
+          timeout: 60_000,
+        })
+        .toBeGreaterThan(1000)
+      const tabTheme = (): Promise<string | null> =>
+        tab.evaluate(() => document.documentElement.getAttribute('data-theme'))
+      const appTheme = (): Promise<unknown> =>
+        inApp<{ mode?: unknown }>(tab, "return await vc.request('hanpan.status', {})").then(
+          (s) => s.mode,
+        )
+      const documents = (): Promise<number> =>
+        inApp<number>(tab, "return (await vc.request('ui.inspect', {})).documents.length")
+      expect(await tabTheme()).toBe('light')
+      await expect.poll(appTheme).toBe('light')
+
+      // a document open, and a mark on the frame's window: a reload would lose both
+      await inApp(
+        tab,
+        "await vc.execute('file.newWithoutDialog', {}); await vc.execute('shape.rectangle', { x: 72, y: 72, width: 200, height: 100 }); return 1",
+      )
+      const before = await documents()
+      expect(before).toBeGreaterThan(0)
+      await appFrame(tab, 'illust').evaluate(() => {
+        ;(window as unknown as { themeMark?: number }).themeMark = 1
+      })
+
+      await setTheme('dark')
+      await expect.poll(tabTheme).toBe('dark')
+      await expect.poll(appTheme).toBe('dark')
+      expect(await documents()).toBe(before)
+      expect(
+        await appFrame(tab, 'illust').evaluate(
+          () => (window as unknown as { themeMark?: number }).themeMark,
+        ),
+      ).toBe(1)
+    } finally {
+      await closeAndSaveVideo(launched, 'graphics-theme')
+    }
+  })
 })
 
 const PHOTO_WEB = join(
