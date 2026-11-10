@@ -13,6 +13,8 @@ import {
   createOpenDocumentTools,
   type OpenDocumentsControl,
 } from '../mcp/tools/open-documents-tools'
+import { createTrendTools } from '../mcp/tools/trend-tools'
+import type { TrendForecast } from '../../shared/trend-forecast'
 import { createPdfTools } from '../mcp/tools/pdf-tools'
 import { createSendToAppTools, type SendToAppControl } from '../mcp/tools/send-to-app-tools'
 import { createSessionHost, type TargetResolver } from '../mcp/tools/session-tools'
@@ -47,7 +49,7 @@ import type { AgentOpenTab } from './agent-skills'
  *   through the same withholding as the cross-file reads.
  */
 
-/** The 14 tools; the programs' start checks hold a session to the same list */
+/** The 15 tools; the programs' start checks hold a session to the same list */
 export const AGENT_MCP_TOOL_NAMES = AGENT_APP_MCP_TOOLS
 
 /** What `propose_skill` hands to the agent window (spec 5.6, 6.3) */
@@ -199,6 +201,8 @@ export interface AgentMcpDeps {
   skillTools?: AgentSkillToolHooks | undefined
   /** 다른 앱으로 보내기; absent, the tool is left out */
   sendToAppControl?: SendToAppControl | undefined
+  /** the forecast the Home trend card stored (read_trend_forecast) */
+  trendForecast?: (() => TrendForecast | null) | undefined
 }
 
 const WITHHELD_DECK =
@@ -307,6 +311,7 @@ export function buildAgentMcpTools(
       return control ? await control.list() : []
     }),
     ...(deps.sendToAppControl ? createSendToAppTools(deps.sendToAppControl) : []),
+    ...(deps.trendForecast ? createTrendTools({ read: deps.trendForecast }) : []),
   ]
   const wanted = new Set<string>(AGENT_MCP_TOOL_NAMES)
   return all

@@ -86,13 +86,16 @@ async function flush(): Promise<void> {
   })
 }
 
-async function render(now = new Date('2026-11-09T03:00:00Z')): Promise<void> {
+async function render(
+  now = new Date('2026-11-09T03:00:00Z'),
+  brief?: Parameters<typeof TrendCard>[0] extends infer P ? NonNullable<P>['brief'] : never,
+): Promise<void> {
   await act(async () =>
     root.render(
       createElement(
         LocaleProvider,
         { initial: 'ko' },
-        createElement(TrendCard, { now: () => now }),
+        createElement(TrendCard, { now: () => now, ...(brief ? { brief } : {}) }),
       ),
     ),
   )
@@ -208,5 +211,68 @@ describe('TrendCard', () => {
     root = createRoot(host)
     await render(new Date('2026-11-10T03:00:00Z'))
     expect(host.querySelector('[data-trend-asof]')?.textContent).toBe('11월 9일 기준')
+  })
+
+  describe('AI briefing (0.19.1)', () => {
+    const ANSWER = JSON.stringify({
+      headline: '오늘은 대체로 맑습니다',
+      summary: ['AI 분야가 맑습니다'],
+      outlook: ['흐름이 이어질 수 있습니다'],
+      watch: ['환율'],
+    })
+    let openBriefing: ReturnType<typeof vi.fn>
+
+    beforeEach(() => {
+      openBriefing = vi.fn(async () => ({ ok: true }))
+      window.hanpanApi = { openBriefing } as unknown as NonNullable<typeof window.hanpanApi>
+    })
+    afterEach(() => {
+      delete window.hanpanApi
+    })
+
+    const button = () => host.querySelector<HTMLButtonElement>('[data-trend-brief]')
+
+    it('asks the AI once with the forecast and opens the answer as a new Word document', async () => {
+      snapshot = { available: true, forecast: forecast(TEN()) }
+      const brief = vi.fn(async () => ({ ok: true as const, text: ANSWER }))
+      await render(undefined, brief)
+      await act(async () => button()!.click())
+      await flush()
+      expect(brief).toHaveBeenCalledTimes(1)
+      const prompt = brief.mock.calls[0]![0] as { system: string; user: string }
+      expect(prompt.system).toContain('"headline"')
+      expect(prompt.user).toContain('ai-title')
+      expect(prompt.user).toContain('오늘은 맑음')
+      expect(openBriefing).toHaveBeenCalledTimes(1)
+      const sent = openBriefing.mock.calls[0]![0] as { markdown: string; title: string }
+      expect(sent.title).toBe('트렌드 브리핑 2026-11-09')
+      expect(sent.markdown).toContain('오늘은 대체로 맑습니다')
+      expect(button()!.disabled).toBe(false)
+    })
+
+    it('says why when the AI cannot write it, and opens nothing', async () => {
+      snapshot = { available: true, forecast: forecast(TEN()) }
+      await render(undefined, async () => ({ ok: false as const, error: 'AI를 연결하세요.' }))
+      await act(async () => button()!.click())
+      await flush()
+      expect(host.querySelector('[data-trend-brief-error]')?.textContent).toBe('AI를 연결하세요.')
+      expect(openBriefing).not.toHaveBeenCalled()
+    })
+
+    it('says it could not write one when the answer is not a briefing', async () => {
+      snapshot = { available: true, forecast: forecast(TEN()) }
+      await render(undefined, async () => ({ ok: true as const, text: '못 하겠습니다.' }))
+      await act(async () => button()!.click())
+      await flush()
+      expect(host.querySelector('[data-trend-brief-error]')?.textContent).toContain(
+        '브리핑을 쓰지 못했습니다',
+      )
+      expect(openBriefing).not.toHaveBeenCalled()
+    })
+
+    it('offers no briefing without a forecast', async () => {
+      await render()
+      expect(button()).toBeNull()
+    })
   })
 })

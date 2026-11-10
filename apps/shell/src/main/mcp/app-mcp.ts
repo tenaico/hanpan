@@ -7,6 +7,8 @@ import { createPdfTools } from './tools/pdf-tools'
 import { createHwpTools } from './tools/hwp-tools'
 import { createSlidesTools, slidesDriver, type SlidesControl } from './tools/slides-tools'
 import { createSheetsTools, sheetsDriver, type SheetsControl } from './tools/sheets-tools'
+import type { TrendForecast } from '../../shared/trend-forecast'
+import { createTrendTools } from './tools/trend-tools'
 import {
   createSessionHost,
   createSessionTools,
@@ -57,6 +59,8 @@ export interface McpRuntimeDeps {
    * another editor; absent in headless runs, which leaves the tool out
    */
   sendToAppControl?: SendToAppControl
+  /** the forecast the Home trend card stored (read_trend_forecast); absent leaves the tool out */
+  trendForecast?: () => TrendForecast | null
   /** where the MCP log file lives (userData); logging is unavailable without it */
   logFilePath?: string
 }
@@ -198,6 +202,7 @@ function buildTools(): McpToolDefinition[] {
       ...(deps.openDocumentsControl ? { control: deps.openDocumentsControl } : {}),
     }),
     ...(deps.sendToAppControl ? createSendToAppTools(deps.sendToAppControl) : []),
+    ...(deps.trendForecast ? createTrendTools({ read: deps.trendForecast }) : []),
   ]
 }
 

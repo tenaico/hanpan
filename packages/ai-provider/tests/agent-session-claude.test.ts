@@ -284,7 +284,7 @@ describe('what the CLI reports at the start', () => {
     expect(claudeAgentInitProblem({ ...INIT, tools: undefined })).toMatch(/tool list/)
   })
 
-  it('accepts each of the 14 app tools by name and nothing else of the app server', () => {
+  it('accepts each of the 15 app tools by name and nothing else of the app server', () => {
     expect([...AGENT_APP_MCP_TOOLS]).toEqual([
       'open_documents',
       'read_document',
@@ -300,6 +300,7 @@ describe('what the CLI reports at the start', () => {
       'propose_skill',
       'propose_skill_install',
       'send_to_app',
+      'read_trend_forecast',
     ])
     const server = [{ name: 'ieumoffice-editor', status: 'connected' }]
     expect(

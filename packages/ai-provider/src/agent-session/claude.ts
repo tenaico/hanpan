@@ -65,7 +65,8 @@ export const APP_MCP_SERVER_NAME = 'ieumoffice-editor'
 /**
  * The tools of the app's MCP server an agent session gets (spec 6.6): the
  * open-document tools, the two file readers, the two skill proposals and
- * 다른 앱으로 보내기 (send_to_app, a new unsaved document of another editor). The
+ * 다른 앱으로 보내기 (send_to_app, a new unsaved document of another editor) and
+ * read_trend_forecast (0.19.1, the forecast the Home trend card stored). The
  * start checks of both programs end a session that reports any other tool of
  * that server.
  */
@@ -84,6 +85,7 @@ export const AGENT_APP_MCP_TOOLS = [
   'propose_skill',
   'propose_skill_install',
   'send_to_app',
+  'read_trend_forecast',
 ] as const
 
 const APP_MCP_TOOL_SET: ReadonlySet<string> = new Set(AGENT_APP_MCP_TOOLS)
