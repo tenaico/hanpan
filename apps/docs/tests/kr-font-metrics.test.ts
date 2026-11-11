@@ -6,7 +6,7 @@
  */
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { advanceEm, readWoff2 } from './helpers/woff2-metrics'
+import { advanceEm, cffCharstringWidths, readWoff2 } from './helpers/woff2-metrics'
 
 const FONTS = join(__dirname, '../src/renderer/fonts')
 const sans = readWoff2(join(FONTS, 'GenOfficeSansKR-Regular-subset.woff2'))
@@ -195,4 +195,24 @@ describe('bundled SC subset fullwidth coverage (TC serif chain shim)', () => {
       expect(advanceEm(sc, cp), `U+${cp.toString(16)}`).toBe(1)
     }
   })
+})
+
+describe('KR subsets: CFF charstring widths equal hmtx (tools/sync-cff-widths.py)', () => {
+  // Chromium on Windows lays out these CFF faces from the charstring width, not
+  // hmtx: GenOffice Serif KR drew "C" 1.34em wide (hmtx 0.708em + nominalWidthX
+  // 634), so Latin in a missing Korean face (휴먼명조) looked letter-spaced
+  for (const [name, font] of [
+    ['GenOffice Serif KR', serif],
+    ['GenOffice Sans KR', sans],
+    ['GenOffice Che Latin KR', readWoff2(join(FONTS, 'GenOfficeCheLatinKR.woff2'))],
+  ] as const) {
+    it(name, () => {
+      const widths = cffCharstringWidths(font)
+      const mismatched = widths.flatMap((w, gid) =>
+        Math.round(w) === font.advances[gid] ? [] : [`gid ${gid}: ${w} != ${font.advances[gid]}`],
+      )
+      expect(mismatched.slice(0, 5)).toEqual([])
+      expect(widths.length).toBe(font.advances.length)
+    })
+  }
 })
