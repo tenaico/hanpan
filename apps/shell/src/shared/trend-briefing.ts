@@ -462,7 +462,8 @@ export function briefingMarkdown(
       ? [
           '## 참고 자료',
           '',
-          sources.map((a) => `- [${a.n}] ${articleText(a)} ${a.url}`).join('\n'),
+          // a slide cannot open a link: the source line goes without its web address
+          sources.map((a) => `- [${a.n}] ${articleText(a)}`).join('\n'),
           '',
           ...(asOf ? [asOf, ''] : []),
         ]

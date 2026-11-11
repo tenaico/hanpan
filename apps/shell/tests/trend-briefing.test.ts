@@ -402,7 +402,9 @@ describe('grouped citations and an empty source (I1, M6)', () => {
       text: 'S1, 2026-11-09',
       href: S1_URL,
     })
-    expect(briefingMarkdown(cites, f).split('\n')).toContain(`- [1] S1, 2026-11-09 ${S1_URL}`)
+    // the slides cannot open a link: the source line has no web address
+    expect(briefingMarkdown(cites, f).split('\n')).toContain('- [1] S1, 2026-11-09')
+    expect(briefingMarkdown(cites, f)).not.toContain(S1_URL)
     expect(briefingPrompt(f).user.split('\n')).toContain('  [1] 2026-11-09 S1')
   })
 })
