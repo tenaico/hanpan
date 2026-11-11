@@ -5,6 +5,7 @@ import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { estimatePromptTokens } from '@genoffice/agent-core'
 import type { TrendApi, TrendSnapshot } from '../src/shared/trend-api'
 import { TREND_FIELD_KEYS, type TrendField, type TrendForecast } from '../src/shared/trend-forecast'
 import { TrendCard } from '../src/renderer/src/home-board/TrendCard'
@@ -90,13 +91,19 @@ async function render(
   now = new Date('2026-11-09T03:00:00Z'),
   brief?: Parameters<typeof TrendCard>[0] extends infer P ? NonNullable<P>['brief'] : never,
   koreanDocs = false,
+  briefContext?: () => Promise<{ limit: number; known: boolean } | undefined>,
 ): Promise<void> {
   await act(async () =>
     root.render(
       createElement(
         LocaleProvider,
         { initial: 'ko' },
-        createElement(TrendCard, { now: () => now, koreanDocs, ...(brief ? { brief } : {}) }),
+        createElement(TrendCard, {
+          now: () => now,
+          koreanDocs,
+          ...(brief ? { brief } : {}),
+          ...(briefContext ? { briefContext } : {}),
+        }),
       ),
     ),
   )
@@ -312,6 +319,76 @@ describe('TrendCard', () => {
         '브리핑을 쓰지 못했습니다',
       )
       expect(openBriefing).not.toHaveBeenCalled()
+    })
+
+    // ten fields with three articles each: far more than a 4,096-token window holds
+    const bigMaterial = (): TrendForecast =>
+      forecast(
+        Array.from({ length: 10 }, (_, i) =>
+          field(TREND_FIELD_KEYS[i]!, {
+            news: Array.from({ length: 3 }, (_, j) => ({
+              title: '기'.repeat(40) + j,
+              source: '연합뉴스',
+              date: '2026-11-09',
+              url: 'https://example.com/a',
+            })),
+            points: Array.from({ length: 3 }, () => '요'.repeat(200)),
+          }),
+        ),
+      )
+    const estimate = (s: string, u: string) =>
+      estimatePromptTokens(s, [{ role: 'user', text: u }], [])
+
+    it('asks the AI a second time when the answer has a number the forecast does not carry', async () => {
+      snapshot = { available: true, forecast: forecast(TEN()) }
+      const WITH_5100 = JSON.stringify({
+        headline: '오늘은 대체로 맑습니다',
+        summary: ['코스피가 5100을 넘었습니다'],
+        outlook: ['흐름이 이어질 수 있습니다'],
+        watch: ['환율'],
+      })
+      const brief = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: WITH_5100 })
+        .mockResolvedValueOnce({ ok: true, text: ANSWER })
+      await render(undefined, brief)
+      await act(async () => button()!.click())
+      await flush()
+      expect(brief).toHaveBeenCalledTimes(2)
+      expect(openBriefing.mock.calls[0]![0]).toMatchObject({ dropped: 0 })
+    })
+
+    it('fits the question to a small local AI', async () => {
+      snapshot = { available: true, forecast: bigMaterial() }
+      const brief = vi.fn(async () => ({ ok: true as const, text: ANSWER }))
+      await render(undefined, brief, false, async () => ({ limit: 4096, known: false }))
+      await act(async () => button()!.click())
+      await flush()
+      const prompt = brief.mock.calls[0]![0] as unknown as { system: string; user: string }
+      expect(estimate(prompt.system, prompt.user)).toBeLessThanOrEqual(3072)
+      expect(openBriefing).toHaveBeenCalledTimes(1)
+    })
+
+    it('sends all the material to an AI without a context limit', async () => {
+      snapshot = { available: true, forecast: bigMaterial() }
+      const brief = vi.fn(async () => ({ ok: true as const, text: ANSWER }))
+      await render(undefined, brief, false, async () => undefined)
+      await act(async () => button()!.click())
+      await flush()
+      const prompt = brief.mock.calls[0]![0] as unknown as { user: string }
+      expect(prompt.user.match(/\n {2}\[\d+\] /g)).toHaveLength(30)
+    })
+
+    it('sends all the material when the context cannot be read', async () => {
+      snapshot = { available: true, forecast: bigMaterial() }
+      const brief = vi.fn(async () => ({ ok: true as const, text: ANSWER }))
+      await render(undefined, brief, false, async () => {
+        throw new Error('no settings')
+      })
+      await act(async () => button()!.click())
+      await flush()
+      const prompt = brief.mock.calls[0]![0] as unknown as { user: string }
+      expect(prompt.user.match(/\n {2}\[\d+\] /g)).toHaveLength(30)
     })
 
     it('offers no briefing without a forecast', async () => {

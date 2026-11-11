@@ -294,6 +294,91 @@ test('the AI briefing writes the forecast into a new Word document (0.19.1)', as
   }
 })
 
+const FORECAST_MATERIAL = resolve(__dirname, 'assets/trend-forecast-material.json')
+/** both answers cite the first stocks article and carry 5,100, a number the material does not have */
+const GROUNDED_HEADLINE = '주식은 궂고 반도체는 맑습니다'
+const GROUNDED_ANSWER = JSON.stringify({
+  headline: GROUNDED_HEADLINE,
+  summary: ['코스피가 폭풍우입니다 [1]', '코스피 5,100선이 무너졌습니다'],
+  outlook: ['반도체 흐름이 이어질 수 있습니다'],
+  watch: ['환율'],
+})
+
+test('the AI briefing checks its numbers and lists the cited articles (0.19.3)', async () => {
+  test.setTimeout(150_000)
+  const material = await readFile(FORECAST_MATERIAL, 'utf8')
+  const firstStocksTitle = (
+    JSON.parse(material) as { fields: { key: string; news?: { title: string }[] }[] }
+  ).fields.find((f) => f.key === 'stocks')!.news![0]!.title
+  const server = await startTrendServer(material)
+  const launched = await launchShell({
+    onboardingSeen: true,
+    videoDir: 'home-board-grounded',
+    lang: 'ko',
+    env: { HANPAN_TREND_URL: server.url },
+  })
+  const { app, page } = launched
+  try {
+    await expect(page.locator('[data-trend-field]')).toHaveCount(10, { timeout: 30_000 })
+    await stubAiReady(app)
+    // each question takes the next answer from the list; both answers are the same
+    await app.evaluate(
+      ({ ipcMain, webContents }, answers) => {
+        const proto = Object.getPrototypeOf(webContents.getAllWebContents()[0]) as {
+          send: (channel: string, ...args: unknown[]) => void
+        }
+        const g = globalThis as unknown as { groundedPrompts: string[] }
+        g.groundedPrompts = []
+        ipcMain.removeHandler('ai:stream')
+        ipcMain.handle('ai:stream', (event, request: { requestId: string }) => {
+          const answer = answers[Math.min(g.groundedPrompts.length, answers.length - 1)]!
+          g.groundedPrompts.push(JSON.stringify(request))
+          const send = (chunk: Record<string, unknown>) =>
+            proto.send.call(event.sender, 'ai:stream-chunk', {
+              requestId: request.requestId,
+              ...chunk,
+            })
+          send({ type: 'delta', text: answer })
+          send({ type: 'done' })
+        })
+      },
+      [GROUNDED_ANSWER, GROUNDED_ANSWER],
+    )
+
+    await page.locator('[data-trend-brief]').click()
+    const doc = await waitForPageWithUrl(app, '://docs/')
+    const body = doc.locator('body')
+    await expect(body).toContainText(GROUNDED_HEADLINE, { timeout: 30_000 })
+    await expect(body).toContainText('참고 자료')
+    await expect(body).toContainText(firstStocksTitle)
+    await expect(body).toContainText('재료로 확인되지 않은 숫자가 있던 문장 1개를 뺐습니다.')
+    await expect(body).not.toContainText('5,100')
+    // asked twice: the second time with the unknown number named
+    const prompts = await app.evaluate(
+      () => (globalThis as unknown as { groundedPrompts: string[] }).groundedPrompts,
+    )
+    expect(prompts).toHaveLength(2)
+    expect(prompts[1]).toContain('앞선 답에 재료에 없는 숫자가 있습니다: 5,100')
+    await doc.screenshot({ path: screenshotPath('home-board-briefing-grounded') })
+
+    // the PDF briefing uses the same printToPDF: a link in the page stays a /URI in the file
+    const hasUri = await app.evaluate(async ({ BrowserWindow }) => {
+      const win = new BrowserWindow({ show: false })
+      try {
+        await win.loadURL('data:text/html,<a href="https://example.com/x">x</a>')
+        const pdf = await win.webContents.printToPDF({})
+        return Buffer.from(pdf).toString('latin1').includes('/URI')
+      } finally {
+        win.destroy()
+      }
+    })
+    expect(hasUri).toBe(true)
+  } finally {
+    await closeAndSaveVideo(launched, 'home-board-grounded')
+    await server.close()
+  }
+})
+
 test('unpinning AI Photo and pinning it back keeps the order after a restart', async () => {
   const first = await launchShell({ onboardingSeen: true, videoDir: 'home-board-pin', lang: 'ko' })
   const { page, userDataDir } = first

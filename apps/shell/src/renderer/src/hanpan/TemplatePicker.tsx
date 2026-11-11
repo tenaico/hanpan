@@ -37,6 +37,8 @@ export interface HanpanApi extends Partial<MarkdownConverterApi>, Partial<MyForm
     format: BriefingFormat
     brief: TrendBriefing
     forecast: TrendForecast
+    /** how many unverified sentences the briefing lost */
+    dropped?: number
   }): Promise<{ ok: true } | { ok: false; error: string }>
   /** a tab's "내 양식으로 저장…": open this dialog ready to save that tab; returns unsubscribe */
   onSaveMyFormRequest?(listener: (tabId: string) => void): () => void

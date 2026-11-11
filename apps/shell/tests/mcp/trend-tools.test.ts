@@ -68,4 +68,43 @@ describe('read_trend_forecast', () => {
     expect(answer.available).toBe(false)
     expect(answer.reason).toMatch(/trend card/i)
   })
+
+  it("returns a field's facts, points, news and their date", async () => {
+    const stored: TrendForecast = {
+      ...forecast,
+      fields: [
+        {
+          ...forecast.fields[0]!,
+          facts: [{ label: 'Operating profit', value: '107.4 trillion won' }],
+          points: ['p'],
+          news: [{ title: 'T', source: 'S', date: '2026-10-29', url: 'https://example.com/a' }],
+          materialAsOf: '2026-10-30',
+        },
+      ],
+    }
+    const answer = (await run(() => stored)) as { fields: Record<string, unknown>[] }
+    expect(answer.fields[0]).toMatchObject({
+      facts: [{ label: 'Operating profit', value: '107.4 trillion won' }],
+      points: ['p'],
+      news: [{ title: 'T', source: 'S', date: '2026-10-29', link: 'https://example.com/a' }],
+      materialAsOf: '2026-10-30',
+    })
+    expect(JSON.stringify(answer.fields[0])).not.toContain('"url"')
+  })
+
+  it('leaves the material keys out of a field without material', async () => {
+    const answer = (await run(() => forecast)) as { fields: Record<string, unknown>[] }
+    expect(Object.keys(answer.fields[0]!)).toEqual([
+      'field',
+      'signal',
+      'weather',
+      'headline',
+      'link',
+    ])
+  })
+
+  it('tells the AI to ground claims in the material', () => {
+    const [tool] = createTrendTools({ read: () => null })
+    expect(tool!.description).toContain('quote numbers only from this forecast')
+  })
 })

@@ -23,7 +23,8 @@ export function createTrendTools(deps: TrendToolsDeps): McpToolDefinition[] {
         'exchange rates, crypto), each with a weather word (signal 2 = clear/overheated … -2 = storm/' +
         "slump), a one-line headline and a link, plus the day's one-line summary. Quote only these " +
         'numbers and words; it is not investment advice. Use it when a document should reflect ' +
-        "today's trends.",
+        "today's trends." +
+        ' Each field may also carry key figures (facts), research summary points with their as-of date (materialAsOf) and up to three recent news headlines with links: ground any claim in these and quote numbers only from this forecast.',
       handler: () => {
         const forecast = deps.read()
         if (!forecast) {
@@ -45,6 +46,20 @@ export function createTrendTools(deps: TrendToolsDeps): McpToolDefinition[] {
             weather: f.s === null ? null : f.label,
             headline: f.s === null ? null : f.head,
             link: `${TREND_SITE}${f.path}`,
+            // material keys appear only when the stored field has them
+            ...(f.facts ? { facts: f.facts } : {}),
+            ...(f.points ? { points: f.points } : {}),
+            ...(f.news
+              ? {
+                  news: f.news.map((n) => ({
+                    title: n.title,
+                    source: n.source,
+                    date: n.date,
+                    link: n.url,
+                  })),
+                }
+              : {}),
+            ...(f.materialAsOf ? { materialAsOf: f.materialAsOf } : {}),
           })),
         }
       },

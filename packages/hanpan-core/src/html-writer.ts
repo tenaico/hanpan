@@ -5,7 +5,7 @@
  * the HTML output and prints it to PDF, so the PDF needs no font metrics from
  * the Word editor (which spaces out Hancom-font headings it cannot measure).
  */
-import type { DocBlock } from './blocks'
+import { httpsHref, type DocBlock } from './blocks'
 import type { DocTheme, ParaLook, TextLook } from './doc-theme'
 import { bodyLayout, itemLayout, tableColumnWidths } from './hwp-writer'
 
@@ -81,9 +81,12 @@ export function blocksToHtml(blocks: readonly DocBlock[], theme: DocTheme): stri
         break
       case 'item': {
         const layout = itemLayout(theme, b.depth, b.marker)
-        out.push(
-          `<p style="${css(layout.look, layout.margin, layout.indent)}">${escapeHtml(`${b.marker ? `${b.marker} ` : ''}${b.text}`)}</p>`,
-        )
+        const marker = b.marker ? `${b.marker} ` : ''
+        const href = httpsHref(b.href)
+        const text = href
+          ? `${escapeHtml(marker)}<a href="${escapeHtml(href)}">${escapeHtml(b.text)}</a>`
+          : escapeHtml(`${marker}${b.text}`)
+        out.push(`<p style="${css(layout.look, layout.margin, layout.indent)}">${text}</p>`)
         break
       }
       case 'para': {
