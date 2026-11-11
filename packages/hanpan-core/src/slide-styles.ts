@@ -351,7 +351,7 @@ const childLines = (g: Group, max = 3): string[] =>
  * 2026년. A particle may follow it as in a written sentence (30%가, 4.5점을, 2배로).
  */
 const FIGURE =
-  /(?<![\d.])(\d[\d,]*(?:\.\d+)?)\s?(%|배|억|만|천|명|건|개|원|점|회|곳|시간|x|X)(?=(?:으로|로|가|이|을|를|의|은|는|에|도|와|과|만)?(?![가-힣A-Za-z]))/
+  /(?<![\d.])(\d[\d,]*(?:\.\d+)?)\s?(%|배|(?:억|만|천)(?:\s?(?:명|원|건|개|달러|대|곳|회|가구|톤))?|명|건|개|원|점|회|곳|시간|x|X)(?=(?:으로|로|가|이|을|를|의|은|는|에|도|와|과|만)?(?![가-힣A-Za-z]))/
 /** The particle right after a figure, left out of the figure's label. */
 const LEADING_PARTICLE = /^(?:으로|로|가|이|을|를|의|은|는|에|도|와|과|만)(?![가-힣A-Za-z])/
 
@@ -360,12 +360,20 @@ interface Figure {
   label: string
 }
 
-function figureIn(text: string): Figure | undefined {
-  const m = FIGURE.exec(text)
-  if (!m) return undefined
-  const after = text.slice(m.index + m[0].length).replace(LEADING_PARTICLE, '')
-  const label = (text.slice(0, m.index) + ' ' + after).replace(/\s+/g, ' ').trim()
-  return { value: m[0].replace(/\s/g, ''), label: label || text }
+export function figureIn(text: string): Figure | undefined {
+  // in a paragraph, the figure's own sentence is its label
+  const sentences = text.split(/(?<=[.!?。])\s+/)
+  const sentence = sentences.find((t) => FIGURE.test(t))
+  if (!sentence) return undefined
+  const m = FIGURE.exec(sentence)!
+  const after = sentence.slice(m.index + m[0].length).replace(LEADING_PARTICLE, '')
+  const label = (sentence.slice(0, m.index) + ' ' + after)
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([,.])/g, '$1')
+    .trim()
+  // 12억 명: a counter after a large unit stays with the number, one space apart
+  const value = m[1]! + m[2]!.replace(/\s+/g, ' ')
+  return { value, label: label || sentence }
 }
 
 /** A group's figure: in its own words, else in its first sub-topic that has one. */

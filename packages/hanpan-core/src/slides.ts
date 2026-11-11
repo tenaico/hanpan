@@ -41,6 +41,11 @@ function notesOf(node: { note?: string | undefined; body?: string | undefined })
   return [node.body, node.note].filter((s): s is string => !!s && s.trim() !== '').join('\n\n')
 }
 
+/** A topic's words on a slide: a web address written at the end (a source line) is left off. */
+function slideText(title: string): string {
+  return title.replace(/\s+https?:\/\/\S+$/, '').trim() || title
+}
+
 export function outlineToSlides(
   outline: PanOutline,
   options: { includeNotes?: boolean } = {},
@@ -57,7 +62,7 @@ export function outlineToSlides(
     const lines: SlidePlanParagraph[] = []
     const visit = (nodes: readonly PanNode[], level: number) => {
       for (const node of nodes) {
-        lines.push({ text: node.title, bullet: 'char', level, key: node.key })
+        lines.push({ text: slideText(node.title), bullet: 'char', level, key: node.key })
         visit(node.children, level + 1)
       }
     }
