@@ -89,6 +89,11 @@ The printable Latin outlines are also horizontally transformed to the measured
 ink widths and side bearings of Batang/Malgun
 (`tools/normalize-kr-latin-metrics.py`,
 `tools/scale-kr-sans-latin-ink.py`).
+These are CFF fonts, which store each advance twice (hmtx and the charstring
+width); Chromium on Windows lays out with the charstring width, so after any of
+these tools run `tools/sync-cff-widths.py` on the three KR woff2 files. Without
+it Windows drew the serif subset's Latin about 0.63em too wide each
+(`tests/kr-font-metrics.test.ts` checks the two agree).
 
 `GenOfficeCheLatinKR.woff2` is an ASCII-only derivative of GenOffice Sans KR.
 `tools/build-kr-che-latin-font.py` gives its Noto-derived outlines fixed 0.5em

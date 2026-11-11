@@ -57,7 +57,8 @@ def normalize(path: Path, target: TTFont) -> None:
 
     def replace_outline(name: str, transform: Transform, adv: int) -> None:
         if is_cff:
-            pen = T2CharStringPen(adv, glyph_set)
+            # the charstring width operand is relative to nominalWidthX (sync-cff-widths.py)
+            pen = T2CharStringPen(adv - charstrings[name].private.nominalWidthX, glyph_set)
             glyph_set[name].draw(TransformPen(pen, transform))
             charstrings[name] = pen.getCharString(
                 private=charstrings[name].private, globalSubrs=cff.GlobalSubrs

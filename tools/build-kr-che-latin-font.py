@@ -72,7 +72,8 @@ def main() -> None:
         if ink > 0:
             sx = target_ink / ink
             transform = Transform().translate(target_lsb, 0).scale(sx, 1).translate(-x_min, 0)
-            pen = T2CharStringPen(half, glyph_set)
+            # the charstring width operand is relative to nominalWidthX (sync-cff-widths.py)
+            pen = T2CharStringPen(half - charstrings[name].private.nominalWidthX, glyph_set)
             glyph_set[name].draw(TransformPen(pen, transform))
             charstrings[name] = pen.getCharString(
                 private=charstrings[name].private, globalSubrs=cff.GlobalSubrs

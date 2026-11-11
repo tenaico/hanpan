@@ -75,7 +75,8 @@ def main() -> None:
         sx = target_ink / ink
         transform = Transform().translate(target_lsb, 0).scale(sx, 1).translate(-x_min, 0)
         adv = hmtx[name][0]
-        t2_pen = T2CharStringPen(adv, glyph_set)
+        # the charstring width operand is relative to nominalWidthX (sync-cff-widths.py)
+        t2_pen = T2CharStringPen(adv - charstrings[name].private.nominalWidthX, glyph_set)
         glyph_set[name].draw(TransformPen(t2_pen, transform))
         # CID-keyed CFF keeps Private dicts per FDArray entry; reuse the glyph's own
         new_cs = t2_pen.getCharString(
