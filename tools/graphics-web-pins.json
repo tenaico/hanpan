@@ -1,16 +1,16 @@
 {
   "photo": {
     "repo": "tenaico/hanpan-graphics",
-    "tag": "photo-v0.20.2-h6",
-    "asset": "hanpan-photo-web-0.20.2-h6.zip",
-    "size": 14844102,
-    "sha256": "07a90556b0b23a517fa9743f2f34368d2ad3e5c629938e42805d3602071d82b8"
+    "tag": "photo-v0.20.2-h8",
+    "asset": "hanpan-photo-web-0.20.2-h8.zip",
+    "size": 14851550,
+    "sha256": "d4c637bd904377cd99a585e108ad8175da3fe325d29c8cb215373c4f232a75d4"
   },
   "illust": {
     "repo": "tenaico/hanpan-graphics",
-    "tag": "illust-v0.21.0-h6",
-    "asset": "hanpan-illust-web-0.21.0-h6.zip",
-    "size": 33839686,
-    "sha256": "97bb023942a44c5c97a58d6a85c0e5278a8daa5ab8908aa3ae14f3e08192f5b1"
+    "tag": "illust-v0.21.0-h8",
+    "asset": "hanpan-illust-web-0.21.0-h8.zip",
+    "size": 33941243,
+    "sha256": "1cd4358dfc885ad444f70c026287559e9905ef8119e31159e31e6ccc87cbdcb2"
   }
 }

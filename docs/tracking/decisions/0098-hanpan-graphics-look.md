@@ -26,6 +26,6 @@
 ## 결과
 
 - AI 워드와 두 그래픽 탭을 나란히 놓으면 바탕·글자색·상태줄·메뉴줄 경계선·한글 글꼴이 같고 강조색만 다르다.
-- 웹판은 `-h7`(`photo-v0.20.2-h7`, `illust-v0.21.0-h7`)이고, `hanpan-graphics` smoke에 `theme`(메뉴줄·상태줄 색)·`font`(한국어 화면은 PC 글꼴, 다른 언어는 PC 글꼴 없음) 항목이 더해졌다. 한판의 고정 판(`tools/graphics-web-pins.json`)은 이 PR을 합치기 전에 `-h7`로 옮긴다. CI의 상표 검사는 화면 틀에 원본 이름이 남지 않는지 본다(정보 창과 고지는 예외).
+- 웹판은 `-h8`(`photo-v0.20.2-h8`, `illust-v0.21.0-h8`)이다. h7은 만들었지만 릴리스 점검에서 AI 포토의 독 사이에 검은 틈이 보여 게시하지 않았고, 그 결함을 고친 h8을 게시했다. `hanpan-graphics` smoke에 `theme`(메뉴줄·상태줄 색)·`font`(한국어 화면은 PC 글꼴, 다른 언어는 PC 글꼴 없음) 항목이 더해졌다. 한판의 고정 판(`tools/graphics-web-pins.json`)은 `-h8`로 옮겼다. CI의 상표 검사는 화면 틀에 원본 이름이 남지 않는지 본다(정보 창과 고지는 예외).
 - e2e `the graphics tabs follow Hanpan's theme`이 AI 일러스트와 AI 포토 탭 모두에서 탭의 `data-theme`과 앱의 `hanpan.status` 모드가 1초 안에 함께 바뀌고, 문서가 열린 frame이 다시 로드되지 않는지 본다. e2e `the .ai quick action`은 빠른 작업 줄의 `.ai로 보내기`가 `%PDF`·`%!PS`로 시작하는 파일을 쓰고 문서의 제목·변경 표시를 그대로 두는지 본다.
 - 원본이 `theme.rs`를 크게 바꾸면 테마 패치를 다시 맞춰야 한다. egui의 글자 그리기는 Chromium과 미세하게 달라 픽셀까지 같지는 않다. Mac에서 Apple SD 산돌고딕 Neo를 못 읽으면 NanumGothic으로 그리는 것을 받아들였다(Mac은 베타, smoke는 Windows에서만 돈다).
