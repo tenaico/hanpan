@@ -4,6 +4,7 @@
  * the notes the speaker notes. The shape matches the shell's slide outline
  * (`apps/shell/src/main/mcp/pptx-outline.ts`) so the same deck builder runs it.
  */
+import { splitTrailingUrl } from './blocks'
 import type { PanNode, PanOutline } from './outline'
 
 export interface SlidePlanParagraph {
@@ -43,7 +44,7 @@ function notesOf(node: { note?: string | undefined; body?: string | undefined })
 
 /** A topic's words on a slide: a web address written at the end (a source line) is left off. */
 function slideText(title: string): string {
-  return title.replace(/\s+https?:\/\/\S+$/, '').trim() || title
+  return splitTrailingUrl(title)?.head ?? title
 }
 
 export function outlineToSlides(

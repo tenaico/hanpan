@@ -63,7 +63,21 @@ export function httpsHref(href: string | undefined): string | undefined {
   return href?.startsWith('https://') ? href : undefined
 }
 
-const TRAILING_URL = /^(.*\S)\s+(https:\/\/\S+)$/
+/**
+ * A web address written at the end of a text, after a space: the text before it
+ * and the address, or null. A scan from the end, not a regular expression, so a
+ * long run of spaces costs linear time.
+ */
+export function splitTrailingUrl(text: string): { head: string; url: string } | null {
+  const trimmed = text.trimEnd()
+  let i = trimmed.length - 1
+  while (i >= 0 && !/\s/.test(trimmed[i]!)) i--
+  if (i < 0) return null
+  const url = trimmed.slice(i + 1)
+  if (!/^https?:\/\//i.test(url)) return null
+  const head = trimmed.slice(0, i).trimEnd()
+  return head ? { head, url } : null
+}
 
 /**
  * A note as blocks. Notes are often Markdown (a briefing map, an AI answer):
@@ -123,13 +137,13 @@ export function outlineToBlocks(outline: PanOutline, options: BlockOptions): Doc
         // in a chapter report the symbol ladder starts one level down
         const itemDepth = chapters ? depth - 1 : depth
         // a web address written at the end of a title (an older map) becomes the link
-        const trailing = node.href ? null : TRAILING_URL.exec(node.title)
-        const href = httpsHref(node.href ?? trailing?.[2])
+        const trailing = node.href ? null : splitTrailingUrl(node.title)
+        const href = httpsHref(node.href ?? trailing?.url)
         blocks.push({
           kind: 'item',
           depth: itemDepth,
           marker,
-          text: trailing && href ? trailing[1]!.trim() : node.title,
+          text: trailing && href ? trailing.head : node.title,
           ...(href ? { href } : {}),
           key: node.key,
         })

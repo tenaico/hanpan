@@ -369,7 +369,7 @@ export function figureIn(text: string): Figure | undefined {
   const after = sentence.slice(m.index + m[0].length).replace(LEADING_PARTICLE, '')
   const label = (sentence.slice(0, m.index) + ' ' + after)
     .replace(/\s+/g, ' ')
-    .replace(/\s+([,.])/g, '$1')
+    .replace(/ (?=[,.])/g, '')
     .trim()
   // 12억 명: a counter after a large unit stays with the number, one space apart
   const value = m[1]! + m[2]!.replace(/\s+/g, ' ')

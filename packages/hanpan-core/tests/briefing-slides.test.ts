@@ -46,3 +46,28 @@ describe('a source line on a slide', () => {
     expect(slides[1]!.paragraphs[0]!.text).toBe('[14] 코스피 상승 마감 — 동아일보, 2026-11-11')
   })
 })
+
+describe('long hostile text', () => {
+  const quick = (run: () => unknown) => {
+    const start = performance.now()
+    run()
+    return performance.now() - start
+  }
+  const tabs = 'a' + '\t'.repeat(40_000) + 'b'
+
+  it('reads a figure, a slide line and a source line in linear time', async () => {
+    const { outlineToBlocks } = await import('../src/blocks')
+    const { plainInline } = await import('../src/markdown-blocks')
+    expect(quick(() => figureIn(`매출 30% ${tabs}`))).toBeLessThan(200)
+    const outline = {
+      title: 't',
+      rootKey: 'r',
+      nodes: [{ key: 'a', title: tabs, children: [{ key: 'b', title: tabs, children: [] }] }],
+    }
+    expect(quick(() => outlineToSlides(outline))).toBeLessThan(200)
+    expect(quick(() => outlineToBlocks(outline, { style: 'chapter-report' }))).toBeLessThan(200)
+    expect(quick(() => plainInline('!['.repeat(20_000)))).toBeLessThan(200)
+    expect(quick(() => plainInline('![]('.repeat(20_000)))).toBeLessThan(200)
+    expect(quick(() => plainInline('['.repeat(20_000) + ']('))).toBeLessThan(200)
+  })
+})

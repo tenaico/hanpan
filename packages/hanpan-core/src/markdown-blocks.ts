@@ -25,15 +25,18 @@ export interface MarkdownBlocksOptions {
 const PICTURE_LINE = /^!\[([^\]]*)\]\(picture:([a-z0-9-]+)\)$/
 
 export function plainInline(text: string): string {
-  return text
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/__([^_]+)__/g, '$1')
-    .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1$2')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/<br\s*\/?>/gi, ' ')
-    .trim()
+  return (
+    text
+      // bounded parts keep these linear on long text with many '[' or '('
+      .replace(/!\[([^\]\n]{0,500})\]\([^)\n]{0,2048}\)/g, '$1')
+      .replace(/\[([^\]\n]{1,500})\]\([^)\n]{0,2048}\)/g, '$1')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/__([^_]+)__/g, '$1')
+      .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1$2')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/<br\s*\/?>/gi, ' ')
+      .trim()
+  )
 }
 
 const TABLE_RULE = /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/
