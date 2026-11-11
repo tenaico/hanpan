@@ -189,3 +189,31 @@ describe('what the AI is asked to write', () => {
     })
   })
 })
+
+describe('a linked source in a document', () => {
+  it('is one line: its note (full title, date) stays in the map', () => {
+    const blocks = outlineToBlocks(
+      {
+        title: 't',
+        rootKey: 'r',
+        nodes: [
+          {
+            key: 'refs',
+            title: '참고 자료',
+            children: [
+              {
+                key: 'r1',
+                title: '[1] 반도체 기사… — 연합뉴스',
+                href: 'https://news.example.com/1',
+                note: '반도체 기사 전체 제목\n2026-11-11',
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+      { style: 'chapter-report' },
+    )
+    expect(blocks.filter((b) => 'key' in b && b.key === 'r1').map((b) => b.kind)).toEqual(['item'])
+  })
+})

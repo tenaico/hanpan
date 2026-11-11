@@ -144,8 +144,10 @@ export function outlineToBlocks(outline: PanOutline, options: BlockOptions): Doc
           blocks.push({ kind: 'para', depth: ownDepth, text: line, role: 'body', key: node.key })
         }
       }
-      // the written sentences were made from the note: the note's prose is not repeated
-      if (includeNotes) blocks.push(...noteBlocks(node.note, ownDepth, node.key, 'note', !written))
+      // the written sentences were made from the note, and a linked source is
+      // one line (its note holds the full title and date): no prose repeated
+      const prose = !written && !httpsHref(node.href)
+      if (includeNotes) blocks.push(...noteBlocks(node.note, ownDepth, node.key, 'note', prose))
       if (node.image)
         blocks.push({ kind: 'image', depth: ownDepth, image: node.image, key: node.key })
       visit(node.children, depth + 1)
