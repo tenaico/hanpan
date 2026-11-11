@@ -209,3 +209,173 @@ export function advanceEm(font: Woff2Font, cp: number): number {
   if (gid === undefined) throw new Error(`U+${cp.toString(16)} not in cmap`)
   return font.advances[gid] / font.unitsPerEm
 }
+
+/** CFF INDEX at off: item buffers and the offset just past the INDEX */
+function cffIndex(cff: Buffer, off: number): { items: Buffer[]; end: number } {
+  const count = cff.readUInt16BE(off)
+  if (count === 0) return { items: [], end: off + 2 }
+  const offSize = cff[off + 2]
+  const offsetAt = (i: number) => {
+    let v = 0
+    for (let b = 0; b < offSize; b++) v = v * 256 + cff[off + 3 + i * offSize + b]
+    return v
+  }
+  const dataStart = off + 3 + (count + 1) * offSize - 1
+  const items: Buffer[] = []
+  for (let i = 0; i < count; i++) {
+    items.push(cff.subarray(dataStart + offsetAt(i), dataStart + offsetAt(i + 1)))
+  }
+  return { items, end: dataStart + offsetAt(count) }
+}
+
+/** CFF DICT → operator key ('17', '12 36', …) → operands */
+function cffDict(buf: Buffer): Map<string, number[]> {
+  const out = new Map<string, number[]>()
+  let ops: number[] = []
+  let i = 0
+  while (i < buf.length) {
+    const b = buf[i]
+    if (b <= 21) {
+      const key = b === 12 ? `12 ${buf[++i]}` : String(b)
+      out.set(key, ops)
+      ops = []
+      i++
+    } else if (b === 28) {
+      ops.push(buf.readInt16BE(i + 1))
+      i += 3
+    } else if (b === 29) {
+      ops.push(buf.readInt32BE(i + 1))
+      i += 5
+    } else if (b === 30) {
+      // real number: skip nibbles to the 0xf terminator (no width operand uses one)
+      i++
+      while ((buf[i] & 0x0f) !== 0x0f && buf[i] >> 4 !== 0x0f) i++
+      i++
+      ops.push(NaN)
+    } else if (b <= 246) {
+      ops.push(b - 139)
+      i++
+    } else if (b <= 250) {
+      ops.push((b - 247) * 256 + buf[i + 1] + 108)
+      i += 2
+    } else {
+      ops.push(-(b - 251) * 256 - buf[i + 1] - 108)
+      i += 2
+    }
+  }
+  return out
+}
+
+const subrBias = (n: number) => (n < 1240 ? 107 : n < 33900 ? 1131 : 32768)
+
+/**
+ * Advance width each glyph's Type 2 charstring encodes (nominalWidthX + the
+ * optional leading operand, else defaultWidthX). Engines that lay out from the
+ * charstring rather than hmtx (Chromium on Windows) use this value.
+ */
+export function cffCharstringWidths(font: Woff2Font): number[] {
+  const cff = font.tables.get('CFF ')
+  if (!cff) throw new Error('font has no CFF table')
+  const names = cffIndex(cff, cff[2])
+  const topDicts = cffIndex(cff, names.end)
+  const strings = cffIndex(cff, topDicts.end)
+  const gsubrs = cffIndex(cff, strings.end).items
+  const top = cffDict(topDicts.items[0])
+  const charStrings = cffIndex(cff, top.get('17')![0]).items
+  interface Priv {
+    nominal: number
+    dflt: number
+    subrs: Buffer[]
+  }
+  const readPrivate = ([size, off]: number[]): Priv => {
+    const d = cffDict(cff.subarray(off, off + size))
+    const subrsOff = d.get('19')?.[0]
+    return {
+      nominal: d.get('21')?.[0] ?? 0,
+      dflt: d.get('20')?.[0] ?? 0,
+      subrs: subrsOff === undefined ? [] : cffIndex(cff, off + subrsOff).items,
+    }
+  }
+  let privFor: (gid: number) => Priv
+  if (top.has('12 36')) {
+    const fds = cffIndex(cff, top.get('12 36')![0]).items.map((fd) =>
+      readPrivate(cffDict(fd).get('18')!),
+    )
+    const sel = top.get('12 37')![0]
+    const fmt = cff[sel]
+    const fdOf: number[] = []
+    if (fmt === 0) {
+      for (let g = 0; g < charStrings.length; g++) fdOf.push(cff[sel + 1 + g])
+    } else if (fmt === 3) {
+      const nRanges = cff.readUInt16BE(sel + 1)
+      for (let r = 0; r < nRanges; r++) {
+        const first = cff.readUInt16BE(sel + 3 + r * 3)
+        const fd = cff[sel + 5 + r * 3]
+        const next = cff.readUInt16BE(sel + 6 + r * 3)
+        for (let g = first; g < next; g++) fdOf[g] = fd
+      }
+    } else {
+      throw new Error(`FDSelect format ${fmt} unsupported`)
+    }
+    privFor = (gid) => fds[fdOf[gid]]
+  } else {
+    const priv = readPrivate(top.get('18')!)
+    privFor = () => priv
+  }
+
+  const widthOf = (cs: Buffer, priv: Priv): number => {
+    const stack: number[] = []
+    // walks operands up to the first stack-clearing operator, following subroutine calls
+    const run = (buf: Buffer): number | null | undefined => {
+      let i = 0
+      while (i < buf.length) {
+        const b = buf[i]
+        if (b === 28) {
+          stack.push(buf.readInt16BE(i + 1))
+          i += 3
+        } else if (b === 255) {
+          stack.push(buf.readInt32BE(i + 1) / 65536)
+          i += 5
+        } else if (b >= 32) {
+          if (b <= 246) {
+            stack.push(b - 139)
+            i++
+          } else if (b <= 250) {
+            stack.push((b - 247) * 256 + buf[i + 1] + 108)
+            i += 2
+          } else {
+            stack.push(-(b - 251) * 256 - buf[i + 1] - 108)
+            i += 2
+          }
+        } else if (b === 10 || b === 29) {
+          const subrs = b === 10 ? priv.subrs : gsubrs
+          const idx = stack.pop()! + subrBias(subrs.length)
+          const r = run(subrs[idx])
+          if (r !== undefined) return r
+          i++
+        } else if (b === 11) {
+          return undefined
+        } else {
+          const n = stack.length
+          // hstem/vstem(hm), hintmask/cntrmask take pairs; moveto 2 or 1; endchar 0 or 4
+          const extra =
+            b === 1 || b === 3 || b === 18 || b === 23 || b === 19 || b === 20
+              ? n % 2 === 1
+              : b === 21
+                ? n > 2
+                : b === 4 || b === 22
+                  ? n > 1
+                  : b === 14
+                    ? n === 1 || n === 5
+                    : null
+          if (extra === null) throw new Error(`unexpected first operator ${b}`)
+          return extra ? stack[0] : null
+        }
+      }
+      return undefined
+    }
+    const w = run(cs)
+    return w === null || w === undefined ? priv.dflt : priv.nominal + w
+  }
+  return charStrings.map((cs, gid) => widthOf(cs, privFor(gid)))
+}

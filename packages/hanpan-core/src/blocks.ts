@@ -4,6 +4,7 @@
  * blocks decide what goes on the page, in which order, with which marker and
  * which link key.
  */
+import { markdownTableAt, plainInline } from './markdown-blocks'
 import { markerFor, type MarkerStyle } from './numbering'
 import type { PanImage, PanNode, PanOutline } from './outline'
 
@@ -62,17 +63,55 @@ export function httpsHref(href: string | undefined): string | undefined {
   return href?.startsWith('https://') ? href : undefined
 }
 
-/** A note line starting with ※ is a reference line, anything else is prose. */
-function noteBlocks(node: PanNode, depth: number): DocBlock[] {
-  if (!node.note) return []
+/**
+ * A web address written at the end of a text, after a space: the text before it
+ * and the address, or null. A scan from the end, not a regular expression, so a
+ * long run of spaces costs linear time.
+ */
+export function splitTrailingUrl(text: string): { head: string; url: string } | null {
+  const trimmed = text.trimEnd()
+  let i = trimmed.length - 1
+  while (i >= 0 && !/\s/.test(trimmed[i]!)) i--
+  if (i < 0) return null
+  const url = trimmed.slice(i + 1)
+  if (!/^https?:\/\//i.test(url)) return null
+  const head = trimmed.slice(0, i).trimEnd()
+  return head ? { head, url } : null
+}
+
+/**
+ * A note as blocks. Notes are often Markdown (a briefing map, an AI answer):
+ * a `| … |` table becomes a real table, a line wrapped in `**` a bold line, and
+ * other inline marks are reduced to their text. A line starting with ※ is a
+ * reference line, anything else is prose in `role`. Without `prose`, only the
+ * tables and reference lines are kept: the item already has written sentences.
+ */
+function noteBlocks(
+  note: string | undefined,
+  depth: number,
+  key: string,
+  role: 'note' | 'lead',
+  prose = true,
+): DocBlock[] {
+  if (!note) return []
+  const lines = note.split('\n').map((l) => l.trim())
   const out: DocBlock[] = []
-  for (const line of node.note
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean)) {
-    if (line.startsWith('※'))
-      out.push({ kind: 'reference', depth, text: line.replace(/^※\s*/, ''), key: node.key })
-    else out.push({ kind: 'para', depth, text: line, role: 'note', key: node.key })
+  for (let i = 0; i < lines.length; i++) {
+    const table = markdownTableAt(lines, i)
+    if (table) {
+      out.push({ kind: 'table', rows: table.rows, header: true })
+      i = table.next - 1
+      continue
+    }
+    const line = lines[i]!
+    if (!line) continue
+    const bold = /^\*\*[^*].*\*\*$/.test(line)
+    const text = plainInline(line)
+    if (!text) continue
+    if (text.startsWith('※'))
+      out.push({ kind: 'reference', depth, text: text.replace(/^※\s*/, ''), key })
+    else if (prose)
+      out.push({ kind: 'para', depth, text, role, key, ...(bold ? { bold: true } : {}) })
   }
   return out
 }
@@ -85,14 +124,7 @@ export function outlineToBlocks(outline: PanOutline, options: BlockOptions): Doc
     (s): s is string => !!s && s.trim() !== '',
   )
   if (metaParts.length) blocks.push({ kind: 'meta', text: metaParts.join('  ') })
-  if (includeNotes && outline.note) {
-    for (const line of outline.note
-      .split('\n')
-      .map((l) => l.trim())
-      .filter(Boolean)) {
-      blocks.push({ kind: 'para', depth: 0, text: line, role: 'lead', key: outline.rootKey })
-    }
-  }
+  if (includeNotes) blocks.push(...noteBlocks(outline.note, 0, outline.rootKey, 'lead'))
 
   // the first level becomes chapters, and the item ladder starts one level down
   const chapters = options.style === 'chapter-report' || options.style === 'outline'
@@ -104,18 +136,32 @@ export function outlineToBlocks(outline: PanOutline, options: BlockOptions): Doc
       } else {
         // in a chapter report the symbol ladder starts one level down
         const itemDepth = chapters ? depth - 1 : depth
-        blocks.push({ kind: 'item', depth: itemDepth, marker, text: node.title, key: node.key })
+        // a web address written at the end of a title (an older map) becomes the link
+        const trailing = node.href ? null : splitTrailingUrl(node.title)
+        const href = httpsHref(node.href ?? trailing?.url)
+        blocks.push({
+          kind: 'item',
+          depth: itemDepth,
+          marker,
+          text: trailing && href ? trailing.head : node.title,
+          ...(href ? { href } : {}),
+          key: node.key,
+        })
       }
       const ownDepth = chapters ? Math.max(0, depth - 1) : depth
-      if (includeBodies && node.body) {
-        for (const line of node.body
+      const written = includeBodies && !!node.body
+      if (written) {
+        for (const line of (node.body ?? '')
           .split('\n')
           .map((l) => l.trim())
           .filter(Boolean)) {
           blocks.push({ kind: 'para', depth: ownDepth, text: line, role: 'body', key: node.key })
         }
       }
-      if (includeNotes) blocks.push(...noteBlocks(node, ownDepth))
+      // the written sentences were made from the note, and a linked source is
+      // one line (its note holds the full title and date): no prose repeated
+      const prose = !written && !httpsHref(node.href)
+      if (includeNotes) blocks.push(...noteBlocks(node.note, ownDepth, node.key, 'note', prose))
       if (node.image)
         blocks.push({ kind: 'image', depth: ownDepth, image: node.image, key: node.key })
       visit(node.children, depth + 1)

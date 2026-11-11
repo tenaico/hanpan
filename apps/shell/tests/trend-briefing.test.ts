@@ -8,13 +8,18 @@ import {
   briefingDropped,
   briefingBlocks,
   briefingFormat,
+  briefingMapMarkdown,
   briefingMarkdown,
   briefingPrompt,
   briefingTitle,
   checkBriefing,
   citedArticles,
+  MAP_TITLE_MAX,
+  mapItemTitle,
   parseBriefing,
 } from '../src/shared/trend-briefing'
+import { noteText, openXmind, type XmindTopic } from '@genoffice/xmind-engine'
+import { buildTargetDocument } from '../src/main/send-to-app/from-markdown'
 import type { TrendField, TrendForecast } from '../src/shared/trend-forecast'
 
 /** 트렌드 카드의 'AI 브리핑' (0.19.1): 오늘의 기상도 → AI 한 번 → 새 Word 문서 */
@@ -360,10 +365,11 @@ describe('참고 자료 chapter', () => {
     expect(briefingMarkdown(brief, forecast, 2)).toContain(`${SOURCE_LINE} ${NOTE}`)
   })
 
-  it('prints the article links in the Markdown for PPT and the mind map', () => {
+  it('lists the cited articles, without their web addresses, in the Markdown for PPT', () => {
     const md = briefingMarkdown(cited, withMaterial)
     expect(md).toContain('## 참고 자료')
-    expect(md.split('\n')).toContain(`- [1] S1 — 연합뉴스, 2026-11-09 ${S1_URL}`)
+    expect(md.split('\n')).toContain('- [1] S1 — 연합뉴스, 2026-11-09')
+    expect(md).not.toContain(S1_URL)
     expect(md).toContain('정리 자료 기준일: 주식·환율 2026-10-30')
     expect(briefingMarkdown(brief, withMaterial)).not.toContain('## 참고 자료')
   })
@@ -397,7 +403,134 @@ describe('grouped citations and an empty source (I1, M6)', () => {
       text: 'S1, 2026-11-09',
       href: S1_URL,
     })
-    expect(briefingMarkdown(cites, f).split('\n')).toContain(`- [1] S1, 2026-11-09 ${S1_URL}`)
+    // the slides cannot open a link: the source line has no web address
+    expect(briefingMarkdown(cites, f).split('\n')).toContain('- [1] S1, 2026-11-09')
+    expect(briefingMarkdown(cites, f)).not.toContain(S1_URL)
     expect(briefingPrompt(f).user.split('\n')).toContain('  [1] 2026-11-09 S1')
+  })
+})
+
+/** the mind map the briefing opens as (0.19.4), built by the real Markdown → map builder */
+describe('briefingMapMarkdown (mind map)', () => {
+  const long =
+    '코스피가 5,019로 6.78% 내리며 1개월 사이 26.2% 빠졌고, 외국인 순매도가 9거래일째 이어지며 변동성이 커졌습니다 [1][2]. 반도체 실적은 강하지만 시장 전체는 흔들리고 있습니다 [3].'
+  const mapBrief = {
+    headline: '반도체는 **맑고** 주식은 폭풍우입니다',
+    summary: [long, '삼성전자 영업이익 107.4조 원으로 반도체 업황이 맑습니다 [1, 3]'],
+    outlook: ['향후 1~3개월은 외국인 수급과 환율이 주식 시장의 방향을 정할 가능성이 큽니다 [2]'],
+    watch: ['환율: 원·달러 1,470원에서 1,500원을 넘는지 [3]', '외국인 순매도 지속 여부'],
+  }
+  const longTitle = `${'아주 긴 기사 제목 '.repeat(8)}[속보]`
+  const mapForecast: TrendForecast = {
+    ...withMaterial,
+    fields: withMaterial.fields.map((f) =>
+      f.key === 'stocks'
+        ? {
+            ...f,
+            news: [
+              article('S1 - 연합뉴스', '연합뉴스', '2026-11-09', S1_URL),
+              article(
+                longTitle,
+                '매일경제',
+                '2026-11-08',
+                'https://news.google.com/rss/articles/s2',
+              ),
+            ],
+          }
+        : f,
+    ),
+  }
+  const opts = {
+    title: '브리핑',
+    untitled: '제목 없음',
+    korean: true,
+    loadHwpEngine: () => never(),
+  }
+  const never = (): never => {
+    throw new Error('no hwp engine in a map')
+  }
+  const mapOf = async (b = mapBrief, f = mapForecast, dropped = 0) => {
+    const built = await buildTargetDocument(briefingMapMarkdown(b, f, dropped), 'mindmap', opts)
+    const opened = await openXmind(built.bytes)
+    if (opened.status !== 'ok') throw new Error('the map did not open')
+    return opened.document.sheets[0]!.rootTopic
+  }
+  const kids = (t: XmindTopic) => t.children?.attached ?? []
+  const branch = (root: XmindTopic, title: string) => kids(root).find((t) => t.title === title)!
+  const all = (t: XmindTopic): XmindTopic[] => [t, ...kids(t).flatMap(all)]
+
+  it('makes short item titles without citations and keeps the full text in the note', async () => {
+    expect(mapItemTitle(long)).toBe('코스피가 5,019로 6.78% 내리며 1개월 사이…')
+    expect(mapItemTitle('환율: 원·달러 1,470원에서 1,500원을 넘는지 [3]')).toBe('환율')
+    expect(mapItemTitle('삼성전자 영업이익 107.4조 원 [1, 3]')).toBe('삼성전자 영업이익 107.4조 원')
+    const root = await mapOf()
+    const summary = kids(branch(root, '현황'))
+    expect(summary.map((t) => t.title)).toEqual([
+      mapItemTitle(long),
+      '삼성전자 영업이익 107.4조 원으로 반도체 업황이…',
+    ])
+    expect(summary.map((t) => noteText(t.notes))).toEqual(mapBrief.summary)
+    expect(kids(branch(root, '체크포인트')).map((t) => [t.title, noteText(t.notes)])).toEqual([
+      ['환율', mapBrief.watch[0]],
+      ['외국인 순매도 지속 여부', mapBrief.watch[1]],
+    ])
+    expect(kids(branch(root, '1~3개월 전망'))[0]!.title.length).toBeLessThanOrEqual(MAP_TITLE_MAX)
+  })
+
+  it('puts the title at the center with the headline as plain text, and a topic per field', async () => {
+    const root = await mapOf()
+    expect(root.title).toBe(briefingTitle(mapForecast))
+    expect(noteText(root.notes)).toBe('반도체는 맑고 주식은 폭풍우입니다')
+    const bare = await mapOf({ ...mapBrief, headline: '반도체는 맑습니다' })
+    expect(noteText(bare.notes)).toBe('반도체는 맑습니다')
+    const weather = branch(root, '오늘의 기상도')
+    expect(kids(weather).map((t) => [t.title, noteText(t.notes)])).toEqual([
+      ['반도체 · 맑음', '삼성전자 영업이익 107.4조 원'],
+      ['주식 · 폭풍우', '코스피 5,019 (-6.78%)'],
+      ['환율 · 흐림', '원·달러 1,470원'],
+      ['부동산 · 자료 없음', null],
+    ])
+    expect(noteText(weather.notes)).toBeNull()
+  })
+
+  it('lists the cited articles with their links, never a URL or pipe text in a title', async () => {
+    const root = await mapOf(mapBrief, mapForecast, 2)
+    const refs = branch(root, '참고 자료')
+    expect(kids(refs).map((t) => [t.title, t.href, noteText(t.notes)])).toEqual([
+      ['[1] S1 — 연합뉴스', S1_URL, '2026-11-09'],
+      [
+        '[2] 아주 긴 기사 제목 아주 긴 기사 제목 아주 긴… — 매일경제',
+        'https://news.google.com/rss/articles/s2',
+        `${longTitle}\n2026-11-08`,
+      ],
+      ['[3] F1 — 한국경제', F1_URL, '2026-11-08'],
+    ])
+    expect(noteText(refs.notes)).toBe(
+      `정리 자료 기준일: 주식·환율 2026-10-30\n\n${SOURCE_LINE} ${NOTE}`,
+    )
+    for (const t of all(root)) {
+      expect(t.title).not.toMatch(/https?:|\||\*\*|\\/)
+      expect(noteText(t.notes) ?? '').not.toMatch(/\|\s*-{3}|\*\*.*\*\*$/m)
+    }
+  })
+
+  it('puts the source line in the central note when nothing is cited, and leaves out empty parts', async () => {
+    const root = await mapOf({ ...brief, outlook: [], watch: [] }, forecast, 2)
+    expect(kids(root).map((t) => t.title)).toEqual(['오늘의 기상도', '현황'])
+    expect(noteText(root.notes)).toBe(`${brief.headline}\n\n${SOURCE_LINE} ${NOTE}`)
+  })
+
+  it('escapes item text that would read as a label, a link or a list mark', async () => {
+    const root = await mapOf({
+      ...brief,
+      summary: ['- 첫 [주의]', '1. 둘 <https://a.b>', '#셋'],
+      outlook: [],
+      watch: [],
+    })
+    expect(kids(branch(root, '현황')).map((t) => [t.title, t.labels, t.href])).toEqual([
+      ['- 첫 [주의]', undefined, undefined],
+      ['1. 둘 <https://a.b>', undefined, undefined],
+      ['#셋', undefined, undefined],
+    ])
   })
 })

@@ -2,6 +2,7 @@
  * "Send this map to a document": the request the mind map tab makes and the
  * shell carries out. Shared by both sides so the contract has one definition.
  */
+import { httpsHref } from './blocks'
 import type { MarkerStyle } from './numbering'
 import type { PanOutline } from './outline'
 import { isSlideStyleId, type SlideStyleId } from './slide-styles'
@@ -49,6 +50,9 @@ function text(value: unknown, what: string, optional = false): string | undefine
 
 const MAX_WRITTEN = 5000
 const MAX_DETAILS = 4
+/** Longest topic link carried into a document. */
+const MAX_HREF = 2048
+
 /** Longest speaker notes taken for one slide (the parser keeps far less). */
 const MAX_NOTES = 2000
 
@@ -144,6 +148,7 @@ export function checkSendRequest(value: unknown): SendRequest {
       title: text(n.title, 'topic title')!,
       note: text(n.note, 'note', true),
       body: text(n.body, 'body', true),
+      href: typeof n.href === 'string' && n.href.length <= MAX_HREF ? httpsHref(n.href) : undefined,
       image,
       children: n.children.map(node),
     }

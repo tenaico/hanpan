@@ -21,7 +21,12 @@ async function imageOf(session: DocumentSession, topic: ViewTopic): Promise<PanI
   if (!mime) return undefined
   const bytes = await session.document.readEntry(entry).catch(() => null)
   if (!bytes) return undefined
-  return { bytes, mime, width: topic.image?.width ?? undefined, height: topic.image?.height ?? undefined }
+  return {
+    bytes,
+    mime,
+    width: topic.image?.width ?? undefined,
+    height: topic.image?.height ?? undefined,
+  }
 }
 
 async function nodeOf(session: DocumentSession, topic: ViewTopic): Promise<PanNode> {
@@ -29,12 +34,17 @@ async function nodeOf(session: DocumentSession, topic: ViewTopic): Promise<PanNo
     key: topic.id,
     title: topic.title.trim(),
     note: topic.note?.trim() || undefined,
+    // only a web link goes into a document
+    href: topic.link?.startsWith('https://') ? topic.link : undefined,
     image: await imageOf(session, topic),
     children: await Promise.all(topic.children.map((c) => nodeOf(session, c))),
   }
 }
 
-export async function sheetOutline(session: DocumentSession, sheetKey: string): Promise<{ outline: PanOutline; sheetId: string }> {
+export async function sheetOutline(
+  session: DocumentSession,
+  sheetKey: string,
+): Promise<{ outline: PanOutline; sheetId: string }> {
   const view = session.view(sheetKey)
   const root = view.root
   return {
