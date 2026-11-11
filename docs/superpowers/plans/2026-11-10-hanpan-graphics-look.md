@@ -35,11 +35,13 @@
 ## File Structure
 
 웹판(패치로 들어가는 원본 파일)
+
 - 포토 `crates/ui-egui/src/theme.rs`(종류 2개 추가), 새 `crates/ui-egui/src/theme/hanpan.rs`(토큰 2벌), `crates/ui-egui/src/embedded.rs`(한판 모드 상태·명령·상태 보고), `crates/ui-egui/src/prefs/prefs_ui/appearance.rs`(embedded면 한판 종류 강제), `crates/ui-egui/src/control.rs`·`control/dispatch.rs`(명령 등록), `crates/ui-egui/src/menus/invoke.rs`·`panels/title_bar.rs`(테마 메뉴·로고·제목), `crates/ui-egui/src/canvas/start_screen.rs`, `crates/ui-egui/src/theme.rs` `install_fonts_with`, `apps/photocraft-web/src/web.rs`·`local_fonts.rs`·`index.html`, `crates/ui-egui/src/i18n/{ko,vi}.tsv`.
 - 일러스트 `crates/ui-egui/src/theme.rs`(`Scheme::Hanpan`, `Tokens::hanpan`), `crates/ui-egui/src/prefs_dialog.rs`(`apply_runtime` 강제), `crates/ui-egui/src/embedded.rs`, `crates/ui-egui/src/control.rs`, `crates/ui-egui/src/chrome.rs`(로고), `crates/ui-egui/src/menus/tree.rs`(도움말), `crates/ui-egui/src/canvas/home.rs`, `crates/ui-egui/src/ui_fonts.rs`·`theme.rs interface_fonts()`, `apps/vectorcraft-web/src/web.rs`·`index.html`, `crates/ui-egui/src/i18n/{ko,vi}.tsv`.
 - `hanpan-graphics`: `patches/photo/0010-hanpan-theme.patch`, `0011-hanpan-ui-font.patch`, `0012-hanpan-brand-chrome.patch`; `patches/illust/0008-hanpan-theme.patch`, `0009-hanpan-ui-font.patch`, `0010-hanpan-brand-chrome.patch`; `scripts/lib/brand.mjs`, `scripts/verify.mjs`, `scripts/smoke-page.js`, `test/brand.test.mjs`, `test/pins.test.mjs`, `pins.json`, `README.md`, `CHANGES-photo.md`, `CHANGES-illust.md`.
 
 한판
+
 - `apps/graphics/src/renderer/main.tsx`(어둡게 고정 제거, 테마 따름), `src/renderer/theme.ts`(새: 한판 테마 → light/dark), `src/renderer/frame/page-api.ts`(`appFrameUrl`에 `theme`), `src/renderer/App.tsx`(시작 테마 고정, 바뀌면 `hanpan.theme`, 첫 저장 안내), `src/renderer/styles.css`(앱별 `--accent`), `src/renderer/ai/blocked-commands.ts`, `src/renderer/ai/prompts/base-{photo,illust}.md`, `src/renderer/quick/{quick-actions.ts,QuickBar.tsx}`, `src/renderer/i18n/app/*.ts`(21개), `src/main/graphics-main.ts`·`src/main/i18n-main.ts`(형식 이름, `.ai` 내보내기), `src/shared/ipc.ts`(`ExportFormat`에 `ai`), `apps/shell/src/main/index.ts`(`filterIllust` 21개), `tools/graphics-web-pins.json`, `docs/tracking/decisions/<다음 번호>-hanpan-graphics-look.md`·`index.md`, `e2e/graphics.spec.ts`.
 
 ---
@@ -53,6 +55,7 @@
 **Files:** 포토 `theme.rs`, 새 `theme/hanpan.rs`, `embedded.rs`, `prefs/prefs_ui/appearance.rs`, `control.rs`, `control/dispatch.rs`, `menus/invoke.rs`, `panels/title_bar.rs`, `apps/photocraft-web/src/web.rs`; 테스트는 각 모듈의 `tests`. 결과: `patches/photo/0010-hanpan-theme.patch`.
 
 **Interfaces:**
+
 - Produces: `ThemeKind::HanpanLight`, `ThemeKind::HanpanDark`(`ALL`·`from_name`·엔진 테마 목록에는 넣지 않음, `is_pro()`·`is_dark()`는 각각 true·HanpanDark만 true). `embedded::HanpanMode { Light, Dark }`, `embedded::hanpan_kind(&app) -> ThemeKind`, `embedded::set_theme(app, ctx, params: &Value) -> Result<Value, String>`(reply `{ "mode": "light"|"dark" }`), `embedded::status(&app) -> Value`(`{ "mode", "uiFont" }`, `uiFont`는 Task 3 전까지 `"NanumGothic"`). 제어 메서드 `hanpan.theme { mode }`, `hanpan.status {}`. 주소 `theme=light|dark`(없으면 light).
 
 - [ ] **Step 1: 실패하는 테스트**
@@ -80,7 +83,7 @@
 
 나머지 토큰 값(스펙 5.1 표에 없는 것): `dock` `#f6f7f9`/`#252525`, `field` `#f6f7f9`/`#2a2a2a`, `field_border` `#d9d9d9`/`#555555`, `hover` `#f5f5f5`/`#333333`, `pressed` `#e8eaee`/`#444444`, `text_faint` `#909499`/`#a0a0a0`, `icon` = `text_dim`, `accent_soft`·`row_selected` = 강조색 알파 0x26, `accent_border`·`accent_text`·`primary_bg` = 강조색, `primary_text` `#ffffff`, `tab_strip` = `dock`, `canvas_dot` = `canvas`. 나머지는 `..Tokens::for_kind(ThemeKind::Pro)`.
 
-- [ ] **Step 2:** `cargo test -p photocraft-ui-egui hanpan` → 컴파일 실패(없는 종류). 
+- [ ] **Step 2:** `cargo test -p photocraft-ui-egui hanpan` → 컴파일 실패(없는 종류).
 - [ ] **Step 3:** 구현. `sync_appearance`·`cycle_appearance`는 `app.services.embedded`면 `embedded::hanpan_kind(app)`. `web.rs`는 embedded면 주소 `theme`로 `HanpanMode`를 정하고 시작 테마를 그 종류로(:116 대신). embedded에서 `window.theme.*`·Darken/Lighten Interface는 `embedded::blocks`에, 제목줄 모양 버튼·환경설정 › 모양의 테마 줄은 감춤, `ui.set {theme}`는 오류.
 - [ ] **Step 4:** `cargo test -p photocraft-ui-egui` 전체 통과(`control/tests.rs`의 "모든 메서드 처리" 포함).
 - [ ] **Step 5:** 패치 자르기 → `patches/photo/0010-hanpan-theme.patch`. hanpan-graphics에서 `npm test`(패치 순서·이름) 통과 후 커밋 `feat(photo): Hanpan light and dark themes when embedded, hanpan.theme and hanpan.status`.
@@ -90,10 +93,11 @@
 **Files:** 일러스트 `theme.rs`, `prefs_dialog.rs`, `embedded.rs`, `control.rs`, `apps/vectorcraft-web/src/web.rs`. 결과: `patches/illust/0008-hanpan-theme.patch`.
 
 **Interfaces:**
+
 - Produces: `Scheme::Hanpan`(`Scheme::ALL`에 넣지 않음), `Tokens::hanpan(dark: bool) -> Tokens`, `embedded::HanpanMode`, `embedded::set_theme(app, ctx, params) -> Result<Value, String>`, `embedded::status(&app) -> Value` — Task 1과 같은 이름·응답 모양.
 
 - [ ] **Step 1: 실패하는 테스트** — `hanpan_tokens_match_word`(light: `app_bar #ffffff`, `panel #ffffff`, `panel_darker #f6f7f9`, `pasteboard #e6e6e6`, `border #e3e6ea`, `divider #efefef`, `text #242424`, `text_dim #606366`, `accent`·`accent_strong #3e9150`; dark: `app_bar #252525`, `panel #1e1e1e`, `pasteboard #2b2b2b`, `text #e4e4e4`), `embedded_forces_the_hanpan_scheme`(prefs가 Classic·Light여도 `apply_runtime` 뒤 토큰이 한판 값), `not_embedded_keeps_the_prefs_scheme`, `hanpan_theme_switches_at_once`, `hanpan_theme_refused_when_not_embedded`, `hanpan_theme_rejects_unknown_mode`.
-  나머지 값: `input` `#f6f7f9`/`#2a2a2a`, `input_border` `#d9d9d9`/`#555555`, `button` `#ffffff`/`#2a2a2a`, `button_border` `#e3e6ea`/`#3a3a3a`, `hover` `#f5f5f5`/`#333333`, `tool_active` `#e8eaee`/`#444444`, `text_disabled` `#909499`/`#6b6b6b`, `text_strong` `#232425`/`#e4e4e4`, `icon` = `text_dim`, `tab_strip` `#f6f7f9`/`#252525`, `row_selected`·`flyout_active` = 강조색 알파 0x26. 캔버스 전용 토큰은 `..Tokens::for_brightness(Light|Dark)`.
+      나머지 값: `input` `#f6f7f9`/`#2a2a2a`, `input_border` `#d9d9d9`/`#555555`, `button` `#ffffff`/`#2a2a2a`, `button_border` `#e3e6ea`/`#3a3a3a`, `hover` `#f5f5f5`/`#333333`, `tool_active` `#e8eaee`/`#444444`, `text_disabled` `#909499`/`#6b6b6b`, `text_strong` `#232425`/`#e4e4e4`, `icon` = `text_dim`, `tab_strip` `#f6f7f9`/`#252525`, `row_selected`·`flyout_active` = 강조색 알파 0x26. 캔버스 전용 토큰은 `..Tokens::for_brightness(Light|Dark)`.
 - [ ] **Step 2:** `cargo test -p vectorcraft-ui-egui hanpan` → 실패.
 - [ ] **Step 3:** 구현. `apply_runtime`(:121)에서 embedded면 `Scheme::Hanpan`, 밝기는 `HanpanMode`. `hanpan.theme`는 `control::handle`의 `"fonts.local"` 옆 arm에서 `embedded::set_theme` 후 `prefs_dialog::reapply`·`request_repaint`. `web.rs`는 주소 `theme`로 시작 모드. embedded에서 환경설정의 밝기·강조색·색 구성 줄은 감추고, `window.brightness`·`ui.set {brightness}`는 무시.
 - [ ] **Step 4:** `cargo test -p vectorcraft-ui-egui` 전체 통과.
@@ -104,6 +108,7 @@
 **Files:** 포토 `apps/photocraft-web/src/web.rs`·`local_fonts.rs`, `crates/ui-egui/src/local_fonts.rs`, `theme.rs install_fonts_with`, `embedded.rs status`. 결과: `patches/photo/0011-hanpan-ui-font.patch`.
 
 **Interfaces:**
+
 - Consumes: Task 1 `embedded::status`.
 - Produces: `status().uiFont` = 실제로 한글을 그리는 UI 글꼴 이름(`"Malgun Gothic"` | `"Apple SD Gothic Neo"` | `"NanumGothic"`).
 
@@ -138,6 +143,7 @@
 **Files:** `scripts/lib/brand.mjs`, `scripts/verify.mjs`, `test/brand.test.mjs`, `scripts/smoke-page.js`, `pins.json`, `test/pins.test.mjs`, `README.md`, `CHANGES-photo.md`, `CHANGES-illust.md`.
 
 **Interfaces:**
+
 - Consumes: 제어 메서드 `hanpan.theme {mode}`, `hanpan.status {}`(Task 1·2), `status.uiFont`(Task 3·4).
 - Produces: `scanAppName(app, file, text, allowed) -> Finding[]`; smoke 검사 `theme`, `font`.
 
@@ -145,15 +151,47 @@
 
 ```js
 test('the chrome names neither app', () => {
-  assert.equal(scanAppName('photo', 'crates/ui-egui/src/i18n/ko.tsv', 'ui\tPhotoCraft\t포토크래프트', ALLOWED.photo).length, 1)
-  assert.equal(scanAppName('illust', 'crates/ui-egui/src/canvas/home.rs', 'tl!("Welcome to VectorCraft")', ALLOWED.illust).length, 1)
+  assert.equal(
+    scanAppName(
+      'photo',
+      'crates/ui-egui/src/i18n/ko.tsv',
+      'ui\tPhotoCraft\t포토크래프트',
+      ALLOWED.photo,
+    ).length,
+    1,
+  )
+  assert.equal(
+    scanAppName(
+      'illust',
+      'crates/ui-egui/src/canvas/home.rs',
+      'tl!("Welcome to VectorCraft")',
+      ALLOWED.illust,
+    ).length,
+    1,
+  )
 })
 test('About and notices may name the app', () => {
-  assert.equal(scanAppName('photo', 'crates/engine/src/shell_commands.rs', '"About PhotoCraft"', ALLOWED.photo).length, 0)
-  assert.equal(scanAppName('illust', 'crates/ui-egui/src/dialogs/about.rs', 'Icons: Lucide (ISC) + VectorCraft.', ALLOWED.illust).length, 0)
+  assert.equal(
+    scanAppName('photo', 'crates/engine/src/shell_commands.rs', '"About PhotoCraft"', ALLOWED.photo)
+      .length,
+    0,
+  )
+  assert.equal(
+    scanAppName(
+      'illust',
+      'crates/ui-egui/src/dialogs/about.rs',
+      'Icons: Lucide (ISC) + VectorCraft.',
+      ALLOWED.illust,
+    ).length,
+    0,
+  )
 })
 test('code identifiers are not names', () => {
-  assert.equal(scanAppName('photo', 'x.rs', 'let a = photocraft_ui_egui::PhotocraftApp::new();', ALLOWED.photo).length, 0)
+  assert.equal(
+    scanAppName('photo', 'x.rs', 'let a = photocraft_ui_egui::PhotocraftApp::new();', ALLOWED.photo)
+      .length,
+    0,
+  )
 })
 ```
 
@@ -176,16 +214,20 @@ test('code identifiers are not names', () => {
 **Files:** `apps/graphics/src/renderer/theme.ts`(새), `main.tsx`, `frame/page-api.ts`, `App.tsx`, `styles.css`, `ai/blocked-commands.ts`; 테스트 `apps/graphics/tests/theme.test.ts`(새), `tests/app.test.tsx`, `tests/page-api.test.ts`, `tests/ai-tools.test.ts`.
 
 **Interfaces:**
+
 - Produces: `resolveTheme(setting: UiTheme, prefersDark: boolean): 'light' | 'dark'`; `appFrameUrl(kind: GraphicsKind, lang: Lang, theme: 'light' | 'dark'): string`(…`&theme=<t>`); `App` prop `theme: 'light' | 'dark'`; `--accent` 포토 `#A3449E`, 일러스트 `#3E9150`.
 
 - [ ] **Step 1: 실패하는 테스트**
 
 ```ts
 it('resolves the system setting by the OS', () => {
-  expect(resolveTheme('system', true)).toBe('dark'); expect(resolveTheme('light', true)).toBe('light')
+  expect(resolveTheme('system', true)).toBe('dark')
+  expect(resolveTheme('light', true)).toBe('light')
 })
 it('starts the frame in the theme of the moment', () => {
-  expect(appFrameUrl('illust', 'ko', 'dark')).toBe('./web/illust/index.html?embedded=hanpan&lang=ko&theme=dark')
+  expect(appFrameUrl('illust', 'ko', 'dark')).toBe(
+    './web/illust/index.html?embedded=hanpan&lang=ko&theme=dark',
+  )
 })
 it('sends a theme change to the app without reloading the frame', async () => {
   // mount light, page ready, document open; rerender with theme 'dark'
@@ -215,6 +257,7 @@ it('the AI may not change the theme', () => {
 **Files:** `src/shared/ipc.ts`(`ExportFormat = 'png' | 'jpg' | 'svg' | 'ai'`), `src/main/graphics-main.ts`(내보내기에 `ai`), `src/renderer/quick/quick-actions.ts`(`QUICK_ACTIONS.illust`에 `'exportAi'`), `QuickBar.tsx`, `App.tsx`(첫 저장 안내), `i18n/app/*.ts`(21개: `quickExportAi`, `illustAiHint`); 테스트 `tests/quick-actions.test.ts`, `tests/app.test.tsx`, `tests/graphics-main.test.ts`.
 
 **Interfaces:**
+
 - Consumes: 어댑터 `saveBytes(fileName: string, format: 'ai')`(이미 있음), `exportFile({ bytes, defaultName, format: 'ai' })`.
 - Produces: 빠른 작업 `exportAi`; localStorage 열쇠 `hanpan.illust.aiHintSeen`.
 
@@ -224,13 +267,17 @@ it('the AI may not change the theme', () => {
 it('exportAi saves an .ai copy through the export dialog', async () => {
   const r = await runQuickAction('exportAi', deps)
   expect(adapter.saveBytes).toHaveBeenCalledWith('포스터.ai', 'ai')
-  expect(deps.exportFile).toHaveBeenCalledWith(expect.objectContaining({ defaultName: '포스터.ai', format: 'ai' }))
+  expect(deps.exportFile).toHaveBeenCalledWith(
+    expect.objectContaining({ defaultName: '포스터.ai', format: 'ai' }),
+  )
   expect(r).toEqual({ ok: true, messageKey: 'quickExported' })
 })
 it('says once where the .ai is after the first save of a new drawing', async () => {
   // illust, new document, save → notice text contains '.ai로 보내기'; second save → no notice; key set
 })
-it('does not say it for a file opened as .ai or .svg', async () => { /* opened file → no notice */ })
+it('does not say it for a file opened as .ai or .svg', async () => {
+  /* opened file → no notice */
+})
 ```
 
 - [ ] **Step 2–4:** 실패 → 구현 → 통과. 버튼 문구 ko `일러스트레이터용 .ai로 보내기`, 안내 ko `AI 일러스트 문서로 저장했습니다. 일러스트레이터에서 열려면 '일러스트레이터용 .ai로 보내기'를 쓰세요.`
