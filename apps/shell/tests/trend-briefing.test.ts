@@ -365,10 +365,11 @@ describe('참고 자료 chapter', () => {
     expect(briefingMarkdown(brief, forecast, 2)).toContain(`${SOURCE_LINE} ${NOTE}`)
   })
 
-  it('prints the article links in the Markdown for PPT and the mind map', () => {
+  it('lists the cited articles, without their web addresses, in the Markdown for PPT', () => {
     const md = briefingMarkdown(cited, withMaterial)
     expect(md).toContain('## 참고 자료')
-    expect(md.split('\n')).toContain(`- [1] S1 — 연합뉴스, 2026-11-09 ${S1_URL}`)
+    expect(md.split('\n')).toContain('- [1] S1 — 연합뉴스, 2026-11-09')
+    expect(md).not.toContain(S1_URL)
     expect(md).toContain('정리 자료 기준일: 주식·환율 2026-10-30')
     expect(briefingMarkdown(brief, withMaterial)).not.toContain('## 참고 자료')
   })
