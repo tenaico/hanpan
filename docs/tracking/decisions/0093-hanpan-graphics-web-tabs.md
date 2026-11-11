@@ -2,6 +2,8 @@
 
 0090을 대체한다.
 
+> **일부 대체됨 → [0098](0098-hanpan-graphics-look.md)** (2026-11-11). "앱 안의 PhotoCraft·VectorCraft 이름은 그대로 둔다"만 바뀌었다: 한판 안에서는 화면 틀에 원본 이름·로고를 보이지 않는다(정보 창과 고지는 남김). 나머지는 이 기록 그대로다.
+
 ## 맥락
 
 0090은 PhotoCraft·VectorCraft의 Windows 설치형 앱을 한판 설치판에 담고 홈에서 별도 창으로 띄웠다. 한판의 AI는 그 앱을 다룰 수 없었고, 탭도 아니었다. 사용자(저장소 주인)는 2026-11-05에 AI 워드·AI 엑셀처럼 홈에서 탭으로 열고 탭의 AI 도우미에게 일을 시키기를 원했다. 두 앱은 웹판(WebAssembly)도 낸다. VectorCraft 웹판에는 페이지 제어 API(`window.vectorcraft`)가 있고, PhotoCraft는 같은 API를 이식하는 작은 수정이 필요하다. 설계는 `docs/superpowers/specs/2026-11-05-hanpan-ai-photo-illust-design.md`에 있다.

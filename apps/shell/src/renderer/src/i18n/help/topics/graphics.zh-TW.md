@@ -1,6 +1,6 @@
 # AI 相片與 AI 插畫
 
-兩個處理圖片的分頁。**AI 相片** 開啟相片和有圖層的圖片（PSD、PSB、PNG、JPEG、WebP、GIF、BMP、TIFF、HEIC）。**AI 插畫** 開啟向量圖（SVG、SVGZ、AI、VectorCraft）。每個分頁在 GenOffice 裡執行免費的 PhotoCraft 或 VectorCraft，旁邊有 AI 助理。
+兩個處理圖片的分頁。**AI 相片** 開啟相片和有圖層的圖片（PSD、PSB、PNG、JPEG、WebP、GIF、BMP、TIFF、HEIC）。**AI 插畫** 開啟向量圖（SVG、SVGZ、Illustrator 檔案 .ai、AI 插畫文件 .vectorcraft）。每個分頁在 GenOffice 裡執行免費的 PhotoCraft 或 VectorCraft，旁邊有 AI 助理。
 
 ## 開啟與新增
 
@@ -17,6 +17,7 @@
 
 - 應用程式上方的按鈕不用 AI 就能完成常用工作。AI 相片：**去除背景**、**自動調色**、**依尺寸匯出**。AI 插畫：**描圖**、**在工作區域置中**、**匯出 PNG 或 SVG**。
 - 匯出會詢問格式和尺寸，再詢問副本的儲存位置。圖片本身不會改變。
+- **匯出 .ai 給 Illustrator** 會把插畫的副本以 Illustrator 檔案（.ai）儲存到你選擇的位置。插畫和原始檔案保持不變，副本中部分效果會固化為圖片。
 
 ## AI 助理
 

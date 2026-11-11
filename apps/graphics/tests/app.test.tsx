@@ -72,16 +72,27 @@ async function mount(
   kind: 'photo' | 'illust',
   probe = async () => true,
   gpu = async () => true,
+  theme: 'light' | 'dark' = 'light',
 ): Promise<void> {
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
+  await render(kind, probe, gpu, theme)
+}
+
+async function render(
+  kind: 'photo' | 'illust',
+  probe: () => Promise<boolean>,
+  gpu: () => Promise<boolean>,
+  theme: 'light' | 'dark',
+): Promise<void> {
   await act(async () => {
     root!.render(
       <LocaleProvider initial="ko">
         <App
           kind={kind}
           lang="ko"
+          theme={theme}
           probeWeb={probe}
           probeGpu={gpu}
           pollMs={20}
@@ -90,6 +101,16 @@ async function mount(
       </LocaleProvider>,
     )
   })
+}
+
+/** Hanpan's theme changes while the tab runs (same props otherwise: the frame must not restart). */
+async function setTheme(kind: 'photo' | 'illust', theme: 'light' | 'dark'): Promise<void> {
+  await render(
+    kind,
+    async () => true,
+    async () => true,
+    theme,
+  )
 }
 
 function frame(): HTMLIFrameElement | null {
@@ -128,7 +149,9 @@ describe('the host page', () => {
     fakeApi()
     await mount('illust')
     await until(() => frame() !== null)
-    expect(frame()!.getAttribute('src')).toBe('./web/illust/index.html?embedded=hanpan&lang=ko')
+    expect(frame()!.getAttribute('src')).toBe(
+      './web/illust/index.html?embedded=hanpan&lang=ko&theme=light',
+    )
     // the app reads the PC's fonts (queryLocalFonts) inside the frame
     expect(frame()!.getAttribute('allow')).toBe('clipboard-read; clipboard-write; local-fonts')
     expect(host.textContent).toContain('앱을 불러오는 중')
@@ -136,6 +159,82 @@ describe('the host page', () => {
     ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
     await until(() => !host.textContent!.includes('앱을 불러오는 중'))
     expect(page.capturing).toBe(true)
+  })
+
+  it('starts the frame in the theme of the moment', async () => {
+    fakeApi()
+    await mount(
+      'illust',
+      async () => true,
+      async () => true,
+      'dark',
+    )
+    await until(() => frame() !== null)
+    expect(frame()!.getAttribute('src')).toBe(
+      './web/illust/index.html?embedded=hanpan&lang=ko&theme=dark',
+    )
+  })
+
+  it('sends a theme change to the app without reloading the frame', async () => {
+    fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('Untitled-1', false)
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => !host.textContent!.includes('앱을 불러오는 중'))
+    const before = frame()
+    await setTheme('illust', 'dark')
+    await until(() => page.requested.some(([m]) => m === 'hanpan.theme'))
+    expect(page.requested).toContainEqual(['hanpan.theme', { mode: 'dark' }])
+    // src unchanged: no reload, the open document stays
+    expect(frame()).toBe(before)
+    expect(frame()!.getAttribute('src')).toContain('theme=light')
+  })
+
+  it('sends a change made before the app was ready once it is ready', async () => {
+    fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    await setTheme('illust', 'dark')
+    expect(frame()!.getAttribute('src')).toContain('theme=light')
+    const page = readyPage()
+    page.requestHandlers['hanpan.theme'] = () => ({ mode: 'dark' })
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => page.requested.some(([m]) => m === 'hanpan.theme'))
+    expect(page.requested.filter(([m]) => m === 'hanpan.theme')).toEqual([
+      ['hanpan.theme', { mode: 'dark' }],
+    ])
+  })
+
+  it('a theme the app did not take is sent again with the next change', async () => {
+    fakeApi()
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('Untitled-1', false)
+    let refuse = true
+    page.requestHandlers['hanpan.theme'] = (params) => {
+      if (refuse) throw new Error('the app is busy')
+      return params
+    }
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => !host.textContent!.includes('앱을 불러오는 중'))
+    const sent = () => page.requested.filter(([m]) => m === 'hanpan.theme').map(([, p]) => p)
+    await setTheme('illust', 'dark')
+    await until(() => sent().length === 1)
+    // refused: the app still shows light, so going back to light sends nothing
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 30))
+    })
+    refuse = false
+    await setTheme('illust', 'light')
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 30))
+    })
+    expect(sent()).toEqual([{ mode: 'dark' }])
+    // and dark is sent again
+    await setTheme('illust', 'dark')
+    await until(() => sent().length === 2)
+    expect(sent()).toEqual([{ mode: 'dark' }, { mode: 'dark' }])
   })
 
   it('says the app is missing when the web build is not there', async () => {
@@ -365,5 +464,140 @@ describe('printing (0.17)', () => {
     expect(request.sheet).toEqual({ widthMm: 210, heightMm: 297, marginMm: 10 })
     expect(btoa(String.fromCharCode(...request.bytes))).toBe(pngBase64)
     await until(() => host.querySelector('[data-hanpan="image-print"]') === null)
+  })
+})
+
+function beginSaveCalls(api: { beginSave: { mock: { calls: unknown[] } } }): number {
+  return api.beginSave.mock.calls.length
+}
+
+async function cleanup(): Promise<void> {
+  await act(async () => root?.unmount())
+  root = null
+  host?.remove()
+}
+
+describe('the one-time note about .ai (5.4.1)', () => {
+  const KEY = 'hanpan.illust.aiHintSeen'
+  const NOTE =
+    "AI 일러스트 문서로 저장했습니다. 일러스트레이터에서 열려면 '일러스트레이터용 .ai로 보내기'를 쓰세요."
+
+  /** an illustration tab with a document, then one save asked for from Hanpan's menu */
+  async function saveOnce(setup?: (api: ReturnType<typeof fakeApi>['api']) => void) {
+    const fake = fakeApi()
+    setup?.(fake.api)
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('Untitled-1', true)
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(
+      () => fake.api.setDirty.mock.calls.some(([d]) => d === true) || page.opened.length > 0,
+    )
+    // an opened file is handed over before the save is asked for
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 150))
+    })
+    await act(async () => fake.listeners.save!('save' as never))
+    await until(() => fake.api.sendSaveRequestAck.mock.calls.length === 1)
+    return { ...fake, page }
+  }
+
+  const notice = () => host.querySelector('.gx-notice')?.textContent ?? null
+
+  it('says once, after the first save of a new drawing as .vectorcraft', async () => {
+    await saveOnce()
+    expect(notice()).toBe(NOTE)
+    expect(localStorage.getItem(KEY)).toBe('1')
+  })
+
+  it('never says it again once seen', async () => {
+    localStorage.setItem(KEY, '1')
+    await saveOnce()
+    expect(notice()).toBeNull()
+  })
+
+  it('does not say it for a file opened from .svg or .vectorcraft', async () => {
+    for (const name of ['a.svg', 'a.vectorcraft']) {
+      localStorage.clear()
+      await saveOnce((api) => {
+        api.consumeOpen = vi.fn(async () => ({
+          name,
+          path: `/x/${name}`,
+          bytes: new Uint8Array([1]),
+        })) as never
+        api.beginSave = vi.fn(async () => ({
+          ok: true,
+          path: `/x/${name}`,
+          format: name.split('.')[1]!,
+        })) as never
+      })
+      expect(notice(), name).toBeNull()
+      expect(localStorage.getItem(KEY), name).toBeNull()
+      await cleanup()
+    }
+  })
+
+  it('keeps saving an opened .ai as .ai, with no note', async () => {
+    const { page } = await saveOnce((api) => {
+      api.consumeOpen = vi.fn(async () => ({
+        name: 'a.ai',
+        path: '/x/a.ai',
+        bytes: new Uint8Array([1]),
+      })) as never
+      api.beginSave = vi.fn(async () => ({ ok: true, path: '/x/a.ai', format: 'ai' })) as never
+    })
+    expect(page.executed).toContainEqual(['file.save', { path: 'a.ai', options: {} }])
+    expect(notice()).toBeNull()
+    expect(localStorage.getItem(KEY)).toBeNull()
+  })
+
+  it('does not say it after a new drawing saved as .ai or .svg', async () => {
+    await saveOnce((api) => {
+      api.beginSave = vi.fn(async () => ({ ok: true, path: '/x/a.ai', format: 'ai' })) as never
+    })
+    expect(notice()).toBeNull()
+    expect(localStorage.getItem(KEY)).toBeNull()
+  })
+
+  it('does not say it after a canceled or failed save', async () => {
+    await saveOnce((api) => {
+      api.beginSave = vi.fn(async () => ({ ok: true, canceled: true })) as never
+    })
+    expect(notice()).toBeNull()
+    expect(localStorage.getItem(KEY)).toBeNull()
+    await cleanup()
+    await saveOnce((api) => {
+      api.commitSave = vi.fn(async () => ({ ok: false, error: 'disk' })) as never
+    })
+    expect(notice()).not.toBe(NOTE)
+    expect(localStorage.getItem(KEY)).toBeNull()
+  })
+
+  it('an .ai copy leaves the open drawing as it was: file.saveCopy, still changed, same title', async () => {
+    const fake = fakeApi()
+    fake.api.exportFile = vi.fn(async () => ({ ok: true, path: '/x/a.ai' })) as never
+    await mount('illust')
+    await until(() => frame() !== null)
+    const page = readyPage().withDocument('포스터.vectorcraft', true)
+    page.handlers['file.saveCopy'] = (params, p) => {
+      p.captured.set(String(params.path), new Uint8Array([4, 4]))
+      return { path: params.path, bytes: 2 }
+    }
+    ;(frame()!.contentWindow as unknown as Record<string, unknown>).vectorcraft = page
+    await until(() => fake.api.setDirty.mock.calls.some(([d]) => d === true))
+    const button = () => host.querySelector<HTMLButtonElement>('[data-quick="exportAi"]')!
+    await until(() => button() !== null && !button().disabled)
+    await act(async () => button().click())
+    await until(() => fake.api.exportFile.mock.calls.length === 1)
+    expect(fake.api.exportFile).toHaveBeenCalledWith({
+      bytes: new Uint8Array([4, 4]),
+      defaultName: '포스터.ai',
+      format: 'ai',
+    })
+    expect(page.executed.map(([id]) => id)).toContain('file.saveCopy')
+    expect(page.executed.map(([id]) => id)).not.toContain('file.save')
+    expect(page.documents).toEqual([{ title: '포스터.vectorcraft', dirty: true }])
+    expect(fake.api.setDirty.mock.calls.at(-1)?.[0]).toBe(true)
+    expect(beginSaveCalls(fake.api)).toBe(0)
   })
 })

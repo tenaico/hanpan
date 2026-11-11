@@ -186,15 +186,16 @@ export function withTimeout<T>(promise: Promise<T>, ms: number, what: string): P
 
 /**
  * The web build in Hanpan's embedded mode, in the app language Hanpan's language
- * maps to. In the app it runs on its own origin (`<kind>-app`), apart from the
+ * maps to and in the theme of the moment (later changes go by `hanpan.theme`, not by this address). In the app it runs on its own origin (`<kind>-app`), apart from the
  * host page: the app cannot reach the host's bridges (decision 0093, option B).
  * The dev server and the tests serve it beside the host page.
  */
 export function appFrameUrl(
   kind: GraphicsKind,
   lang: Lang,
+  theme: 'light' | 'dark',
   where: { protocol: string } = location,
 ): string {
-  const page = `web/${kind}/index.html?embedded=hanpan&lang=${appLanguage(kind, lang)}`
+  const page = `web/${kind}/index.html?embedded=hanpan&lang=${appLanguage(kind, lang)}&theme=${theme}`
   return where.protocol === 'genoffice-app:' ? `genoffice-app://${kind}-app/${page}` : `./${page}`
 }

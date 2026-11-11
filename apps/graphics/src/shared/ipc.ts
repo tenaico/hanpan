@@ -81,7 +81,7 @@ export interface CommitSaveRequest {
 }
 export type CommitSaveResult = { ok: true; path: string } | { ok: false; error: string }
 
-export type ExportFormat = 'png' | 'jpg' | 'svg'
+export type ExportFormat = 'png' | 'jpg' | 'svg' | 'ai'
 export interface ExportRequest {
   bytes: Uint8Array
   defaultName: string

@@ -1,6 +1,6 @@
 # AI Photo và AI Illustration
 
-Hai thẻ dành cho hình ảnh. **AI Photo** mở ảnh chụp và ảnh có lớp (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** mở hình vector (SVG, SVGZ, AI, VectorCraft). Mỗi thẻ chạy ứng dụng miễn phí PhotoCraft hoặc VectorCraft bên trong GenOffice, có trợ lý AI bên cạnh.
+Hai thẻ dành cho hình ảnh. **AI Photo** mở ảnh chụp và ảnh có lớp (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** mở hình vector (SVG, SVGZ, tệp Illustrator .ai, tài liệu Minh họa AI .vectorcraft). Mỗi thẻ chạy ứng dụng miễn phí PhotoCraft hoặc VectorCraft bên trong GenOffice, có trợ lý AI bên cạnh.
 
 ## Mở và tạo mới
 
@@ -17,6 +17,7 @@ Hai thẻ dành cho hình ảnh. **AI Photo** mở ảnh chụp và ảnh có l�
 
 - Các nút phía trên ứng dụng làm việc thường gặp mà không cần AI. AI Photo: **Xóa nền**, **Tự động chỉnh tông** và **Xuất theo kích thước**. AI Illustration: **Đồ lại hình ảnh**, **Căn giữa trên bảng vẽ** và **Xuất PNG hoặc SVG**.
 - Xuất sẽ hỏi định dạng và kích thước, rồi hỏi nơi lưu bản sao. Bản thân hình không đổi.
+- **Gửi .ai cho Illustrator** lưu một bản sao của hình dưới dạng tệp Illustrator (.ai) vào nơi bạn chọn. Hình và tệp gốc của nó giữ nguyên; trong bản sao, một số hiệu ứng được chuyển thành hình ảnh.
 
 ## Trợ lý AI
 

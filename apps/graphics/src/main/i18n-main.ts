@@ -23,6 +23,8 @@ const tDlg = createI18n({
     replaceExistingMsg: '已有同名文件。',
     replaceExistingDetail: '要替换它吗？',
     btnReplace: '替换',
+    fmtVectorcraft: 'AI 插画文档 (.vectorcraft) — 在 Hanpan 中继续修改时使用',
+    fmtAi: 'Illustrator 文件 (.ai) — 与 Illustrator 互通时使用，部分效果会固化为图片',
   },
   en: {
     dlgSaveTitle: 'Save',
@@ -41,6 +43,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'A file with this name already exists.',
     replaceExistingDetail: 'Do you want to replace it?',
     btnReplace: 'Replace',
+    fmtVectorcraft: 'AI Illustration document (.vectorcraft) — for continuing to edit in Hanpan',
+    fmtAi:
+      'Illustrator file (.ai) — for exchanging with Illustrator; some effects are flattened into pictures',
   },
   vi: {
     dlgSaveTitle: 'Lưu',
@@ -59,6 +64,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Đã có tệp trùng tên.',
     replaceExistingDetail: 'Bạn có muốn thay thế tệp đó không?',
     btnReplace: 'Thay thế',
+    fmtVectorcraft: 'Tài liệu Minh họa AI (.vectorcraft) — khi tiếp tục chỉnh sửa trong Hanpan',
+    fmtAi:
+      'Tệp Illustrator (.ai) — khi trao đổi với Illustrator, một số hiệu ứng sẽ bị chuyển thành hình ảnh',
   },
   ja: {
     dlgSaveTitle: '保存',
@@ -77,6 +85,9 @@ const tDlg = createI18n({
     replaceExistingMsg: '同じ名前のファイルがすでにあります。',
     replaceExistingDetail: '置き換えますか？',
     btnReplace: '置き換える',
+    fmtVectorcraft: 'AI イラスト文書 (.vectorcraft) — Hanpan で編集を続けるとき',
+    fmtAi:
+      'Illustrator ファイル (.ai) — Illustrator とやり取りするとき。一部の効果は画像に固定されます',
   },
   ko: {
     dlgSaveTitle: '저장',
@@ -95,6 +106,8 @@ const tDlg = createI18n({
     replaceExistingMsg: '같은 이름의 파일이 이미 있습니다.',
     replaceExistingDetail: '바꾸시겠습니까?',
     btnReplace: '바꾸기',
+    fmtVectorcraft: 'AI 일러스트 문서 (.vectorcraft) — 한판에서 계속 고칠 때',
+    fmtAi: '일러스트레이터 파일 (.ai) — 일러스트레이터와 주고받을 때, 일부 효과는 그림으로 굳음',
   },
   fr: {
     dlgSaveTitle: 'Enregistrer',
@@ -113,6 +126,10 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Un fichier portant ce nom existe déjà.',
     replaceExistingDetail: 'Voulez-vous le remplacer ?',
     btnReplace: 'Remplacer',
+    fmtVectorcraft:
+      'Document Illustration IA (.vectorcraft) — pour continuer à modifier dans Hanpan',
+    fmtAi:
+      'Fichier Illustrator (.ai) — pour échanger avec Illustrator ; certains effets sont figés en image',
   },
   de: {
     dlgSaveTitle: 'Speichern',
@@ -131,6 +148,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Eine Datei mit diesem Namen ist bereits vorhanden.',
     replaceExistingDetail: 'Möchten Sie sie ersetzen?',
     btnReplace: 'Ersetzen',
+    fmtVectorcraft: 'KI-Illustrationsdokument (.vectorcraft) — zum Weiterbearbeiten in Hanpan',
+    fmtAi:
+      'Illustrator-Datei (.ai) — zum Austausch mit Illustrator; einige Effekte werden zu Bildern fixiert',
   },
   es: {
     dlgSaveTitle: 'Guardar',
@@ -149,6 +169,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Ya existe un archivo con este nombre.',
     replaceExistingDetail: '¿Quiere reemplazarlo?',
     btnReplace: 'Reemplazar',
+    fmtVectorcraft: 'Documento de Ilustración IA (.vectorcraft) — para seguir editando en Hanpan',
+    fmtAi:
+      'Archivo de Illustrator (.ai) — para intercambiar con Illustrator; algunos efectos se convierten en imagen',
   },
   th: {
     dlgSaveTitle: 'บันทึก',
@@ -167,6 +190,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'มีไฟล์ชื่อนี้อยู่แล้ว',
     replaceExistingDetail: 'ต้องการแทนที่หรือไม่',
     btnReplace: 'แทนที่',
+    fmtVectorcraft: 'เอกสารภาพประกอบ AI (.vectorcraft) — เมื่อต้องการแก้ไขต่อใน Hanpan',
+    fmtAi:
+      'ไฟล์ Illustrator (.ai) — เมื่อต้องการแลกเปลี่ยนกับ Illustrator เอฟเฟกต์บางอย่างจะถูกแปลงเป็นรูปภาพ',
   },
   id: {
     dlgSaveTitle: 'Simpan',
@@ -185,6 +211,10 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Sudah ada file dengan nama ini.',
     replaceExistingDetail: 'Ganti file tersebut?',
     btnReplace: 'Ganti',
+    fmtVectorcraft:
+      'Dokumen Ilustrasi AI (.vectorcraft) — untuk melanjutkan penyuntingan di Hanpan',
+    fmtAi:
+      'File Illustrator (.ai) — untuk bertukar dengan Illustrator; sebagian efek dipadatkan menjadi gambar',
   },
   ru: {
     dlgSaveTitle: 'Сохранить',
@@ -203,6 +233,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Файл с таким именем уже существует.',
     replaceExistingDetail: 'Заменить его?',
     btnReplace: 'Заменить',
+    fmtVectorcraft: 'Документ ИИ-иллюстрации (.vectorcraft) — чтобы продолжить правку в Hanpan',
+    fmtAi:
+      'Файл Illustrator (.ai) — для обмена с Illustrator; часть эффектов превращается в изображение',
   },
   ar: {
     dlgSaveTitle: 'حفظ',
@@ -221,6 +254,8 @@ const tDlg = createI18n({
     replaceExistingMsg: 'يوجد ملف بهذا الاسم بالفعل.',
     replaceExistingDetail: 'هل تريد استبداله؟',
     btnReplace: 'استبدال',
+    fmtVectorcraft: 'مستند رسوم بالذكاء الاصطناعي (.vectorcraft) — لمواصلة التعديل في Hanpan',
+    fmtAi: 'ملف Illustrator (.ai) — للتبادل مع Illustrator، وبعض التأثيرات تتحول إلى صورة',
   },
   pt: {
     dlgSaveTitle: 'Salvar',
@@ -239,6 +274,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Já existe um arquivo com este nome.',
     replaceExistingDetail: 'Deseja substituí-lo?',
     btnReplace: 'Substituir',
+    fmtVectorcraft: 'Documento de Ilustração IA (.vectorcraft) — para continuar editando no Hanpan',
+    fmtAi:
+      'Arquivo do Illustrator (.ai) — para trocar com o Illustrator; alguns efeitos viram imagem',
   },
   it: {
     dlgSaveTitle: 'Salva',
@@ -257,6 +295,10 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Esiste già un file con questo nome.',
     replaceExistingDetail: 'Vuoi sostituirlo?',
     btnReplace: 'Sostituisci',
+    fmtVectorcraft:
+      'Documento Illustrazione IA (.vectorcraft) — per continuare a modificare in Hanpan',
+    fmtAi:
+      'File Illustrator (.ai) — per scambiare con Illustrator; alcuni effetti diventano immagine',
   },
   pl: {
     dlgSaveTitle: 'Zapisz',
@@ -275,6 +317,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Plik o tej nazwie już istnieje.',
     replaceExistingDetail: 'Czy chcesz go zastąpić?',
     btnReplace: 'Zastąp',
+    fmtVectorcraft: 'Dokument Ilustracje AI (.vectorcraft) — do dalszej edycji w Hanpan',
+    fmtAi:
+      'Plik Illustratora (.ai) — do wymiany z Illustratorem; niektóre efekty zamieniają się w obraz',
   },
   cs: {
     dlgSaveTitle: 'Uložit',
@@ -293,6 +338,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Soubor s tímto názvem už existuje.',
     replaceExistingDetail: 'Chcete ho nahradit?',
     btnReplace: 'Nahradit',
+    fmtVectorcraft: 'Dokument Ilustrace AI (.vectorcraft) — pro další úpravy v Hanpan',
+    fmtAi:
+      'Soubor Illustratoru (.ai) — pro výměnu s Illustratorem; některé efekty se změní na obrázek',
   },
   nl: {
     dlgSaveTitle: 'Opslaan',
@@ -311,6 +359,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Er bestaat al een bestand met deze naam.',
     replaceExistingDetail: 'Wilt u het vervangen?',
     btnReplace: 'Vervangen',
+    fmtVectorcraft: 'AI-illustratiedocument (.vectorcraft) — om verder te bewerken in Hanpan',
+    fmtAi:
+      'Illustrator-bestand (.ai) — om uit te wisselen met Illustrator; sommige effecten worden vastgezet als beeld',
   },
   ms: {
     dlgSaveTitle: 'Simpan',
@@ -329,6 +380,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'Fail dengan nama ini sudah wujud.',
     replaceExistingDetail: 'Adakah anda mahu menggantikannya?',
     btnReplace: 'Ganti',
+    fmtVectorcraft: 'Dokumen Ilustrasi AI (.vectorcraft) — untuk terus menyunting dalam Hanpan',
+    fmtAi:
+      'Fail Illustrator (.ai) — untuk bertukar dengan Illustrator; sesetengah kesan dijadikan gambar',
   },
   he: {
     dlgSaveTitle: 'שמירה',
@@ -347,6 +401,8 @@ const tDlg = createI18n({
     replaceExistingMsg: 'כבר קיים קובץ בשם הזה.',
     replaceExistingDetail: 'להחליף אותו?',
     btnReplace: 'החלפה',
+    fmtVectorcraft: 'מסמך איורי AI (.vectorcraft) — להמשך עריכה ב-Hanpan',
+    fmtAi: 'קובץ Illustrator (.ai) — להחלפה עם Illustrator; חלק מהאפקטים הופכים לתמונה',
   },
   hi: {
     dlgSaveTitle: 'सहेजें',
@@ -365,6 +421,9 @@ const tDlg = createI18n({
     replaceExistingMsg: 'इस नाम की फ़ाइल पहले से मौजूद है।',
     replaceExistingDetail: 'क्या आप उसे बदलना चाहते हैं?',
     btnReplace: 'बदलें',
+    fmtVectorcraft: 'AI चित्रण दस्तावेज़ (.vectorcraft) — Hanpan में आगे संपादन के लिए',
+    fmtAi:
+      'Illustrator फ़ाइल (.ai) — Illustrator के साथ आदान-प्रदान के लिए; कुछ प्रभाव चित्र में बदल जाते हैं',
   },
   'zh-TW': {
     dlgSaveTitle: '儲存',
@@ -383,6 +442,8 @@ const tDlg = createI18n({
     replaceExistingMsg: '已有同名檔案。',
     replaceExistingDetail: '要取代它嗎？',
     btnReplace: '取代',
+    fmtVectorcraft: 'AI 插畫文件 (.vectorcraft) — 要在 Hanpan 中繼續修改時使用',
+    fmtAi: 'Illustrator 檔案 (.ai) — 與 Illustrator 互通時使用，部分效果會固化為圖片',
   },
 })
 
@@ -403,6 +464,8 @@ type MainStringKey =
   | 'replaceExistingMsg'
   | 'replaceExistingDetail'
   | 'btnReplace'
+  | 'fmtVectorcraft'
+  | 'fmtAi'
 
 /** A dialog text in the current interface language. */
 export function tm(key: MainStringKey): string {

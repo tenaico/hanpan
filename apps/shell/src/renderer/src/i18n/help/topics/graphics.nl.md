@@ -1,6 +1,6 @@
 # AI Photo en AI Illustration
 
-Twee tabbladen voor afbeeldingen. **AI Photo** opent foto's en afbeeldingen met lagen (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** opent vectorafbeeldingen (SVG, SVGZ, AI, VectorCraft). Elk tabblad draait de gratis app PhotoCraft of VectorCraft binnen GenOffice, met een AI-assistent ernaast.
+Twee tabbladen voor afbeeldingen. **AI Photo** opent foto's en afbeeldingen met lagen (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** opent vectorafbeeldingen (SVG, SVGZ, Illustrator-bestand .ai, AI-illustratiedocument .vectorcraft). Elk tabblad draait de gratis app PhotoCraft of VectorCraft binnen GenOffice, met een AI-assistent ernaast.
 
 ## Openen en maken
 
@@ -17,6 +17,7 @@ Twee tabbladen voor afbeeldingen. **AI Photo** opent foto's en afbeeldingen met 
 
 - De knoppen boven de app doen veelvoorkomende taken zonder AI. AI Photo: **Achtergrond verwijderen**, **Automatische tint** en **Exporteren op formaat**. AI Illustration: **Afbeelding overtrekken**, **Centreren op tekengebied** en **Exporteren als PNG of SVG**.
 - Exporteren vraagt om indeling en formaat en daarna waar de kopie moet komen. De afbeelding zelf verandert niet.
+- **Als .ai naar Illustrator sturen** bewaart een kopie van de tekening als Illustrator-bestand (.ai) op de gekozen plek. De tekening en haar eigen bestand blijven zoals ze zijn; in de kopie worden sommige effecten afbeeldingen.
 
 ## AI-assistent
 

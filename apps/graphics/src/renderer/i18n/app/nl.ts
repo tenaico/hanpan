@@ -17,12 +17,15 @@ export const nl = {
   quickTraceImage: 'Afbeelding overtrekken',
   quickCenter: 'Centreren op tekengebied',
   quickExportPngSvg: 'Exporteren als PNG of SVG',
+  quickExportAi: 'Als .ai naar Illustrator sturen',
   quickDone: 'Klaar.',
   quickNoDocument: 'Open of maak eerst een afbeelding.',
   quickFailed:
     'Dat lukte niet. Selecteer de afbeelding of laag die je wilt wijzigen en probeer het opnieuw.',
   quickExportFailed: 'Exporteren mislukt. Probeer een andere map of naam.',
   quickExported: 'Kopie opgeslagen.',
+  illustAiHint:
+    'Opgeslagen als AI-illustratiedocument. Gebruik "Als .ai naar Illustrator sturen" om het in Illustrator te openen.',
   exportDialogTitle: 'Exporteren',
   exportFormat: 'Indeling',
   exportWidth: 'Breedte (px)',

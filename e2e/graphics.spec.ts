@@ -219,6 +219,202 @@ test.describe('AI Illustration tab', () => {
       await closeAndSaveVideo(launched, 'graphics-quick')
     }
   })
+
+  test('the .ai quick action writes an Illustrator copy and leaves the drawing as it is', async () => {
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'graphics-export-ai' })
+    const { app, page } = launched
+    const ready = async (tab: Page): Promise<void> => {
+      await expect
+        .poll(() => inApp<number>(tab, 'return (await vc.commands()).length').catch(() => 0), {
+          timeout: 60_000,
+        })
+        .toBeGreaterThan(1000)
+    }
+    /** the front document's title and changed mark, as the app reports them */
+    const docState = (tab: Page): Promise<{ title: unknown; dirty: unknown; count: number }> =>
+      inApp(
+        tab,
+        "const u = await vc.request('ui.inspect', {}); const d = u.documents[u.activeDocument] ?? {}; return { title: d.title, dirty: d.dirty, count: u.documents.length }",
+      )
+    const saveDialogTo = (path: string): Promise<void> =>
+      app.evaluate(({ dialog }, p) => {
+        dialog.showSaveDialog = (async () => ({
+          canceled: false,
+          filePath: p,
+        })) as typeof dialog.showSaveDialog
+      }, path)
+    const header = (path: string): string => readFileSync(path).subarray(0, 4).toString('latin1')
+    try {
+      await page.locator('.quick-card[data-new="illust"]').click()
+      const tab = await waitForPageWithUrl(app, '://illust/')
+      const noGpu = await graphicsGpuMissing(tab)
+      test.skip(noGpu !== null, noGpu ?? '')
+      await ready(tab)
+      await inApp(
+        tab,
+        "await vc.execute('file.newWithoutDialog', {}); await vc.execute('shape.rectangle', { x: 72, y: 72, width: 200, height: 100 }); return 1",
+      )
+      const dir = await mkdtemp(join(tmpdir(), 'graphics-ai-e2e-'))
+
+      // a new drawing: the copy is an Illustrator file, the drawing keeps its name and mark
+      const before = await docState(tab)
+      expect(before.dirty).toBe(true)
+      const target = join(dir, 'poster.ai')
+      await saveDialogTo(target)
+      await tab.locator('[data-quick="exportAi"]').click()
+      await expect
+        .poll(() => (existsSync(target) ? statSync(target).size : 0), { timeout: 30_000 })
+        .toBeGreaterThan(100)
+      expect(header(target)).toMatch(/^(%PDF|%!PS)/)
+      expect(await docState(tab)).toEqual(before)
+      await expect(tab.locator('.gx-notice')).not.toContainText('could not')
+
+      // an opened .ai: the app's capture of `poster.ai` is the document's own file, so the copy
+      // goes under a name of its own and neither the source nor the document changes
+      const source = readFileSync(target)
+      await page.evaluate(
+        (p) =>
+          (
+            window as unknown as { aiOffice: { openPath(p: string): Promise<void> } }
+          ).aiOffice.openPath(p),
+        target,
+      )
+      let opened: Page | null = null
+      await expect
+        .poll(
+          async () => {
+            for (const w of app.windows()) {
+              if (w === tab) continue
+              const href = await w.evaluate(() => location.href).catch(() => '')
+              if (href.includes('://illust/')) opened = w
+            }
+            return opened !== null
+          },
+          { timeout: 30_000 },
+        )
+        .toBe(true)
+      const second = opened as unknown as Page
+      await ready(second)
+      await expect
+        .poll(() => docState(second).then((d) => d.title), { timeout: 30_000 })
+        .toBe('poster.ai')
+      const openedBefore = await docState(second)
+      const again = join(dir, 'poster-again.ai')
+      await saveDialogTo(again)
+      await second.locator('[data-quick="exportAi"]').click()
+      await expect
+        .poll(() => (existsSync(again) ? statSync(again).size : 0), { timeout: 30_000 })
+        .toBeGreaterThan(100)
+      expect(header(again)).toMatch(/^(%PDF|%!PS)/)
+      expect(await docState(second)).toEqual(openedBefore)
+      expect(readFileSync(target).equals(source)).toBe(true)
+      await expect(second.locator('.gx-notice')).not.toContainText('could not')
+    } finally {
+      await closeAndSaveVideo(launched, 'graphics-export-ai')
+    }
+  })
+
+  test("the graphics tabs follow Hanpan's theme", async () => {
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'graphics-theme' })
+    const { app, page } = launched
+    const setTheme = (theme: 'light' | 'dark'): Promise<void> =>
+      page.evaluate(
+        (t) =>
+          (
+            window as unknown as { aiOffice: { setTheme(v: string): Promise<void> } }
+          ).aiOffice.setTheme(t),
+        theme,
+      )
+    try {
+      // light on purpose, not "system": the OS of the PC running the suite does not decide
+      await setTheme('light')
+      await page.locator('.quick-card[data-new="illust"]').click()
+      const tab = await waitForPageWithUrl(app, '://illust/')
+      const noGpu = await graphicsGpuMissing(tab)
+      test.skip(noGpu !== null, noGpu ?? '')
+      await expect
+        .poll(() => inApp<number>(tab, 'return (await vc.commands()).length').catch(() => 0), {
+          timeout: 60_000,
+        })
+        .toBeGreaterThan(1000)
+      const tabTheme = (): Promise<string | null> =>
+        tab.evaluate(() => document.documentElement.getAttribute('data-theme'))
+      const appTheme = (): Promise<unknown> =>
+        inApp<{ mode?: unknown }>(tab, "return await vc.request('hanpan.status', {})").then(
+          (s) => s.mode,
+        )
+      const documents = (): Promise<number> =>
+        inApp<number>(tab, "return (await vc.request('ui.inspect', {})).documents.length")
+      expect(await tabTheme()).toBe('light')
+      await expect.poll(appTheme, { timeout: 1000 }).toBe('light')
+
+      // a document open, and a mark on the frame's window: a reload would lose both
+      await inApp(
+        tab,
+        "await vc.execute('file.newWithoutDialog', {}); await vc.execute('shape.rectangle', { x: 72, y: 72, width: 200, height: 100 }); return 1",
+      )
+      const before = await documents()
+      expect(before).toBeGreaterThan(0)
+      await appFrame(tab, 'illust').evaluate(() => {
+        ;(window as unknown as { themeMark?: number }).themeMark = 1
+      })
+
+      // spec 6: the tab and the app follow within a second
+      await setTheme('dark')
+      await expect.poll(tabTheme, { timeout: 1000 }).toBe('dark')
+      await expect.poll(appTheme, { timeout: 1000 }).toBe('dark')
+      expect(await documents()).toBe(before)
+      expect(
+        await appFrame(tab, 'illust').evaluate(
+          () => (window as unknown as { themeMark?: number }).themeMark,
+        ),
+      ).toBe(1)
+
+      // the AI Photo tab, opened in dark, follows the same way
+      test.skip(!existsSync(PHOTO_WEB), 'no photo web build in apps/graphics/out')
+      const view = await tabsView(app)
+      await view.evaluate(async () => {
+        await (window as unknown as { aiOfficeTabs: TabsApi }).aiOfficeTabs.activate('home')
+      })
+      await page.locator('.quick-card[data-new="photo"]').click()
+      const photo = await waitForPageWithUrl(app, '://photo/')
+      await expect
+        .poll(() => inPhoto<number>(photo, 'return (await pc.commands()).length').catch(() => 0), {
+          timeout: 60_000,
+        })
+        .toBeGreaterThan(400)
+      const photoTabTheme = (): Promise<string | null> =>
+        photo.evaluate(() => document.documentElement.getAttribute('data-theme'))
+      const photoTheme = (): Promise<unknown> =>
+        inPhoto<{ mode?: unknown }>(photo, "return await pc.request('hanpan.status', {})").then(
+          (s) => s.mode,
+        )
+      const photoDocuments = (): Promise<number> =>
+        inPhoto<number>(photo, 'return (await pc.inspect()).session.documents.length')
+      expect(await photoTabTheme()).toBe('dark')
+      await expect.poll(photoTheme, { timeout: 1000 }).toBe('dark')
+      await inPhoto(photo, "await pc.execute('file.new', { width: 320, height: 200 }); return 1")
+      // the app's first answer after a new document takes about 3 s (measured: 3.1-3.2 s, then
+      // 15-25 ms), theme or not: let it settle so the second below measures the switch alone
+      await expect.poll(photoTheme, { timeout: 30_000 }).toBe('dark')
+      const photoBefore = await photoDocuments()
+      expect(photoBefore).toBeGreaterThan(0)
+      await appFrame(photo, 'photo').evaluate(() => {
+        ;(window as unknown as { themeMark?: number }).themeMark = 2
+      })
+      await setTheme('light')
+      await expect.poll(photoTabTheme, { timeout: 1000 }).toBe('light')
+      await expect.poll(photoTheme, { timeout: 1000 }).toBe('light')
+      expect(await photoDocuments()).toBe(photoBefore)
+      expect(
+        await appFrame(photo, 'photo').evaluate(
+          () => (window as unknown as { themeMark?: number }).themeMark,
+        ),
+      ).toBe(2)
+    } finally {
+      await closeAndSaveVideo(launched, 'graphics-theme')
+    }
+  })
 })
 
 const PHOTO_WEB = join(

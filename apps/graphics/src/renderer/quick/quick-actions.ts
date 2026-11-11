@@ -1,10 +1,10 @@
 /**
- * Three buttons per app that do a common job without the AI (design 6-5).
+ * Quick buttons per app that do a common job without the AI (design 6-5).
  * Each runs the app's own commands inside the input lock, like an AI run, so
  * the app's history holds the action's edits only and its own Undo takes
  * them back.
  */
-import type { GraphicsAdapter } from '../adapters'
+import { hostExportName, type GraphicsAdapter } from '../adapters'
 import type { ExportRequest, ExportResult, PickedImage } from '../../shared/ipc'
 import type { GraphicsKind } from '../../shared/kinds'
 import { t, type StringKey } from '../i18n/locale'
@@ -12,7 +12,7 @@ import type { PixelSize } from './resize'
 
 export const QUICK_ACTIONS = {
   photo: ['removeBackground', 'autoTone', 'exportAtSize'],
-  illust: ['traceImage', 'centerOnArtboard', 'exportPngSvg'],
+  illust: ['traceImage', 'centerOnArtboard', 'exportPngSvg', 'exportAi'],
 } as const
 
 export type QuickActionId = (typeof QUICK_ACTIONS)[GraphicsKind][number]
@@ -29,7 +29,7 @@ export interface ExportChoice {
 }
 
 export interface QuickDeps {
-  adapter: Pick<GraphicsAdapter, 'api' | 'placeImage' | 'exportBytes' | 'docInfo'>
+  adapter: Pick<GraphicsAdapter, 'api' | 'placeImage' | 'exportBytes' | 'saveCopyBytes' | 'docInfo'>
   pickImage(): Promise<PickedImage | null>
   exportFile(request: ExportRequest): Promise<ExportResult>
   /** the export dialog: null when the person canceled */
@@ -63,7 +63,10 @@ export interface QuickResult {
 }
 
 /** what each action says once it worked */
-const DONE: Record<Exclude<QuickActionId, 'exportAtSize' | 'exportPngSvg'>, QuickResult> = {
+const DONE: Record<
+  Exclude<QuickActionId, 'exportAtSize' | 'exportPngSvg' | 'exportAi'>,
+  QuickResult
+> = {
   removeBackground: { ok: true, messageKey: 'quickDoneRemoveBackground' },
   autoTone: { ok: true, messageKey: 'quickDoneAutoTone' },
   traceImage: { ok: true, messageKey: 'quickDoneTrace' },
@@ -82,6 +85,7 @@ const FAILED: Record<QuickActionId, StringKey> = {
   centerOnArtboard: 'quickCenterFailed',
   exportAtSize: 'quickExportFailed',
   exportPngSvg: 'quickExportFailed',
+  exportAi: 'quickExportFailed',
 }
 const CANCELED: QuickResult = { ok: true, messageKey: null }
 const NO_DOCUMENT: QuickResult = { ok: false, messageKey: 'quickNoDocument' }
@@ -143,17 +147,36 @@ async function exportWithDialog(kind: GraphicsKind, deps: QuickDeps): Promise<Qu
     bytes = raster
   }
   const title = (await deps.adapter.docInfo()).title
-  const result = await deps.exportFile({
+  return handOver(deps, {
     bytes,
     defaultName: `${baseName(title, untitledName(kind, deps))}.${choice.format}`,
     format: choice.format,
   })
+}
+
+/** The save dialog takes the bytes; what the bar says afterwards. */
+async function handOver(deps: QuickDeps, request: ExportRequest): Promise<QuickResult> {
+  const result = await deps.exportFile(request)
   if (!result.ok) {
     console.warn('quick export failed:', result.error)
     return { ok: false, messageKey: 'quickExportFailed' }
   }
   if ('canceled' in result) return CANCELED
   return { ok: true, messageKey: 'quickExported' }
+}
+
+/**
+ * A copy for Illustrator: the app writes the .ai, the save dialog takes it. The
+ * document's own file and format stay as they were (design 5.4.1). The app writes
+ * it under a host export name: an opened `drawing.ai` is captured as `drawing.ai`,
+ * and a copy there would be a save over the source.
+ */
+async function exportAiCopy(deps: QuickDeps): Promise<QuickResult> {
+  const title = (await deps.adapter.docInfo()).title
+  const name = `${baseName(title, untitledName('illust', deps))}.ai`
+  if (!deps.adapter.saveCopyBytes) throw new Error('this app cannot write a copy')
+  const bytes = await deps.adapter.saveCopyBytes(hostExportName(name), 'ai')
+  return handOver(deps, { bytes, defaultName: name, format: 'ai' })
 }
 
 async function run(id: QuickActionId, deps: QuickDeps): Promise<QuickResult> {
@@ -173,6 +196,8 @@ async function run(id: QuickActionId, deps: QuickDeps): Promise<QuickResult> {
       return exportWithDialog('photo', deps)
     case 'exportPngSvg':
       return exportWithDialog('illust', deps)
+    case 'exportAi':
+      return exportAiCopy(deps)
     case 'traceImage': {
       if (!(await selectedImage(deps))) {
         const picked = await deps.pickImage()

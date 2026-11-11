@@ -17,12 +17,15 @@ export const es = {
   quickTraceImage: 'Calcar imagen',
   quickCenter: 'Centrar en la mesa de trabajo',
   quickExportPngSvg: 'Exportar PNG o SVG',
+  quickExportAi: 'Enviar .ai a Illustrator',
   quickDone: 'Hecho.',
   quickNoDocument: 'Primero abre o crea una imagen.',
   quickFailed:
     'No se pudo hacer. Selecciona la imagen o capa que quieres cambiar e inténtalo de nuevo.',
   quickExportFailed: 'No se pudo exportar. Prueba con otra carpeta u otro nombre.',
   quickExported: 'Copia guardada.',
+  illustAiHint:
+    'Guardado como documento de Ilustración IA. Para abrirlo en Illustrator, usa «Enviar .ai a Illustrator».',
   exportDialogTitle: 'Exportar',
   exportFormat: 'Formato',
   exportWidth: 'Ancho (px)',

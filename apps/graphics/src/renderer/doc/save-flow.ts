@@ -21,6 +21,8 @@ export interface SaveDeps {
   timeoutMs?: number
   /** the file name the app writes under, told before it writes: its capture is the host's */
   savedAs?(fileName: string): void
+  /** told after the file is on disk, with the format it was written in */
+  saved?(info: { path: string; format: string }): void
 }
 
 const SAVE_CALL_TIMEOUT_MS = 120_000
@@ -61,6 +63,7 @@ export async function runSave(mode: SaveMode, deps: SaveDeps): Promise<boolean> 
     // an edit made while the bytes were being written keeps the mark
     const now = await adapter.docInfo().catch(() => null)
     dirty.saved(now?.dirty === true)
+    deps.saved?.({ path: target.path, format: target.format })
     return true
   } catch {
     if (begun) api.abortSave()

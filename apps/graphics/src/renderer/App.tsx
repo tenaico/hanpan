@@ -18,6 +18,7 @@ import { watchDoc, type DocWatch } from './doc/doc-watch'
 import { openPending } from './doc/open-flow'
 import { startRecoveryLoop } from './doc/recovery-loop'
 import { runSave, type SaveNoticeKey } from './doc/save-flow'
+import { takeAiHint } from './doc/ai-hint'
 import { singleFlight } from './doc/single-flight'
 import { copyBytes } from './frame/bytes'
 import { appFrameUrl, connectPageApi, type GraphicsPageApi } from './frame/page-api'
@@ -32,6 +33,8 @@ type Status = 'checking' | 'loading' | 'ready' | 'failed' | 'notInstalled' | 'no
 export interface AppProps {
   kind: GraphicsKind
   lang: Lang
+  /** Hanpan's theme of the moment, already resolved from "system"; later changes reach the app by message */
+  theme: 'light' | 'dark'
   /** Whether this install carries the app's web build. */
   probeWeb: () => Promise<boolean>
   /** Whether this PC can draw for the app (WebGPU or WebGL2); without, the app cannot start. */
@@ -56,6 +59,7 @@ export async function hasGraphicsGpu(): Promise<boolean> {
 export default function App({
   kind,
   lang,
+  theme,
   probeWeb,
   probeGpu = hasGraphicsGpu,
   pollMs = 1000,
@@ -64,6 +68,8 @@ export default function App({
   const { t, lang: uiLang } = useI18n()
   /** the language the frame was started in: a change reloads an empty tab only (G9) */
   const [frameLang, setFrameLang] = useState<Lang>(lang)
+  /** the theme the frame was started in; a change later never touches the address (it would reload) */
+  const [frameTheme, setFrameTheme] = useState<'light' | 'dark'>(theme)
   const [status, setStatus] = useState<Status>('checking')
   const [notice, setNotice] = useState<{ id: number; text: string } | null>(null)
   const noticeSeq = useRef(0)
@@ -89,6 +95,8 @@ export default function App({
   const docWatchRef = useRef<DocWatch | null>(null)
   const titleRef = useRef<string | null>(null)
   const hostOps = useRef(0)
+  /** the document is a file on disk (opened from one, or saved once): its first save is not a new drawing's */
+  const hasFileRef = useRef(false)
   /** runs that own the document now (the AI's, a quick action's): the capture watch ignores the app */
   const appLocks = useRef(0)
 
@@ -170,6 +178,11 @@ export default function App({
       savedAs: (name) => {
         savedName = name
       },
+      saved: ({ format }) => {
+        const hadFile = hasFileRef.current
+        hasFileRef.current = true
+        if (takeAiHint(kind, { hadFile, format })) notify('illustAiHint')
+      },
     })
     if (savedName !== null) await capturesRef.current?.noteHostSave(savedName)
     // the save set the tab's mark; the app's own mark may have moved on meanwhile
@@ -206,6 +219,30 @@ export default function App({
     }
   }, [kind, probeWeb, probeGpu, attempt])
 
+  // Hanpan's theme reaches the running app by `hanpan.theme`: the frame is never reloaded for it.
+  // A change that comes before the app is up is sent once right after it is.
+  const themeRef = useRef(theme)
+  const frameThemeRef = useRef(frameTheme)
+  frameThemeRef.current = frameTheme
+  /** the theme the app in the frame shows now */
+  const appThemeRef = useRef(frameTheme)
+  const pageApiRef = useRef<GraphicsPageApi | null>(null)
+  const pushTheme = (): void => {
+    const api = pageApiRef.current
+    if (!api || appThemeRef.current === themeRef.current) return
+    const mode = themeRef.current
+    const shown = appThemeRef.current
+    appThemeRef.current = mode
+    void api.request('hanpan.theme', { mode }).catch(() => {
+      // not taken: the app still shows the theme it had, so the next change sends again
+      if (appThemeRef.current === mode) appThemeRef.current = shown
+    })
+  }
+  useEffect(() => {
+    themeRef.current = theme
+    pushTheme()
+  }, [theme])
+
   // Hanpan's language changed: a tab without a document starts its editor again in the new
   // language; a tab with one keeps it (reloading would drop it) and says when it changes (G9)
   const langSeen = useRef(lang)
@@ -218,6 +255,9 @@ export default function App({
       return
     }
     setFrameLang(uiLang)
+    // the frame starts again anyway: it starts in the theme of now
+    setFrameTheme(themeRef.current)
+    appThemeRef.current = themeRef.current
     setAttempt((n) => n + 1)
     // notify reads refs and state setters only
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -243,11 +283,21 @@ export default function App({
           return
         }
         await adapter.afterReady()
+        if (!live) return
+        // the app shows the theme in its address; a change since then is sent now
+        appThemeRef.current = frameThemeRef.current
+        pageApiRef.current = api
+        pushTheme()
         adapterRef.current = adapter
         setAiAdapter(adapter)
         const opened = await openPending(
           adapter,
-          () => graphicsApi().consumeOpen(),
+          async () => {
+            const pending = await graphicsApi().consumeOpen()
+            // a recovered copy comes back without a path: still a drawing with no file
+            if (pending?.path) hasFileRef.current = true
+            return pending
+          },
           (path) => graphicsApi().confirmOpened(path),
         )
         if (!live) return
@@ -318,6 +368,7 @@ export default function App({
     })()
     return () => {
       live = false
+      pageApiRef.current = null
       for (const stop of stops) stop()
       setAiAdapter(null)
     }
@@ -378,7 +429,7 @@ export default function App({
               ref={frameRef}
               className="gx-frame"
               title={kind}
-              src={appFrameUrl(kind, frameLang)}
+              src={appFrameUrl(kind, frameLang, frameTheme)}
               allow="clipboard-read; clipboard-write; local-fonts"
             />
           )}

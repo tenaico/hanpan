@@ -11,6 +11,19 @@ import type { GraphicsPageApi } from '../frame/page-api'
  */
 export const HOST_EXPORT_PREFIX = '.hanpan-export-'
 
+let hostExportSerial = 0
+
+/**
+ * A capture name of its own for a copy the host has the app write: the prefix,
+ * then a stamp, then `fileName`. Never the document's own capture name (an opened
+ * `drawing.ai` is captured as `drawing.ai`), so the app does not take the copy for
+ * a save over its source, and the capture watch does not take it for the app's.
+ */
+export function hostExportName(fileName: string): string {
+  hostExportSerial += 1
+  return `${HOST_EXPORT_PREFIX}${Date.now().toString(36)}-${hostExportSerial}-${fileName}`
+}
+
 export interface DocInfo {
   hasDocument: boolean
   dirty: boolean
@@ -25,6 +38,11 @@ export interface GraphicsAdapter {
   docInfo(): Promise<DocInfo>
   /** Saves through the app, so the document turns clean and takes the name; returns the file's bytes. */
   saveBytes(fileName: string, format: string): Promise<Uint8Array>
+  /**
+   * A copy in another format, the document left as it is (path, title and changed
+   * mark unchanged); returns the file's bytes. Only the Illustration app has it.
+   */
+  saveCopyBytes?(fileName: string, format: string): Promise<Uint8Array>
   /** A picture or SVG of the document; the document itself is left as it is. */
   exportBytes(format: 'png' | 'jpg' | 'svg'): Promise<Uint8Array>
   /**

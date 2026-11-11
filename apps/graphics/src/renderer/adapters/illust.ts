@@ -82,6 +82,42 @@ export function createIllustAdapter(api: GraphicsPageApi): GraphicsAdapter {
     throw new Error(`document.export ${format}: no bytes in the answer`)
   }
 
+  /**
+   * The app writes the file (captured, never to disk) and the bytes are read back.
+   * `file.save` makes the file the document's own; `file.saveCopy` leaves the
+   * document's path, title and changed mark as they were.
+   */
+  async function writeThrough(
+    command: 'file.save' | 'file.saveCopy',
+    fileName: string,
+    format: string,
+  ): Promise<Uint8Array> {
+    const params: Record<string, unknown> = { path: fileName }
+    if (format === 'svg' || format === 'svgz') params.svg = {}
+    if (format === 'ai') params.options = {}
+    const result = asRecord(await api.execute(command, params))
+    // a dialog the app opened instead (it asks before writing over a file it lost
+    // something from): nothing is written yet, and a capture under that name is stale
+    if (result.pending !== undefined && result.pending !== null) {
+      throw new Error(
+        `${command}: not written, the app is asking first (${String(result.pending)})`,
+      )
+    }
+    // the written file's own name (a copy may come back under another name than the
+    // one asked for) and size; without them the capture read could be an older file
+    if (typeof result.path !== 'string' || !result.path) {
+      throw new Error(`${command}: no path in the answer`)
+    }
+    if (typeof result.bytes !== 'number') throw new Error(`${command}: no size in the answer`)
+    const bytes = copyBytes(await api.readFile(result.path))
+    if (result.bytes !== bytes.length) {
+      throw new Error(
+        `capture size mismatch: the app wrote ${result.bytes} bytes, read ${bytes.length}`,
+      )
+    }
+    return bytes
+  }
+
   return {
     kind: 'illust',
     api,
@@ -93,18 +129,10 @@ export function createIllustAdapter(api: GraphicsPageApi): GraphicsAdapter {
       return docInfoFromInspect(await api.inspect())
     },
     async saveBytes(fileName, format) {
-      const params: Record<string, unknown> = { path: fileName }
-      if (format === 'svg' || format === 'svgz') params.svg = {}
-      if (format === 'ai') params.options = {}
-      const result = asRecord(await api.execute('file.save', params))
-      const path = typeof result.path === 'string' ? result.path : fileName
-      const bytes = copyBytes(await api.readFile(path))
-      if (typeof result.bytes === 'number' && result.bytes !== bytes.length) {
-        throw new Error(
-          `capture size mismatch: the app wrote ${result.bytes} bytes, read ${bytes.length}`,
-        )
-      }
-      return bytes
+      return writeThrough('file.save', fileName, format)
+    },
+    async saveCopyBytes(fileName, format) {
+      return writeThrough('file.saveCopy', fileName, format)
     },
     exportBytes,
     async recoveryBytes() {

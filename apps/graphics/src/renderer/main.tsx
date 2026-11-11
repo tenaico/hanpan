@@ -8,18 +8,17 @@ import '@genoffice/ui/tokens.css'
 import '@genoffice/ui/screentip.css'
 import './styles.css'
 import { graphicsApi, takeGraphicsApi } from './bridge'
+import { watchTheme, type ResolvedTheme } from './theme'
+import { ThemeRoot } from './theme-root'
 
 installScreenTips()
 
 // before the app's frame exists: the frame's own take then gets nothing
 if (!takeGraphicsApi()) throw new Error('the graphics bridge is missing or was already taken')
 
-/**
- * The editors in the frame are dark whatever Hanpan's theme, so the tab's own bar, AI panel and
- * dialogs stay dark with them: one theme in one tab (0.17 review v2, G7).
- */
-function applyTheme(): void {
-  document.documentElement.setAttribute('data-theme', 'dark')
+/** The tab's own bar, AI panel and dialogs take their colours from this attribute. */
+function applyTheme(theme: ResolvedTheme): void {
+  document.documentElement.setAttribute('data-theme', theme)
 }
 
 const requested = new URLSearchParams(location.search).get('kind')
@@ -42,10 +41,22 @@ void (async () => {
     .catch(() => 'en' as Lang)
   document.documentElement.lang = htmlLang(lang)
   document.documentElement.dir = htmlDir(lang)
-  applyTheme()
+  let setTheme: ((theme: ResolvedTheme) => void) | null = null
+  const watch = await watchTheme(graphicsApi(), (theme) => {
+    applyTheme(theme)
+    setTheme?.(theme)
+  })
+  applyTheme(watch.theme)
   createRoot(document.getElementById('root')!).render(
     <LocaleProvider initial={lang}>
-      <App kind={kind} lang={lang} probeWeb={probeWeb} />
+      <ThemeRoot
+        watch={watch}
+        subscribe={(set) => {
+          setTheme = set
+        }}
+      >
+        {(theme) => <App kind={kind} lang={lang} theme={theme} probeWeb={probeWeb} />}
+      </ThemeRoot>
     </LocaleProvider>,
   )
 })()

@@ -158,12 +158,13 @@ describe('ExportDialog', () => {
 })
 
 describe('QuickBar', () => {
-  it('shows the three buttons of the app', async () => {
+  it('shows the buttons of the app, with the .ai copy for Illustrator last', async () => {
     const el = await render(<QuickBar kind="illust" disabled={false} onRun={() => {}} />)
     expect(Array.from(el.querySelectorAll('button')).map((b) => b.textContent)).toEqual([
       'Trace image',
       'Center on artboard',
       'Export PNG or SVG',
+      'Send .ai to Illustrator',
     ])
   })
 

@@ -1,6 +1,6 @@
 # AI Photo a AI Illustration
 
-Dvě karty pro obrázky. **AI Photo** otevírá fotografie a obrázky s vrstvami (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** otevírá vektorovou grafiku (SVG, SVGZ, AI, VectorCraft). V každé kartě běží uvnitř GenOfficeu bezplatná aplikace PhotoCraft nebo VectorCraft a vedle ní asistent AI.
+Dvě karty pro obrázky. **AI Photo** otevírá fotografie a obrázky s vrstvami (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** otevírá vektorovou grafiku (SVG, SVGZ, soubor Illustratoru .ai, dokument Ilustrace AI .vectorcraft). V každé kartě běží uvnitř GenOfficeu bezplatná aplikace PhotoCraft nebo VectorCraft a vedle ní asistent AI.
 
 ## Otevření a vytvoření
 
@@ -17,6 +17,7 @@ Dvě karty pro obrázky. **AI Photo** otevírá fotografie a obrázky s vrstvami
 
 - Tlačítka nad aplikací dělají běžné úkoly bez AI. AI Photo: **Odstranit pozadí**, **Automatický tón** a **Exportovat ve velikosti**. AI Illustration: **Vektorizovat obrázek**, **Vystředit na kreslicí plátno** a **Exportovat PNG nebo SVG**.
 - Export se zeptá na formát a velikost a pak na místo pro kopii. Samotný obrázek se nemění.
+- **Odeslat .ai do Illustratoru** uloží kopii kresby jako soubor Illustratoru (.ai) na zvolené místo. Kresba a její vlastní soubor zůstanou beze změny; v kopii se některé efekty převedou na obrázky.
 
 ## Asistent AI
 

@@ -1,6 +1,6 @@
 # AI Photo dan AI Illustration
 
-Dua tab untuk gambar. **AI Photo** membuka foto dan gambar berlapis (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** membuka lukisan vektor (SVG, SVGZ, AI, VectorCraft). Setiap tab menjalankan aplikasi percuma PhotoCraft atau VectorCraft di dalam GenOffice, dengan pembantu AI di sebelahnya.
+Dua tab untuk gambar. **AI Photo** membuka foto dan gambar berlapis (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** membuka lukisan vektor (SVG, SVGZ, fail Illustrator .ai, dokumen Ilustrasi AI .vectorcraft). Setiap tab menjalankan aplikasi percuma PhotoCraft atau VectorCraft di dalam GenOffice, dengan pembantu AI di sebelahnya.
 
 ## Membuka dan mencipta
 
@@ -17,6 +17,7 @@ Dua tab untuk gambar. **AI Photo** membuka foto dan gambar berlapis (PSD, PSB, P
 
 - Butang di atas aplikasi membuat kerja biasa tanpa AI. AI Photo: **Buang latar belakang**, **Ton automatik** dan **Eksport mengikut saiz**. AI Illustration: **Surih imej**, **Tengahkan pada papan seni** dan **Eksport PNG atau SVG**.
 - Eksport bertanya format dan saiz, kemudian tempat menyimpan salinan. Gambar itu sendiri tidak berubah.
+- **Hantar .ai untuk Illustrator** menyimpan salinan lukisan sebagai fail Illustrator (.ai) di tempat yang anda pilih. Lukisan dan failnya sendiri kekal seperti asal; dalam salinan, sesetengah kesan menjadi gambar.
 
 ## Pembantu AI
 

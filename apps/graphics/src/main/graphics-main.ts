@@ -322,10 +322,8 @@ const FORMAT_LABEL: Record<string, string> = {
   webp: 'WebP',
   tif: 'TIFF',
   tiff: 'TIFF',
-  vectorcraft: 'VectorCraft',
   svg: 'SVG',
   svgz: 'SVG',
-  ai: '.ai',
 }
 const FORMAT_EXTENSIONS: Record<string, string[]> = {
   jpg: ['jpg', 'jpeg'],
@@ -334,9 +332,19 @@ const FORMAT_EXTENSIONS: Record<string, string[]> = {
   tiff: ['tiff', 'tif'],
 }
 
+/**
+ * What a save dialog calls a format. The two Illustration formats are named by
+ * what they are for, in the interface language; the rest are their usual names.
+ */
+export function formatLabel(format: string): string {
+  if (format === 'vectorcraft') return tm('fmtVectorcraft')
+  if (format === 'ai') return tm('fmtAi')
+  return FORMAT_LABEL[format] ?? format.toUpperCase()
+}
+
 function filterFor(format: string): { name: string; extensions: string[] } {
   return {
-    name: FORMAT_LABEL[format] ?? format.toUpperCase(),
+    name: formatLabel(format),
     extensions: FORMAT_EXTENSIONS[format] ?? [format],
   }
 }
@@ -566,7 +574,9 @@ function registerGraphicsIpc(): void {
       }
       const bytes = bytesOf(rawBytes)
       const fmt =
-        format === 'png' || format === 'jpg' || format === 'svg' ? (format as ExportFormat) : null
+        format === 'png' || format === 'jpg' || format === 'svg' || format === 'ai'
+          ? (format as ExportFormat)
+          : null
       if (!bytes || !fmt) return { ok: false, error: 'graphics: bad export request' }
       const current = savePathByWc.get(wcId)
       const name =
