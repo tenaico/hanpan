@@ -707,6 +707,35 @@ export function isBundledFont(name: string): boolean {
   return BUNDLED_LC.has(name.toLowerCase())
 }
 
+/**
+ * Hanyang (HY) faces of the Korean Office/HWP bundle (H2*.TTF) name their
+ * English family "HYHeadLine-Medium"; DirectWrite splits the "-Medium/-Bold/
+ * -Light" suffix off as a weight and keeps neither the Korean family
+ * (HY헤드라인M) nor the hyphenated one, so Chromium on Windows cannot find an
+ * installed face by the name documents declare (probe 2026-11-11, Windows 11:
+ * only "HYHeadLine Medium" / "HYHeadLine" resolve; the "-Extra" faces
+ * HY견고딕/HY견명조 keep their names). The chain follows the declared name
+ * with the names that do resolve; the hyphenated family covers platforms
+ * that keep it.
+ */
+const HY_FAMILY_ALIASES: Record<string, readonly string[]> = {
+  HY헤드라인M: ['HYHeadLine-Medium', 'HYHeadLine Medium'],
+  HY중고딕: ['HYGothic-Medium', 'HYGothic Medium'],
+  HY신명조: ['HYSinMyeongJo-Medium', 'HYSinMyeongJo Medium'],
+  HY그래픽M: ['HYGraphic-Medium', 'HYGraphic Medium'],
+  HY엽서L: ['HYPost-Light', 'HYPost Light'],
+  HY엽서M: ['HYPost-Medium', 'HYPost Medium'],
+  HY얕은샘물M: ['HYShortSamul-Medium', 'HYShortSamul Medium'],
+  // single-face Bold families: only the bare family resolves (its one face is bold)
+  HY궁서B: ['HYGungSo-Bold', 'HYGungSo'],
+  HY목각파임B: ['HYPMokGak-Bold', 'HYPMokGak'],
+}
+
+/** installed-face family names that stand for a declared name Chromium cannot resolve itself */
+export function localFamilyAliases(font: string): readonly string[] {
+  return HY_FAMILY_ALIASES[font.replace(/['"]/g, '').normalize('NFC').trim()] ?? []
+}
+
 const fontAvailableCache = new Map<string, boolean>()
 export function isFontAvailable(font: string): boolean {
   // registered from the shipped file: available even before its lazy load lands,
@@ -721,14 +750,17 @@ export function isFontAvailable(font: string): boolean {
     const ctx = canvas.getContext('2d')
     if (ctx) {
       const sample = '한글あア中文abcWXYmm123'
-      const quoted = `"${font.replace(/"/g, '')}"`
       const widthWith = (family: string) => {
         ctx.font = `32px ${family}`
         return ctx.measureText(sample).width
       }
-      available =
-        widthWith(`${quoted}, monospace`) !== widthWith('monospace') ||
-        widthWith(`${quoted}, serif`) !== widthWith('serif')
+      available = [font, ...localFamilyAliases(font)].some((name) => {
+        const quoted = `"${name.replace(/"/g, '')}"`
+        return (
+          widthWith(`${quoted}, monospace`) !== widthWith('monospace') ||
+          widthWith(`${quoted}, serif`) !== widthWith('serif')
+        )
+      })
     }
   } catch {
     /* headless/test environments treat every font as missing */
@@ -996,8 +1028,12 @@ export function wordMetricAliasFace(font: string): string | null {
 
 export function cssFontFamily(font: string, followAltName = true): string {
   const f = font.toLowerCase()
+  // the declared name carries its resolvable aliases right behind it (localFamilyAliases)
+  const aliases = localFamilyAliases(font)
   const chain = (...families: string[]) =>
-    [...new Set(families)].map((x) => `'${x.replace(/'/g, '')}'`).join(',')
+    [...new Set(families.flatMap((x) => (x === font ? [x, ...aliases] : [x])))]
+      .map((x) => `'${x.replace(/'/g, '')}'`)
+      .join(',')
   // CJK fallback at chain end (GB2312 subset bundled in fonts.css): no tofu even without system Chinese fonts
   const CJK_SERIF = 'Noto Serif CJK SC'
   const CJK_SANS = 'Noto Sans CJK SC'
