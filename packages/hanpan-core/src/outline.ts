@@ -30,6 +30,8 @@ export interface PanNode {
    * overwrites it.
    */
   body?: string | undefined
+  /** the topic's web link; a document links the item's text to it */
+  href?: string | undefined
   image?: PanImage | undefined
   children: PanNode[]
 }
@@ -66,7 +68,10 @@ export function countNodes(outline: PanOutline): number {
 
 /** A deep copy that shares no arrays or objects with the original (image bytes are shared, never mutated). */
 export function cloneOutline(outline: PanOutline): PanOutline {
-  const cloneNode = (node: PanNode): PanNode => ({ ...node, children: node.children.map(cloneNode) })
+  const cloneNode = (node: PanNode): PanNode => ({
+    ...node,
+    children: node.children.map(cloneNode),
+  })
   return { ...outline, nodes: outline.nodes.map(cloneNode) }
 }
 
@@ -82,8 +87,14 @@ export function findNode(outline: PanOutline, key: string): PanNode | undefined 
  * Lines starting with `>` under an item become its note. Keys are generated.
  * Used by tests and by the "paste an outline" path.
  */
-export function outlineFromIndentedText(text: string, makeKey: () => string = sequentialKeys()): PanOutline {
-  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter((l) => l.trim() !== '')
+export function outlineFromIndentedText(
+  text: string,
+  makeKey: () => string = sequentialKeys(),
+): PanOutline {
+  const lines = text
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .filter((l) => l.trim() !== '')
   const title = (lines.shift() ?? '').trim().replace(/^#\s*/, '')
   const root: PanNode = { key: makeKey(), title, children: [] }
   const stack: { node: PanNode; depth: number }[] = [{ node: root, depth: -1 }]

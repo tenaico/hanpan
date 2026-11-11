@@ -38,6 +38,24 @@ export function plainInline(text: string): string {
 
 const TABLE_RULE = /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/
 
+/**
+ * A Markdown table starting at `lines[i]` (a `|` row followed by a `| --- |`
+ * rule): its rows as plain text and the index after it, or null when there is none.
+ */
+export function markdownTableAt(
+  lines: readonly string[],
+  i: number,
+): { rows: string[][]; next: number } | null {
+  const line = lines[i]?.trim() ?? ''
+  if (!line.startsWith('|') || i + 1 >= lines.length || !TABLE_RULE.test(lines[i + 1]!.trim()))
+    return null
+  const rows: string[][] = [cells(line)]
+  let next = i + 2
+  while (next < lines.length && lines[next]!.trim().startsWith('|'))
+    rows.push(cells(lines[next++]!))
+  return { rows, next }
+}
+
 function cells(line: string): string[] {
   return line
     .trim()
@@ -98,11 +116,10 @@ export function markdownToBlocks(
       i++
       continue
     }
-    if (line.startsWith('|') && i + 1 < lines.length && TABLE_RULE.test(lines[i + 1]!.trim())) {
-      const rows: string[][] = [cells(line)]
-      i += 2
-      while (i < lines.length && lines[i]!.trim().startsWith('|')) rows.push(cells(lines[i++]!))
-      blocks.push({ kind: 'table', rows, header: true })
+    const table = markdownTableAt(lines, i)
+    if (table) {
+      blocks.push({ kind: 'table', rows: table.rows, header: true })
+      i = table.next
       continue
     }
     const picture = PICTURE_LINE.exec(line)

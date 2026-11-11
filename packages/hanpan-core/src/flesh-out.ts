@@ -44,6 +44,32 @@ export function fleshOutSystem(lang: string): string {
   ].join('\n')
 }
 
+/** A title this long is already a sentence: writing it again only repeats it. */
+const SENTENCE_TITLE = 60
+
+/** A source line: a linked topic, a `[n]` entry, a title holding a web address. */
+function isReference(node: PanNode): boolean {
+  const title = node.title.trim()
+  return !!node.href || /^\[\d+\]/.test(title) || /https?:\/\//i.test(title)
+}
+
+/**
+ * Whether the AI should write sentences for a topic. References, a title that
+ * is already a sentence (long, ending like one, or citing a source) and a
+ * branch holding nothing but references stay as they are.
+ */
+export function wantsSentence(node: PanNode): boolean {
+  const title = node.title.trim()
+  if (!title || isReference(node)) return false
+  if (
+    title.length >= SENTENCE_TITLE ||
+    /[.!?。]$/.test(title) ||
+    /\[\d+(?:\s*,\s*\d+)*\]/.test(title)
+  )
+    return false
+  return node.children.length === 0 || !node.children.every(isReference)
+}
+
 /**
  * One job per main branch: a whole map in one request is too long for a small model.
  * `lang` is the UI language the sentences are written in (Korean when omitted).
@@ -51,11 +77,15 @@ export function fleshOutSystem(lang: string): string {
 export function fleshOutJobs(outline: PanOutline, lang = 'ko'): FleshOutJob[] {
   const ko = lang === 'ko'
   const system = fleshOutSystem(lang)
-  return outline.nodes.map((branch) => {
+  const jobs = outline.nodes.map((branch) => {
     const keys = new Map<string, string>()
     const lines: string[] = []
     let n = 0
     const visit = (node: PanNode, depth: number) => {
+      if (!wantsSentence(node)) {
+        node.children.forEach((c) => visit(c, depth + 1))
+        return
+      }
       const id = String(++n)
       keys.set(id, node.key)
       const memo = node.note?.replace(/\s+/g, ' ').slice(0, 300)
@@ -75,6 +105,8 @@ export function fleshOutJobs(outline: PanOutline, lang = 'ko'): FleshOutJob[] {
       .join('\n')
     return { branchKey: branch.key, system, user, keys }
   })
+  // a branch with nothing to write (only references, say) needs no request
+  return jobs.filter((job) => job.keys.size > 0)
 }
 
 const ANSWER_LINE = /^\s*(?:[-*•]\s*)?\{#(\d{1,4})\}\s*(.+?)\s*$/

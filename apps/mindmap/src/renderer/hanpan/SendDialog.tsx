@@ -93,7 +93,8 @@ async function fleshOut(
   progress(jobs.length, jobs.length)
   return {
     outline: applyBodies(outline, bodies),
-    error: bodies.size ? null : (lastError ?? 'no sentences'),
+    // a map of references and finished sentences has nothing to write: not an error
+    error: bodies.size || jobs.length === 0 ? null : (lastError ?? 'no sentences'),
   }
 }
 
