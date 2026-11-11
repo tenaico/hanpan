@@ -304,6 +304,127 @@ export function briefingBlocks(
   return out
 }
 
+/** the longest topic title the briefing map aims for; an article's number and source come on top */
+export const MAP_TITLE_MAX = 30
+
+/** the text cut to `max` characters at a word boundary, with … when cut */
+function clip(text: string, max: number): string {
+  if (text.length <= max) return text
+  const room = text.slice(0, max - 1)
+  const space = room.lastIndexOf(' ')
+  // a cut too far back loses most of the line: cut mid-word instead
+  const cut = space >= max / 2 ? room.slice(0, space) : room
+  return `${cut.replace(/[\s,·:：—–-]+$/, '')}…`
+}
+
+/** a citation mark: [1], [1][2], [1, 2], with the blanks before it */
+const CITATION_MARK = /\s*\[\d{1,3}(?:\s*,\s*\d{1,3})*\]/g
+
+/** one line without bold marks, which the AI is asked not to write but sometimes does */
+const plainLine = (text: string) =>
+  text
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+/**
+ * The short title of a briefing item for the mind map: citation marks taken
+ * off, then the part before a colon when it is short (a checkpoint such as
+ * '환율: 1,500원 돌파 여부'), else the first sentence, cut at a word boundary
+ * when still too long.
+ */
+export function mapItemTitle(text: string): string {
+  const plain = plainLine(text.replace(CITATION_MARK, ''))
+  const colon = /^(.{2,}?)\s*[:：]\s/.exec(`${plain} `)
+  if (colon && colon[1]!.length <= MAP_TITLE_MAX) return colon[1]!
+  // a sentence of a few characters at least, so '1. 둘' is no sentence of its own
+  const sentence = /^(.{6,}?[.!?。])(?=\s|$)/.exec(plain)?.[1] ?? plain
+  return clip(sentence.replace(/[.。]$/, ''), MAP_TITLE_MAX)
+}
+
+/**
+ * Text as a topic title in the outline the mind map engine reads: one line,
+ * with the characters that would read as labels, a link or a line mark
+ * escaped the way the engine's own outline writer does.
+ */
+function mapTitle(text: string): string {
+  const line = text
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\\|[[\]]|<(?=[A-Za-z/!?])/g, '\\$&')
+  // a number mark keeps its digits and escapes the dot, as a backslash before a digit stays
+  const ordered = /^(\d{1,9})(?=[.)])/.exec(line)
+  if (ordered) return `${ordered[1]}\\${line.slice(ordered[1]!.length)}`
+  return /^[-+*#>(]/.test(line) ? `\\${line}` : line
+}
+
+/** Note lines under a list item of the outline: each one quoted, so nothing in it is read */
+const mapNote = (text: string) =>
+  text
+    .split(/\r\n?|\n/)
+    .map((l) => `  > ${l.trim()}`.trimEnd())
+    .join('\n')
+
+/** an article's title without the ' - 언론사' Google News puts at its end */
+function articleTitle(a: BriefingArticle): string {
+  const tail = ` - ${a.source}`
+  return a.source && a.title.endsWith(tail) ? a.title.slice(0, -tail.length) : a.title
+}
+
+/** a link the outline can carry between angle brackets */
+const mapLink = (url: string) =>
+  /^https?:\/\/\S+$/i.test(url) ? ` <${url.replace(/[<>]/g, encodeURIComponent)}>` : ''
+
+/**
+ * The briefing as an outline for the mind map (0.19.4), read by the same
+ * Markdown → map builder as any other text. The briefing title is the central
+ * topic with the headline as its note. 오늘의 기상도 has a topic per field
+ * ('반도체 · 맑음') with the field's line as its note. Each item of 현황,
+ * 전망 and 체크포인트 is a topic with a short title and the full sentence,
+ * citations kept, as its note. Each cited article is a topic '[n] 제목 — 언론사'
+ * whose web link is the article and whose note is the date. The research dates
+ * and the source line go to the note of 참고 자료, or of the central topic when
+ * nothing is cited.
+ */
+export function briefingMapMarkdown(
+  brief: TrendBriefing,
+  forecast: TrendForecast,
+  dropped = 0,
+): string {
+  const sources = citedArticles(brief, forecast)
+  const asOf = materialDatesLine(forecast)
+  const source = sourceLine(forecast, dropped)
+  const topic = (title: string, note?: string, link = '') =>
+    `- ${mapTitle(title)}${link}${note ? `\n${mapNote(note)}` : ''}`
+  const branch = (title: string, topics: string[], note: string[] = []) =>
+    topics.length === 0 ? [] : [`## ${title}`, '', ...topics, '', ...note.flatMap((l) => [l, ''])]
+  const list = (values: string[]) => values.map((v) => topic(mapItemTitle(v), v))
+  const fields = forecast.fields.map((f) =>
+    f.s === null
+      ? topic(`${f.title} · ${NO_DATA}`)
+      : topic(`${f.title} · ${f.label}`, f.head || undefined),
+  )
+  const articles = sources.map((a) => {
+    const full = articleTitle(a)
+    const short = clip(full, MAP_TITLE_MAX)
+    const title = `[${a.n}] ${short}${a.source ? ` — ${a.source}` : ''}`
+    const note = [short === full ? '' : full, a.date].filter(Boolean).join('\n')
+    return topic(title, note || undefined, mapLink(a.url))
+  })
+  return [
+    `# ${briefingTitle(forecast)}`,
+    '',
+    plainLine(brief.headline),
+    '',
+    ...(sources.length === 0 ? [source, ''] : []),
+    ...branch('오늘의 기상도', fields),
+    ...branch('현황', list(brief.summary)),
+    ...branch('1~3개월 전망', list(brief.outlook)),
+    ...branch('체크포인트', list(brief.watch)),
+    ...branch('참고 자료', articles, [...(asOf ? [asOf] : []), source]),
+  ].join('\n')
+}
+
 /** a table cell: no pipe or line break breaks the table */
 const cell = (text: string) => text.replace(/\|/g, '/').replace(/\s+/g, ' ').trim()
 

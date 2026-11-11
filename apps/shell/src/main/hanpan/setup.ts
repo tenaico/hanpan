@@ -42,6 +42,7 @@ import {
   briefingBlocks,
   briefingDropped,
   briefingFormat,
+  briefingMapMarkdown,
   briefingMarkdown,
   briefingTitle,
   checkBriefing,
@@ -485,7 +486,7 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
         case 'mindmap':
         case 'pptx': {
           const built = await buildTargetDocument(
-            briefingMarkdown(brief, forecast, dropped),
+            (format === 'pptx' ? briefingMarkdown : briefingMapMarkdown)(brief, forecast, dropped),
             format === 'pptx' ? 'slides' : 'mindmap',
             { title, untitled: title, korean: true, loadHwpEngine },
           )
