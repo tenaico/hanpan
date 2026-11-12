@@ -557,6 +557,7 @@ export function Toolbar(p: ToolbarProps) {
             type="button"
             className={`mm-ai-entry ai-entry${p.aiOpen ? ' active' : ''}`}
             data-tip={t('aiOpenAssistant')}
+            data-ai-helper=""
             data-action="ai"
             aria-pressed={p.aiOpen}
             onMouseDown={(e) => e.preventDefault()}

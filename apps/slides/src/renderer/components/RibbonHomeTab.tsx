@@ -247,6 +247,7 @@ export function RibbonHomeTab({ rb }: { rb: RibbonTabCtx }) {
         <button
           className={`rb-big ai-entry${aiOpen ? ' active' : ''}`}
           data-tip={t('aiOpenAssistant')}
+          data-ai-helper=""
           onClick={onToggleAi}
         >
           <span className="rb-big-icon">

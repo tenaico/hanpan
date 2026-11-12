@@ -19,11 +19,12 @@ import '@genoffice/ui/ai-scope-quote.css'
 import '@genoffice/ui/image-viewer.css'
 import './styles.css'
 import './fonts/fonts.css'
-import { applyAiPanelPrefs, installScreenTips } from '@genoffice/ui'
+import { applyAiPanelPrefs, installAiHelperHint, installScreenTips } from '@genoffice/ui'
 import { setAltChunkHtmlConverter } from '@genoffice/docx-engine'
 import { registerTemplateFonts } from './template-fonts'
 
 installScreenTips()
+installAiHelperHint('docs')
 // before any layout: the editor, print and PDF export (also headless) all draw in this page
 registerTemplateFonts()
 if (window.desktop?.convertAltChunkHtml) {

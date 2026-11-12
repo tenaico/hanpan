@@ -50,9 +50,12 @@ export function RecentCard({
     <section className="hb-recent">
       <header className="hb-recent-head">
         <h2 className="hb-card-title">{title}</h2>
-        <button type="button" className="hb-recent-all" data-recent-all="" onClick={onShowAll}>
-          {t('hbRecentAll', { n: total })}
-        </button>
+        {/* nothing to show when there is no document yet */}
+        {total > 0 && (
+          <button type="button" className="hb-head-btn" data-recent-all="" onClick={onShowAll}>
+            {t('hbRecentAll', { n: total })}
+          </button>
+        )}
       </header>
       {entries && entries.length === 0 ? (
         <p className="hw-empty">{homeCustomText(lang, 'recentEmpty')}</p>

@@ -1,6 +1,6 @@
 # AI Photo และ AI Illustration
 
-แท็บสำหรับรูปภาพสองแบบ **AI Photo** เปิดภาพถ่ายและภาพที่มีเลเยอร์ (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC) **AI Illustration** เปิดภาพเวกเตอร์ (SVG, SVGZ, ไฟล์ Illustrator .ai, เอกสารภาพประกอบ AI .vectorcraft) แต่ละแท็บเรียกใช้แอปฟรี PhotoCraft หรือ VectorCraft ภายใน GenOffice โดยมีผู้ช่วย AI อยู่ข้าง ๆ
+แท็บสำหรับรูปภาพสองแบบ **AI Photo** เปิดภาพถ่ายและภาพที่มีเลเยอร์ (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC) **AI Illustration** เปิดภาพเวกเตอร์ (SVG, SVGZ, ไฟล์ Illustrator .ai, เอกสารภาพประกอบ AI .vectorcraft) แต่ละแท็บมีผู้ช่วย AI อยู่ข้าง ๆ
 
 ## เปิดและสร้างใหม่
 

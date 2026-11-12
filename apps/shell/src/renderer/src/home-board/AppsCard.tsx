@@ -17,6 +17,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactElement,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { appSlots, slotGrid, type AppKey } from '../../../shared/home-apps'
 import type { CardSize } from '../../../shared/home-board'
 import type { HomeAppCard } from '../HomeWidgets'
@@ -29,6 +30,13 @@ const HANPAN_TILES: ReadonlySet<string> = new Set(['templates', 'design', 'md-co
 
 /** how far the pointer goes before a press on a tile becomes a drag */
 const DRAG_START_PX = 4
+
+/** the tile of an app on the card's grid */
+function tileOf(grid: HTMLElement | null, key: AppKey): HTMLElement | undefined {
+  return [...(grid?.querySelectorAll<HTMLElement>('[data-new]') ?? [])].find(
+    (el) => el.dataset.new === key,
+  )
+}
 
 /** an app icon that cannot be dragged off its tile */
 export function undraggable(icon: ReactElement): ReactElement {
@@ -57,6 +65,11 @@ export function AppsCard(props: {
   /** a press on a tile while customizing: it becomes a drag past DRAG_START_PX */
   const [held, setHeld] = useState<{ key: AppKey; x: number; y: number } | null>(null)
   const [dropSlot, setDropSlot] = useState<number | null>(null)
+  /** the see-through copy of the dragged tile under the pointer, once the press became a drag */
+  const [ghost, setGhost] = useState<{ width: number; height: number } | null>(null)
+  const ghostRef = useRef<HTMLDivElement | null>(null)
+  /** where the copy's corner goes: the pointer less where the tile was held */
+  const ghostAt = useRef({ x: 0, y: 0 })
   const latest = useRef({ dropSlot, apps: slots.apps, pinned: props.pinned, onMove: props.onMove })
   latest.current = { dropSlot, apps: slots.apps, pinned: props.pinned, onMove: props.onMove }
 
@@ -72,15 +85,32 @@ export function AppsCard(props: {
   useEffect(() => {
     if (!held) return
     let moving = false
+    /** where the pointer holds the tile, from the tile's corner */
+    let grip = { x: 0, y: 0 }
+    const place = (event: PointerEvent) => {
+      ghostAt.current = { x: event.clientX - grip.x, y: event.clientY - grip.y }
+      const el = ghostRef.current
+      if (el) el.style.transform = `translate(${ghostAt.current.x}px, ${ghostAt.current.y}px)`
+    }
     const finish = () => {
       setHeld(null)
       setDropSlot(null)
+      setGhost(null)
     }
     const onMove = (event: PointerEvent) => {
       if (!moving && Math.hypot(event.clientX - held.x, event.clientY - held.y) <= DRAG_START_PX) {
         return
       }
+      if (!moving) {
+        const tile = tileOf(gridRef.current, held.key)
+        const box = tile?.getBoundingClientRect()
+        if (box) {
+          grip = { x: held.x - box.left, y: held.y - box.top }
+          setGhost({ width: box.width, height: box.height })
+        }
+      }
       moving = true
+      place(event)
       const slot = document
         .elementFromPoint?.(event.clientX, event.clientY)
         ?.closest<HTMLElement>('[data-app-slot]')
@@ -113,6 +143,15 @@ export function AppsCard(props: {
     }
   }, [held])
 
+  // the copy appears under the pointer, then the move handler moves it along
+  useEffect(() => {
+    const el = ghostRef.current
+    if (!ghost || !el) return
+    el.style.transform = `translate(${ghostAt.current.x}px, ${ghostAt.current.y}px)`
+  }, [ghost])
+
+  const heldApp = held ? byKey.get(held.key) : undefined
+
   const press = (event: ReactPointerEvent<HTMLButtonElement>, key: AppKey) => {
     if (!props.customizing || (event.button !== undefined && event.button !== 0)) return
     setHeld({ key, x: event.clientX, y: event.clientY })
@@ -135,6 +174,7 @@ export function AppsCard(props: {
               className="hb-app-slot"
               data-app-slot={index}
               data-drop-slot={dropSlot === index ? '' : undefined}
+              data-app-held={ghost && held?.key === key ? '' : undefined}
             >
               <button
                 type="button"
@@ -201,6 +241,22 @@ export function AppsCard(props: {
           </div>
         ))}
       </div>
+      {ghost &&
+        heldApp &&
+        createPortal(
+          <div
+            ref={ghostRef}
+            className="hb-apps hb-app-ghost"
+            aria-hidden
+            style={{ width: ghost.width, height: ghost.height }}
+          >
+            <span className="quick-card hb-app">
+              {undraggable(heldApp.icon)}
+              <span className="hb-app-name">{heldApp.title}</span>
+            </span>
+          </div>,
+          document.body,
+        )}
     </section>
   )
 }

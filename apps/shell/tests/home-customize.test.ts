@@ -519,6 +519,23 @@ describe('dragging apps on the new card (Task 6)', () => {
     expect($('[data-drop-slot]')).toBeNull()
   })
 
+  it('carries a see-through copy of the tile under the pointer (0.19.5)', async () => {
+    await renderHome()
+    await customize()
+    const photo = $('.quick-card[data-new="photo"]')!
+    overSlot(0)
+    await pointer(photo, 'pointerdown', { clientX: 300, clientY: 300 })
+    expect(document.querySelector('.hb-app-ghost')).toBeNull()
+    await pointer(photo, 'pointermove', { clientX: 200, clientY: 250 })
+    const ghost = document.querySelector<HTMLElement>('.hb-app-ghost')!
+    expect(ghost.textContent).toBe(photo.textContent)
+    expect(ghost.style.transform).toBe('translate(-100px, -50px)')
+    expect(photo.parentElement!.hasAttribute('data-app-held')).toBe(true)
+    await pointer(photo, 'pointerup', { clientX: 200, clientY: 250 })
+    expect(document.querySelector('.hb-app-ghost')).toBeNull()
+    expect($('[data-app-held]')).toBeNull()
+  })
+
   it('does not drop an app on "모든 앱"', async () => {
     stored = { ...boardWith(), pinned: ['xmind', 'pptx'] }
     await renderHome()

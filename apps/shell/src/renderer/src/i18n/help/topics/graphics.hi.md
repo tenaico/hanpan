@@ -1,6 +1,6 @@
 # AI Photo और AI Illustration
 
-चित्रों के लिए दो टैब। **AI Photo** तस्वीरें और लेयर वाले चित्र (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC) खोलता है। **AI Illustration** वेक्टर चित्र (SVG, SVGZ, Illustrator फ़ाइल .ai, AI चित्रण दस्तावेज़ .vectorcraft) खोलता है। हर टैब GenOffice के अंदर मुफ़्त ऐप PhotoCraft या VectorCraft चलाता है, और बगल में AI सहायक रहता है।
+चित्रों के लिए दो टैब। **AI Photo** तस्वीरें और लेयर वाले चित्र (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC) खोलता है। **AI Illustration** वेक्टर चित्र (SVG, SVGZ, Illustrator फ़ाइल .ai, AI चित्रण दस्तावेज़ .vectorcraft) खोलता है। हर टैब के बगल में AI सहायक रहता है।
 
 ## खोलना और नया बनाना
 

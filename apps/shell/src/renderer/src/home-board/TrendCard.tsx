@@ -295,17 +295,19 @@ export function TrendCard({
   return (
     <section className="hb-trend">
       <header className="hb-trend-head">
-        <h2 className="hb-card-title">{t('hbTrendTitle')}</h2>
+        {/* the short name stays whole beside the buttons; the full title shows on hover */}
+        <h2 className="hb-card-title" title={t('hbTrendTitle')}>
+          {t('hbTrendTitle').split(' · ')[0]}
+        </h2>
         {forecast && (
           <span className="hb-trend-asof" data-trend-asof>
             {t('hbTrendAsOf', { when: trendAsOfText(forecast, now(), dateLocale) })}
           </span>
         )}
         {forecast && canBrief && (
-          <span className="hb-trend-brief" ref={briefRef}>
+          <span className="hb-trend-brief hb-head-pill" ref={briefRef}>
             <button
               type="button"
-              className="hb-trend-more"
               data-trend-brief
               data-tip={t('hbTrendBriefTip', { format: t(FORMAT_WORD[current]) })}
               disabled={briefing}
@@ -316,7 +318,7 @@ export function TrendCard({
             </button>
             <button
               type="button"
-              className="hb-trend-more hb-trend-brief-menu"
+              className="hb-trend-brief-menu"
               data-trend-brief-menu
               aria-label={t('hbTrendBriefFormat')}
               aria-haspopup="menu"
@@ -345,7 +347,7 @@ export function TrendCard({
             )}
           </span>
         )}
-        <button type="button" className="hb-trend-more" data-trend-more onClick={() => open(null)}>
+        <button type="button" className="hb-head-btn" data-trend-more onClick={() => open(null)}>
           {t('hbTrendMore')}
         </button>
       </header>

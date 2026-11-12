@@ -1,6 +1,6 @@
 # AI 相片與 AI 插畫
 
-兩個處理圖片的分頁。**AI 相片** 開啟相片和有圖層的圖片（PSD、PSB、PNG、JPEG、WebP、GIF、BMP、TIFF、HEIC）。**AI 插畫** 開啟向量圖（SVG、SVGZ、Illustrator 檔案 .ai、AI 插畫文件 .vectorcraft）。每個分頁在 GenOffice 裡執行免費的 PhotoCraft 或 VectorCraft，旁邊有 AI 助理。
+兩個處理圖片的分頁。**AI 相片** 開啟相片和有圖層的圖片（PSD、PSB、PNG、JPEG、WebP、GIF、BMP、TIFF、HEIC）。**AI 插畫** 開啟向量圖（SVG、SVGZ、Illustrator 檔案 .ai、AI 插畫文件 .vectorcraft）。每個分頁旁邊都有 AI 助理。
 
 ## 開啟與新增
 

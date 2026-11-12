@@ -1,6 +1,6 @@
 # AI Photo en AI Illustration
 
-Twee tabbladen voor afbeeldingen. **AI Photo** opent foto's en afbeeldingen met lagen (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** opent vectorafbeeldingen (SVG, SVGZ, Illustrator-bestand .ai, AI-illustratiedocument .vectorcraft). Elk tabblad draait de gratis app PhotoCraft of VectorCraft binnen GenOffice, met een AI-assistent ernaast.
+Twee tabbladen voor afbeeldingen. **AI Photo** opent foto's en afbeeldingen met lagen (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** opent vectorafbeeldingen (SVG, SVGZ, Illustrator-bestand .ai, AI-illustratiedocument .vectorcraft). Naast elk tabblad staat een AI-assistent.
 
 ## Openen en maken
 

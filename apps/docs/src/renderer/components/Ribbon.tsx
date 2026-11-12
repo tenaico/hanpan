@@ -3177,6 +3177,7 @@ function RibbonInner({
                 <button
                   className={`rb-big ai-entry ${showAi ? 'active' : ''}`}
                   data-tip={t('aiOpenAssistant')}
+                  data-ai-helper=""
                   onClick={onToggleAi}
                 >
                   <span className="rb-big-icon">

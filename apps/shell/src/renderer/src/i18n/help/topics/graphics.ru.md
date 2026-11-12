@@ -1,6 +1,6 @@
 # AI Photo и AI Illustration
 
-Две вкладки для изображений. **AI Photo** открывает фотографии и изображения со слоями (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** открывает векторную графику (SVG, SVGZ, файл Illustrator .ai, документ ИИ-иллюстрации .vectorcraft). В каждой вкладке внутри GenOffice работает бесплатное приложение PhotoCraft или VectorCraft, а рядом — ИИ-помощник.
+Две вкладки для изображений. **AI Photo** открывает фотографии и изображения со слоями (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** открывает векторную графику (SVG, SVGZ, файл Illustrator .ai, документ ИИ-иллюстрации .vectorcraft). Рядом с каждой вкладкой есть ИИ-помощник.
 
 ## Открытие и создание
 

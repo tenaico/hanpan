@@ -91,7 +91,7 @@ import { coverRect, inkPath, shapePath, textPadding } from './style'
 import { PagePreview, elementBox, elementLook, pageBackground } from './view'
 import { LANG_NATIVE_NAMES, iconLabel, wordsFor } from './words'
 import { DesignPrintDialog, type DesignPrintResult, type PrintRange } from './PrintDialog'
-import type { PrintSheet } from '@genoffice/ui'
+import { installAiHelperHint, type PrintSheet } from '@genoffice/ui'
 
 export interface DesignApi extends Partial<DesignAiApi & DesignAiSettingsApi & GonguApi> {
   savePng(bytes: Uint8Array, name: string, format?: 'png' | 'jpg'): Promise<string | null>
@@ -382,6 +382,9 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
   )
 
   // fonts kept in the design are handed to the page (screen and export) as it opens
+  // the first few boards point at the AI helper (0.19.5)
+  useEffect(() => installAiHelperHint('design'), [])
+
   useEffect(() => {
     for (const f of doc.fonts ?? []) void registerFont(f.family, f.src)
   }, [doc.fonts])
@@ -1896,6 +1899,7 @@ export function DesignBoard(p: { lang: string; api: DesignApi; outline?: string 
           <button
             type="button"
             className={`dz-ai-open${side === 'ai' ? ' on' : ''}`}
+            data-ai-helper=""
             onClick={() => openAi()}
             title={w.aiOpen}
             aria-pressed={side === 'ai'}

@@ -386,6 +386,7 @@ export function Ribbon(p: Props) {
               type="button"
               className={`rb-big ai-entry${p.aiOpen ? ' active' : ''}`}
               data-tip={t('aiOpenAssistant')}
+              data-ai-helper=""
               aria-pressed={p.aiOpen}
               disabled={off}
               onMouseDown={(e) => e.preventDefault()}

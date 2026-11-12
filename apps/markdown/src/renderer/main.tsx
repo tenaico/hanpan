@@ -18,10 +18,11 @@ import '@genoffice/ui/image-viewer.css'
 import 'katex/dist/katex.min.css'
 import './styles.css'
 import './markdown-themes.css'
-import { applyAiPanelPrefs, installScreenTips } from '@genoffice/ui'
+import { applyAiPanelPrefs, installAiHelperHint, installScreenTips } from '@genoffice/ui'
 import type { MarkdownTheme } from '../shared/markdown-theme'
 
 installScreenTips()
+installAiHelperHint('markdown')
 
 function applyTheme(theme: UiTheme): void {
   if (theme === 'system') document.documentElement.removeAttribute('data-theme')

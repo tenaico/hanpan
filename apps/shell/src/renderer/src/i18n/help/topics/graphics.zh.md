@@ -1,6 +1,6 @@
 # AI 照片与 AI 插画
 
-两个处理图片的标签页。**AI 照片** 打开照片和带图层的图片（PSD、PSB、PNG、JPEG、WebP、GIF、BMP、TIFF、HEIC）。**AI 插画** 打开矢量图（SVG、SVGZ、Illustrator 文件 .ai、AI 插画文档 .vectorcraft）。每个标签页在 GenOffice 中运行免费的 PhotoCraft 或 VectorCraft，旁边有 AI 助手。
+两个处理图片的标签页。**AI 照片** 打开照片和带图层的图片（PSD、PSB、PNG、JPEG、WebP、GIF、BMP、TIFF、HEIC）。**AI 插画** 打开矢量图（SVG、SVGZ、Illustrator 文件 .ai、AI 插画文档 .vectorcraft）。每个标签页旁边都有 AI 助手。
 
 ## 打开与新建
 

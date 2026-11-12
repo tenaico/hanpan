@@ -1,6 +1,6 @@
 # AI フォトと AI イラスト
 
-画像を扱う 2 つのタブです。**AI フォト** は写真とレイヤーのある画像（PSD、PSB、PNG、JPEG、WebP、GIF、BMP、TIFF、HEIC）を開きます。**AI イラスト** はベクター画像（SVG、SVGZ、Illustrator ファイル .ai、AI イラスト文書 .vectorcraft）を開きます。各タブでは無料の PhotoCraft または VectorCraft が GenOffice の中で動き、横に AI アシスタントが付きます。
+画像を扱う 2 つのタブです。**AI フォト** は写真とレイヤーのある画像（PSD、PSB、PNG、JPEG、WebP、GIF、BMP、TIFF、HEIC）を開きます。**AI イラスト** はベクター画像（SVG、SVGZ、Illustrator ファイル .ai、AI イラスト文書 .vectorcraft）を開きます。各タブの横に AI アシスタントが付きます。
 
 ## 開く・新規作成
 

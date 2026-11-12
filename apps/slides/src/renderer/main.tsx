@@ -18,9 +18,10 @@ import '@genoffice/ui/ai-panel-prefs.css'
 import '@genoffice/ui/gongu-picker.css'
 import '@genoffice/ui/ai-scope-quote.css'
 import './styles.css'
-import { applyAiPanelPrefs, installScreenTips } from '@genoffice/ui'
+import { applyAiPanelPrefs, installAiHelperHint, installScreenTips } from '@genoffice/ui'
 
 installScreenTips()
+installAiHelperHint('slides')
 
 // Canvas fillText never triggers @font-face downloads, so the bundled document fonts
 // (Carlito ↔ Calibri) must be loaded explicitly or Konva silently draws the fallback face.

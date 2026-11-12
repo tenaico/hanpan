@@ -1,6 +1,6 @@
 # AI Photo và AI Illustration
 
-Hai thẻ dành cho hình ảnh. **AI Photo** mở ảnh chụp và ảnh có lớp (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** mở hình vector (SVG, SVGZ, tệp Illustrator .ai, tài liệu Minh họa AI .vectorcraft). Mỗi thẻ chạy ứng dụng miễn phí PhotoCraft hoặc VectorCraft bên trong GenOffice, có trợ lý AI bên cạnh.
+Hai thẻ dành cho hình ảnh. **AI Photo** mở ảnh chụp và ảnh có lớp (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** mở hình vector (SVG, SVGZ, tệp Illustrator .ai, tài liệu Minh họa AI .vectorcraft). Mỗi thẻ có trợ lý AI bên cạnh.
 
 ## Mở và tạo mới
 

@@ -4,7 +4,7 @@ import App from './App'
 import { LocaleProvider } from './i18n/locale'
 import type { UiTheme } from '../shared/ipc'
 import { applyDocumentTheme } from './doc-theme'
-import { applyKoreanDocFeatures, installScreenTips } from '@genoffice/ui'
+import { applyKoreanDocFeatures, installAiHelperHint, installScreenTips } from '@genoffice/ui'
 import '@genoffice/ui/tokens.css'
 import '@genoffice/ui/screentip.css'
 import '@genoffice/ui/dropdown.css'
@@ -13,6 +13,7 @@ import './styles.css'
 import './map.css'
 
 installScreenTips()
+installAiHelperHint('mindmap')
 
 function applyTheme(theme: UiTheme): void {
   if (theme === 'system') document.documentElement.removeAttribute('data-theme')

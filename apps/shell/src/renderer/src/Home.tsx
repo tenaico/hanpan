@@ -2030,7 +2030,8 @@ export function Home({
     {
       ext: 'vectorcraft',
       title: t('newIllust'),
-      sub: '.vectorcraft',
+      // the files people know it by; its own document format stays out of sight
+      sub: '.ai · .svg',
       action: () => window.aiOffice.newIllust(newFileOpts),
     },
     {
