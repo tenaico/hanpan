@@ -63,6 +63,7 @@ export function HwpAiDock({
           type="button"
           className="ai-rail ai-entry"
           data-tip={t('aiOpenAssistant')}
+          data-ai-helper=""
           aria-label={aiSubscriptionText(lang, 'aiAssistant')}
           onClick={() =>
             folded && open && role !== 'secondary'

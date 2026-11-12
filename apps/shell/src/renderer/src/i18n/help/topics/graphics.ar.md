@@ -1,6 +1,6 @@
 # AI Photo وAI Illustration
 
-علامتا تبويب للصور. **AI Photo** يفتح الصور الفوتوغرافية والصور ذات الطبقات (PSD، PSB، PNG، JPEG، WebP، GIF، BMP، TIFF، HEIC). **AI Illustration** يفتح الرسوم المتجهية (SVG، SVGZ، ملف Illustrator ‏.ai، مستند رسوم بالذكاء الاصطناعي ‏.vectorcraft). يشغّل كل تبويب التطبيق المجاني PhotoCraft أو VectorCraft داخل GenOffice، وبجانبه مساعد ذكاء اصطناعي.
+علامتا تبويب للصور. **AI Photo** يفتح الصور الفوتوغرافية والصور ذات الطبقات (PSD، PSB، PNG، JPEG، WebP، GIF، BMP، TIFF، HEIC). **AI Illustration** يفتح الرسوم المتجهية (SVG، SVGZ، ملف Illustrator ‏.ai، مستند رسوم بالذكاء الاصطناعي ‏.vectorcraft). بجانب كل تبويب مساعد ذكاء اصطناعي.
 
 ## الفتح والإنشاء
 

@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom/client'
 import { htmlDir, htmlLang, type Lang } from '@genoffice/i18n'
-import { applyAiPanelPrefs, installScreenTips } from '@genoffice/ui'
+import { applyAiPanelPrefs, installAiHelperHint, installScreenTips } from '@genoffice/ui'
 
 import '@genoffice/ui/tokens.css'
 import '@genoffice/ui/screentip.css'
@@ -39,6 +39,7 @@ const root = document.getElementById('root')
 if (!root) throw new Error('Missing application root.')
 
 installScreenTips()
+installAiHelperHint('sheets')
 installCanvasFontFallback()
 // URL-backed faces: no file is read until text first uses its family
 registerTemplateFonts()

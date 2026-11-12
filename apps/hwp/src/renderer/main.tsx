@@ -16,9 +16,15 @@ import '@genoffice/ui/gongu-picker.css'
 import './styles.css'
 import './ai-panel.css'
 import './dialog-theme.css'
-import { applyAiPanelPrefs, applyKoreanDocFeatures, installScreenTips } from '@genoffice/ui'
+import {
+  applyAiPanelPrefs,
+  applyKoreanDocFeatures,
+  installAiHelperHint,
+  installScreenTips,
+} from '@genoffice/ui'
 
 installScreenTips()
+installAiHelperHint('hwp')
 
 function applyTheme(theme: UiTheme): void {
   if (theme === 'system') document.documentElement.removeAttribute('data-theme')

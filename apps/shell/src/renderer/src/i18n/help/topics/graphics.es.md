@@ -1,6 +1,6 @@
 # AI Photo y AI Illustration
 
-Dos pestañas para imágenes. **AI Photo** abre fotos e imágenes con capas (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** abre dibujos vectoriales (SVG, SVGZ, archivo de Illustrator .ai, documento de Ilustración IA .vectorcraft). Cada pestaña ejecuta la aplicación gratuita PhotoCraft o VectorCraft dentro de GenOffice, con un asistente de IA al lado.
+Dos pestañas para imágenes. **AI Photo** abre fotos e imágenes con capas (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** abre dibujos vectoriales (SVG, SVGZ, archivo de Illustrator .ai, documento de Ilustración IA .vectorcraft). Cada pestaña tiene un asistente de IA al lado.
 
 ## Abrir y crear
 

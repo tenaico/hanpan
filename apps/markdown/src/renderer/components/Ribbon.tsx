@@ -678,6 +678,7 @@ export function Ribbon({
               type="button"
               className={`rb-big ai-entry${aiOpen ? ' active' : ''}`}
               data-tip={t('aiOpenAssistant')}
+              data-ai-helper=""
               disabled={disabled}
               onMouseDown={(e) => e.preventDefault()}
               onClick={onToggleAi}

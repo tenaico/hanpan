@@ -119,9 +119,10 @@ describe('TrendCard', () => {
       '인터넷에 연결되면 오늘의 트렌드가 나옵니다',
     )
     expect(host.querySelector('[data-trend-field]')).toBeNull()
-    expect(host.querySelector('h2.hb-card-title')?.textContent).toBe(
-      '트렌드 레이더 · 오늘의 기상도',
-    )
+    // the short name beside the buttons, the full title on hover (0.19.5)
+    const title = host.querySelector('h2.hb-card-title')
+    expect(title?.textContent).toBe('트렌드 레이더')
+    expect(title?.getAttribute('title')).toBe('트렌드 레이더 · 오늘의 기상도')
   })
 
   it('shows the offline line without the bridge', async () => {

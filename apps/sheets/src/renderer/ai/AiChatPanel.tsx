@@ -610,6 +610,7 @@ export function AiChatPanel({
       <aside className="copilot collapsed">
         <button
           className="expand-copilot"
+          data-ai-helper=""
           onClick={onExpand}
           data-tip={t('aiOpenAssistant')}
           aria-label={t('aiOpenAssistant')}

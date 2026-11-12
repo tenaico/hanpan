@@ -8686,6 +8686,7 @@ export default function App() {
                   <button
                     className={`rb-big ai-entry${aiCollapsed ? '' : ' active'}`}
                     data-tip={t('aiOpenAssistant')}
+                    data-ai-helper=""
                     onClick={() => setAiCollapsed((v) => !v)}
                   >
                     <span className="rb-big-icon">

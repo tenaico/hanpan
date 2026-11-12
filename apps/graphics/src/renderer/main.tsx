@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { htmlDir, htmlLang, type Lang } from '@genoffice/i18n'
-import { installScreenTips } from '@genoffice/ui'
+import { installAiHelperHint, installScreenTips } from '@genoffice/ui'
 import App from './App'
 import { LocaleProvider } from './i18n/locale'
 import { APP_GLOBAL, GRAPHICS_KINDS, type GraphicsKind } from '../shared/kinds'
@@ -12,6 +12,7 @@ import { watchTheme, type ResolvedTheme } from './theme'
 import { ThemeRoot } from './theme-root'
 
 installScreenTips()
+installAiHelperHint('graphics')
 
 // before the app's frame exists: the frame's own take then gets nothing
 if (!takeGraphicsApi()) throw new Error('the graphics bridge is missing or was already taken')

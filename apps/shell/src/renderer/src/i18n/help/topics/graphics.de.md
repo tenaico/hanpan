@@ -1,6 +1,6 @@
 # AI Photo und AI Illustration
 
-Zwei Tabs für Bilder. **AI Photo** öffnet Fotos und Bilder mit Ebenen (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** öffnet Vektorgrafiken (SVG, SVGZ, Illustrator-Datei .ai, KI-Illustrationsdokument .vectorcraft). In jedem Tab läuft die kostenlose App PhotoCraft oder VectorCraft in GenOffice, daneben ein KI-Assistent.
+Zwei Tabs für Bilder. **AI Photo** öffnet Fotos und Bilder mit Ebenen (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** öffnet Vektorgrafiken (SVG, SVGZ, Illustrator-Datei .ai, KI-Illustrationsdokument .vectorcraft). Neben jedem Tab steht ein KI-Assistent.
 
 ## Öffnen und neu erstellen
 

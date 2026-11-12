@@ -146,6 +146,7 @@ export function EpubAiDock({ ai, filePath }: EpubAiDockProps): ReactElement {
           type="button"
           className="ai-rail"
           data-tip={t('aiOpenAssistant')}
+          data-ai-helper=""
           aria-label={t('aiOpenAssistant')}
           onClick={() => onAiRailClick(role, ai.open, ai.setOpen, requestFocus)}
         >

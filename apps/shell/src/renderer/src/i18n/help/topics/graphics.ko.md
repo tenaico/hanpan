@@ -1,6 +1,6 @@
 # AI 포토와 AI 일러스트
 
-그림을 다루는 탭 두 가지입니다. **AI 포토**는 사진과 레이어가 있는 그림(PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC)을 엽니다. **AI 일러스트**는 벡터 그림(SVG, SVGZ, 일러스트레이터 파일 .ai, AI 일러스트 문서 .vectorcraft)을 엽니다. 탭마다 무료 프로그램 PhotoCraft나 VectorCraft가 GenOffice 안에서 돌고, 옆에 AI 도우미가 붙습니다.
+그림을 다루는 탭 두 가지입니다. **AI 포토**는 사진과 레이어가 있는 그림(PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC)을 엽니다. **AI 일러스트**는 벡터 그림(SVG, SVGZ, 일러스트레이터 파일 .ai, AI 일러스트 문서 .vectorcraft)을 엽니다. 탭마다 옆에 AI 도우미가 붙습니다.
 
 ## 열기와 새로 만들기
 

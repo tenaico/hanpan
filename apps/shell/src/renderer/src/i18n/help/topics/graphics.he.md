@@ -1,6 +1,6 @@
 # AI Photo ו-AI Illustration
 
-שתי לשוניות לתמונות. **AI Photo** פותחת תצלומים ותמונות עם שכבות (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** פותחת גרפיקה וקטורית (SVG, SVGZ, קובץ Illustrator ‏.ai, מסמך איורי AI ‏.vectorcraft). בכל לשונית רצה בתוך GenOffice האפליקציה החינמית PhotoCraft או VectorCraft, ולצידה עוזר AI.
+שתי לשוניות לתמונות. **AI Photo** פותחת תצלומים ותמונות עם שכבות (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** פותחת גרפיקה וקטורית (SVG, SVGZ, קובץ Illustrator ‏.ai, מסמך איורי AI ‏.vectorcraft). לצד כל לשונית יש עוזר AI.
 
 ## פתיחה ויצירה
 

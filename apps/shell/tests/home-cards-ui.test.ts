@@ -84,12 +84,12 @@ async function setValue(el: Element | null, value: string): Promise<void> {
 
 describe('RecentCard', () => {
   const onShowAll = vi.fn()
-  const renderCard = () =>
+  const renderCard = (total = 12) =>
     render(
       createElement(RecentCard, {
         title: '이어서 하기',
         rows: 6,
-        total: 12,
+        total,
         reloadKey: 0,
         onShowAll,
         describe: (e: RecentEntry) => ({ location: `at ${e.name}`, modified: 'today' }),
@@ -122,6 +122,12 @@ describe('RecentCard', () => {
     expect(all.textContent).toBe('전체 12개')
     await click(all)
     expect(onShowAll).toHaveBeenCalled()
+  })
+
+  it('offers no whole list while there is no file yet (0.19.5)', async () => {
+    recentEntries = []
+    await renderCard(0)
+    expect(host.querySelector('[data-recent-all]')).toBeNull()
   })
 
   it('disables a file that is missing', async () => {

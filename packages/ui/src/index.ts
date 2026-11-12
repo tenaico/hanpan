@@ -225,6 +225,7 @@ export {
   type ColorSwatch,
 } from './color-picker'
 export { installScreenTips } from './screentip'
+export { installAiHelperHint } from './ai-helper-hint'
 export {
   installPopoverDismiss,
   useDismissablePopover,

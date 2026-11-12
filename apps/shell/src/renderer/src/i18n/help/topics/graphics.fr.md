@@ -1,6 +1,6 @@
 # AI Photo et AI Illustration
 
-Deux onglets pour les images. **AI Photo** ouvre les photos et les images à calques (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** ouvre les dessins vectoriels (SVG, SVGZ, fichier Illustrator .ai, document Illustration IA .vectorcraft). Chaque onglet fait tourner l'application gratuite PhotoCraft ou VectorCraft dans GenOffice, avec un assistant IA à côté.
+Deux onglets pour les images. **AI Photo** ouvre les photos et les images à calques (PSD, PSB, PNG, JPEG, WebP, GIF, BMP, TIFF, HEIC). **AI Illustration** ouvre les dessins vectoriels (SVG, SVGZ, fichier Illustrator .ai, document Illustration IA .vectorcraft). Chaque onglet a un assistant IA à côté.
 
 ## Ouvrir et créer
 

@@ -76,6 +76,7 @@ export function GraphicsAiDock(props: GraphicsAiDockProps): ReactElement {
           type="button"
           className="ai-rail"
           data-tip={t('aiOpenAssistant')}
+          data-ai-helper=""
           aria-label={t('aiOpenAssistant')}
           onClick={() => onAiRailClick(role, open, setOpen, requestFocus)}
         >
