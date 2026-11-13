@@ -1,84 +1,62 @@
 import { describe, expect, it } from 'vitest'
 import {
-  canonicalJson,
-  isActivationPayload,
-  isKeyPayload,
-  isStatusPayload,
-  parsePublicKeys,
-  verifySigned,
-  type KeyPayload,
+  newKeyId,
+  parseLocalKeyFile,
+  parseRegistered,
+  type Registered,
 } from '../../src/main/securekey/format'
-import { makeTestSigner } from './test-signer'
 
-describe('security key format', () => {
-  const s = makeTestSigner()
-  const key: KeyPayload = {
-    v: 1,
-    kid: 'test1',
-    memberId: 'm1',
-    keyId: 'k1',
-    issuedAt: '2026-11-20T00:00:00Z',
-  }
+const KEY_ID = '0123456789abcdef0123456789abcdef'
+const AT = '2026-11-20T00:00:00.000Z'
 
-  it('verifies a payload signed with a known kid', () =>
-    expect(verifySigned(s.sign(key), s.keys, isKeyPayload)).toEqual(key))
+const registered: Registered = {
+  v: 2,
+  keyId: KEY_ID,
+  where: 'usb',
+  devices: [{ deviceId: 'a'.repeat(64), addedAt: AT }],
+  createdAt: AT,
+  pcConsentAt: null,
+  previous: [{ keyId: 'f'.repeat(32), replacedAt: '2026-11-19T00:00:00.000Z' }],
+}
 
-  it('rejects one changed character', () => {
-    const doc = s.sign(key)
-    expect(
-      verifySigned({ ...doc, payload: { ...doc.payload, memberId: 'm2' } }, s.keys, isKeyPayload),
-    ).toBeNull()
+describe('the local key file', () => {
+  it('reads a v2 key file', () => {
+    const text = JSON.stringify({ v: 2, keyId: KEY_ID, createdAt: AT })
+    expect(parseLocalKeyFile(text)).toEqual({ v: 2, keyId: KEY_ID, createdAt: AT })
   })
 
-  it('rejects an unknown kid', () =>
-    expect(verifySigned(s.sign(key), makeTestSigner('other').keys, isKeyPayload)).toBeNull())
-
-  it('rejects a payload of the wrong shape', () =>
-    expect(verifySigned(s.sign({ v: 1, kid: 'test1' }), s.keys, isKeyPayload)).toBeNull())
-
-  it('rejects documents that are not signed objects', () => {
-    expect(verifySigned(null, s.keys, isKeyPayload)).toBeNull()
-    expect(verifySigned('x', s.keys, isKeyPayload)).toBeNull()
-    expect(
-      verifySigned({ ...s.sign(key), sig: 'not base64 at all!' }, s.keys, isKeyPayload),
-    ).toBeNull()
-    expect(verifySigned(s.sign(key), { test1: 'QUJD' }, isKeyPayload)).toBeNull()
+  it('refuses a short, upper-case or v1 key file', () => {
+    const file = (keyId: string) => JSON.stringify({ v: 2, keyId, createdAt: AT })
+    expect(parseLocalKeyFile(file(KEY_ID.slice(1)))).toBeNull()
+    expect(parseLocalKeyFile(file(KEY_ID.toUpperCase()))).toBeNull()
+    expect(parseLocalKeyFile(JSON.stringify({ payload: { v: 1 }, sig: 'x' }))).toBeNull()
+    expect(parseLocalKeyFile('{')).toBeNull()
   })
 
-  it('sorts keys at every depth', () =>
-    expect(canonicalJson({ b: 1, a: { d: 2, c: 3 } })).toBe('{"a":{"c":3,"d":2},"b":1}'))
+  it('makes 32 hex digits for a key id', () => {
+    const a = newKeyId()
+    expect(a).toMatch(/^[0-9a-f]{32}$/)
+    expect(newKeyId()).not.toBe(a)
+  })
+})
 
-  it('reads the build value of public keys', () => {
-    expect(parsePublicKeys('{"k1":"QUJD"}')).toEqual({ k1: 'QUJD' })
-    expect(parsePublicKeys('not json')).toEqual({})
-    expect(parsePublicKeys('[1]')).toEqual({})
-    expect(parsePublicKeys('{"k1":3}')).toEqual({})
+describe('the registration record', () => {
+  it('reads a whole record', () => {
+    expect(parseRegistered(JSON.stringify(registered))).toEqual(registered)
   })
 
-  it('checks the activation and status shapes', () => {
-    expect(
-      isActivationPayload({
-        v: 1,
-        keyId: 'k1',
-        memberId: 'm1',
-        deviceType: 'usb',
-        deviceId: 'a'.repeat(64),
-        activatedAt: '2026-11-20T00:00:00Z',
-      }),
-    ).toBe(true)
-    expect(
-      isActivationPayload({
-        v: 1,
-        keyId: 'k1',
-        memberId: 'm1',
-        deviceType: 'phone',
-        deviceId: 'x',
-        activatedAt: 'x',
-      }),
-    ).toBe(false)
-    expect(
-      isStatusPayload({ v: 1, keyId: 'k1', status: 'revoked', serverTime: '2026-11-20T00:00:00Z' }),
-    ).toBe(true)
-    expect(isStatusPayload({ v: 1, keyId: 'k1', status: 'gone', serverTime: 'x' })).toBe(false)
+  it('refuses a record with a field missing or wrong', () => {
+    const without = (key: keyof Registered) => {
+      const copy: Record<string, unknown> = { ...registered }
+      delete copy[key]
+      return JSON.stringify(copy)
+    }
+    expect(parseRegistered(without('devices'))).toBeNull()
+    expect(parseRegistered(without('previous'))).toBeNull()
+    expect(parseRegistered(JSON.stringify({ ...registered, where: 'cloud' }))).toBeNull()
+    expect(parseRegistered(JSON.stringify({ ...registered, keyId: 'k1' }))).toBeNull()
+    const badDevice = { ...registered, devices: [{ deviceId: 'x' }] }
+    expect(parseRegistered(JSON.stringify(badDevice))).toBeNull()
+    expect(parseRegistered('not json')).toBeNull()
   })
 })

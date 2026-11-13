@@ -1,142 +1,94 @@
-import { createPublicKey, verify } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 
 /**
- * The security key's files and server answers (spec 7-2, 7-6). Each one is a
- * payload signed by tenai.kr with Ed25519 over `canonicalJson(payload)`; the
- * app carries only the public keys, by `kid`. The same shapes are the contract
- * with the server (docs/contracts.md "Security key files and server answers").
+ * The local security key's files (spec 2026-11-12 5-1). Nothing is signed and
+ * nothing leaves the PC: `hanpan.key` names the key on a stick, and the PC's
+ * `registered.json` says which key and which sticks open this PC.
  */
 
-/** `hanpan.key`: what tenai.kr issued to a member */
-export interface KeyPayload {
-  v: 1
-  kid: string
-  memberId: string
+/** `hanpan.key` on a stick (or in the PC folder) */
+export interface LocalKeyFile {
+  v: 2
   keyId: string
-  issuedAt: string
+  createdAt: string
 }
 
-/** `activation.json`: the key bound to one device by the server */
-export interface ActivationPayload {
-  v: 1
-  keyId: string
-  memberId: string
-  deviceType: 'usb' | 'pc'
-  /** SHA-256 hex of the device number; the number itself never leaves the PC */
+export interface RegisteredDevice {
+  /** SHA-256 hex of the stick's device number (devices.ts `deviceIdHash`) */
   deviceId: string
-  activatedAt: string
-  pcConsentAt?: string
+  addedAt: string
 }
 
-/** The answer of `GET /keys/status` */
-export interface StatusPayload {
-  v: 1
+/** `registered.json` in the PC folder */
+export interface Registered {
+  v: 2
   keyId: string
-  status: 'active' | 'revoked'
-  serverTime: string
+  where: 'usb' | 'pc'
+  /** the sticks that open this PC; empty for a PC key */
+  devices: RegisteredDevice[]
+  createdAt: string
+  /** when the person accepted the risk of a PC key; null for a stick */
+  pcConsentAt: string | null
+  /** keys made before this one, for the "made again" notice */
+  previous: { keyId: string; replacedAt: string }[]
 }
 
-export interface Signed<T> {
-  payload: T
-  kid: string
-  /** base64 Ed25519 signature of the UTF-8 bytes of canonicalJson(payload) */
-  sig: string
-}
+const KEY_ID = /^[0-9a-f]{32}$/
+const HASH = /^[0-9a-f]{64}$/
 
-/** kid → base64 of the 32-byte Ed25519 public key */
-export type PublicKeys = Readonly<Record<string, string>>
-
-/** The ASN.1 header that turns a raw Ed25519 public key into SPKI DER */
-const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex')
-
-const isRecord = (v: unknown): v is Record<string, unknown> =>
+const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
+const isText = (v: unknown): v is string => typeof v === 'string' && v.length > 0
 
-const isText = (v: unknown): v is string => typeof v === 'string' && v !== ''
-
-/** JSON with the keys of every object sorted and no spaces: the bytes that are signed */
-export function canonicalJson(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map((v) => canonicalJson(v)).join(',')}]`
-  if (isRecord(value)) {
-    const fields = Object.keys(value)
-      .filter((k) => value[k] !== undefined)
-      .sort()
-      .map((k) => `${JSON.stringify(k)}:${canonicalJson(value[k])}`)
-    return `{${fields.join(',')}}`
-  }
-  return JSON.stringify(value) ?? 'null'
-}
-
-/** The build value of the public keys; anything malformed reads as no keys */
-export function parsePublicKeys(raw: string): PublicKeys {
-  let parsed: unknown
+function parseJson(text: string): unknown {
   try {
-    parsed = JSON.parse(raw)
-  } catch {
-    return {}
-  }
-  if (!isRecord(parsed)) return {}
-  const entries = Object.entries(parsed)
-  if (!entries.every(([, v]) => isText(v))) return {}
-  return Object.freeze(Object.fromEntries(entries)) as PublicKeys
-}
-
-/** The signed payload when the signature is good under a known kid and the shape is right */
-export function verifySigned<T>(
-  doc: unknown,
-  keys: PublicKeys,
-  isPayload: (p: unknown) => p is T,
-): T | null {
-  if (!isRecord(doc) || !isText(doc.kid) || !isText(doc.sig)) return null
-  if (!Object.prototype.hasOwnProperty.call(keys, doc.kid)) return null
-  if (!isPayload(doc.payload)) return null
-  try {
-    const raw = Buffer.from(keys[doc.kid]!, 'base64')
-    if (raw.length !== 32) return null
-    const publicKey = createPublicKey({
-      key: Buffer.concat([ED25519_SPKI_PREFIX, raw]),
-      format: 'der',
-      type: 'spki',
-    })
-    const signature = Buffer.from(doc.sig, 'base64')
-    if (signature.length !== 64) return null
-    const bytes = Buffer.from(canonicalJson(doc.payload), 'utf8')
-    return verify(null, bytes, publicKey, signature) ? doc.payload : null
+    return JSON.parse(text) as unknown
   } catch {
     return null
   }
 }
 
-export function isKeyPayload(p: unknown): p is KeyPayload {
-  return (
-    isRecord(p) &&
-    p.v === 1 &&
-    isText(p.kid) &&
-    isText(p.memberId) &&
-    isText(p.keyId) &&
-    isText(p.issuedAt)
-  )
+export function newKeyId(): string {
+  return randomBytes(16).toString('hex')
 }
 
-export function isActivationPayload(p: unknown): p is ActivationPayload {
-  return (
-    isRecord(p) &&
-    p.v === 1 &&
-    isText(p.keyId) &&
-    isText(p.memberId) &&
-    (p.deviceType === 'usb' || p.deviceType === 'pc') &&
-    isText(p.deviceId) &&
-    isText(p.activatedAt) &&
-    (p.pcConsentAt === undefined || isText(p.pcConsentAt))
-  )
+/** A `hanpan.key` of this format, or null for anything else (an older signed file too) */
+export function parseLocalKeyFile(text: string): LocalKeyFile | null {
+  const v = parseJson(text)
+  if (!isObject(v) || v.v !== 2 || !isText(v.keyId) || !KEY_ID.test(v.keyId)) return null
+  if (!isText(v.createdAt)) return null
+  return { v: 2, keyId: v.keyId, createdAt: v.createdAt }
 }
 
-export function isStatusPayload(p: unknown): p is StatusPayload {
-  return (
-    isRecord(p) &&
-    p.v === 1 &&
-    isText(p.keyId) &&
-    (p.status === 'active' || p.status === 'revoked') &&
-    isText(p.serverTime)
-  )
+/** A whole `registered.json`, or null when any field is missing or wrong */
+export function parseRegistered(text: string): Registered | null {
+  const v = parseJson(text)
+  if (!isObject(v) || v.v !== 2 || !isText(v.keyId) || !KEY_ID.test(v.keyId)) return null
+  if (v.where !== 'usb' && v.where !== 'pc') return null
+  if (!isText(v.createdAt)) return null
+  if (v.pcConsentAt !== null && !isText(v.pcConsentAt)) return null
+  if (!Array.isArray(v.devices) || !Array.isArray(v.previous)) return null
+  const devices: RegisteredDevice[] = []
+  for (const d of v.devices) {
+    if (!isObject(d) || !isText(d.deviceId) || !HASH.test(d.deviceId) || !isText(d.addedAt)) {
+      return null
+    }
+    devices.push({ deviceId: d.deviceId, addedAt: d.addedAt })
+  }
+  const previous: Registered['previous'] = []
+  for (const p of v.previous) {
+    if (!isObject(p) || !isText(p.keyId) || !KEY_ID.test(p.keyId) || !isText(p.replacedAt)) {
+      return null
+    }
+    previous.push({ keyId: p.keyId, replacedAt: p.replacedAt })
+  }
+  return {
+    v: 2,
+    keyId: v.keyId,
+    where: v.where,
+    devices,
+    createdAt: v.createdAt,
+    pcConsentAt: v.pcConsentAt as string | null,
+    previous,
+  }
 }

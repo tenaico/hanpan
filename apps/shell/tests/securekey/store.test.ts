@@ -2,192 +2,162 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
-import {
-  deviceIdHash,
-  usbDeviceId,
-  type DeviceProbe,
-  type UsbVolume,
-} from '../../src/main/securekey/devices'
-import type { ActivationPayload, KeyPayload } from '../../src/main/securekey/format'
+import { deviceIdHash, usbDeviceId, type UsbVolume } from '../../src/main/securekey/devices'
+import type { Registered } from '../../src/main/securekey/format'
 import {
   findRegistration,
   KEY_FILES,
-  newVaultKey,
   pcKeyDir,
-  usbKeyDir,
-  writeRegistration,
+  readRegistered,
+  writeRegistered,
 } from '../../src/main/securekey/store'
-import { makeTestSigner } from './test-signer'
 
-const signer = makeTestSigner()
-const GUID = '3f1c2a9e-0000-4000-8000-1234567890ab'
+const KEY = '0123456789abcdef0123456789abcdef'
+const OLD = 'fedcba9876543210fedcba9876543210'
+const AT = '2026-11-20T00:00:00.000Z'
 const E: UsbVolume = { letter: 'E', diskSerial: 'AA11', volumeSerial: '1a2b3c4d' }
-const F: UsbVolume = { letter: 'F', diskSerial: '', volumeSerial: '0000beef' }
-
-const keyPayload: KeyPayload = {
-  v: 1,
-  kid: 'test1',
-  memberId: 'm1',
-  keyId: 'k1',
-  issuedAt: '2026-11-20T00:00:00Z',
-}
-const activationFor = (
-  deviceType: 'usb' | 'pc',
-  rawId: string,
-  extra: Partial<ActivationPayload> = {},
-): ActivationPayload => ({
-  v: 1,
-  keyId: 'k1',
-  memberId: 'm1',
-  deviceType,
-  deviceId: deviceIdHash(rawId),
-  activatedAt: '2026-11-20T00:00:00Z',
-  ...extra,
-})
+const F: UsbVolume = { letter: 'F', diskSerial: 'BB22', volumeSerial: '0000beef' }
+const VAULT = Buffer.alloc(32, 7)
+const PC_VAULT = Buffer.alloc(32, 9)
 
 let root: string
 let userData: string
 let volumes: UsbVolume[]
-const probe: DeviceProbe = {
-  listUsbVolumes: async () => volumes,
-  machineGuid: async () => GUID,
-}
+let listed: number
 const usbDir = (letter: string) => join(root, `usb-${letter}`, 'Hanpan')
-const find = () => findRegistration({ userData, probe, keys: signer.keys, usbDir })
 
-async function register(dir: string, activation: ActivationPayload, vault = newVaultKey()) {
-  await writeRegistration(dir, {
-    key: signer.sign(keyPayload),
-    activation: signer.sign(activation),
-    vault,
+const find = () =>
+  findRegistration({
+    userData,
+    listVolumes: async () => {
+      listed++
+      return volumes
+    },
+    usbDir,
+    openPcVault: (sealed) => (sealed.equals(Buffer.from('sealed')) ? PC_VAULT : null),
   })
-  return vault
+
+function stick(volume: UsbVolume, keyId: string, vault = VAULT): void {
+  const dir = usbDir(volume.letter)
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, KEY_FILES.key), JSON.stringify({ v: 2, keyId, createdAt: AT }))
+  writeFileSync(join(dir, KEY_FILES.vault), vault)
 }
 
-beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'securekey-store-'))
-  userData = join(root, 'userData')
-  volumes = []
+const record = (over: Partial<Registered> = {}): Registered => ({
+  v: 2,
+  keyId: KEY,
+  where: 'usb',
+  devices: [{ deviceId: deviceIdHash(usbDeviceId(E)), addedAt: AT }],
+  createdAt: AT,
+  pcConsentAt: null,
+  previous: [],
+  ...over,
 })
 
-describe('security key store', () => {
-  it('uses the folders of the spec', () => {
-    expect(usbKeyDir('E')).toBe('E:\\Hanpan')
-    expect(pcKeyDir('C:\\Users\\a\\AppData\\Roaming\\Hanpan')).toBe(
-      join('C:\\Users\\a\\AppData\\Roaming\\Hanpan', 'securekey'),
-    )
-    expect(KEY_FILES).toEqual({
-      key: 'hanpan.key',
-      activation: 'activation.json',
-      vault: 'vault.key',
-    })
+beforeEach(() => {
+  root = mkdtempSync(join(tmpdir(), 'hanpan-sk-store-'))
+  userData = join(root, 'userData')
+  mkdirSync(userData)
+  volumes = []
+  listed = 0
+})
+
+describe('the registration record on the PC', () => {
+  it('writes and reads it back', async () => {
+    await writeRegistered(userData, record())
+    expect(readRegistered(userData)).toEqual(record())
   })
 
-  it('finds a USB registration whose device matches', async () => {
+  it('reads a damaged registration as none', async () => {
+    mkdirSync(pcKeyDir(userData), { recursive: true })
+    writeFileSync(join(pcKeyDir(userData), KEY_FILES.registered), '{')
+    expect(readRegistered(userData)).toBeNull()
+    expect(await find()).toEqual({ kind: 'none' })
+  })
+
+  it('does not look at the USB sticks while nothing is registered', async () => {
     volumes = [E]
-    const vault = await register(usbDir('E'), activationFor('usb', usbDeviceId(E)))
-    const result = await find()
-    expect(result.kind).toBe('found')
-    if (result.kind !== 'found') return
-    expect(result.registration.where).toBe('usb')
-    expect(result.registration.dir).toBe(usbDir('E'))
-    expect(result.registration.volumeSerial).toBe('1a2b3c4d')
-    expect(result.registration.vault.equals(vault)).toBe(true)
+    stick(E, KEY)
+    expect(await find()).toEqual({ kind: 'none' })
+    expect(listed).toBe(0)
   })
+})
 
-  it('picks the registered stick among two', async () => {
-    volumes = [E, F]
-    await register(usbDir('F'), activationFor('usb', usbDeviceId(F)))
-    const result = await find()
-    expect(result.kind).toBe('found')
-    if (result.kind === 'found') expect(result.registration.dir).toBe(usbDir('F'))
-  })
-
-  it('reports other-device for files copied to another stick', async () => {
+describe('finding the key at start', () => {
+  it('finds the stick whose key and device match', async () => {
+    await writeRegistered(userData, record())
     volumes = [E]
-    await register(usbDir('E'), activationFor('usb', usbDeviceId(F)))
-    expect(await find()).toEqual({ kind: 'other-device', where: 'usb' })
+    stick(E, KEY)
+    const found = await find()
+    expect(found.kind).toBe('found')
+    if (found.kind !== 'found') return
+    expect(found.registration).toMatchObject({ where: 'usb', keyId: KEY, letter: 'E' })
+    expect(found.registration.vault.equals(VAULT)).toBe(true)
+    expect(found.registration.volumeSerial).toBe(E.volumeSerial)
   })
 
-  it('reports other-device for a PC registration copied to a stick', async () => {
-    volumes = [E]
-    await register(usbDir('E'), activationFor('pc', GUID))
-    expect(await find()).toEqual({ kind: 'other-device', where: 'usb' })
-  })
-
-  it('falls back to the PC folder', async () => {
-    await register(
-      pcKeyDir(userData),
-      activationFor('pc', GUID, { pcConsentAt: '2026-11-20T00:00:00Z' }),
-    )
-    const result = await find()
-    expect(result.kind).toBe('found')
-    if (result.kind === 'found') expect(result.registration.where).toBe('pc')
-  })
-
-  it('reports another PC', async () => {
-    await register(pcKeyDir(userData), activationFor('pc', 'another-guid'))
-    expect(await find()).toEqual({ kind: 'other-device', where: 'pc' })
-  })
-
-  it('prefers a found stick over a damaged folder and a damaged one over another device', async () => {
-    volumes = [E, F]
-    await register(usbDir('E'), activationFor('usb', usbDeviceId(E)))
-    mkdirSync(usbDir('F'), { recursive: true })
-    writeFileSync(join(usbDir('F'), KEY_FILES.activation), 'not json')
-    expect((await find()).kind).toBe('found')
-
+  it('tells a copied folder from the registered stick', async () => {
+    await writeRegistered(userData, record())
     volumes = [F]
-    await register(pcKeyDir(userData), activationFor('pc', 'another-guid'))
-    expect((await find()).kind).toBe('damaged')
+    stick(F, KEY)
+    expect(await find()).toEqual({ kind: 'unregistered-usb' })
   })
 
-  it('reports damaged files', async () => {
-    volumes = [E]
-    const dir = usbDir('E')
-    await register(dir, activationFor('usb', usbDeviceId(E)))
-    writeFileSync(join(dir, KEY_FILES.activation), 'not json')
-    expect((await find()).kind).toBe('damaged')
-
-    const bad = signer.sign(activationFor('usb', usbDeviceId(E)))
-    writeFileSync(
-      join(dir, KEY_FILES.activation),
-      JSON.stringify({ ...bad, payload: { ...bad.payload, memberId: 'm2' } }),
-    )
-    expect((await find()).kind).toBe('damaged')
-
-    await register(dir, activationFor('usb', usbDeviceId(E)), Buffer.alloc(31))
-    expect((await find()).kind).toBe('damaged')
-
-    await register(dir, activationFor('usb', usbDeviceId(E), { keyId: 'k2' }))
-    expect((await find()).kind).toBe('damaged')
+  it('reports a replaced stick with its date', async () => {
+    const replacedAt = '2026-11-21T06:32:00.000Z'
+    await writeRegistered(userData, record({ previous: [{ keyId: OLD, replacedAt }] }))
+    volumes = [F]
+    stick(F, OLD)
+    expect(await find()).toEqual({ kind: 'replaced', replacedAt })
   })
 
-  it('reports damaged when one of the three files is missing', async () => {
-    volumes = [E]
+  it('opens with the current stick when an old one is also in', async () => {
+    const replacedAt = '2026-11-21T06:32:00.000Z'
+    await writeRegistered(userData, record({ previous: [{ keyId: OLD, replacedAt }] }))
+    volumes = [F, E]
+    stick(F, OLD)
+    stick(E, KEY)
+    expect((await find()).kind).toBe('found')
+  })
+
+  it('ignores a damaged or v1 key file on a stick', async () => {
+    await writeRegistered(userData, record())
+    volumes = [E, F]
     mkdirSync(usbDir('E'), { recursive: true })
-    writeFileSync(
-      join(usbDir('E'), KEY_FILES.activation),
-      JSON.stringify(signer.sign(activationFor('usb', usbDeviceId(E)))),
-    )
-    expect((await find()).kind).toBe('damaged')
+    writeFileSync(join(usbDir('E'), KEY_FILES.key), '{')
+    writeFileSync(join(usbDir('E'), KEY_FILES.vault), VAULT)
+    mkdirSync(usbDir('F'), { recursive: true })
+    writeFileSync(join(usbDir('F'), KEY_FILES.key), JSON.stringify({ payload: { v: 1 }, sig: 's' }))
+    expect(await find()).toEqual({ kind: 'usb-missing' })
   })
 
-  it('finds nothing anywhere', async () => {
+  it('reads a stick with a short vault as not the key', async () => {
+    await writeRegistered(userData, record())
     volumes = [E]
-    expect((await find()).kind).toBe('none')
+    stick(E, KEY, Buffer.alloc(5))
+    expect(await find()).toEqual({ kind: 'usb-missing' })
   })
 
-  it('round-trips what it writes', async () => {
-    volumes = [E]
-    const activation = activationFor('usb', usbDeviceId(E))
-    const vault = await register(usbDir('E'), activation)
-    const result = await find()
-    if (result.kind !== 'found') throw new Error(`expected found, got ${result.kind}`)
-    expect(result.registration.key).toEqual(keyPayload)
-    expect(result.registration.activation).toEqual(activation)
-    expect(result.registration.vault.equals(vault)).toBe(true)
+  it('says the stick is missing when no stick is in', async () => {
+    await writeRegistered(userData, record())
+    expect(await find()).toEqual({ kind: 'usb-missing' })
   })
 
-  it('makes a 32-byte vault key', () => expect(newVaultKey()).toHaveLength(32))
+  it('opens the PC vault for a PC registration', async () => {
+    await writeRegistered(userData, record({ where: 'pc', devices: [], pcConsentAt: AT }))
+    writeFileSync(join(pcKeyDir(userData), KEY_FILES.vault), 'sealed')
+    const found = await find()
+    expect(found.kind).toBe('found')
+    if (found.kind !== 'found') return
+    expect(found.registration).toMatchObject({ where: 'pc', keyId: KEY })
+    expect(found.registration.vault.equals(PC_VAULT)).toBe(true)
+    expect(listed).toBe(0)
+  })
+
+  it('calls a PC registration whose vault does not open damaged', async () => {
+    await writeRegistered(userData, record({ where: 'pc', devices: [], pcConsentAt: AT }))
+    writeFileSync(join(pcKeyDir(userData), KEY_FILES.vault), 'other')
+    expect(await find()).toEqual({ kind: 'damaged' })
+  })
 })

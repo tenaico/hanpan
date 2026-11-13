@@ -1,24 +1,16 @@
 import { randomBytes } from 'node:crypto'
-import { existsSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { atomicWriteFile } from '../atomic-write'
-import { deviceIdHash, usbDeviceId, type DeviceProbe } from './devices'
-import {
-  isActivationPayload,
-  isKeyPayload,
-  verifySigned,
-  type ActivationPayload,
-  type KeyPayload,
-  type PublicKeys,
-  type Signed,
-} from './format'
+import { deviceIdHash, usbDeviceId, type UsbVolume } from './devices'
+import { parseLocalKeyFile, parseRegistered, type Registered } from './format'
 
-/** The three files of a registration, on a stick or in the PC folder (spec 7-2) */
+/** The files of a local key (spec 2026-11-12 5-1) */
 export const KEY_FILES = {
   key: 'hanpan.key',
-  activation: 'activation.json',
   vault: 'vault.key',
+  registered: 'registered.json',
 } as const
 
 export const USB_KEY_DIR = 'Hanpan'
@@ -32,12 +24,31 @@ export function usbKeyDir(letter: string): string {
   return `${letter}:\\${USB_KEY_DIR}`
 }
 
+/** The PC's registration record, or null when there is none or it does not read */
+export function readRegistered(userData: string): Registered | null {
+  try {
+    return parseRegistered(readFileSync(join(pcKeyDir(userData), KEY_FILES.registered), 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+export async function writeRegistered(userData: string, record: Registered): Promise<void> {
+  const dir = pcKeyDir(userData)
+  await mkdir(dir, { recursive: true })
+  await atomicWriteFile(
+    join(dir, KEY_FILES.registered),
+    Buffer.from(`${JSON.stringify(record, null, 2)}\n`, 'utf8'),
+  )
+}
+
+/** The key in use: where it is and the vault that opens the AI keys */
 export interface Registration {
   where: 'usb' | 'pc'
-  dir: string
-  key: KeyPayload
-  activation: ActivationPayload
+  keyId: string
   vault: Buffer
+  /** the stick's drive letter; absent for the PC */
+  letter?: string
   /** the stick's volume serial, watched while the app runs; absent for the PC */
   volumeSerial?: string
 }
@@ -45,121 +56,81 @@ export interface Registration {
 export type FindResult =
   | { kind: 'none' }
   | { kind: 'found'; registration: Registration }
-  | { kind: 'other-device'; where: 'usb' | 'pc' }
+  | { kind: 'replaced'; replacedAt: string }
+  | { kind: 'unregistered-usb' }
+  | { kind: 'usb-missing' }
   | { kind: 'damaged' }
 
-type Place =
-  | { kind: 'none' }
-  | { kind: 'damaged' }
-  | { kind: 'read'; key: KeyPayload; activation: ActivationPayload; vault: Buffer }
-
-/** What one folder holds: nothing, something unreadable, or a verified registration */
-async function readPlace(dir: string, keys: PublicKeys): Promise<Place> {
-  const paths = Object.values(KEY_FILES).map((name) => join(dir, name))
-  const present = paths.filter((p) => existsSync(p))
-  if (present.length === 0) return { kind: 'none' }
-  if (present.length !== paths.length) return { kind: 'damaged' }
+/** A stick's key id and vault, or null when its folder does not hold a whole key */
+async function readStick(dir: string): Promise<{ keyId: string; vault: Buffer } | null> {
   try {
-    const [keyText, activationText, vault] = await Promise.all([
+    const [text, vault] = await Promise.all([
       readFile(join(dir, KEY_FILES.key), 'utf8'),
-      readFile(join(dir, KEY_FILES.activation), 'utf8'),
       readFile(join(dir, KEY_FILES.vault)),
     ])
-    const key = verifySigned(JSON.parse(keyText) as unknown, keys, isKeyPayload)
-    const activation = verifySigned(
-      JSON.parse(activationText) as unknown,
-      keys,
-      isActivationPayload,
-    )
-    if (!key || !activation || vault.length !== VAULT_BYTES) return { kind: 'damaged' }
-    if (key.keyId !== activation.keyId || key.memberId !== activation.memberId) {
-      return { kind: 'damaged' }
-    }
-    return { kind: 'read', key, activation, vault }
+    const key = parseLocalKeyFile(text)
+    if (!key || vault.length !== VAULT_BYTES) return null
+    return { keyId: key.keyId, vault }
   } catch {
-    return { kind: 'damaged' }
+    return null
   }
 }
 
 /**
- * Where this PC's registration is: every USB stick first, then the PC folder.
- * When places disagree, a matching registration wins, then damaged files, then
- * files bound to another device (a stick holding a copy is not the registered one).
+ * Which key opens this PC now (spec 5-2). Nothing registered: the sticks are
+ * not even listed. A PC key opens from the sealed vault. A stick key needs a
+ * stick holding the same key id whose device is on the record; that wins over
+ * any other stick, then a copied folder, then a replaced key, then "missing".
  */
 export async function findRegistration(opts: {
   userData: string
-  probe: DeviceProbe
-  keys: PublicKeys
+  listVolumes: () => Promise<UsbVolume[]>
   /** where a stick's folder is; tests point it at a temporary folder */
   usbDir?: (letter: string) => string
+  /** open the PC vault from its sealed bytes; null when it does not open */
+  openPcVault: (sealed: Buffer) => Buffer | null
 }): Promise<FindResult> {
+  const record = readRegistered(opts.userData)
+  if (!record) return { kind: 'none' }
+  if (record.where === 'pc') {
+    try {
+      const sealed = await readFile(join(pcKeyDir(opts.userData), KEY_FILES.vault))
+      const vault = opts.openPcVault(sealed)
+      if (!vault || vault.length !== VAULT_BYTES) return { kind: 'damaged' }
+      return { kind: 'found', registration: { where: 'pc', keyId: record.keyId, vault } }
+    } catch {
+      return { kind: 'damaged' }
+    }
+  }
   const usbDir = opts.usbDir ?? usbKeyDir
-  const results: FindResult[] = []
-  for (const volume of await opts.probe.listUsbVolumes()) {
-    const dir = usbDir(volume.letter)
-    const place = await readPlace(dir, opts.keys)
-    if (place.kind === 'none') continue
-    if (place.kind === 'damaged') {
-      results.push({ kind: 'damaged' })
+  const devices = new Set(record.devices.map((d) => d.deviceId))
+  let copied = false
+  let replacedAt: string | null = null
+  for (const volume of await opts.listVolumes()) {
+    const stick = await readStick(usbDir(volume.letter))
+    if (!stick) continue
+    if (stick.keyId === record.keyId) {
+      if (devices.has(deviceIdHash(usbDeviceId(volume)))) {
+        return {
+          kind: 'found',
+          registration: {
+            where: 'usb',
+            keyId: record.keyId,
+            vault: stick.vault,
+            letter: volume.letter,
+            volumeSerial: volume.volumeSerial,
+          },
+        }
+      }
+      copied = true
       continue
     }
-    const { activation } = place
-    if (
-      activation.deviceType === 'usb' &&
-      activation.deviceId === deviceIdHash(usbDeviceId(volume))
-    ) {
-      return {
-        kind: 'found',
-        registration: {
-          where: 'usb',
-          dir,
-          key: place.key,
-          activation,
-          vault: place.vault,
-          volumeSerial: volume.volumeSerial,
-        },
-      }
-    }
-    results.push({ kind: 'other-device', where: 'usb' })
+    const old = record.previous.find((p) => p.keyId === stick.keyId)
+    if (old) replacedAt = old.replacedAt
   }
-  const dir = pcKeyDir(opts.userData)
-  const place = await readPlace(dir, opts.keys)
-  if (place.kind === 'damaged') results.push({ kind: 'damaged' })
-  if (place.kind === 'read') {
-    const guid = await opts.probe.machineGuid()
-    if (
-      guid !== null &&
-      place.activation.deviceType === 'pc' &&
-      place.activation.deviceId === deviceIdHash(guid)
-    ) {
-      return {
-        kind: 'found',
-        registration: {
-          where: 'pc',
-          dir,
-          key: place.key,
-          activation: place.activation,
-          vault: place.vault,
-        },
-      }
-    }
-    results.push({ kind: 'other-device', where: 'pc' })
-  }
-  return results.find((r) => r.kind === 'damaged') ?? results[0] ?? { kind: 'none' }
-}
-
-/** Write a registration's three files into `dir`, each one atomically */
-export async function writeRegistration(
-  dir: string,
-  files: { key: Signed<KeyPayload>; activation: Signed<ActivationPayload>; vault: Buffer },
-): Promise<void> {
-  await mkdir(dir, { recursive: true })
-  await atomicWriteFile(join(dir, KEY_FILES.key), Buffer.from(JSON.stringify(files.key), 'utf8'))
-  await atomicWriteFile(
-    join(dir, KEY_FILES.activation),
-    Buffer.from(JSON.stringify(files.activation), 'utf8'),
-  )
-  await atomicWriteFile(join(dir, KEY_FILES.vault), files.vault)
+  if (copied) return { kind: 'unregistered-usb' }
+  if (replacedAt) return { kind: 'replaced', replacedAt }
+  return { kind: 'usb-missing' }
 }
 
 export function newVaultKey(): Buffer {
