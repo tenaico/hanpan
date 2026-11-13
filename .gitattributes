@@ -18,3 +18,5 @@
 
 # Template font license texts ship byte-identical to the distributors' files.
 packages/ui/template-fonts/*.txt -text
+# the installer license page (NSIS) reads these on Windows: keep CRLF and the BOM
+apps/shell/build/license_*.txt text eol=crlf
