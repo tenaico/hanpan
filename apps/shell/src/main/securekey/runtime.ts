@@ -50,7 +50,11 @@ export interface SecureKeyRuntimeDeps {
   unlockAi(): void
   /** after a new key: seal the AI keys again with its vault */
   onRegistered?(registration: Registration): void
-  /** "make a new key": clear the AI keys sealed with the old vault */
+  /**
+   * clear the keys sealed with an earlier vault: on "make a new key", and
+   * before a new key seals them again (a lost record or an interrupted reset
+   * leaves such values, which would refuse every later settings write)
+   */
   onReset?(): Promise<void>
   /** a lock that came after the gate (a removed stick) */
   onLocked?(reason: LockReason): void
@@ -81,6 +85,8 @@ export interface SecureKeyRuntime {
   spare(letter: string): Promise<ManageResult | 'no-usb'>
   moveToUsb(letter: string): Promise<ManageResult | 'no-usb'>
   moveToPc(): Promise<ManageResult>
+  /** Settings: drop the key (AI locked at once); the caller restarts the app */
+  resetFromSettings(): Promise<'ok' | 'no-record'>
 }
 
 export interface SecureKeyInfo {
@@ -255,9 +261,17 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
         sealPcVault: deps.sealPcVault,
       })
       if (!result.ok) {
-        return tSecureKey(lang(), result.error === 'no-usb' ? 'skErrNoUsb' : 'skErrWriteFailed')
+        return tSecureKey(
+          lang(),
+          result.error === 'no-usb'
+            ? 'skErrNoUsb'
+            : result.error === 'other-key'
+              ? 'skErrOtherKey'
+              : 'skErrWriteFailed',
+        )
       }
       open(result.registration)
+      await deps.onReset?.()
       deps.onRegistered?.(result.registration)
       return null
     },
@@ -365,6 +379,19 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
         watch(current)
       }
       return result
+    },
+
+    async resetFromSettings() {
+      if (!onWindows || !current) return 'no-record'
+      // locked first: if the restart is cancelled, nothing is sealed with the
+      // vault that is about to go
+      stopWatch?.()
+      stopWatch = null
+      lockNow({ kind: 'locked', reason: 'damaged' })
+      current = null
+      await resetKey({ userData: deps.userData, now: deps.now() })
+      await deps.onReset?.()
+      return 'ok'
     },
 
     async moveToPc() {

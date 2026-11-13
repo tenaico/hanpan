@@ -176,6 +176,44 @@ export function clearSealedV2Secrets(path: string): number {
 }
 
 /**
+ * The same for the home search's reranking keys (`fileSearch.keys` and
+ * `fileSearch.jevKeys` in app-settings.json): a v2 value no vault can open
+ * would refuse every later write of those settings. Returns how many keys
+ * were emptied.
+ */
+export function clearSealedV2FileSearchKeys(path: string): number {
+  let stored: unknown
+  try {
+    if (!existsSync(path)) return 0
+    stored = JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return 0
+  }
+  if (typeof stored !== 'object' || stored === null) return 0
+  const search = (stored as Record<string, unknown>).fileSearch
+  if (typeof search !== 'object' || search === null) return 0
+  let cleared = 0
+  const clear = (keys: unknown) =>
+    typeof keys === 'object' && keys !== null
+      ? Object.fromEntries(
+          Object.entries(keys).map(([id, v]) => {
+            if (typeof v !== 'string' || !v.startsWith(SEALED_PREFIX_V2)) return [id, v]
+            cleared++
+            return [id, '']
+          }),
+        )
+      : keys
+  const s = search as Record<string, unknown>
+  const next = {
+    ...s,
+    ...('keys' in s ? { keys: clear(s.keys) } : {}),
+    ...('jevKeys' in s ? { jevKeys: clear(s.jevKeys) } : {}),
+  }
+  if (cleared > 0) writeJsonAtomic(path, { ...(stored as object), fileSearch: next })
+  return cleared
+}
+
+/**
  * The home search's reranking keys (`fileSearch.keys` in app-settings.json)
  * under the same protection. Only the app reads that file, so no command needs
  * them opened. Opened before the settings are normalized (which trims and

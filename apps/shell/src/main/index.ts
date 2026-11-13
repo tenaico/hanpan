@@ -63,7 +63,6 @@ import { createSecureKeyRuntime, type SecureKeyRuntime } from './securekey/runti
 import { licenseTermsPath } from './license-terms'
 import { needsConsent, writeConsent } from './consent'
 import { secureKeyStrings, tSecureKey } from './securekey/strings'
-import { resetKey } from './securekey/manage'
 import { vaultCodec } from './securekey/vault-codec'
 import { closeSecureKeyWindow, focusSecureKeyWindow, showSecureKeyWindow } from './securekey/window'
 import { tabStripOverlay } from './title-bar-overlay'
@@ -573,6 +572,7 @@ import {
   safeStorageCodec,
   sealStoredAiSettings,
   sealingKeyOnDisk,
+  clearSealedV2FileSearchKeys,
   clearSealedV2Secrets,
 } from './ai-secrets'
 import { homedir, tmpdir } from 'node:os'
@@ -6473,8 +6473,7 @@ function registerHomeIpc(): void {
       const lang = currentLang()
       const pick = typeof letter === 'string' && /^[A-Z]$/.test(letter) ? letter : ''
       if (action === 'reset') {
-        await resetKey({ userData: app.getPath('userData'), now: new Date() })
-        clearSealedV2Secrets(join(app.getPath('userData'), 'ai-settings.json'))
+        if ((await secureKey.resetFromSettings()) !== 'ok') return tSecureKey(lang, 'skDamaged')
         // the first-run window makes the new key on the next start
         app.relaunch()
         app.quit()
@@ -6496,7 +6495,9 @@ function registerHomeIpc(): void {
             ? 'skErrNoUsb'
             : result === 'write-failed'
               ? 'skErrWriteFailed'
-              : 'skDamaged'
+              : result === 'other-key'
+                ? 'skErrOtherKey'
+                : 'skDamaged'
       return tSecureKey(lang, key)
     },
   )
@@ -10233,9 +10234,10 @@ function createAppSecureKey(): SecureKeyRuntime {
     lockAi,
     unlockAi,
     overlays: { show: showLockOverlays, hide: hideLockOverlays },
-    // a new key: the AI keys sealed with the old vault cannot open again
+    // a new key: keys sealed with an earlier vault can never open again
     onReset: async () => {
       clearSealedV2Secrets(join(app.getPath('userData'), 'ai-settings.json'))
+      clearSealedV2FileSearchKeys(APP_SETTINGS_PATH())
     },
     // a new key seals the keys again with its vault
     onRegistered: () => {

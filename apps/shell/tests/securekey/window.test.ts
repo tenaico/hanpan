@@ -228,6 +228,41 @@ describe('security key window', () => {
     expect(await result).toBe('passed')
   })
 
+  it('the wait screen looks again by itself and opens when the stick comes', async () => {
+    vi.useFakeTimers()
+    try {
+      const mod = await load()
+      const h = noHandlers()
+      h.retry.mockResolvedValueOnce(state({ mode: 'lock', reason: 'usb-missing' }) as never)
+      const result = mod.showSecureKeyWindow(state({ mode: 'lock', reason: 'usb-missing' }), h)
+      await vi.advanceTimersByTimeAsync(3000)
+      expect(h.retry).toHaveBeenCalledTimes(1)
+      // nothing changed: the screen is not redrawn (a reset confirmation stays up)
+      expect(sent.some((m) => m.state.busy)).toBe(false)
+      await vi.advanceTimersByTimeAsync(3000)
+      expect(await result).toBe('passed')
+      mod.closeSecureKeyWindow()
+      await vi.advanceTimersByTimeAsync(9000)
+      expect(h.retry).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not look again on the terms or create steps', async () => {
+    vi.useFakeTimers()
+    try {
+      const mod = await load()
+      const h = noHandlers()
+      void mod.showSecureKeyWindow(state({ mode: 'create' }), h)
+      await vi.advanceTimersByTimeAsync(9000)
+      expect(h.retry).not.toHaveBeenCalled()
+      mod.closeSecureKeyWindow()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('reports whether it is open and brings it forward', async () => {
     const mod = await load()
     expect(mod.secureKeyWindowOpen()).toBe(false)

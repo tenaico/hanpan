@@ -38,6 +38,43 @@ let pending: ((result: SecureKeyWindowResult) => void) | null = null
 let ipcRegistered = false
 
 /**
+ * The wait screen looks again on its own (spec 5-2: the stick opens the app
+ * once it is plugged in). The window is redrawn only when the reason changes,
+ * so a reset confirmation on screen stays up.
+ */
+const POLL_MS = 3000
+let poll: ReturnType<typeof setInterval> | null = null
+let polling = false
+
+function stopPoll(): void {
+  if (poll) clearInterval(poll)
+  poll = null
+}
+
+function startPoll(): void {
+  stopPoll()
+  poll = setInterval(() => void pollOnce(), POLL_MS)
+}
+
+async function pollOnce(): Promise<void> {
+  if (polling || !current || current.busy || !handlers || current.mode !== 'lock') return
+  polling = true
+  try {
+    const next = await handlers.retry()
+    if (!current || current.busy || current.mode !== 'lock') return
+    if (next === 'passed') {
+      settle('passed')
+      return
+    }
+    if (next.mode !== current.mode || next.reason !== current.reason) push({ ...next, busy: false })
+  } catch {
+    // the next look tries again
+  } finally {
+    polling = false
+  }
+}
+
+/**
  * Another page that loads securekey.html: a lock cover over a window (Task 9).
  * Its requests go to its own handlers instead of the gate window's.
  */
@@ -61,6 +98,7 @@ export function routeSecureKeyPage(webContentsId: number, page: SecureKeyPage | 
 }
 
 function settle(result: SecureKeyWindowResult): void {
+  stopPoll()
   const resolve = pending
   pending = null
   resolve?.(result)
@@ -171,6 +209,7 @@ export function showSecureKeyWindow(
   current = { ...initial, busy: false, error: null }
   handlers = next
   registerIpc()
+  startPoll()
   const result = new Promise<SecureKeyWindowResult>((resolve) => {
     pending = resolve
   })
@@ -224,6 +263,7 @@ export function focusSecureKeyWindow(): void {
 }
 
 export function closeSecureKeyWindow(): void {
+  stopPoll()
   const closing = win
   win = null
   current = null

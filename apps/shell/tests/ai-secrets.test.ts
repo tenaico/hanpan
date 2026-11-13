@@ -15,6 +15,7 @@ import { normalizeFileSearchSettings } from '../src/main/file-index/rerank'
 import {
   MAX_REVEAL_VALUES,
   assertFileSearchKeysWritable,
+  clearSealedV2FileSearchKeys,
   clearSealedV2Secrets,
   fileSearchHoldsPlainKeys,
   openFileSearchKeys,
@@ -267,6 +268,34 @@ describe('a new security key (spec 2026-11-12 5-4)', () => {
       openai: { apiKey: 'sealed:v1:BBBB' },
     })
     expect(after.provider).toBe('anthropic')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('clears the reranking keys sealed with the old vault too', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ai-secrets-clear-'))
+    const path = join(dir, 'app-settings.json')
+    writeFileSync(
+      path,
+      JSON.stringify({
+        theme: 'dark',
+        fileSearch: {
+          rerank: 'cohere',
+          keys: { cohere: 'sealed:v2:AAAA', jina: 'sealed:v1:BBBB' },
+          jevKeys: { a: 'sealed:v2:CCCC' },
+        },
+      }),
+    )
+    expect(clearSealedV2FileSearchKeys(path)).toBe(2)
+    const after = JSON.parse(readFileSync(path, 'utf8'))
+    expect(after.theme).toBe('dark')
+    expect(after.fileSearch).toEqual({
+      rerank: 'cohere',
+      keys: { cohere: '', jina: 'sealed:v1:BBBB' },
+      jevKeys: { a: '' },
+    })
+    // once cleared, the settings can be written again
+    expect(() => assertFileSearchKeysWritable(after.fileSearch)).not.toThrow()
+    expect(clearSealedV2FileSearchKeys(join(dir, 'none.json'))).toBe(0)
     rmSync(dir, { recursive: true, force: true })
   })
 

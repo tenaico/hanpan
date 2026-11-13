@@ -198,6 +198,58 @@ describe('runGate', () => {
     expect(unlockAi).toHaveBeenCalled()
   })
 
+  it('a new key clears keys sealed with any earlier vault before sealing again', async () => {
+    // the record was lost (a damaged registered.json): no reset ran first
+    volumes = [E]
+    const order: string[] = []
+    onReset = vi.fn(async () => {
+      order.push('clear')
+    })
+    onRegistered = vi.fn(() => order.push('reseal'))
+    windowAnswer = async (h) => {
+      await h.create({ where: 'usb', letter: 'E' })
+      return 'registered'
+    }
+    await runtime().runGate()
+    expect(order).toEqual(['clear', 'reseal'])
+  })
+
+  it('will not write over another key on the stick', async () => {
+    // a stick that already holds a key this PC never had (another PC's)
+    const other = await createKey({
+      userData: join(root, 'other-pc'),
+      target: { where: 'usb', letter: 'E' },
+      volumes: [E],
+      now: NOW,
+      usbDir,
+      sealPcVault: seal,
+    })
+    if (!other.ok) throw new Error('other')
+    volumes = [E]
+    let error: string | null = null
+    windowAnswer = async (h) => {
+      error = await h.create({ where: 'usb', letter: 'E' })
+      return 'quit'
+    }
+    await runtime().runGate()
+    expect(error).toBe(
+      '이 USB에는 다른 한판 보안키가 들어 있습니다. 다른 USB를 쓰거나, 그 보안키가 더는 필요 없으면 USB의 Hanpan 폴더를 지운 뒤 다시 하세요.',
+    )
+  })
+
+  it('makes the new key on the stick of a key this PC replaced', async () => {
+    await keyOnE()
+    await resetKey({ userData, now: NOW })
+    volumes = [E]
+    let error: string | null = 'x'
+    windowAnswer = async (h) => {
+      error = await h.create({ where: 'usb', letter: 'E' })
+      return 'registered'
+    }
+    await runtime().runGate()
+    expect(error).toBeNull()
+  })
+
   it('turns a create error into a line in the window language', async () => {
     volumes = [E]
     let error: string | null = null
@@ -395,6 +447,46 @@ describe('the key in Settings', () => {
     const again = runtime()
     await again.openQuietly()
     expect(again.vault()?.equals(rt.vault()!)).toBe(true)
+  })
+
+  it('a new key from Settings locks AI, clears the old keys and needs a key on the next start', async () => {
+    await keyOnE()
+    volumes = [E]
+    const rt = runtime()
+    await rt.openQuietly()
+    await rt.runGate()
+    lockAi.mockClear()
+    expect(await rt.resetFromSettings()).toBe('ok')
+    expect(lockAi).toHaveBeenCalledTimes(1)
+    expect(onReset).toHaveBeenCalledTimes(1)
+    expect(rt.vault()).toBeNull()
+    expect(rt.locked()).toBe(true)
+    // the next start asks for a key
+    windowCalls = []
+    await runtime().runGate()
+    expect(windowCalls[0]!.state.mode).toBe('create')
+  })
+
+  it('a new key from Settings needs a key in use', async () => {
+    expect(await runtime().resetFromSettings()).toBe('no-record')
+    expect(onReset).not.toHaveBeenCalled()
+  })
+
+  it('a spare stick will not write over another key', async () => {
+    await keyOnE()
+    await createKey({
+      userData: join(root, 'other-pc'),
+      target: { where: 'usb', letter: 'F' },
+      volumes: [F],
+      now: NOW,
+      usbDir,
+      sealPcVault: seal,
+    })
+    volumes = [E, F]
+    const rt = runtime()
+    await rt.openQuietly()
+    await rt.runGate()
+    expect(await rt.spare('F')).toBe('other-key')
   })
 
   it('moves to this PC and no longer needs the stick', async () => {

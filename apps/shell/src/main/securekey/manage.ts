@@ -8,6 +8,7 @@ import {
   KEY_FILES,
   pcKeyDir,
   readRegistered,
+  stickTakesKey,
   usbKeyDir,
   writeKeyFiles,
   writeRegistered,
@@ -63,7 +64,10 @@ export async function resetKey(opts: { userData: string; now: Date }): Promise<v
   await rm(join(dir, KEY_FILES.vault), { force: true })
 }
 
-export type ManageResult = 'ok' | 'same-usb' | 'no-record' | 'write-failed'
+export type ManageResult = 'ok' | 'same-usb' | 'no-record' | 'write-failed' | 'other-key'
+
+/** The key ids this PC has had: the one in use and the replaced ones */
+const knownIds = (record: Registered) => [record.keyId, ...record.previous.map((p) => p.keyId)]
 
 /**
  * A spare stick (spec 5-5): the same key files on another stick, and its
@@ -80,8 +84,10 @@ export async function addSpareUsb(opts: {
   if (!record || record.keyId !== opts.current.keyId) return 'no-record'
   const deviceId = deviceIdHash(usbDeviceId(opts.volume))
   if (record.devices.some((d) => d.deviceId === deviceId)) return 'same-usb'
+  const dir = (opts.usbDir ?? usbKeyDir)(opts.volume.letter)
+  if (!(await stickTakesKey(dir, knownIds(record)))) return 'other-key'
   try {
-    await writeKeyFiles((opts.usbDir ?? usbKeyDir)(opts.volume.letter), record, opts.current.vault)
+    await writeKeyFiles(dir, record, opts.current.vault)
   } catch {
     return 'write-failed'
   }
@@ -102,8 +108,10 @@ export async function moveToUsb(opts: {
 }): Promise<ManageResult> {
   const record = readRegistered(opts.userData)
   if (!record || record.keyId !== opts.current.keyId) return 'no-record'
+  const dir = (opts.usbDir ?? usbKeyDir)(opts.volume.letter)
+  if (!(await stickTakesKey(dir, knownIds(record)))) return 'other-key'
   try {
-    await writeKeyFiles((opts.usbDir ?? usbKeyDir)(opts.volume.letter), record, opts.current.vault)
+    await writeKeyFiles(dir, record, opts.current.vault)
   } catch {
     return 'write-failed'
   }

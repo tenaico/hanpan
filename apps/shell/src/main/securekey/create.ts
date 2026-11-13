@@ -9,6 +9,7 @@ import {
   newVaultKey,
   pcKeyDir,
   readRegistered,
+  stickTakesKey,
   usbKeyDir,
   writeKeyFiles,
   writeRegistered,
@@ -19,7 +20,8 @@ import {
 export type CreateTarget = { where: 'usb'; letter: string } | { where: 'pc'; consentAt: string }
 
 export type CreateResult =
-  { ok: true; registration: Registration } | { ok: false; error: 'no-usb' | 'write-failed' }
+  | { ok: true; registration: Registration }
+  | { ok: false; error: 'no-usb' | 'write-failed' | 'other-key' }
 
 /**
  * Make a key (spec 2026-11-12 5-3): a new key id and vault, written to the
@@ -48,7 +50,11 @@ export async function createKey(opts: {
       const { letter } = opts.target
       const volume = opts.volumes.find((v) => v.letter === letter)
       if (!volume) return { ok: false, error: 'no-usb' }
-      await writeKeyFiles((opts.usbDir ?? usbKeyDir)(letter), key, vault)
+      const dir = (opts.usbDir ?? usbKeyDir)(letter)
+      // a key this PC never had is another PC's: never write over it
+      const known = [...(old ? [old.keyId] : []), ...previous.map((p) => p.keyId)]
+      if (!(await stickTakesKey(dir, known))) return { ok: false, error: 'other-key' }
+      await writeKeyFiles(dir, key, vault)
       registration = {
         where: 'usb',
         keyId: key.keyId,

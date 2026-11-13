@@ -133,6 +133,25 @@ export async function findRegistration(opts: {
   return { kind: 'usb-missing' }
 }
 
+/**
+ * The key id already in a stick's folder, or null when there is no readable
+ * key file. A key this PC does not know belongs to another PC: writing over
+ * it would lock that PC out (I2 of the 2026-11-13 review).
+ */
+export async function keyIdOnStick(dir: string): Promise<string | null> {
+  try {
+    return parseLocalKeyFile(await readFile(join(dir, KEY_FILES.key), 'utf8'))?.keyId ?? null
+  } catch {
+    return null
+  }
+}
+
+/** Whether a stick's folder may take this PC's key files */
+export async function stickTakesKey(dir: string, known: Iterable<string>): Promise<boolean> {
+  const there = await keyIdOnStick(dir)
+  return there === null || new Set(known).has(there)
+}
+
 /** A key's two files in a stick's folder (or any folder), each written atomically */
 export async function writeKeyFiles(
   dir: string,

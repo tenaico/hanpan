@@ -25,7 +25,7 @@ const dicts = {
     skCreateUsb: '在 USB 上创建',
     skRecommended: '推荐',
     skCreateUsbSub:
-      '只有插着 USB 时才能打开 GenOffice。别人无法在这台电脑上使用 GenOffice 和您的 API 密钥。',
+      '仅在插入 U 盘时才能打开 GenOffice。没有 U 盘时，无法在这台电脑上使用你的 API 密钥。',
     skCreatePc: '在此电脑上创建',
     skCreatePcSub:
       '无需 USB 即可直接打开，很方便，但使用这台电脑的任何人都能使用 GenOffice 和您的 API 密钥。',
@@ -71,6 +71,8 @@ const dicts = {
     skCancel: '取消',
     skErrNoUsb: '找不到所选的 USB。请重新插入 USB。',
     skErrWriteFailed: '无法把安全密钥写入 USB。请确认 USB 没有写保护，然后重试。',
+    skErrOtherKey:
+      '这个 U 盘里已有另一个 GenOffice 安全密钥。请换一个 U 盘；如果不再需要那个密钥，请删除 U 盘上的 Hanpan 文件夹后重试。',
     skCoverTitle: '在确认安全密钥之前，GenOffice 处于锁定状态',
     skSettingsTitle: '安全密钥',
     skSettingsOnUsb: '在 USB 上',
@@ -104,7 +106,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -153,6 +155,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -186,7 +190,7 @@ const dicts = {
     skCreateUsb: 'USB に作成',
     skRecommended: 'おすすめ',
     skCreateUsbSub:
-      'USB を挿しているときだけ GenOffice が開きます。ほかの人がこの PC で GenOffice や自分の API キーを使うことはできません。',
+      'USB を挿しているときだけ GenOffice が開きます。USB がなければ、この PC であなたの API キーは使えません。',
     skCreatePc: 'この PC に作成',
     skCreatePcSub:
       'USB なしですぐ開けて便利ですが、この PC を使う人なら誰でも GenOffice と自分の API キーを使えます。',
@@ -236,6 +240,8 @@ const dicts = {
     skErrNoUsb: '選んだ USB が見つかりません。USB を挿し直してください。',
     skErrWriteFailed:
       'USB にセキュリティキーを書き込めませんでした。USB の書き込み禁止を確認して、もう一度お試しください。',
+    skErrOtherKey:
+      'この USB には別の GenOffice セキュリティキーが入っています。別の USB を使うか、そのキーが不要なら USB の Hanpan フォルダーを削除してからやり直してください。',
     skCoverTitle: 'セキュリティキーを確認するまで GenOffice はロックされています',
     skSettingsTitle: 'セキュリティキー',
     skSettingsOnUsb: 'USB にあります',
@@ -269,7 +275,7 @@ const dicts = {
     skCreateUsb: 'USB에 만들기',
     skRecommended: '권장',
     skCreateUsbSub:
-      'USB를 꽂았을 때만 GenOffice이 열립니다. 다른 사람이 이 PC로 GenOffice과 내 API 키를 쓸 수 없습니다.',
+      'USB를 꽂았을 때만 GenOffice이 열립니다. USB가 없으면 이 PC에서 내 API 키를 쓸 수 없습니다.',
     skCreatePc: '이 PC에 만들기',
     skCreatePcSub:
       'USB 없이 바로 열려 편하지만, 이 PC를 쓰는 누구나 GenOffice과 내 API 키를 쓸 수 있습니다.',
@@ -317,6 +323,8 @@ const dicts = {
     skErrNoUsb: '고른 USB를 찾을 수 없습니다. USB를 다시 꽂아 주세요.',
     skErrWriteFailed:
       'USB에 보안키를 쓰지 못했습니다. USB가 잠겨 있지 않은지 확인하고 다시 하세요.',
+    skErrOtherKey:
+      '이 USB에는 다른 GenOffice 보안키가 들어 있습니다. 다른 USB를 쓰거나, 그 보안키가 더는 필요 없으면 USB의 Hanpan 폴더를 지운 뒤 다시 하세요.',
     skCoverTitle: '보안키를 확인할 때까지 GenOffice이 잠겨 있습니다',
     skSettingsTitle: '보안키',
     skSettingsOnUsb: 'USB에 있습니다',
@@ -350,7 +358,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -399,6 +407,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -432,7 +442,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -481,6 +491,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -514,7 +526,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -563,6 +575,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -596,7 +610,7 @@ const dicts = {
     skCreateUsb: 'สร้างบน USB',
     skRecommended: 'แนะนำ',
     skCreateUsbSub:
-      'GenOffice จะเปิดได้เมื่อเสียบ USB อยู่เท่านั้น คนอื่นใช้ GenOffice และ API key ของคุณบน PC เครื่องนี้ไม่ได้',
+      'GenOffice จะเปิดได้เฉพาะเมื่อเสียบ USB อยู่ หากไม่มี USB จะใช้คีย์ API ของคุณบนพีซีเครื่องนี้ไม่ได้',
     skCreatePc: 'สร้างบน PC เครื่องนี้',
     skCreatePcSub:
       'เปิดได้ทันทีโดยไม่ต้องใช้ USB สะดวก แต่ทุกคนที่ใช้ PC เครื่องนี้ก็ใช้ GenOffice และ API key ของคุณได้',
@@ -644,6 +658,8 @@ const dicts = {
     skErrNoUsb: 'ไม่พบ USB ที่เลือก โปรดเสียบ USB ใหม่อีกครั้ง',
     skErrWriteFailed:
       'เขียนกุญแจลง USB ไม่สำเร็จ ตรวจสอบว่า USB ไม่ได้ป้องกันการเขียน แล้วลองอีกครั้ง',
+    skErrOtherKey:
+      'USB นี้มีกุญแจความปลอดภัย GenOffice อื่นอยู่แล้ว ใช้ USB อื่น หรือถ้าไม่ต้องการกุญแจนั้นแล้ว ให้ลบโฟลเดอร์ Hanpan ใน USB แล้วลองอีกครั้ง',
     skCoverTitle: 'GenOffice จะถูกล็อกไว้จนกว่าจะตรวจสอบกุญแจความปลอดภัย',
     skSettingsTitle: 'กุญแจความปลอดภัย',
     skSettingsOnUsb: 'อยู่ใน USB',
@@ -677,7 +693,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -726,6 +742,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -761,7 +779,7 @@ const dicts = {
     skCreateUsb: 'Создать на USB-флешке',
     skRecommended: 'Рекомендуется',
     skCreateUsbSub:
-      'GenOffice открывается, только пока флешка вставлена. Другие не смогут использовать GenOffice и ваши API-ключи на этом PC.',
+      'GenOffice открывается, только когда флешка вставлена. Без флешки ваши API-ключи на этом ПК использовать нельзя.',
     skCreatePc: 'Создать на этом PC',
     skCreatePcSub:
       'Открывается сразу, без флешки, это удобно, но любой, кто работает на этом PC, сможет пользоваться GenOffice и вашими API-ключами.',
@@ -812,6 +830,8 @@ const dicts = {
     skErrNoUsb: 'Выбранная флешка не найдена. Вставьте её снова.',
     skErrWriteFailed:
       'Не удалось записать ключ на флешку. Проверьте, что на ней нет защиты от записи, и повторите.',
+    skErrOtherKey:
+      'На этой флешке уже есть другой ключ безопасности GenOffice. Используйте другую флешку или, если тот ключ больше не нужен, удалите папку Hanpan на флешке и повторите.',
     skCoverTitle: 'GenOffice заблокирован, пока не проверен ключ безопасности',
     skSettingsTitle: 'Ключ безопасности',
     skSettingsOnUsb: 'На флешке',
@@ -846,7 +866,7 @@ const dicts = {
     skCreateUsb: 'إنشاء على USB',
     skRecommended: 'موصى به',
     skCreateUsbSub:
-      'يُفتح GenOffice فقط أثناء توصيل USB. لا يستطيع الآخرون استخدام GenOffice ومفاتيح API الخاصة بك على هذا الـ PC.',
+      'لا يفتح GenOffice إلا عند توصيل وحدة USB. بدون وحدة USB لا يمكن استخدام مفاتيح API الخاصة بك على هذا الحاسوب.',
     skCreatePc: 'إنشاء على هذا الـ PC',
     skCreatePcSub:
       'يُفتح بلا USB وهذا مريح، لكن أي شخص يستخدم هذا الـ PC يمكنه استخدام GenOffice ومفاتيح API الخاصة بك.',
@@ -894,6 +914,8 @@ const dicts = {
     skErrNoUsb: 'تعذّر العثور على USB الذي اخترته. يرجى توصيله مرة أخرى.',
     skErrWriteFailed:
       'تعذّرت كتابة المفتاح على USB. تأكد من أن USB غير محمي من الكتابة ثم أعد المحاولة.',
+    skErrOtherKey:
+      'تحتوي وحدة USB هذه على مفتاح أمان آخر لـ GenOffice. استخدم وحدة أخرى، أو إذا لم تعد بحاجة إلى ذلك المفتاح فاحذف مجلد Hanpan من الوحدة وحاول مرة أخرى.',
     skCoverTitle: 'GenOffice مقفل حتى يتم التحقق من مفتاح الأمان',
     skSettingsTitle: 'مفتاح الأمان',
     skSettingsOnUsb: 'على USB',
@@ -927,7 +949,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -976,6 +998,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -1009,7 +1033,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -1058,6 +1082,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -1091,7 +1117,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -1140,6 +1166,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -1173,7 +1201,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -1222,6 +1250,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -1255,7 +1285,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -1304,6 +1334,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -1337,7 +1369,7 @@ const dicts = {
     skCreateUsb: 'Make it on a USB stick',
     skRecommended: 'Recommended',
     skCreateUsbSub:
-      'GenOffice opens only while the stick is plugged in. Others cannot use GenOffice or your API keys on this PC.',
+      'GenOffice opens only while the stick is plugged in. Without the stick, your API keys cannot be used on this PC.',
     skCreatePc: 'Make it on this PC',
     skCreatePcSub:
       'It opens without a stick, but anyone using this PC can use GenOffice and your API keys.',
@@ -1386,6 +1418,8 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrOtherKey:
+      'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
@@ -1418,7 +1452,7 @@ const dicts = {
     skCreateUsb: 'יצירה על כונן USB',
     skRecommended: 'מומלץ',
     skCreateUsbSub:
-      'GenOffice נפתחת רק כשהכונן מחובר. אחרים לא יוכלו להשתמש ב-GenOffice ובמפתחות ה-API שלכם ב-PC הזה.',
+      'GenOffice נפתח רק כשהכונן הנייד מחובר. בלי הכונן אי אפשר להשתמש במפתחות ה-API שלך במחשב הזה.',
     skCreatePc: 'יצירה ב-PC הזה',
     skCreatePcSub:
       'נפתחת בלי כונן וזה נוח, אבל כל מי שמשתמש ב-PC הזה יכול להשתמש ב-GenOffice ובמפתחות ה-API שלכם.',
@@ -1466,6 +1500,8 @@ const dicts = {
     skErrNoUsb: 'לא ניתן למצוא את הכונן שבחרתם. אנא חברו אותו שוב.',
     skErrWriteFailed:
       'לא ניתן היה לכתוב את המפתח לכונן. ודאו שהכונן אינו מוגן מפני כתיבה ונסו שוב.',
+    skErrOtherKey:
+      'בכונן הזה כבר יש מפתח אבטחה אחר של GenOffice. השתמש בכונן אחר, או אם המפתח ההוא כבר לא נחוץ, מחק את התיקייה Hanpan בכונן ונסה שוב.',
     skCoverTitle: 'GenOffice נעולה עד שמפתח האבטחה ייבדק',
     skSettingsTitle: 'מפתח אבטחה',
     skSettingsOnUsb: 'על כונן USB',
@@ -1501,7 +1537,7 @@ const dicts = {
     skCreateUsb: 'USB पर बनाएँ',
     skRecommended: 'अनुशंसित',
     skCreateUsbSub:
-      'GenOffice सिर्फ़ तब खुलता है जब USB लगा हो। दूसरे लोग इस PC पर GenOffice और आपकी API कुंजियों का इस्तेमाल नहीं कर सकते।',
+      'GenOffice केवल तभी खुलता है जब USB लगा हो। USB के बिना इस PC पर आपकी API कुंजियाँ इस्तेमाल नहीं की जा सकतीं।',
     skCreatePc: 'इस PC पर बनाएँ',
     skCreatePcSub:
       'USB के बिना सीधे खुल जाता है, यह आसान है, पर इस PC को इस्तेमाल करने वाला कोई भी GenOffice और आपकी API कुंजियाँ इस्तेमाल कर सकता है।',
@@ -1551,6 +1587,8 @@ const dicts = {
     skErrNoUsb: 'चुना हुआ USB नहीं मिला। कृपया USB फिर से लगाएँ।',
     skErrWriteFailed:
       'कुंजी USB पर नहीं लिखी जा सकी। देखें कि USB राइट-प्रोटेक्टेड तो नहीं है, फिर दोबारा कोशिश करें।',
+    skErrOtherKey:
+      'इस USB में पहले से GenOffice की दूसरी सुरक्षा कुंजी है। दूसरा USB इस्तेमाल करें, या अगर उस कुंजी की ज़रूरत नहीं है तो USB का Hanpan फ़ोल्डर हटाकर फिर से कोशिश करें।',
     skCoverTitle: 'सुरक्षा कुंजी जाँचे जाने तक GenOffice लॉक है',
     skSettingsTitle: 'सुरक्षा कुंजी',
     skSettingsOnUsb: 'USB पर है',
@@ -1584,7 +1622,7 @@ const dicts = {
     skCreateUsb: '在 USB 上建立',
     skRecommended: '建議',
     skCreateUsbSub:
-      '只有插著 USB 時才能開啟 GenOffice。別人無法在這台電腦上使用 GenOffice 和您的 API 金鑰。',
+      '僅在插入隨身碟時才能開啟 GenOffice。沒有隨身碟時，無法在這台電腦上使用你的 API 金鑰。',
     skCreatePc: '在這台電腦上建立',
     skCreatePcSub:
       '無需 USB 即可直接開啟，很方便，但使用這台電腦的任何人都能使用 GenOffice 和您的 API 金鑰。',
@@ -1630,6 +1668,8 @@ const dicts = {
     skCancel: '取消',
     skErrNoUsb: '找不到所選的 USB。請重新插入 USB。',
     skErrWriteFailed: '無法把安全金鑰寫入 USB。請確認 USB 沒有寫入保護，然後再試一次。',
+    skErrOtherKey:
+      '這個隨身碟裡已有另一個 GenOffice 安全金鑰。請換一個隨身碟；如果不再需要那個金鑰，請刪除隨身碟上的 Hanpan 資料夾後再試一次。',
     skCoverTitle: '在確認安全金鑰之前，GenOffice 處於鎖定狀態',
     skSettingsTitle: '安全金鑰',
     skSettingsOnUsb: '在 USB 上',
@@ -1665,7 +1705,7 @@ const dicts = {
     skCreateUsb: 'Tạo trên USB',
     skRecommended: 'Khuyên dùng',
     skCreateUsbSub:
-      'GenOffice chỉ mở khi đang cắm USB. Người khác không thể dùng GenOffice và khóa API của bạn trên PC này.',
+      'GenOffice chỉ mở khi USB đang được cắm. Không có USB thì không thể dùng khóa API của bạn trên máy tính này.',
     skCreatePc: 'Tạo trên PC này',
     skCreatePcSub:
       'Mở ngay không cần USB nên tiện, nhưng bất kỳ ai dùng PC này đều có thể dùng GenOffice và khóa API của bạn.',
@@ -1714,6 +1754,8 @@ const dicts = {
     skErrNoUsb: 'Không tìm thấy USB đã chọn. Vui lòng cắm lại USB.',
     skErrWriteFailed:
       'Không ghi được khóa vào USB. Hãy kiểm tra USB có đang bật chế độ chống ghi không rồi thử lại.',
+    skErrOtherKey:
+      'USB này đã chứa một khóa bảo mật GenOffice khác. Hãy dùng USB khác, hoặc nếu không cần khóa đó nữa, xóa thư mục Hanpan trên USB rồi thử lại.',
     skCoverTitle: 'GenOffice bị khóa cho đến khi khóa bảo mật được kiểm tra',
     skSettingsTitle: 'Khóa bảo mật',
     skSettingsOnUsb: 'Trên USB',
