@@ -12,7 +12,7 @@
 - **PC 보관은 위험에 동의한 뒤에만 한다.** vault는 DPAPI로 봉인해 `securekey\vault.key`에 둔다. 같은 Windows 계정의 누구나 한판과 API 키를 쓸 수 있다는 것을 동의 칸으로 받는다.
 - **잃어버리면 새로 만든다.** "새 보안키 만들기"는 잠금 화면과 설정에 있다. 문서와 설정은 남고, 예전 vault로 잠근 AI 키(`sealed:v2:`)는 지운다. 예전 키 번호는 `previous`에 남겨, 예전 USB를 꽂으면 언제 새로 만들어졌는지 알린다.
 - **설정 › 일반 › 보안키**에서 예비 USB 만들기, USB와 PC 사이 옮기기, 새로 만들기를 한다.
-- **설치 프로그램은 사용권과 면책 안내를 보인다.** `apps/shell/build/license_ko.txt`·`license_en.txt`(UTF-8 BOM, CRLF)를 NSIS와 dmg가 설치 언어에 맞춰 보인다. 같은 파일을 설정 › 정보와 첫 실행의 [전체 사용권 보기]에서 연다. 면책은 "TEN AI의 고의로 생긴 손해는 그러하지 않습니다"만 둔다(저장소 주인 결정).
+- **설치 프로그램은 사용권과 면책 안내를 보인다.** `apps/shell/build/license_ko.txt`·`license_en.txt`(UTF-8, CRLF, BOM 없음. NSIS용 BOM은 electron-builder가 붙인다)를 NSIS와 dmg가 설치 언어에 맞춰 보인다. 같은 파일을 설정 › 정보와 첫 실행의 [전체 사용권 보기]에서 연다. 면책은 "TEN AI의 고의로 생긴 손해는 그러하지 않습니다"만 둔다(저장소 주인 결정).
 - **0094에서 그대로인 것:** AI 키의 두 겹 잠금(vault로 AES-256-GCM 뒤 DPAPI, `sealed:v2:`), 잠긴 동안 AI와 바깥 창구 막기, 덮개, Mac·Linux에는 보안키가 없음, 등록 기록이 없는 PC에서는 아무 프로그램도 띄우지 않음, 빌드 값 `HANPAN_REQUIRE_KEY`(정식 빌드에서 켬, 개발 빌드와 e2e에서 끔).
 
 ## 택하지 않은 것

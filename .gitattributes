@@ -18,5 +18,6 @@
 
 # Template font license texts ship byte-identical to the distributors' files.
 packages/ui/template-fonts/*.txt -text
-# the installer license page (NSIS) reads these on Windows: keep CRLF and the BOM
+# the installer license (NSIS on Windows, dmg on macOS): CRLF, no BOM;
+# electron-builder adds the BOM NSIS needs, and the dmg reader would choke on it
 apps/shell/build/license_*.txt text eol=crlf

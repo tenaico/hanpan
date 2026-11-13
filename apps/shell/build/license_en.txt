@@ -1,4 +1,4 @@
-﻿Hanpan License and Disclaimer
+Hanpan License and Disclaimer
 
 1. Free and open source
 Hanpan is an open-source program that TEN AI distributes free of charge, under the Apache License 2.0. It is built on the open-source project IeumOffice. The full license text and the copyright and license notices of the open-source software it uses are in the program under Settings > About.

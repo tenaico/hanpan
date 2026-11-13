@@ -75,19 +75,20 @@
 
 **PC** `userData/securekey/`
 
-- `registered.json`: 이 PC에 등록된 보안키.
-  ```json
-  {
-    "v": 2,
-    "keyId": "…",
-    "where": "usb",
-    "devices": [{ "deviceId": "<디스크 일련번호의 SHA-256 hex>", "addedAt": "<ISO>" }],
-    "createdAt": "<ISO>",
-    "pcConsentAt": null,
-    "previous": [{ "keyId": "…", "replacedAt": "<ISO>" }]
-  }
-  ```
-  `where: "pc"`이면 `devices`는 비고, `pcConsentAt`이 있다.
+`registered.json`: 이 PC에 등록된 보안키. `where: "pc"`이면 `devices`는 비고, `pcConsentAt`이 있다.
+
+```json
+{
+  "v": 2,
+  "keyId": "…",
+  "where": "usb",
+  "devices": [{ "deviceId": "<디스크 일련번호의 SHA-256 hex>", "addedAt": "<ISO>" }],
+  "createdAt": "<ISO>",
+  "pcConsentAt": null,
+  "previous": [{ "keyId": "…", "replacedAt": "<ISO>" }]
+}
+```
+
 - `vault.key`: `where: "pc"`일 때만. Windows 봉인(DPAPI)한 vault.
 - 이 파일은 운영체제 봉인을 하지 않는다. 고쳐도 vault가 없으면 API 키가 열리지 않기 때문이다.
 
