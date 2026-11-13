@@ -51,6 +51,11 @@ export interface McpServerOptions {
    * server the person turns on under Integrations has none.
    */
   token?: string
+  /**
+   * While this answers true (Hanpan's security key is missing, spec 7-4) every
+   * request but /health gets 423, and a tool call already under way ends as an error.
+   */
+  isLocked?: () => boolean
 }
 
 export const DEFAULT_MCP_PORT = 3093
@@ -86,9 +91,11 @@ export class McpServerService {
     this.maxListenAttempts = options.maxListenAttempts ?? 5
     this.listenRetryDelayMs = options.listenRetryDelayMs ?? LISTEN_RETRY_DELAY_MS
     this.token = options.token
+    this.isLocked = options.isLocked ?? (() => false)
   }
 
   private readonly token?: string | undefined
+  private readonly isLocked: () => boolean
 
   isRunning(): boolean {
     return this.running
@@ -120,7 +127,10 @@ export class McpServerService {
         (async (args: Record<string, unknown>) => {
           const started = Date.now()
           try {
+            if (this.isLocked()) throw new Error('locked')
             const result = await tool.handler(args ?? {})
+            // the lock came on while the tool ran: its answer is not handed out
+            if (this.isLocked()) throw new Error('locked')
             this.logger(`[mcp] tool ${tool.name} ok (${Date.now() - started}ms)`)
             return { content: [{ type: 'text' as const, text: stringifyResult(result) }] }
           } catch (error) {
@@ -162,6 +172,8 @@ export class McpServerService {
         port: this.port,
       })
     }
+
+    if (this.isLocked()) return this.json(res, 423, { error: 'locked' })
 
     if (url.pathname === '/mcp') return this.handleStreamable(req, res)
 

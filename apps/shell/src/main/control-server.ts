@@ -59,7 +59,10 @@ function tokenMatches(given: string, expected: string): boolean {
 export function startControlServer(
   userData: string,
   handler: ControlHandler,
+  /** isLocked: Hanpan's security key is missing (spec 7-4); every request is refused meanwhile */
+  options: { isLocked?: () => boolean } = {},
 ): Promise<ControlServer> {
+  const isLocked = options.isLocked ?? (() => false)
   const endpoint = controlEndpointPath(userData)
   const token = randomBytes(24).toString('hex')
   const file = join(userData, CONTROL_FILE)
@@ -68,7 +71,7 @@ export function startControlServer(
       unlinkSync(endpoint)
     } catch {}
   }
-  const server: Server = createServer((socket) => serve(socket, token, handler))
+  const server: Server = createServer((socket) => serve(socket, token, handler, isLocked))
   return new Promise((resolve, reject) => {
     server.once('error', reject)
     server.listen(endpoint, () => {
@@ -104,7 +107,12 @@ export function startControlServer(
   })
 }
 
-function serve(socket: Socket, token: string, handler: ControlHandler): void {
+function serve(
+  socket: Socket,
+  token: string,
+  handler: ControlHandler,
+  isLocked: () => boolean,
+): void {
   let buffer = ''
   let done = false
   const finish = (reply: ControlReply | null) => {
@@ -124,6 +132,9 @@ function serve(socket: Socket, token: string, handler: ControlHandler): void {
     if (nl < 0) return
     const envelope = parseEnvelope(buffer.slice(0, nl))
     if (!envelope || !tokenMatches(envelope.token, token)) return finish(null)
+    // the existing reason: the command line already reads it as "the app cannot do this now"
+    if (isLocked())
+      return finish({ ok: false, error: { reason: 'app_unavailable', message: 'locked' } })
     handler(envelope.request).then(finish, (err: unknown) =>
       finish({
         ok: false,

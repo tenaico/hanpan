@@ -64,6 +64,38 @@ describe('control server', () => {
     expect(seen).toHaveLength(1)
   })
 
+  it('answers app_unavailable while locked', async () => {
+    const userData = mkdtempSync(join(tmpdir(), 'genoffice-control-'))
+    let locked = true
+    const seen: ControlRequest[] = []
+    const server = await startControlServer(
+      userData,
+      async (req) => {
+        seen.push(req)
+        return { ok: true, result: {} }
+      },
+      { isLocked: () => locked },
+    )
+    servers.push(server)
+    const { token } = JSON.parse(readFileSync(join(userData, 'control.json'), 'utf8'))
+    const line = JSON.stringify({ token, request: { cmd: 'selection', path: '/a.docx' } }) + '\n'
+    const refused = await roundTrip(server.endpoint.endpoint, line)
+    expect(JSON.parse(refused.reply)).toEqual({
+      ok: false,
+      error: { reason: 'app_unavailable', message: 'locked' },
+    })
+    expect(seen).toHaveLength(0)
+    // a wrong token still gets nothing at all, locked or not
+    const wrong = await roundTrip(
+      server.endpoint.endpoint,
+      JSON.stringify({ token: 'nope', request: { cmd: 'selection', path: '/a.docx' } }) + '\n',
+    )
+    expect(wrong.reply).toBe('')
+    locked = false
+    const served = await roundTrip(server.endpoint.endpoint, line)
+    expect(JSON.parse(served.reply)).toEqual({ ok: true, result: {} })
+  })
+
   it('rejects envelopes that are not a known command', () => {
     expect(parseEnvelope('{"token":"t","request":{"cmd":"rm","path":"/x"}}')).toBeNull()
     expect(parseEnvelope('{"token":"t","request":{"cmd":"open"}}')).toBeNull()

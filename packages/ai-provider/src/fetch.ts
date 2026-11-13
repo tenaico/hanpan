@@ -8,6 +8,7 @@
  * stack. Renderers never inject one (their fetch already is Chromium's).
  */
 import { PRODUCT_NAME } from '@genoffice/i18n'
+import { aiLockSignal, assertAiUnlocked } from './ai-lock'
 import { freeLimitOf } from './free-ai'
 
 type FetchLike = (url: string, init?: RequestInit) => Promise<Response>
@@ -112,7 +113,11 @@ async function isTransientRefusal(response: Response): Promise<boolean> {
 }
 
 export async function aiFetch(url: string, rawInit: RequestInit): Promise<Response> {
-  const init = withUserAgent(rawInit)
+  // the security key lock refuses new requests and ends the ones in flight (spec 7-4)
+  assertAiUnlocked()
+  const lock = aiLockSignal()
+  const own = rawInit.signal
+  const init = withUserAgent({ ...rawInit, signal: own ? AbortSignal.any([own, lock]) : lock })
   const signal = init.signal as AbortSignal | null | undefined
   let response = await fetchOnce(url, init)
   const resendable = init.body == null || typeof init.body === 'string'

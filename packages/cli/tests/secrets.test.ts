@@ -67,4 +67,11 @@ describe('revealedSecretsOf', () => {
     ).toEqual({ [A]: 'x' })
     expect(revealedSecretsOf('garbage')).toEqual({})
   })
+
+  it('keeps v2 values for the reveal request', () => {
+    const v2 = 'sealed:v2:QUJD'
+    expect(
+      revealedSecretsOf(JSON.stringify({ status: 'ok', secrets: { [v2]: 'sk-2', [A]: 'x' } })),
+    ).toEqual({ [v2]: 'sk-2', [A]: 'x' })
+  })
 })

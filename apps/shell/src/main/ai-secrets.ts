@@ -1,10 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs'
 import {
+  AiLockedError,
   SEALED_PREFIX,
+  SEALED_PREFIX_V2,
   isSealedSecret,
   mapAiSecrets,
   openSecretValue,
-  sealAiSecrets,
   sealSecretValue,
   type AiSecretCodec,
 } from '@genoffice/ai-provider'
@@ -82,7 +83,8 @@ export function safeStorageCodec(
         ? SEALED_PREFIX + storage.encryptString(plain).toString('base64')
         : null,
     open: (sealed) => {
-      if (!isSealedSecret(sealed) || !storage.isEncryptionAvailable()) return null
+      // v1 only: a v2 value opened here would hand out its inner, still encrypted text
+      if (!sealed.startsWith(SEALED_PREFIX) || !storage.isEncryptionAvailable()) return null
       try {
         return storage.decryptString(Buffer.from(sealed.slice(SEALED_PREFIX.length), 'base64'))
       } catch {
@@ -92,11 +94,37 @@ export function safeStorageCodec(
   }
 }
 
-/** Whether a stored settings object still holds a plain, non-empty key or token */
-export function holdsPlainSecrets(stored: unknown): boolean {
+/** `upgrade`: the security key's vault is open, so v1 values are sealed again as v2 (spec 7-5) */
+export interface SealOptions {
+  upgrade?: boolean
+}
+
+/** A value that sealing would change: plain and non-empty, or v1 while upgrading */
+function wantsSealing(v: string, options: SealOptions): boolean {
+  if (v === '') return false
+  if (!isSealedSecret(v)) return true
+  return options.upgrade === true && v.startsWith(SEALED_PREFIX)
+}
+
+/**
+ * One stored value sealed again: a plain one sealed, a v1 one opened and sealed
+ * again while upgrading. A value that cannot be opened stays as it is: emptying
+ * it would lose the key.
+ */
+function resealValue(v: string, options: SealOptions): string {
+  if (!wantsSealing(v, options)) return v
+  if (!isSealedSecret(v)) return sealSecretValue(v)
+  const plain = openSecretValue(v)
+  if (plain === '') return v
+  const next = sealSecretValue(plain)
+  return isSealedSecret(next) ? next : v
+}
+
+/** Whether a stored settings object still holds a plain, non-empty key or token (or v1 while upgrading) */
+export function holdsPlainSecrets(stored: unknown, options: SealOptions = {}): boolean {
   let found = false
   mapAiSecrets(stored, (v) => {
-    if (v !== '' && !isSealedSecret(v)) found = true
+    if (wantsSealing(v, options)) found = true
     return v
   })
   return found
@@ -107,7 +135,7 @@ export function holdsPlainSecrets(stored: unknown): boolean {
  * or by hand). Leaves the file alone when it cannot be read, holds nothing
  * plain, or this PC cannot seal. Returns whether it rewrote the file.
  */
-export function sealStoredAiSettings(path: string): boolean {
+export function sealStoredAiSettings(path: string, options: SealOptions = {}): boolean {
   let stored: unknown
   try {
     if (!existsSync(path)) return false
@@ -115,9 +143,11 @@ export function sealStoredAiSettings(path: string): boolean {
   } catch {
     return false
   }
-  if (!holdsPlainSecrets(stored)) return false
-  const sealed = sealAiSecrets(stored)
+  if (!holdsPlainSecrets(stored, options)) return false
+  const sealed = mapAiSecrets(stored, (v) => resealValue(v, options))
   if (holdsPlainSecrets(sealed)) return false
+  // nothing could be upgraded (no vault, or values it cannot open): the file stays as it is
+  if (JSON.stringify(sealed) === JSON.stringify(stored)) return false
   writeJsonAtomic(path, sealed)
   return true
 }
@@ -156,14 +186,29 @@ export function sealFileSearchKeys<T extends { keys: Record<string, string> }>(s
   }
 }
 
-/** Whether stored reranking settings still hold a plain, non-empty key */
-export function fileSearchHoldsPlainKeys(stored: unknown): boolean {
+/** Whether stored reranking settings still hold a plain, non-empty key (or a v1 one while upgrading) */
+export function fileSearchHoldsPlainKeys(stored: unknown, options: SealOptions = {}): boolean {
   const keys = (stored as { keys?: unknown } | null)?.keys
   return (
     typeof keys === 'object' &&
     keys !== null &&
-    Object.values(keys).some((v) => typeof v === 'string' && v !== '' && !isSealedSecret(v))
+    Object.values(keys).some((v) => typeof v === 'string' && wantsSealing(v, options))
   )
+}
+
+/**
+ * The reranking keys are not written while one of them is a v2 value this run
+ * cannot open (the security key's stick is out): it reads as empty, and the
+ * write would replace it for good. Pass the stored `fileSearch` value.
+ */
+export function assertFileSearchKeysWritable(stored: unknown): void {
+  const keys = (stored as { keys?: unknown } | null | undefined)?.keys
+  if (typeof keys !== 'object' || keys === null) return
+  for (const v of Object.values(keys)) {
+    if (typeof v === 'string' && v.startsWith(SEALED_PREFIX_V2) && openSecretValue(v) === '') {
+      throw new AiLockedError()
+    }
+  }
 }
 
 /** The hidden entry the terminal command starts to open sealed values */

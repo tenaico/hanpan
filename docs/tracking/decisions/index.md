@@ -94,6 +94,7 @@
 | [0091](0091-hanpan-korean-doc-features.md)                    | 한판의 한국 문서 기능은 화면 언어로 기본값을 정하고, 설정 스위치로 바꿀 수 있다                 | 2026-11-05 |
 | [0092](0092-hanpan-first-language-follows-windows.md)         | 한판의 첫 화면 언어는 운영체제 표시 언어를 따르고, 한판에 없는 언어면 한국어다                  | 2026-11-05 |
 | [0093](0093-hanpan-graphics-web-tabs.md)                      | AI 포토·AI 일러스트는 웹판을 한판 탭에 넣고 AI가 고친다(0090을 대체, 일부 대체됨 → 0098)        | 2026-11-06 |
+| [0094](0094-hanpan-security-key.md)                           | 한판 Windows판은 tenai.kr의 보안키가 있어야 켜지고, 보안키가 없는 동안 AI를 막는다              | 2026-11-06 |
 | [0095](0095-hanpan-system-share-sheet.md)                     | 공유하기는 운영체제 공유 창을 열고, Windows에서는 작은 C# 도우미가 띄운다                       | 2026-11-06 |
 | [0096](0096-hanpan-send-to-app-via-markdown.md)               | 앱 간 연동은 Markdown을 거쳐 다른 편집기의 새 문서로 보낸다                                     | 2026-11-06 |
 | [0097](0097-hanpan-home-board.md)                             | 한판 홈은 카드를 끌어 놓는 보드이고, 트렌드 레이더의 기상도는 메인 프로세스가 받는다            | 2026-11-09 |

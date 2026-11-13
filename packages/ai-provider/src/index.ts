@@ -61,6 +61,7 @@ export {
 } from './legacy-settings'
 export {
   SEALED_PREFIX,
+  SEALED_PREFIX_V2,
   isSealedSecret,
   mapAiSecrets,
   openAiSecrets,
@@ -109,6 +110,8 @@ export type {
   SubscriptionStatusMap,
 } from './subscription/contract'
 export { AiRunError, aiStreamErrorFields } from './run-error'
+export { AiLockedError, aiLockSignal, assertAiUnlocked, isAiLocked, setAiLocked } from './ai-lock'
+export { assertAiSecretsWritable } from './secrets-write-guard'
 export {
   AI_PROVIDERS,
   DEFAULT_MAX_OUTPUT_TOKENS,

@@ -317,7 +317,7 @@ metadata:
 
 - 로컬 서버 항목(`kind: 'local'`)은 `modelProfiles`와 `timeoutMs`를 더 든다. `modelProfiles`는 모델 id별 `{ contextLength, maxContextLength, tools, vision, contextSource, toolsSource, visionSource, checkedAt, notes }`이고, source는 `server`·`user`·`test`뿐이다. `timeoutMs`는 60,000~600,000의 정수이고, 없으면 300,000으로 읽는다.
 - `customEndpoint: ''`는 "쓸 사용자 서버 없음"이다. 이때 `providers.custom`은 `{ apiKey: '', model: '', baseUrl: '' }`로 비고, `customEndpoint` 값이 아예 없는 예전 파일만 첫 서버를 고른다.
-- 키와 토큰(`providers.*.apiKey`, `customEndpoints[].apiKey`, `media.providers.*.apiKey`, `search.providers.*.apiKey`, `readUrl.githubToken`, `gongu.apiKey`)은 Windows와 Linux(GNOME 키링·KWallet이 있을 때)에서 앱이 저장할 때 `sealed:v1:<base64>`로 봉인된다(결정 0063). 사람이 평문으로 적어 넣어도 읽히고, 앱이 다음에 저장하거나 시작할 때 봉인된다. 명령어와 MCP는 봉인된 값을 앱에게 풀어 받아 쓰고(처음 한 번 1~2초), 풀지 못한 값은 빈 키로 읽는다. 명령어는 봉인하지 않는다. macOS는 봉인하지 않는다.
+- 키와 토큰(`providers.*.apiKey`, `customEndpoints[].apiKey`, `media.providers.*.apiKey`, `search.providers.*.apiKey`, `readUrl.githubToken`, `gongu.apiKey`)은 Windows와 Linux(GNOME 키링·KWallet이 있을 때)에서 앱이 저장할 때 `sealed:v1:<base64>`로 봉인된다(결정 0063). 사람이 평문으로 적어 넣어도 읽히고, 앱이 다음에 저장하거나 시작할 때 봉인된다. 명령어와 MCP는 봉인된 값을 앱에게 풀어 받아 쓰고(처음 한 번 1~2초), 풀지 못한 값은 빈 키로 읽는다. 명령어는 봉인하지 않는다. macOS는 봉인하지 않는다. Windows에서 보안키를 등록하면 `sealed:v2:<base64>`가 된다(결정 0094, 아래 "보안키 파일과 서버 응답"). 명령어도 v2 값을 앱에게 풀어 받지만, 보안키의 USB가 없으면 풀리지 않는다.
 - `readUrl.githubToken`은 비공개 GitHub 파일을 읽는 읽기 토큰이다. 키와 같은 방식으로 저장되고, `api.github.com` 요청에만 실린다. 다른 사이트나 리다이렉트 홉에는 보내지 않는다.
 - `gongu.apiKey`는 한판의 공유마당 그림 찾기에 쓰는, 사용자 자신의 공공데이터포털 인증키다. 앱은 키를 싣고 배포하지 않는다. 키와 같은 방식으로 저장되고, `apis.data.go.kr`의 공유(만료)저작물 서비스 요청에만 실린다(`docs/plans/gongu-images.md`).
 - `headlessSubscriptionEnabled`가 참이어도 `headlessSubscriptionConsentVersion`이 지금 경고의 판(2)보다 작거나 없으면 꺼진 것으로 읽는다. 판 1은 시간당 한도가 있던 예전 경고이고, 그때는 판을 저장하지 않았다.
@@ -416,6 +416,51 @@ metadata:
 - **터미널 명령어로 한글 문서를 만들고 고친다(결정 0079).** `ieumoffice hwp apply <파일> --ops`(MCP `hwp_apply`)와 `ieumoffice create --type hwp|hwpx --ops`(MCP `create_hwp`)다. 연산은 한글 편집기 AI의 도구 그대로이고(이름, 입력, 답한 글), 앱의 플러그인이 같은 엔진에서 한다. 그래서 찾은 말이 여러 곳이면 고르지 않고, 표·그림·누름틀·메모를 잃는 변경은 되돌리고 거절한다. 그림 넣기, 웹 읽기와 그림 찾기·만들기, 편집기 선택 도구는 명령어에 없다(`unsupported`). 연산 목록은 `ieumoffice guide hwp`이고 도구 정의에서 만든다. 저장은 앱의 저장과 같다. 연 형식 그대로(`--out`이면 그 확장자로) 쓰고, `.hwp`는 엔진이 다시 읽어 쪽수가 같을 때만 쓰며, 새 탭 폭·필드 종류·바탕쪽과 메모를 바로잡고(결정 0024·0026·0028), 덮어쓰는 파일은 먼저 `<파일 이름>.bak`으로 남긴다. 변경 추적이 든 `.hwp`는 지금의 내용으로 고치고(결정 0027) `detail.warnings`로 알린다. 읽기 연산만 든 묶음은 파일을 쓰지 않는다. 암호가 걸린 문서는 `unsupported`다. 앱이 탭으로 연 파일은 다른 형식처럼 `--force` 없이 쓰지 않는다.
 - **한글 메모(결정 0072).** `.hwp`·`.hwpx`의 메모는 본문·표 칸·글상자에서 읽고, 앱의 메모 패널에서 평문으로 넣고 고치고 지운다(한 영역에 새 메모 하나, 서식 있는 메모는 읽기 전용). 작성자는 사용자 이름 설정 → PC 계정 이름 → `IeumOffice`(제품 이름), 새 메모의 날짜는 파일이 담고 있을 때만 보인다. 메모 편집기가 열려 있는 동안 저장은 `메모 작성을 먼저 저장하거나 취소해 주세요.`로 막고, 탭 닫기·종료는 메모를 버리고 닫을지 묻는다. AI는 메모를 읽을 수 있지만 쓰는 도구가 없고, 앵커를 지우는 편집은 그 요청에 한해 사람의 승인을 받는다. 저장은 연 형식 그대로 하고, `.hwpx`에서 실제로 빠진 메모가 있을 때만 수와 함께 HWP 저장을 안내한다. 메모가 없는 문서의 저장 결과는 예전과 같다.
 - **한글 읽기의 메모.** `hwpToText`와 `parseFileToText`는 메모가 있으면 본문과 표 뒤에 `### Comments` 블록을 붙인다. 첫 줄은 `- 작성자 (p.N): 첫 줄`, 이어지는 줄은 두 칸 들여쓰며, 작성자가 없으면 `unknown`, 쪽을 모르면 `(p.N)`을 뺀다. 메모가 없으면 블록을 붙이지 않는다. 같은 읽기를 쓰는 터미널 명령어(`ieumoffice hwp read`, `info`)와 MCP(`read_hwp`, `hwp_read`)의 출력에도 이 블록이 붙는다. 메모를 읽지 못하면 블록 없이 본문만 돌려준다. 이미 색인된 파일의 메모는 그 파일이 바뀌어 다시 색인될 때 검색에 들어간다. `hwpMemosOf`는 저장 검증을 위해 메모를 구조로 돌려주며, 엔진이 모델에 담지 못한 원시 기록은 세지 않는다.
+
+## 보안키 파일과 서버 응답 (결정 0094)
+
+한판 Windows판의 보안키(스펙 `docs/superpowers/specs/2026-11-04-hanpan-vn-securitykey-design.md` 7장)와 tenai.kr 서버(D)의 약속이다. 앱 쪽 구현은 `apps/shell/src/main/securekey/`, 개발용 가짜 서버는 `tools/securekey-dev-server.mjs`다.
+
+**서명 규칙**
+
+- 서명한 문서는 모두 `{ payload, kid, sig }` 모양이다.
+  - `kid`: 서명 키 번호. 앱은 빌드 값 `HANPAN_KEY_PUBKEYS`(`{"<kid>":"<base64 32바이트 Ed25519 공개키>"}`)에 있는 `kid`만 믿는다.
+  - `sig`: `canonicalJson(payload)`의 UTF-8 바이트에 대한 Ed25519 서명의 base64.
+  - `canonicalJson`: 모든 깊이에서 객체 키를 정렬하고 공백 없이 쓴 JSON. 값이 `undefined`인 키는 뺀다.
+- `v`는 지금 `1`이다. 모양이 다르면 앱은 그 문서를 받지 않는다.
+
+**문서 세 가지**
+
+| 문서                                | payload                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------- |
+| `hanpan.key` (보안키)               | `{ v: 1, kid, memberId, keyId, issuedAt }`                                                  |
+| `activation.json` (활성화 정보)     | `{ v: 1, keyId, memberId, deviceType: 'usb' \| 'pc', deviceId, activatedAt, pcConsentAt? }` |
+| 상태 응답 (`GET /keys/status`의 답) | `{ v: 1, keyId, status: 'active' \| 'revoked', serverTime }`                                |
+
+- 시각은 모두 ISO 8601(UTC)이다.
+- `deviceId`는 기기 번호의 해시다: `sha256("hanpan-device:" + 원래 번호)`의 hex 64자. 원래 번호는 USB면 디스크 일련번호(없으면 `vol:` + 볼륨 일련번호 8자리 hex), PC면 Windows MachineGuid다. 원래 번호는 PC 밖으로 나가지 않는다.
+- 앱은 활성화 정보의 `keyId`·`memberId`가 보안키와 같고, `deviceId`·`deviceType`(PC면 `pcConsentAt`도)이 보낸 값과 같을 때만 받는다.
+
+**요청 네 가지** (`HANPAN_KEY_SERVER` 아래, 끝에 `/` 없음)
+
+| 요청                                                              | 인증            | 성공                                        | 거절                                                                             |
+| ----------------------------------------------------------------- | --------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
+| `POST /keys`                                                      | 회원 로그인     | 200, 서명한 보안키                          | 활성 키가 3개면 429                                                              |
+| `POST /keys/activate` `{key, deviceType, deviceId, pcConsentAt?}` | 보안키 서명     | 200, 서명한 활성화 정보                     | 이미 활성화된 키는 409, 회원의 활성 키가 3개면 429, 폐기·모르는 키는 그 밖의 4xx |
+| `GET /keys/status?keyId=`                                         | 없음(키 번호만) | 200, 서명한 상태 응답. 마지막 사용일을 기록 | 모르는 키는 404                                                                  |
+| `POST /keys/{keyId}/revoke`                                       | 회원 로그인     | 200                                         |                                                                                  |
+
+- `key`는 `hanpan.key` 문서 그대로다. `pcConsentAt`은 PC 보관일 때만 보내고, 사람이 경고에 동의한 시각이다.
+- 같은 키를 같은 `deviceType`·`deviceId`로 다시 활성화하면 서버는 409가 아니라 200으로 새로 서명한 활성화 정보를 돌려준다. `activatedAt`은 그때 시각이고 `pcConsentAt`은 이번에 보낸 값이다. 앱은 재등록 때 상태 기록을 새로 쓰고 30일을 `activatedAt`부터 세므로, 처음 시각을 돌려주면 재등록한 사람이 바로 잠길 수 있다. 다른 기기로의 활성화는 409 그대로다. 앱은 받은 활성화 정보를 쓰기에 성공할 때까지 데이터 폴더의 `securekey-pending.json`에 두고 다시 쓴다.
+- `pcConsentAt`은 앱이 `toISOString()` 형식(UTC, 밀리초 세 자리, `Z`)으로 보내고, 서버도 같은 형식으로 돌려준다. 앱은 이 값만 보낸 값과 글자 그대로 비교한다.
+- 앱은 409를 "이미 다른 기기에 등록됨", 429를 "3개 초과", 그 밖의 4xx·5xx를 "등록하지 못함"으로 보인다. 활성화 요청은 15초, 상태 요청은 10초 안에 답이 없으면 실패로 본다.
+- 앱은 상태를 하루에 한 번 묻는다. 서명이 맞는 답의 `serverTime`을 데이터 폴더의 `securekey-state.json`에 남긴다. 그 시각(없으면 `activatedAt`)에서 30일이 지나면 잠근다.
+
+**저장 위치**
+
+- USB: `<드라이브>:\Hanpan\hanpan.key`, `activation.json`, `vault.key`(무작위 32바이트).
+- PC: 데이터 폴더의 `securekey\` 아래 같은 파일들.
+- 빌드 값 넷(`HANPAN_REQUIRE_KEY`, `HANPAN_KEY_REQUIRED_FROM`, `HANPAN_KEY_SERVER`, `HANPAN_KEY_PUBKEYS`)은 `apps/shell/electron.vite.config.ts`의 `main.define`으로 들어간다. 공개키와 주소는 비밀이 아니다.
 
 ## 설치본과 업데이트
 

@@ -1154,6 +1154,20 @@ export function Home({
   const { t, lang } = i18n
   // Hanpan: the HWP, templates and design cards follow the Korean document features switch (decision 0091)
   const koreanDocs = useKoreanDocFeatures(lang)
+  // Hanpan: the security key grace banner (spec 7-9); the main process words it in the UI language
+  const [secureKeyGrace, setSecureKeyGrace] = useState<string | null>(null)
+  useEffect(() => {
+    let alive = true
+    void window.aiOffice
+      .secureKeyGrace?.()
+      .then((line) => {
+        if (alive) setSecureKeyGrace(line)
+      })
+      .catch(() => undefined)
+    return () => {
+      alive = false
+    }
+  }, [lang])
   // ── Paged list state (rows loaded for the current view + filter) ──
   const [entries, setEntries] = useState<RecentEntry[]>([])
   /** total count under the current view + filter (not just the loaded rows) */
@@ -3770,6 +3784,11 @@ export function Home({
 
   return (
     <div className="home">
+      {secureKeyGrace && (
+        <div className="securekey-grace" role="status">
+          {secureKeyGrace}
+        </div>
+      )}
       <aside
         className="sidebar"
         ref={sidebarRef}
