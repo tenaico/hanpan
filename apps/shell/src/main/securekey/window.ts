@@ -177,7 +177,8 @@ function registerIpc(): void {
   ipcMain.handle(SECUREKEY_CHANNELS.retry, async (event) => {
     const page = pageOf(event)
     if (page) return page.retry?.()
-    if (!current || current.busy || !handlers) return
+    // the terms step passes only through acceptTerms, which writes the consent
+    if (!current || current.busy || !handlers || current.mode === 'terms') return
     push({ busy: true })
     let next: SecureKeyUiState | 'passed'
     try {

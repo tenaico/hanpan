@@ -40,7 +40,7 @@ function runtime(
   return createSecureKeyRuntime({
     config: { platform: 'win32', requireKey: true, ...config },
     userData,
-    probe: { listUsbVolumes: async () => volumes, machineGuid: async () => 'guid-1' },
+    probe: { listUsbVolumes: async () => volumes },
     now: () => NOW,
     lang: () => 'ko',
     needsConsent: () => !consented,
@@ -113,7 +113,7 @@ describe('openQuietly', () => {
 
   it('leaves an unregistered PC alone', async () => {
     const listed = vi.fn(async () => volumes)
-    const rt = runtime({}, { probe: { listUsbVolumes: listed, machineGuid: async () => null } })
+    const rt = runtime({}, { probe: { listUsbVolumes: listed } })
     await rt.openQuietly()
     expect(listed).not.toHaveBeenCalled()
     expect(lockAi).not.toHaveBeenCalled()
@@ -470,6 +470,38 @@ describe('the key in Settings', () => {
   it('a new key from Settings needs a key in use', async () => {
     expect(await runtime().resetFromSettings()).toBe('no-record')
     expect(onReset).not.toHaveBeenCalled()
+  })
+
+  it('each Settings action fits only where the key is', async () => {
+    await keyOnE()
+    volumes = [E, F]
+    const rt = runtime()
+    await rt.openQuietly()
+    await rt.runGate()
+    // a stick key: no "move to a stick"
+    expect(await rt.moveToUsb('F')).toBe('no-record')
+    expect(await rt.moveToPc()).toBe('ok')
+    // a PC key: no spare stick, no "move to this PC"
+    expect(await rt.spare('F')).toBe('no-record')
+    expect(await rt.moveToPc()).toBe('no-record')
+    expect(await rt.moveToUsb('F')).toBe('ok')
+  })
+
+  it('a failed PC write says so, not "the stick"', async () => {
+    let error: string | null = null
+    windowAnswer = async (h) => {
+      error = await h.create({ where: 'pc', consentAt: NOW.toISOString() })
+      return 'quit'
+    }
+    await runtime(
+      {},
+      {
+        sealPcVault: () => {
+          throw new Error('dpapi')
+        },
+      },
+    ).runGate()
+    expect(error).toBe('이 PC에 보안키를 저장하지 못했습니다. 다시 해 주세요.')
   })
 
   it('a spare stick will not write over another key', async () => {

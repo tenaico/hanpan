@@ -267,7 +267,9 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
             ? 'skErrNoUsb'
             : result.error === 'other-key'
               ? 'skErrOtherKey'
-              : 'skErrWriteFailed',
+              : target.where === 'pc'
+                ? 'skErrPcWriteFailed'
+                : 'skErrWriteFailed',
         )
       }
       open(result.registration)
@@ -359,14 +361,14 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     async spare(letter) {
       const volume = (await volumes()).find((v) => v.letter === letter)
       if (!volume) return 'no-usb'
-      if (!current) return 'no-record'
+      if (current?.where !== 'usb') return 'no-record'
       return addSpareUsb({ userData: deps.userData, current, volume, usbDir, now: deps.now() })
     },
 
     async moveToUsb(letter) {
       const volume = (await volumes()).find((v) => v.letter === letter)
       if (!volume) return 'no-usb'
-      if (!current) return 'no-record'
+      if (current?.where !== 'pc') return 'no-record'
       const result = await moveToUsb({
         userData: deps.userData,
         current,
@@ -395,7 +397,7 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     },
 
     async moveToPc() {
-      if (!current) return 'no-record'
+      if (current?.where !== 'usb') return 'no-record'
       const result = await moveToPc({
         userData: deps.userData,
         current,

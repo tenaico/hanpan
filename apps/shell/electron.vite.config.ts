@@ -26,8 +26,8 @@ export default defineConfig({
       __GENOFFICE_GOOGLE_CLIENT_SECRET__: JSON.stringify(
         process.env.GENOFFICE_GOOGLE_CLIENT_SECRET ?? '',
       ),
-      // Hanpan security key (spec 7-7): on, grace date, key server, public keys by kid.
-      // Development passes them as environment variables, the release build as repository variables.
+      // Hanpan security key (decision 0099): '1' in the Windows release build
+      // (windows-build.yml), off in development and e2e.
       __HANPAN_REQUIRE_KEY__: JSON.stringify(process.env.HANPAN_REQUIRE_KEY ?? ''),
     },
   },

@@ -4,8 +4,8 @@ import { statSync } from 'node:fs'
 import { windowsSystemDir, windowsSystemTool } from '@genoffice/ai-provider/subscription'
 
 /**
- * Which USB sticks are plugged in and which PC this is, for the security key
- * (spec 7-2, 7-3). Only hashes of these numbers ever leave the PC.
+ * Which USB sticks are plugged in, for the security key (decision 0099). The
+ * numbers stay on this PC; the registration record keeps only their hashes.
  */
 
 export interface UsbVolume {
@@ -78,20 +78,13 @@ export function usbDeviceId(v: UsbVolume): string {
   return v.diskSerial || `vol:${v.volumeSerial}`
 }
 
-/** The only form a device number is sent or stored in */
+/** The only form a device number is stored in */
 export function deviceIdHash(rawId: string): string {
   return createHash('sha256').update(`hanpan-device:${rawId}`, 'utf8').digest('hex')
 }
 
-/** MachineGuid from `reg query` output */
-export function parseMachineGuid(regOutput: string): string | null {
-  const match = /^\s*MachineGuid\s+REG_SZ\s+([0-9A-Fa-f-]{36})\s*$/m.exec(regOutput)
-  return match ? match[1]!.toLowerCase() : null
-}
-
 export interface DeviceProbe {
   listUsbVolumes(): Promise<UsbVolume[]>
-  machineGuid(): Promise<string | null>
 }
 
 type RunTool = (
@@ -108,7 +101,7 @@ const runWithExecFile: RunTool = (file, args, opts) =>
   })
 
 /**
- * The probe on Windows: PowerShell and reg.exe, each started by full path from
+ * The probe on Windows: PowerShell, started by full path from
  * the system folder with a fixed argument list (docs/security.md "Running
  * programs"). A tool that fails reports nothing found.
  */
@@ -132,18 +125,6 @@ export function windowsDeviceProbe(
         return parseUsbVolumes(stdout.trim(), volumeSerialOf)
       } catch {
         return []
-      }
-    },
-    async machineGuid() {
-      try {
-        const stdout = await run(
-          windowsSystemTool(env, 'reg.exe'),
-          ['query', 'HKLM\\SOFTWARE\\Microsoft\\Cryptography', '/v', 'MachineGuid'],
-          opts(),
-        )
-        return parseMachineGuid(stdout)
-      } catch {
-        return null
       }
     },
   }

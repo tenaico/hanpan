@@ -233,7 +233,7 @@ export interface HomeApi {
   /** Settings › Security key (Windows): the key in use with the card's words, or null without one */
   secureKeyInfo(): Promise<SecureKeySettings | null>
   /** a Settings › Security key action: null when done, else an error line in the UI language */
-  secureKeyAct(action: SecureKeyAction, letter?: string): Promise<string | null>
+  secureKeyAct(action: SecureKeyAction, letter?: string, agreed?: boolean): Promise<string | null>
   /** put each starred path into `group` (null = remove from its group) */
   setStarredGroup(paths: string[], group: string | null): Promise<void>
   /** stat a specific set of paths (project view); unstat-able files come back flagged `missing` */

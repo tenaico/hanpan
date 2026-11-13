@@ -90,6 +90,10 @@ jobs:
       - name: Build apps
         run: npm run build:all
 
+      # the release asks for the security key (decision 0099): the define must be in
+      - name: Check the security key is on
+        run: grep -q 'const requireKey = "1";' apps/shell/out/main/index.js || { echo "HANPAN_REQUIRE_KEY did not reach the build"; exit 1; }
+
       # the Windows config reads the sidecar from the x86_64-pc-windows-gnu
       # folder (docs/releasing.ko.md, 4-(2)); the hand build copies it the same way
       - name: Place the xlsx sidecar
@@ -112,6 +116,8 @@ jobs:
             "$dir/resources/ocr/win-ocr.exe"             "$dir/resources/share/win-share.exe" \
             "$dir/resources/cli/genoffice.cjs" \
             "$dir/resources/cli/ieumoffice.cmd" \
+            "$dir/resources/license_ko.txt" \
+            "$dir/resources/license_en.txt" \
             "$dir/resources/modules/graphics/renderer/web/photo/index.html" \
             "$dir/resources/modules/graphics/renderer/web/illust/index.html"; do
             test -f "$bin" || { echo "missing: $bin"; exit 1; }

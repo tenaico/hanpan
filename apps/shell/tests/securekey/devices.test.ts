@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   deviceIdHash,
-  parseMachineGuid,
   parseUsbVolumes,
   usbDeviceId,
   USB_VOLUMES_SCRIPT,
@@ -37,15 +36,6 @@ describe('security key devices', () => {
     expect(deviceIdHash('AA11')).not.toBe(deviceIdHash('AA12'))
   })
 
-  it('reads MachineGuid from reg output', () => {
-    expect(
-      parseMachineGuid(
-        '\r\nHKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography\r\n    MachineGuid    REG_SZ    3f1c2a9e-0000-4000-8000-1234567890ab\r\n',
-      ),
-    ).toBe('3f1c2a9e-0000-4000-8000-1234567890ab')
-    expect(parseMachineGuid('ERROR: not found')).toBeNull()
-  })
-
   it('runs PowerShell by full path from the system folder with the constant script', async () => {
     const calls: {
       file: string
@@ -54,13 +44,12 @@ describe('security key devices', () => {
     }[] = []
     const probe = windowsDeviceProbe({ SystemRoot: 'C:\\Windows' }, async (file, args, opts) => {
       calls.push({ file, args, opts })
-      return file.endsWith('powershell.exe')
-        ? '[]'
-        : '    MachineGuid    REG_SZ    3f1c2a9e-0000-4000-8000-1234567890ab\r\n'
+      return '[]'
     })
     expect(await probe.listUsbVolumes()).toEqual([])
-    expect(await probe.machineGuid()).toBe('3f1c2a9e-0000-4000-8000-1234567890ab')
-    const [ps, reg] = calls
+    // only PowerShell runs: nothing reads the PC's own number any more
+    expect(calls).toHaveLength(1)
+    const [ps] = calls
     expect(ps.file).toBe('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
     expect(ps.args).toEqual([
       '-NoProfile',
@@ -74,14 +63,6 @@ describe('security key devices', () => {
       timeout: 15000,
       maxBuffer: 1024 * 1024,
     })
-    expect(reg.file).toBe('C:\\Windows\\System32\\reg.exe')
-    expect(reg.args).toEqual([
-      'query',
-      'HKLM\\SOFTWARE\\Microsoft\\Cryptography',
-      '/v',
-      'MachineGuid',
-    ])
-    expect(reg.opts.cwd).toBe('C:\\Windows\\System32')
   })
 
   it('reads nothing when a tool fails', async () => {
@@ -89,7 +70,6 @@ describe('security key devices', () => {
       throw new Error('timed out')
     })
     expect(await probe.listUsbVolumes()).toEqual([])
-    expect(await probe.machineGuid()).toBeNull()
   })
 
   it('picks USB disks by bus type in its script', () =>

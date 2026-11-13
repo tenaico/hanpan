@@ -43,7 +43,9 @@ let host: HTMLDivElement
 let root: Root
 let info: SecureKeySettings | null
 let secureKeyAct: ReturnType<
-  typeof vi.fn<(action: SecureKeyAction, letter?: string) => Promise<string | null>>
+  typeof vi.fn<
+    (action: SecureKeyAction, letter?: string, agreed?: boolean) => Promise<string | null>
+  >
 >
 
 beforeEach(() => {
@@ -109,7 +111,7 @@ describe('SecureKeySettingsCard', () => {
     expect(host.textContent).toContain('Made on 2026. 11. 20.')
     expect(host.textContent).toContain('1 registered stick(s)')
     await click(button('Make a spare stick'))
-    expect(secureKeyAct).toHaveBeenCalledWith('spare', 'E')
+    expect(secureKeyAct).toHaveBeenCalledWith('spare', 'E', false)
     expect(host.textContent).toContain('Done.')
   })
 
@@ -119,7 +121,7 @@ describe('SecureKeySettingsCard', () => {
     expect(host.textContent).toContain('On this PC')
     expect(button('Move to this PC')).toBeUndefined()
     await click(button('Move to a USB stick'))
-    expect(secureKeyAct).toHaveBeenCalledWith('to-usb', 'E')
+    expect(secureKeyAct).toHaveBeenCalledWith('to-usb', 'E', false)
   })
 
   it('without a stick plugged in, the stick action is off', async () => {
@@ -139,7 +141,7 @@ describe('SecureKeySettingsCard', () => {
     await click(host.querySelector('[data-securekey-confirm] input[type=checkbox]')!)
     expect(go().disabled).toBe(false)
     await click(go())
-    expect(secureKeyAct).toHaveBeenCalledWith('to-pc', 'E')
+    expect(secureKeyAct).toHaveBeenCalledWith('to-pc', 'E', true)
   })
 
   it('a new key lists what happens and needs the box ticked', async () => {
@@ -158,7 +160,7 @@ describe('SecureKeySettingsCard', () => {
     expect(go().disabled).toBe(true)
     await click(host.querySelector('[data-securekey-confirm] input[type=checkbox]')!)
     await click(go())
-    expect(secureKeyAct).toHaveBeenCalledWith('reset', 'E')
+    expect(secureKeyAct).toHaveBeenCalledWith('reset', 'E', true)
   })
 
   it('cancel goes back without acting', async () => {

@@ -183,8 +183,13 @@ const homeApi: HomeApi = {
     const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.secureKeyInfo)
     return (result ?? null) as SecureKeySettings | null
   },
-  async secureKeyAct(action, letter) {
-    const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.secureKeyAct, action, letter)
+  async secureKeyAct(action, letter, agreed) {
+    const result: unknown = await ipcRenderer.invoke(
+      HOME_CHANNELS.secureKeyAct,
+      action,
+      letter,
+      agreed,
+    )
     return typeof result === 'string' ? result : null
   },
   async setStarredGroup(paths, group) {

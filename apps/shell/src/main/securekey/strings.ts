@@ -34,7 +34,8 @@ const dicts = {
     skNext: '下一步',
     skBack: '返回',
     skUsbPickTitle: '选择 USB',
-    skUsbPickLead: '会在所选 USB 上创建一个安全密钥文件，不会改动 USB 里的其他文件。',
+    skUsbPickLead:
+      '将在所选 U 盘上创建 Hanpan 文件夹并放入两个安全密钥文件。U 盘上的其他文件不会被改动。',
     skUsbDrive: 'USB（{letter}:）',
     skNoUsb: '没有插入 USB。请插入 USB 后点击[重新检查]。',
     skUsbSpareHint:
@@ -71,9 +72,13 @@ const dicts = {
     skCancel: '取消',
     skErrNoUsb: '找不到所选的 USB。请重新插入 USB。',
     skErrWriteFailed: '无法把安全密钥写入 USB。请确认 USB 没有写保护，然后重试。',
+    skErrPcWriteFailed: '无法将安全密钥保存到这台电脑。请重试。',
     skErrOtherKey:
       '这个 U 盘里已有另一个 GenOffice 安全密钥。请换一个 U 盘；如果不再需要那个密钥，请删除 U 盘上的 Hanpan 文件夹后重试。',
+    skErrNoKey: '找不到正在使用的安全密钥。请重新启动 GenOffice 后再试。',
     skCoverTitle: '在确认安全密钥之前，GenOffice 处于锁定状态',
+    skCoverNewKeyHint:
+      '如果 U 盘丢失，请退出 GenOffice 后重新启动。可以在第一个画面创建新的安全密钥。',
     skSettingsTitle: '安全密钥',
     skSettingsOnUsb: '在 USB 上',
     skSettingsOnPc: '在这台电脑上',
@@ -117,7 +122,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -155,9 +160,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -202,7 +211,7 @@ const dicts = {
     skBack: '戻る',
     skUsbPickTitle: 'USB を選択',
     skUsbPickLead:
-      '選んだ USB にセキュリティキーのファイルを 1 つ作成します。USB 内のほかのファイルには触れません。',
+      '選んだ USB に Hanpan フォルダーを作り、セキュリティキーのファイルを 2 つ入れます。USB のほかのファイルには触れません。',
     skUsbDrive: 'USB（{letter}:）',
     skNoUsb: 'USB が挿さっていません。USB を挿して[もう一度確認]を押してください。',
     skUsbSpareHint:
@@ -240,9 +249,15 @@ const dicts = {
     skErrNoUsb: '選んだ USB が見つかりません。USB を挿し直してください。',
     skErrWriteFailed:
       'USB にセキュリティキーを書き込めませんでした。USB の書き込み禁止を確認して、もう一度お試しください。',
+    skErrPcWriteFailed:
+      'この PC にセキュリティキーを保存できませんでした。もう一度お試しください。',
     skErrOtherKey:
       'この USB には別の GenOffice セキュリティキーが入っています。別の USB を使うか、そのキーが不要なら USB の Hanpan フォルダーを削除してからやり直してください。',
+    skErrNoKey:
+      '使用中のセキュリティキーが見つかりません。GenOffice を再起動してからやり直してください。',
     skCoverTitle: 'セキュリティキーを確認するまで GenOffice はロックされています',
+    skCoverNewKeyHint:
+      'USB をなくした場合は、GenOffice を終了してもう一度起動してください。最初の画面で新しいセキュリティキーを作れます。',
     skSettingsTitle: 'セキュリティキー',
     skSettingsOnUsb: 'USB にあります',
     skSettingsOnPc: 'この PC にあります',
@@ -285,7 +300,8 @@ const dicts = {
     skNext: '다음',
     skBack: '뒤로',
     skUsbPickTitle: 'USB를 고르세요',
-    skUsbPickLead: '고른 USB에 보안키 파일 하나를 만듭니다. USB의 다른 파일은 건드리지 않습니다.',
+    skUsbPickLead:
+      '고른 USB에 Hanpan 폴더를 만들고 보안키 파일 두 개를 넣습니다. USB의 다른 파일은 건드리지 않습니다.',
     skUsbDrive: 'USB ({letter}:)',
     skNoUsb: '꽂힌 USB가 없습니다. USB를 꽂고 [다시 확인]을 누르세요.',
     skUsbSpareHint:
@@ -323,9 +339,13 @@ const dicts = {
     skErrNoUsb: '고른 USB를 찾을 수 없습니다. USB를 다시 꽂아 주세요.',
     skErrWriteFailed:
       'USB에 보안키를 쓰지 못했습니다. USB가 잠겨 있지 않은지 확인하고 다시 하세요.',
+    skErrPcWriteFailed: '이 PC에 보안키를 저장하지 못했습니다. 다시 해 주세요.',
     skErrOtherKey:
       '이 USB에는 다른 GenOffice 보안키가 들어 있습니다. 다른 USB를 쓰거나, 그 보안키가 더는 필요 없으면 USB의 Hanpan 폴더를 지운 뒤 다시 하세요.',
+    skErrNoKey: '지금 쓰는 보안키를 찾을 수 없습니다. GenOffice을 다시 켠 뒤 해 주세요.',
     skCoverTitle: '보안키를 확인할 때까지 GenOffice이 잠겨 있습니다',
+    skCoverNewKeyHint:
+      'USB를 잃어버렸다면 GenOffice을 끝내고 다시 켜세요. 처음 화면에서 새 보안키를 만들 수 있습니다.',
     skSettingsTitle: '보안키',
     skSettingsOnUsb: 'USB에 있습니다',
     skSettingsOnPc: '이 PC에 있습니다',
@@ -369,7 +389,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -407,9 +427,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -453,7 +477,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -491,9 +515,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -537,7 +565,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -575,9 +603,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -621,7 +653,7 @@ const dicts = {
     skBack: 'ย้อนกลับ',
     skUsbPickTitle: 'เลือก USB',
     skUsbPickLead:
-      'ระบบจะสร้างไฟล์กุญแจความปลอดภัยหนึ่งไฟล์บน USB ที่เลือก และจะไม่แตะต้องไฟล์อื่นใน USB',
+      'จะสร้างโฟลเดอร์ Hanpan บน USB ที่เลือกและใส่ไฟล์กุญแจความปลอดภัยสองไฟล์ ไฟล์อื่นใน USB จะไม่ถูกแตะต้อง',
     skUsbDrive: 'USB ({letter}:)',
     skNoUsb: 'ไม่พบ USB ที่เสียบอยู่ เสียบ USB แล้วกด [ตรวจสอบอีกครั้ง]',
     skUsbSpareHint:
@@ -658,9 +690,13 @@ const dicts = {
     skErrNoUsb: 'ไม่พบ USB ที่เลือก โปรดเสียบ USB ใหม่อีกครั้ง',
     skErrWriteFailed:
       'เขียนกุญแจลง USB ไม่สำเร็จ ตรวจสอบว่า USB ไม่ได้ป้องกันการเขียน แล้วลองอีกครั้ง',
+    skErrPcWriteFailed: 'บันทึกกุญแจความปลอดภัยลงในพีซีเครื่องนี้ไม่ได้ โปรดลองอีกครั้ง',
     skErrOtherKey:
       'USB นี้มีกุญแจความปลอดภัย GenOffice อื่นอยู่แล้ว ใช้ USB อื่น หรือถ้าไม่ต้องการกุญแจนั้นแล้ว ให้ลบโฟลเดอร์ Hanpan ใน USB แล้วลองอีกครั้ง',
+    skErrNoKey: 'ไม่พบกุญแจความปลอดภัยที่ใช้อยู่ โปรดเปิด GenOffice ใหม่แล้วลองอีกครั้ง',
     skCoverTitle: 'GenOffice จะถูกล็อกไว้จนกว่าจะตรวจสอบกุญแจความปลอดภัย',
+    skCoverNewKeyHint:
+      'หากทำ USB หาย ให้ปิด GenOffice แล้วเปิดใหม่ คุณสร้างกุญแจใหม่ได้ที่หน้าจอแรก',
     skSettingsTitle: 'กุญแจความปลอดภัย',
     skSettingsOnUsb: 'อยู่ใน USB',
     skSettingsOnPc: 'อยู่ใน PC เครื่องนี้',
@@ -704,7 +740,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -742,9 +778,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -791,7 +831,7 @@ const dicts = {
     skBack: 'Назад',
     skUsbPickTitle: 'Выберите флешку',
     skUsbPickLead:
-      'На выбранной флешке будет создан один файл ключа безопасности. Остальные файлы на ней не затрагиваются.',
+      'На выбранной флешке появится папка Hanpan с двумя файлами ключа безопасности. Остальные файлы на флешке не затрагиваются.',
     skUsbDrive: 'Флешка ({letter}:)',
     skNoUsb: 'Флешка не вставлена. Вставьте её и нажмите [Проверить снова].',
     skUsbSpareHint:
@@ -830,9 +870,13 @@ const dicts = {
     skErrNoUsb: 'Выбранная флешка не найдена. Вставьте её снова.',
     skErrWriteFailed:
       'Не удалось записать ключ на флешку. Проверьте, что на ней нет защиты от записи, и повторите.',
+    skErrPcWriteFailed: 'Не удалось сохранить ключ безопасности на этом ПК. Попробуйте ещё раз.',
     skErrOtherKey:
       'На этой флешке уже есть другой ключ безопасности GenOffice. Используйте другую флешку или, если тот ключ больше не нужен, удалите папку Hanpan на флешке и повторите.',
+    skErrNoKey: 'Используемый ключ безопасности не найден. Перезапустите GenOffice и повторите.',
     skCoverTitle: 'GenOffice заблокирован, пока не проверен ключ безопасности',
+    skCoverNewKeyHint:
+      'Если флешка потеряна, закройте GenOffice и запустите снова. На первом экране можно создать новый ключ.',
     skSettingsTitle: 'Ключ безопасности',
     skSettingsOnUsb: 'На флешке',
     skSettingsOnPc: 'На этом PC',
@@ -876,7 +920,8 @@ const dicts = {
     skNext: 'التالي',
     skBack: 'رجوع',
     skUsbPickTitle: 'اختر USB',
-    skUsbPickLead: 'سيُنشأ ملف مفتاح أمان واحد على USB الذي تختاره. لن يُمسّ أي ملف آخر عليه.',
+    skUsbPickLead:
+      'سيُنشأ مجلد Hanpan على وحدة USB التي تختارها ويوضع فيه ملفا مفتاح الأمان. لن تُمسّ الملفات الأخرى على الوحدة.',
     skUsbDrive: 'USB ({letter}:)',
     skNoUsb: 'لا يوجد USB موصول. وصّل USB ثم اضغط [تحقق مرة أخرى].',
     skUsbSpareHint:
@@ -914,9 +959,13 @@ const dicts = {
     skErrNoUsb: 'تعذّر العثور على USB الذي اخترته. يرجى توصيله مرة أخرى.',
     skErrWriteFailed:
       'تعذّرت كتابة المفتاح على USB. تأكد من أن USB غير محمي من الكتابة ثم أعد المحاولة.',
+    skErrPcWriteFailed: 'تعذّر حفظ مفتاح الأمان على هذا الحاسوب. حاول مرة أخرى.',
     skErrOtherKey:
       'تحتوي وحدة USB هذه على مفتاح أمان آخر لـ GenOffice. استخدم وحدة أخرى، أو إذا لم تعد بحاجة إلى ذلك المفتاح فاحذف مجلد Hanpan من الوحدة وحاول مرة أخرى.',
+    skErrNoKey: 'تعذّر العثور على مفتاح الأمان المستخدم. أعد تشغيل GenOffice وحاول مرة أخرى.',
     skCoverTitle: 'GenOffice مقفل حتى يتم التحقق من مفتاح الأمان',
+    skCoverNewKeyHint:
+      'إذا فقدت وحدة USB، فأغلق GenOffice ثم شغّله مرة أخرى. يمكنك إنشاء مفتاح جديد في الشاشة الأولى.',
     skSettingsTitle: 'مفتاح الأمان',
     skSettingsOnUsb: 'على USB',
     skSettingsOnPc: 'على هذا الـ PC',
@@ -960,7 +1009,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -998,9 +1047,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -1044,7 +1097,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -1082,9 +1135,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -1128,7 +1185,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -1166,9 +1223,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -1212,7 +1273,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -1250,9 +1311,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -1296,7 +1361,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -1334,9 +1399,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -1380,7 +1449,7 @@ const dicts = {
     skBack: 'Back',
     skUsbPickTitle: 'Choose a USB stick',
     skUsbPickLead:
-      'One security key file goes on the stick you choose. Nothing else on the stick is touched.',
+      'A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.',
     skUsbDrive: 'USB stick ({letter}:)',
     skNoUsb: 'No USB stick is plugged in. Plug one in and press [Check again].',
     skUsbSpareHint:
@@ -1418,9 +1487,13 @@ const dicts = {
     skErrNoUsb: 'The stick you chose cannot be found. Please plug it in again.',
     skErrWriteFailed:
       'The key could not be written to the stick. Check that the stick is not write-protected and try again.',
+    skErrPcWriteFailed: 'The key could not be saved on this PC. Please try again.',
     skErrOtherKey:
       'This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.',
+    skErrNoKey: 'The key in use cannot be found. Restart GenOffice and try again.',
     skCoverTitle: 'GenOffice is locked until the security key is checked',
+    skCoverNewKeyHint:
+      'If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.',
     skSettingsTitle: 'Security key',
     skSettingsOnUsb: 'On a USB stick',
     skSettingsOnPc: 'On this PC',
@@ -1462,7 +1535,8 @@ const dicts = {
     skNext: 'הבא',
     skBack: 'חזרה',
     skUsbPickTitle: 'בחרו כונן USB',
-    skUsbPickLead: 'בכונן שתבחרו ייווצר קובץ מפתח אבטחה אחד. שאר הקבצים בכונן לא ייגעו.',
+    skUsbPickLead:
+      'בכונן שתבחר תיווצר תיקייה Hanpan עם שני קובצי מפתח האבטחה. שאר הקבצים בכונן לא ישתנו.',
     skUsbDrive: 'USB ({letter}:)',
     skNoUsb: 'לא מחובר כונן USB. חברו כונן ולחצו על [בדוק שוב].',
     skUsbSpareHint:
@@ -1500,9 +1574,13 @@ const dicts = {
     skErrNoUsb: 'לא ניתן למצוא את הכונן שבחרתם. אנא חברו אותו שוב.',
     skErrWriteFailed:
       'לא ניתן היה לכתוב את המפתח לכונן. ודאו שהכונן אינו מוגן מפני כתיבה ונסו שוב.',
+    skErrPcWriteFailed: 'לא ניתן היה לשמור את מפתח האבטחה במחשב הזה. נסה שוב.',
     skErrOtherKey:
       'בכונן הזה כבר יש מפתח אבטחה אחר של GenOffice. השתמש בכונן אחר, או אם המפתח ההוא כבר לא נחוץ, מחק את התיקייה Hanpan בכונן ונסה שוב.',
+    skErrNoKey: 'מפתח האבטחה שבשימוש לא נמצא. הפעל מחדש את GenOffice ונסה שוב.',
     skCoverTitle: 'GenOffice נעולה עד שמפתח האבטחה ייבדק',
+    skCoverNewKeyHint:
+      'אם הכונן אבד, צא מ-GenOffice והפעל אותו שוב. במסך הראשון אפשר ליצור מפתח חדש.',
     skSettingsTitle: 'מפתח אבטחה',
     skSettingsOnUsb: 'על כונן USB',
     skSettingsOnPc: 'ב-PC הזה',
@@ -1549,7 +1627,7 @@ const dicts = {
     skBack: 'वापस',
     skUsbPickTitle: 'USB चुनें',
     skUsbPickLead:
-      'चुने गए USB पर सुरक्षा कुंजी की एक फ़ाइल बनेगी। USB की दूसरी फ़ाइलों को छुआ नहीं जाएगा।',
+      'चुने गए USB पर Hanpan फ़ोल्डर बनाकर उसमें सुरक्षा कुंजी की दो फ़ाइलें रखी जाएँगी। USB की बाकी फ़ाइलों को छुआ नहीं जाएगा।',
     skUsbDrive: 'USB ({letter}:)',
     skNoUsb: 'कोई USB लगा हुआ नहीं है। USB लगाकर [फिर से जाँचें] दबाएँ।',
     skUsbSpareHint:
@@ -1587,9 +1665,13 @@ const dicts = {
     skErrNoUsb: 'चुना हुआ USB नहीं मिला। कृपया USB फिर से लगाएँ।',
     skErrWriteFailed:
       'कुंजी USB पर नहीं लिखी जा सकी। देखें कि USB राइट-प्रोटेक्टेड तो नहीं है, फिर दोबारा कोशिश करें।',
+    skErrPcWriteFailed: 'सुरक्षा कुंजी इस PC पर सहेजी नहीं जा सकी। कृपया फिर से कोशिश करें।',
     skErrOtherKey:
       'इस USB में पहले से GenOffice की दूसरी सुरक्षा कुंजी है। दूसरा USB इस्तेमाल करें, या अगर उस कुंजी की ज़रूरत नहीं है तो USB का Hanpan फ़ोल्डर हटाकर फिर से कोशिश करें।',
+    skErrNoKey: 'इस्तेमाल हो रही सुरक्षा कुंजी नहीं मिली। GenOffice फिर से चालू करके कोशिश करें।',
     skCoverTitle: 'सुरक्षा कुंजी जाँचे जाने तक GenOffice लॉक है',
+    skCoverNewKeyHint:
+      'अगर USB खो गया है, तो GenOffice बंद करके फिर से चालू करें। पहली स्क्रीन पर नई कुंजी बना सकते हैं।',
     skSettingsTitle: 'सुरक्षा कुंजी',
     skSettingsOnUsb: 'USB पर है',
     skSettingsOnPc: 'इस PC पर है',
@@ -1631,7 +1713,8 @@ const dicts = {
     skNext: '下一步',
     skBack: '返回',
     skUsbPickTitle: '選擇 USB',
-    skUsbPickLead: '會在所選 USB 上建立一個安全金鑰檔案，不會更動 USB 裡的其他檔案。',
+    skUsbPickLead:
+      '將在所選隨身碟上建立 Hanpan 資料夾並放入兩個安全金鑰檔案。隨身碟上的其他檔案不會被更動。',
     skUsbDrive: 'USB（{letter}:）',
     skNoUsb: '沒有插入 USB。請插入 USB 後按[重新檢查]。',
     skUsbSpareHint:
@@ -1668,9 +1751,13 @@ const dicts = {
     skCancel: '取消',
     skErrNoUsb: '找不到所選的 USB。請重新插入 USB。',
     skErrWriteFailed: '無法把安全金鑰寫入 USB。請確認 USB 沒有寫入保護，然後再試一次。',
+    skErrPcWriteFailed: '無法將安全金鑰儲存到這台電腦。請再試一次。',
     skErrOtherKey:
       '這個隨身碟裡已有另一個 GenOffice 安全金鑰。請換一個隨身碟；如果不再需要那個金鑰，請刪除隨身碟上的 Hanpan 資料夾後再試一次。',
+    skErrNoKey: '找不到正在使用的安全金鑰。請重新啟動 GenOffice 後再試。',
     skCoverTitle: '在確認安全金鑰之前，GenOffice 處於鎖定狀態',
+    skCoverNewKeyHint:
+      '如果隨身碟遺失，請結束 GenOffice 後重新啟動。可以在第一個畫面建立新的安全金鑰。',
     skSettingsTitle: '安全金鑰',
     skSettingsOnUsb: '在 USB 上',
     skSettingsOnPc: '在這台電腦上',
@@ -1716,7 +1803,7 @@ const dicts = {
     skBack: 'Quay lại',
     skUsbPickTitle: 'Chọn USB',
     skUsbPickLead:
-      'Một tệp khóa bảo mật sẽ được tạo trên USB bạn chọn. Các tệp khác trên USB không bị động đến.',
+      'Thư mục Hanpan chứa hai tệp khóa bảo mật sẽ được tạo trên USB bạn chọn. Các tệp khác trên USB không bị động đến.',
     skUsbDrive: 'USB ({letter}:)',
     skNoUsb: 'Chưa cắm USB nào. Hãy cắm USB rồi nhấn [Kiểm tra lại].',
     skUsbSpareHint:
@@ -1754,9 +1841,13 @@ const dicts = {
     skErrNoUsb: 'Không tìm thấy USB đã chọn. Vui lòng cắm lại USB.',
     skErrWriteFailed:
       'Không ghi được khóa vào USB. Hãy kiểm tra USB có đang bật chế độ chống ghi không rồi thử lại.',
+    skErrPcWriteFailed: 'Không lưu được khóa bảo mật trên máy tính này. Vui lòng thử lại.',
     skErrOtherKey:
       'USB này đã chứa một khóa bảo mật GenOffice khác. Hãy dùng USB khác, hoặc nếu không cần khóa đó nữa, xóa thư mục Hanpan trên USB rồi thử lại.',
+    skErrNoKey: 'Không tìm thấy khóa bảo mật đang dùng. Hãy khởi động lại GenOffice rồi thử lại.',
     skCoverTitle: 'GenOffice bị khóa cho đến khi khóa bảo mật được kiểm tra',
+    skCoverNewKeyHint:
+      'Nếu bạn làm mất USB, hãy thoát GenOffice rồi mở lại. Bạn có thể tạo khóa mới ở màn hình đầu tiên.',
     skSettingsTitle: 'Khóa bảo mật',
     skSettingsOnUsb: 'Trên USB',
     skSettingsOnPc: 'Trên PC này',

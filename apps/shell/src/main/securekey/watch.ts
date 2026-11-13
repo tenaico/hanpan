@@ -4,7 +4,7 @@ import { volumeSerialOf } from './devices'
 
 /**
  * Whether the registered stick is still in (spec 7-4): every `everyMs` the
- * registration's activation.json is looked at and the volume serial of its
+ * key file on the stick (or the PC's registered.json) is looked at and the volume serial of its
  * drive compared with the registered one, so another stick on the same letter
  * counts as missing. A PC registration only checks that the file is there.
  * Reports changes only. Returns the stop function.

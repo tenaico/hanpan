@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs'
-import { mkdir, rm } from 'node:fs/promises'
+import { mkdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { atomicWriteFile } from '../atomic-write'
 import { deviceIdHash, usbDeviceId, type UsbVolume } from './devices'
 import type { Registered } from './format'
 import {
   KEY_FILES,
+  keyIdOnStick,
   pcKeyDir,
   readRegistered,
   stickTakesKey,
@@ -33,7 +34,9 @@ export function readPrevious(userData: string): Registered['previous'] {
         typeof p === 'object' &&
         p !== null &&
         typeof (p as Record<string, unknown>).keyId === 'string' &&
-        typeof (p as Record<string, unknown>).replacedAt === 'string',
+        /^[0-9a-f]{32}$/.test((p as Record<string, unknown>).keyId as string) &&
+        typeof (p as Record<string, unknown>).replacedAt === 'string' &&
+        !Number.isNaN(Date.parse((p as Record<string, unknown>).replacedAt as string)),
     )
   } catch {
     return []
@@ -112,6 +115,11 @@ export async function moveToUsb(opts: {
   if (!(await stickTakesKey(dir, knownIds(record)))) return 'other-key'
   try {
     await writeKeyFiles(dir, record, opts.current.vault)
+    // the PC vault goes only once the stick reads back as this key
+    const vault = await readFile(join(dir, KEY_FILES.vault))
+    if ((await keyIdOnStick(dir)) !== record.keyId || !vault.equals(opts.current.vault)) {
+      return 'write-failed'
+    }
   } catch {
     return 'write-failed'
   }

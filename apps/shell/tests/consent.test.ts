@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -7,6 +7,13 @@ import { needsConsent, readConsent, TERMS_VERSION, writeConsent } from '../src/m
 let userData: string
 beforeEach(() => {
   userData = mkdtempSync(join(tmpdir(), 'hanpan-consent-'))
+})
+
+describe('the e2e profiles', () => {
+  it('pre-seed the consent for the terms this build asks for', () => {
+    const helpers = readFileSync(join(__dirname, '../../../e2e/helpers.ts'), 'utf8')
+    expect(helpers).toContain(`const E2E_TERMS_VERSION = '${TERMS_VERSION}'`)
+  })
 })
 
 describe('the terms consent record', () => {

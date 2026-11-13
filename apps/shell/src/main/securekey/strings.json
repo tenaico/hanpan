@@ -286,17 +286,17 @@
     "vi": "Chọn USB"
   },
   "skUsbPickLead": {
-    "ko": "고른 USB에 보안키 파일 하나를 만듭니다. USB의 다른 파일은 건드리지 않습니다.",
-    "en": "One security key file goes on the stick you choose. Nothing else on the stick is touched.",
-    "zh": "会在所选 USB 上创建一个安全密钥文件，不会改动 USB 里的其他文件。",
-    "zh-TW": "會在所選 USB 上建立一個安全金鑰檔案，不會更動 USB 裡的其他檔案。",
-    "ja": "選んだ USB にセキュリティキーのファイルを 1 つ作成します。USB 内のほかのファイルには触れません。",
-    "th": "ระบบจะสร้างไฟล์กุญแจความปลอดภัยหนึ่งไฟล์บน USB ที่เลือก และจะไม่แตะต้องไฟล์อื่นใน USB",
-    "ru": "На выбранной флешке будет создан один файл ключа безопасности. Остальные файлы на ней не затрагиваются.",
-    "ar": "سيُنشأ ملف مفتاح أمان واحد على USB الذي تختاره. لن يُمسّ أي ملف آخر عليه.",
-    "he": "בכונן שתבחרו ייווצר קובץ מפתח אבטחה אחד. שאר הקבצים בכונן לא ייגעו.",
-    "hi": "चुने गए USB पर सुरक्षा कुंजी की एक फ़ाइल बनेगी। USB की दूसरी फ़ाइलों को छुआ नहीं जाएगा।",
-    "vi": "Một tệp khóa bảo mật sẽ được tạo trên USB bạn chọn. Các tệp khác trên USB không bị động đến."
+    "ko": "고른 USB에 Hanpan 폴더를 만들고 보안키 파일 두 개를 넣습니다. USB의 다른 파일은 건드리지 않습니다.",
+    "en": "A Hanpan folder with the two security key files goes on the stick you choose. Nothing else on the stick is touched.",
+    "zh": "将在所选 U 盘上创建 Hanpan 文件夹并放入两个安全密钥文件。U 盘上的其他文件不会被改动。",
+    "zh-TW": "將在所選隨身碟上建立 Hanpan 資料夾並放入兩個安全金鑰檔案。隨身碟上的其他檔案不會被更動。",
+    "ja": "選んだ USB に Hanpan フォルダーを作り、セキュリティキーのファイルを 2 つ入れます。USB のほかのファイルには触れません。",
+    "th": "จะสร้างโฟลเดอร์ Hanpan บน USB ที่เลือกและใส่ไฟล์กุญแจความปลอดภัยสองไฟล์ ไฟล์อื่นใน USB จะไม่ถูกแตะต้อง",
+    "ru": "На выбранной флешке появится папка Hanpan с двумя файлами ключа безопасности. Остальные файлы на флешке не затрагиваются.",
+    "ar": "سيُنشأ مجلد Hanpan على وحدة USB التي تختارها ويوضع فيه ملفا مفتاح الأمان. لن تُمسّ الملفات الأخرى على الوحدة.",
+    "he": "בכונן שתבחר תיווצר תיקייה Hanpan עם שני קובצי מפתח האבטחה. שאר הקבצים בכונן לא ישתנו.",
+    "hi": "चुने गए USB पर Hanpan फ़ोल्डर बनाकर उसमें सुरक्षा कुंजी की दो फ़ाइलें रखी जाएँगी। USB की बाकी फ़ाइलों को छुआ नहीं जाएगा।",
+    "vi": "Thư mục Hanpan chứa hai tệp khóa bảo mật sẽ được tạo trên USB bạn chọn. Các tệp khác trên USB không bị động đến."
   },
   "skUsbDrive": {
     "ko": "USB ({letter}:)",
@@ -688,6 +688,19 @@
     "hi": "कुंजी USB पर नहीं लिखी जा सकी। देखें कि USB राइट-प्रोटेक्टेड तो नहीं है, फिर दोबारा कोशिश करें।",
     "vi": "Không ghi được khóa vào USB. Hãy kiểm tra USB có đang bật chế độ chống ghi không rồi thử lại."
   },
+  "skErrPcWriteFailed": {
+    "ko": "이 PC에 보안키를 저장하지 못했습니다. 다시 해 주세요.",
+    "en": "The key could not be saved on this PC. Please try again.",
+    "zh": "无法将安全密钥保存到这台电脑。请重试。",
+    "zh-TW": "無法將安全金鑰儲存到這台電腦。請再試一次。",
+    "ja": "この PC にセキュリティキーを保存できませんでした。もう一度お試しください。",
+    "th": "บันทึกกุญแจความปลอดภัยลงในพีซีเครื่องนี้ไม่ได้ โปรดลองอีกครั้ง",
+    "ru": "Не удалось сохранить ключ безопасности на этом ПК. Попробуйте ещё раз.",
+    "ar": "تعذّر حفظ مفتاح الأمان على هذا الحاسوب. حاول مرة أخرى.",
+    "he": "לא ניתן היה לשמור את מפתח האבטחה במחשב הזה. נסה שוב.",
+    "hi": "सुरक्षा कुंजी इस PC पर सहेजी नहीं जा सकी। कृपया फिर से कोशिश करें।",
+    "vi": "Không lưu được khóa bảo mật trên máy tính này. Vui lòng thử lại."
+  },
   "skErrOtherKey": {
     "ko": "이 USB에는 다른 GenOffice 보안키가 들어 있습니다. 다른 USB를 쓰거나, 그 보안키가 더는 필요 없으면 USB의 Hanpan 폴더를 지운 뒤 다시 하세요.",
     "en": "This stick already holds another GenOffice security key. Use another stick, or if that key is no longer needed, delete the Hanpan folder on the stick and try again.",
@@ -701,6 +714,19 @@
     "hi": "इस USB में पहले से GenOffice की दूसरी सुरक्षा कुंजी है। दूसरा USB इस्तेमाल करें, या अगर उस कुंजी की ज़रूरत नहीं है तो USB का Hanpan फ़ोल्डर हटाकर फिर से कोशिश करें।",
     "vi": "USB này đã chứa một khóa bảo mật GenOffice khác. Hãy dùng USB khác, hoặc nếu không cần khóa đó nữa, xóa thư mục Hanpan trên USB rồi thử lại."
   },
+  "skErrNoKey": {
+    "ko": "지금 쓰는 보안키를 찾을 수 없습니다. GenOffice을 다시 켠 뒤 해 주세요.",
+    "en": "The key in use cannot be found. Restart GenOffice and try again.",
+    "zh": "找不到正在使用的安全密钥。请重新启动 GenOffice 后再试。",
+    "zh-TW": "找不到正在使用的安全金鑰。請重新啟動 GenOffice 後再試。",
+    "ja": "使用中のセキュリティキーが見つかりません。GenOffice を再起動してからやり直してください。",
+    "th": "ไม่พบกุญแจความปลอดภัยที่ใช้อยู่ โปรดเปิด GenOffice ใหม่แล้วลองอีกครั้ง",
+    "ru": "Используемый ключ безопасности не найден. Перезапустите GenOffice и повторите.",
+    "ar": "تعذّر العثور على مفتاح الأمان المستخدم. أعد تشغيل GenOffice وحاول مرة أخرى.",
+    "he": "מפתח האבטחה שבשימוש לא נמצא. הפעל מחדש את GenOffice ונסה שוב.",
+    "hi": "इस्तेमाल हो रही सुरक्षा कुंजी नहीं मिली। GenOffice फिर से चालू करके कोशिश करें।",
+    "vi": "Không tìm thấy khóa bảo mật đang dùng. Hãy khởi động lại GenOffice rồi thử lại."
+  },
   "skCoverTitle": {
     "ko": "보안키를 확인할 때까지 GenOffice이 잠겨 있습니다",
     "en": "GenOffice is locked until the security key is checked",
@@ -713,6 +739,19 @@
     "he": "GenOffice נעולה עד שמפתח האבטחה ייבדק",
     "hi": "सुरक्षा कुंजी जाँचे जाने तक GenOffice लॉक है",
     "vi": "GenOffice bị khóa cho đến khi khóa bảo mật được kiểm tra"
+  },
+  "skCoverNewKeyHint": {
+    "ko": "USB를 잃어버렸다면 GenOffice을 끝내고 다시 켜세요. 처음 화면에서 새 보안키를 만들 수 있습니다.",
+    "en": "If you lost the stick, quit GenOffice and start it again. You can make a new key on the first screen.",
+    "zh": "如果 U 盘丢失，请退出 GenOffice 后重新启动。可以在第一个画面创建新的安全密钥。",
+    "zh-TW": "如果隨身碟遺失，請結束 GenOffice 後重新啟動。可以在第一個畫面建立新的安全金鑰。",
+    "ja": "USB をなくした場合は、GenOffice を終了してもう一度起動してください。最初の画面で新しいセキュリティキーを作れます。",
+    "th": "หากทำ USB หาย ให้ปิด GenOffice แล้วเปิดใหม่ คุณสร้างกุญแจใหม่ได้ที่หน้าจอแรก",
+    "ru": "Если флешка потеряна, закройте GenOffice и запустите снова. На первом экране можно создать новый ключ.",
+    "ar": "إذا فقدت وحدة USB، فأغلق GenOffice ثم شغّله مرة أخرى. يمكنك إنشاء مفتاح جديد في الشاشة الأولى.",
+    "he": "אם הכונן אבד, צא מ-GenOffice והפעל אותו שוב. במסך הראשון אפשר ליצור מפתח חדש.",
+    "hi": "अगर USB खो गया है, तो GenOffice बंद करके फिर से चालू करें। पहली स्क्रीन पर नई कुंजी बना सकते हैं।",
+    "vi": "Nếu bạn làm mất USB, hãy thoát GenOffice rồi mở lại. Bạn có thể tạo khóa mới ở màn hình đầu tiên."
   },
   "skSettingsTitle": {
     "ko": "보안키",

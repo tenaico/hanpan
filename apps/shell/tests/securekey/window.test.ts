@@ -228,6 +228,16 @@ describe('security key window', () => {
     expect(await result).toBe('passed')
   })
 
+  it('retry does nothing on the terms step', async () => {
+    const mod = await load()
+    const h = noHandlers()
+    const result = mod.showSecureKeyWindow(state({ mode: 'terms' }), h)
+    await invoke(SECUREKEY_CHANNELS.retry)
+    expect(h.retry).not.toHaveBeenCalled()
+    expect(await settled(result)).toBe(false)
+    mod.closeSecureKeyWindow()
+  })
+
   it('the wait screen looks again by itself and opens when the stick comes', async () => {
     vi.useFakeTimers()
     try {

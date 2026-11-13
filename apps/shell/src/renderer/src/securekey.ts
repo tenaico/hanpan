@@ -164,7 +164,8 @@ function render(): void {
       noUsb.textContent = s('skNoUsb')
       spareHint.textContent = s('skUsbSpareHint')
       back.textContent = s('skBack')
-      show(retry, state.usbLetters.length === 0)
+      // a stick plugged in next to the listed ones shows after a look again
+      show(retry, true)
       retry.textContent = busy ? s('skChecking') : s('skRetry')
       retry.disabled = busy
       show(submit, true)
@@ -206,8 +207,11 @@ function render(): void {
   show(lockStep, true)
   const why = state.reason ? REASON_TEXT[state.reason] : null
   reason.textContent = why ? s(why) : ''
-  show(lost, state.canRegister !== false)
-  lostText.textContent = s('skLostLink')
+  // the covers cannot make a key: they say where to do it instead
+  show(lost, true)
+  const canRegister = state.canRegister !== false
+  lostText.textContent = canRegister ? s('skLostLink') : s('skCoverNewKeyHint')
+  show(lostLink, canRegister)
   lostLink.textContent = s('skNewKey')
   lostLink.disabled = busy
   show(retry, true)

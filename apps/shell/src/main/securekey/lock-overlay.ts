@@ -77,6 +77,10 @@ function coverWindow(parent: BrowserWindow): void {
   let parentClosing = false
   const onParentClose = () => {
     parentClosing = true
+    // a close that was refused (unsaved documents) leaves the window: the cover stays
+    setTimeout(() => {
+      if (!parent.isDestroyed()) parentClosing = false
+    }, 0)
   }
   parent.on('move', follow)
   parent.on('resize', follow)

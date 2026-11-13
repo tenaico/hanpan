@@ -29,11 +29,11 @@ export function SecureKeySettingsCard({ lang }: { lang: string }) {
   if (!info) return null
   const s = (key: string) => info.strings[key] ?? key
 
-  const act = async (action: SecureKeyAction) => {
+  const act = async (action: SecureKeyAction, ticked = false) => {
     setBusy(true)
     setMessage(null)
     try {
-      const error = await window.aiOffice.secureKeyAct?.(action, letter || undefined)
+      const error = await window.aiOffice.secureKeyAct?.(action, letter || undefined, ticked)
       setMessage(error ? { text: error, error: true } : { text: s('skDone'), error: false })
       setConfirm(null)
       setAgreed(false)
@@ -128,7 +128,7 @@ export function SecureKeySettingsCard({ lang }: { lang: string }) {
               type="button"
               className="set-btn primary"
               disabled={busy || !agreed}
-              onClick={() => void act(confirm)}
+              onClick={() => void act(confirm, agreed)}
             >
               {confirm === 'to-pc' ? s('skMoveToPc') : s('skResetGo')}
             </button>

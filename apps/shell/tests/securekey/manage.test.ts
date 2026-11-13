@@ -4,7 +4,8 @@ import { join } from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createKey } from '../../src/main/securekey/create'
 import { deviceIdHash, usbDeviceId, type UsbVolume } from '../../src/main/securekey/devices'
-import { addSpareUsb, moveToPc, moveToUsb } from '../../src/main/securekey/manage'
+import { addSpareUsb, moveToPc, moveToUsb, readPrevious } from '../../src/main/securekey/manage'
+import { writeFileSync } from 'node:fs'
 import {
   findRegistration,
   KEY_FILES,
@@ -44,6 +45,23 @@ async function make(where: 'usb' | 'pc'): Promise<Registration> {
   if (!made.ok) throw new Error('key')
   return made.registration
 }
+
+describe('the replaced keys', () => {
+  it('drops entries that are not a key id, so the next record still reads', () => {
+    mkdirSync(pcKeyDir(userData), { recursive: true })
+    writeFileSync(
+      join(pcKeyDir(userData), 'previous.json'),
+      JSON.stringify([
+        { keyId: 'a'.repeat(32), replacedAt: NOW.toISOString() },
+        { keyId: 'not-a-key', replacedAt: NOW.toISOString() },
+        { keyId: 'b'.repeat(32), replacedAt: 'yesterday' },
+      ]),
+    )
+    expect(readPrevious(userData)).toEqual([
+      { keyId: 'a'.repeat(32), replacedAt: NOW.toISOString() },
+    ])
+  })
+})
 
 describe('a spare stick', () => {
   it("adds a spare stick's device to the record", async () => {

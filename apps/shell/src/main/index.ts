@@ -6468,12 +6468,15 @@ function registerHomeIpc(): void {
   })
   ipcMain.handle(
     HOME_CHANNELS.secureKeyAct,
-    async (_event, action: unknown, letter: unknown): Promise<string | null> => {
+    async (_event, action: unknown, letter: unknown, agreed: unknown): Promise<string | null> => {
       if (!secureKey) return null
+      // the card asks for a ticked box before these two (spec 5-5)
+      if (action === 'to-pc' && agreed !== true) return null
       const lang = currentLang()
       const pick = typeof letter === 'string' && /^[A-Z]$/.test(letter) ? letter : ''
       if (action === 'reset') {
-        if ((await secureKey.resetFromSettings()) !== 'ok') return tSecureKey(lang, 'skDamaged')
+        if (agreed !== true) return null
+        if ((await secureKey.resetFromSettings()) !== 'ok') return tSecureKey(lang, 'skErrNoKey')
         // the first-run window makes the new key on the next start
         app.relaunch()
         app.quit()
@@ -6494,10 +6497,12 @@ function registerHomeIpc(): void {
           : result === 'no-usb'
             ? 'skErrNoUsb'
             : result === 'write-failed'
-              ? 'skErrWriteFailed'
+              ? action === 'to-pc'
+                ? 'skErrPcWriteFailed'
+                : 'skErrWriteFailed'
               : result === 'other-key'
                 ? 'skErrOtherKey'
-                : 'skDamaged'
+                : 'skErrNoKey'
       return tSecureKey(lang, key)
     },
   )

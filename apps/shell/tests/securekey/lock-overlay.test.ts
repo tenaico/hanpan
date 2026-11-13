@@ -135,6 +135,18 @@ async function setup() {
 const overlaysOf = (parent: FakeBrowserWindow) =>
   all.filter((w) => w.options.parent === parent && !w.destroyed)
 
+describe('lock overlays after a cancelled close', () => {
+  it('keeps the cover when the window underneath did not close after all', async () => {
+    const { mod, shell } = await setup()
+    mod.showLockOverlays(lockState())
+    // the shell window was asked to close and refused (unsaved documents)
+    shell.emit('close', { preventDefault: () => undefined })
+    await new Promise((r) => setTimeout(r, 10))
+    const [cover] = overlaysOf(shell)
+    expect(cover!.userClose()).toBe(false)
+  })
+})
+
 describe('lock overlays', () => {
   it('puts one overlay on every visible top-level window', async () => {
     const { mod, shell } = await setup()
