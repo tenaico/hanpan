@@ -99,6 +99,7 @@ cp apps/sheets/native/xlsx-engine/target/release/xlsx-sidecar.exe apps/sheets/na
 npm run dist:win -- -- --publish never
 ```
 
+- 정식판은 보안키를 켜고 만듭니다(결정 0099). 같은 창에서 먼저 `$env:HANPAN_REQUIRE_KEY='1'`(PowerShell) 또는 `export HANPAN_REQUIRE_KEY=1`(Git Bash)을 합니다. Actions의 Windows 빌드는 이 값을 켜 둡니다. 빼고 만들면 보안키를 묻지 않는 판이 나옵니다.
 - `--` 를 **두 번** 씁니다. `npm run dist:win`이 안에서 명령을 한 번 더 부르기 때문에, 한 번만 쓰면 `--publish never`가 설치 파일 도구까지 전달되지 않습니다. (PowerShell, 명령 프롬프트, Git Bash 모두에서 두 번 써야 제대로 전달되는 것을 확인했습니다.)
 - `--publish never`는 **"만들기만 하고 GitHub에 올리지는 마라"** 는 뜻입니다. 설정에 업데이트 주소로 GitHub 저장소가 적혀 있어서, 이 옵션이 없으면 환경에 따라 도구가 스스로 올리려 할 수 있습니다(`CI` 같은 환경 변수가 켜져 있거나 태그 빌드로 인식될 때). 그때 `GH_TOKEN` 같은 토큰이 없으면 빌드 전체가 실패로 끝나고, 토큰이 있으면 확인도 하기 전에 릴리스가 만들어집니다. 그래서 항상 붙입니다. 올리는 일은 6번에서 손으로 합니다.
 - 시간이 꽤 걸립니다. 모든 앱을 다시 만들고 나서 설치 파일을 묶습니다.

@@ -1,5 +1,7 @@
 # 0094 한판 Windows판은 tenai.kr의 보안키가 있어야 켜지고, 보안키가 없는 동안 AI를 막는다
 
+> 대체됨 → [0099](0099-hanpan-local-security-key.md) (2026-11-12): 서버·회원·서명 없이 앱이 이 PC나 USB에 보안키를 만든다.
+
 ## 맥락
 
 한판은 공개 저장소에서 누구나 받아 쓰는 오피스다. 사용자(저장소 주인)는 2026-11-04에 Windows 정식판을 tenai.kr 회원에게만 쓰게 하기로 정했다. 회원은 tenai.kr에서 보안키 파일(`hanpan.key`)을 받아 USB나 이 PC에 등록한다. 회원당 3개까지다. 기존 설치자에게는 14일 유예를 둔다. 설계는 `docs/superpowers/specs/2026-11-04-hanpan-vn-securitykey-design.md` 7장, 계획은 `docs/superpowers/plans/2026-11-05-hanpan-securitykey.md`에 있다. 서버(D)는 별도 설계다.

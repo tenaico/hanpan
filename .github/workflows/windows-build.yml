@@ -46,6 +46,9 @@ jobs:
     env:
       # never pick up a certificate from the runner: the release is unsigned
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      # the release asks for the security key on first run (decision 0099);
+      # dev builds and e2e leave it off
+      HANPAN_REQUIRE_KEY: '1'
     defaults:
       run:
         shell: bash

@@ -107,4 +107,12 @@ describe('security key wiring', () => {
       expect(config).not.toContain(gone)
     }
   })
+
+  it('the Windows release build turns the key on', () => {
+    const workflow = readFileSync(
+      join(__dirname, '../../../../.github/workflows/windows-build.yml'),
+      'utf8',
+    )
+    expect(workflow).toMatch(/^\s+HANPAN_REQUIRE_KEY: '1'$/m)
+  })
 })
