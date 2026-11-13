@@ -51,6 +51,20 @@ import {
   openDesignWithOutline,
 } from './hanpan/design-window'
 import { registerGonguPictureIpc } from './hanpan/gongu-pictures'
+import { windowsDeviceProbe } from './securekey/devices'
+import { readGateConfig } from './securekey/gate'
+import {
+  configureLockOverlays,
+  coverNewWindow,
+  hideLockOverlays,
+  showLockOverlays,
+} from './securekey/lock-overlay'
+import { createSecureKeyRuntime, type SecureKeyRuntime } from './securekey/runtime'
+import { licenseTermsPath } from './license-terms'
+import { needsConsent, writeConsent } from './consent'
+import { secureKeyStrings, tSecureKey } from './securekey/strings'
+import { vaultCodec } from './securekey/vault-codec'
+import { closeSecureKeyWindow, focusSecureKeyWindow, showSecureKeyWindow } from './securekey/window'
 import { tabStripOverlay } from './title-bar-overlay'
 import { shellWindowBackground } from './window-background'
 import { installPointerSize } from './pointer-size'
@@ -227,6 +241,7 @@ import {
   authorizeMcpDocWrite,
   activeAiStreamCount,
   docsQueryDirty,
+  abortAllAiStreams,
 } from '../../../docs/src/main/docs-main'
 import { blankXlsxBuffer } from '@genoffice/xlsx-gateway/gateway/csv-import'
 import { followUiLangForSpellcheck } from './hanpan/spellcheck-langs'
@@ -410,6 +425,7 @@ import type {
   FileSearchQuery,
   FileSearchRerank,
   FileSearchSettings,
+  SecureKeySettings,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
 import { RELEASE_IS_BETA } from '../shared/release-stage'
@@ -537,9 +553,18 @@ import {
   startCodexAgentSession,
 } from '@genoffice/ai-provider/agent-session'
 import { normalizeAgentPrefs } from '../shared/agent-api'
-import { normalizeAiSettings, setAiSecretCodec, type AiSettings } from '@genoffice/ai-provider'
+import {
+  assertAiUnlocked,
+  isAiLocked,
+  normalizeAiSettings,
+  setAiLocked,
+  setAiSecretCodec,
+  type AiSettings,
+} from '@genoffice/ai-provider'
+import { shutdownCodexAppServers } from '@genoffice/ai-provider/codex-app-server'
 import {
   REVEAL_FLAG,
+  assertFileSearchKeysWritable,
   fileSearchHoldsPlainKeys,
   openFileSearchKeys,
   runRevealEntry,
@@ -547,6 +572,8 @@ import {
   safeStorageCodec,
   sealStoredAiSettings,
   sealingKeyOnDisk,
+  clearSealedV2FileSearchKeys,
+  clearSealedV2Secrets,
 } from './ai-secrets'
 import { homedir, tmpdir } from 'node:os'
 import {
@@ -6383,6 +6410,9 @@ function registerHomeIpc(): void {
   ipcMain.handle(
     HOME_CHANNELS.setFileSearchSettings,
     (_event, patch: unknown): FileSearchSettings => {
+      // locked by the security key, or v2 keys this run cannot open: a save would replace them
+      assertAiUnlocked()
+      assertFileSearchKeysWritable(readAppSettings(APP_SETTINGS_PATH()).fileSearch)
       const current = readFileSearchSettings()
       const p = (patch && typeof patch === 'object' ? patch : {}) as Partial<FileSearchSettings>
       const next = normalizeFileSearchSettings({
@@ -6423,7 +6453,59 @@ function registerHomeIpc(): void {
   })
 
   ipcMain.handle(HOME_CHANNELS.starredGroups, (): string[] => readStarredGroups())
-
+  // Hanpan: Settings › Security key (spec 2026-11-12 5-5)
+  ipcMain.handle(HOME_CHANNELS.secureKeyInfo, async (): Promise<SecureKeySettings | null> => {
+    const info = await secureKey?.info()
+    if (!info) return null
+    const lang = currentLang()
+    let date = info.createdAt
+    try {
+      date = new Intl.DateTimeFormat(lang, { dateStyle: 'long' }).format(new Date(info.createdAt))
+    } catch {
+      // the ISO time stays
+    }
+    return { ...info, strings: secureKeyStrings(lang, { date, count: info.sticks }) }
+  })
+  ipcMain.handle(
+    HOME_CHANNELS.secureKeyAct,
+    async (_event, action: unknown, letter: unknown, agreed: unknown): Promise<string | null> => {
+      if (!secureKey) return null
+      // the card asks for a ticked box before these two (spec 5-5)
+      if (action === 'to-pc' && agreed !== true) return null
+      const lang = currentLang()
+      const pick = typeof letter === 'string' && /^[A-Z]$/.test(letter) ? letter : ''
+      if (action === 'reset') {
+        if (agreed !== true) return null
+        if ((await secureKey.resetFromSettings()) !== 'ok') return tSecureKey(lang, 'skErrNoKey')
+        // the first-run window makes the new key on the next start
+        app.relaunch()
+        app.quit()
+        return null
+      }
+      const result =
+        action === 'spare'
+          ? await secureKey.spare(pick)
+          : action === 'to-usb'
+            ? await secureKey.moveToUsb(pick)
+            : action === 'to-pc'
+              ? await secureKey.moveToPc()
+              : 'no-record'
+      if (result === 'ok') return null
+      const key =
+        result === 'same-usb'
+          ? 'skSameUsb'
+          : result === 'no-usb'
+            ? 'skErrNoUsb'
+            : result === 'write-failed'
+              ? action === 'to-pc'
+                ? 'skErrPcWriteFailed'
+                : 'skErrWriteFailed'
+              : result === 'other-key'
+                ? 'skErrOtherKey'
+                : 'skErrNoKey'
+      return tSecureKey(lang, key)
+    },
+  )
   ipcMain.handle(HOME_CHANNELS.setStarredGroup, (_event, paths: unknown, group: unknown) => {
     setStarredGroup(stringPaths(paths), typeof group === 'string' && group ? group : null)
   })
@@ -7071,6 +7153,10 @@ function registerHomeIpc(): void {
 
   ipcMain.handle(HOME_CHANNELS.openLicenseNotices, () => {
     void openThirdPartyNotices()
+  })
+
+  ipcMain.handle(HOME_CHANNELS.openLicenseTerms, () => {
+    void openLicenseTerms()
   })
 
   ipcMain.handle(HOME_CHANNELS.openRightsContact, () => {
@@ -9544,6 +9630,17 @@ ipcMain.handle(PDF_CHANNELS.saveAsDialog, async (e) => {
   await savePdfAs()
 })
 
+/** the installer's license and disclaimer in the UI language (spec 2026-11-12 5-6) */
+function openLicenseTerms(): Promise<string> {
+  return shell.openPath(
+    licenseTermsPath(currentLang(), {
+      packaged: app.isPackaged,
+      resourcesPath: process.resourcesPath,
+      appPath: app.getAppPath(),
+    }),
+  )
+}
+
 function openThirdPartyNotices(): Promise<string> {
   const path = app.isPackaged
     ? join(process.resourcesPath, 'THIRD-PARTY-NOTICES.txt')
@@ -9665,6 +9762,12 @@ app.on('open-file', (event, filePath) => {
 
 app.on('second-instance', (_event, argv, _cwd, additionalData) => {
   const paths = collectLaunchPaths(argv, additionalData)
+  // the security key window is up: its files open once the key is checked
+  if (secureKey?.pending()) {
+    for (const path of paths) if (!pendingLaunchPaths.includes(path)) pendingLaunchPaths.push(path)
+    focusSecureKeyWindow()
+    return
+  }
   revealShellWindow()
   if (launchListGate.blocking()) deferredLaunchPaths.push(...paths)
   else openLaunchPaths(paths)
@@ -10058,20 +10161,119 @@ async function runHeadlessExportEntry(
   app.exit(headlessExitCode(outcome))
 }
 
+/**
+ * The security key (spec 7, Windows only): made once the app is ready, when
+ * userData is final. Null before that and in the second-instance handler of
+ * a process that never got this far.
+ */
+let secureKey: SecureKeyRuntime | null = null
+
+/**
+ * AI is refused while the security key is not open (spec 7-4). The first two
+ * steps run in one turn: when a cut request's catch runs, its stream's
+ * controller is already aborted, so the run ends as [Stop] does, with a done.
+ */
+function lockAi(): void {
+  setAiLocked(true)
+  abortAllAiStreams()
+  stopAgentSessions()
+  shutdownSubscriptionChildren()
+  shutdownCodexAppServers()
+}
+function unlockAi(): void {
+  setAiLocked(false)
+}
+
+/**
+ * Keys an earlier version (or a hand edit) left plain are sealed; once the
+ * security key's vault is open, v1 values are sealed again as v2 (spec 7-5).
+ * Refused while the security key is locked. A key that cannot be opened is
+ * left as it is rather than written back empty.
+ */
+function resealStoredKeys(): void {
+  assertAiUnlocked()
+  const upgrade = secureKey?.vault() != null
+  sealStoredAiSettings(join(app.getPath('userData'), 'ai-settings.json'), { upgrade })
+  const storedSearch = readAppSettings(APP_SETTINGS_PATH()).fileSearch
+  if (!fileSearchHoldsPlainKeys(storedSearch, { upgrade })) return
+  assertFileSearchKeysWritable(storedSearch)
+  const sealed = sealFileSearchKeys(readFileSearchSettings())
+  if (fileSearchHoldsPlainKeys(sealed, { upgrade })) return
+  const filled = (keys: unknown) =>
+    typeof keys === 'object' && keys !== null
+      ? Object.values(keys).filter((v) => typeof v === 'string' && v !== '').length
+      : 0
+  if (filled(sealed.keys) < filled((storedSearch as { keys?: unknown } | undefined)?.keys)) return
+  writeAppSetting(APP_SETTINGS_PATH(), 'fileSearch', sealed)
+}
+
+function createAppSecureKey(): SecureKeyRuntime {
+  // a window opened while the security key is locked gets a cover too
+  app.on('browser-window-created', (_event, win) => coverNewWindow(win))
+  configureLockOverlays({
+    mainWindow: () => shellWindow,
+    retry: () => (secureKey ? secureKey.retryLock() : Promise.resolve('passed' as const)),
+    // the windows close the usual way, asking about unsaved documents; their covers go with them
+    quit: () => app.quit(),
+  })
+  return createSecureKeyRuntime({
+    config: readGateConfig(),
+    userData: app.getPath('userData'),
+    probe: windowsDeviceProbe(process.env),
+    now: () => new Date(),
+    lang: () => currentLang(),
+    needsConsent: () => needsConsent(app.getPath('userData')),
+    acceptConsent: () => writeConsent(app.getPath('userData'), new Date()),
+    openLicense: () => void openLicenseTerms(),
+    // the PC key's vault under the Windows account's protection (DPAPI)
+    sealPcVault: (vault) => safeStorage.encryptString(vault.toString('base64')),
+    openPcVault: (sealed) => {
+      try {
+        return Buffer.from(safeStorage.decryptString(sealed), 'base64')
+      } catch {
+        return null
+      }
+    },
+    showWindow: showSecureKeyWindow,
+    closeWindow: closeSecureKeyWindow,
+    lockAi,
+    unlockAi,
+    overlays: { show: showLockOverlays, hide: hideLockOverlays },
+    // a new key: keys sealed with an earlier vault can never open again
+    onReset: async () => {
+      clearSealedV2Secrets(join(app.getPath('userData'), 'ai-settings.json'))
+      clearSealedV2FileSearchKeys(APP_SETTINGS_PATH())
+    },
+    // a new key seals the keys again with its vault
+    onRegistered: () => {
+      try {
+        resealStoredKeys()
+      } catch (error) {
+        console.warn('[securekey] could not seal the AI keys again', error)
+      }
+    },
+  })
+}
+
 app.whenReady().then(async () => {
+  secureKey = createAppSecureKey()
   // safeStorage works only once the app is ready: keys read before this read as empty
-  const secretCodec = safeStorageCodec(safeStorage, process.platform, () =>
-    sealingKeyOnDisk(join(app.getPath('userData'), 'Local State')),
+  // the security key's vault adds a second lock on Windows once a key is registered (spec 7-5)
+  const secretCodec = vaultCodec(
+    safeStorageCodec(safeStorage, process.platform, () =>
+      sealingKeyOnDisk(join(app.getPath('userData'), 'Local State')),
+    ),
+    () => secureKey?.vault() ?? null,
   )
   setAiSecretCodec(secretCodec)
   if (revealSecretsRun) {
+    // v2 keys open only while the security key's stick is in (spec 7-5)
+    await secureKey.openQuietly()
     app.exit(await runRevealEntry(secretCodec))
     return
   }
   // first scan waits for the windows to come up; later ones follow folder changes
   setTimeout(() => ensureFileIndexer()?.refresh(), 4000)
-  // Hanpan: a local AI server on this PC becomes the default AI (once, only while the choice is "auto")
-  hanpan.adoptLocalAi()
   // Hanpan 0.17: spelling follows the UI language, not the OS alone
   followUiLangForSpellcheck(session.defaultSession, currentLang())
   installRendererProtocol(
@@ -10137,6 +10339,9 @@ app.whenReady().then(async () => {
   // a subscription CLI a force-killed previous run left behind is ended, then
   // this run records the ones it starts (userData is final by now)
   void initSubscriptionChildTracking(app.getPath('userData')).catch(() => undefined)
+  // the security key's vault, before any AI key is read or sealed again. A
+  // second launch never gets here, so it does not wait for the USB lookup.
+  await secureKey.openQuietly()
   // keys an earlier version (or a hand edit) left plain are sealed once this run holds the lock;
   // on the very first run the key is not on disk yet, so this only makes Chromium create it and
   // the keys are sealed on a later save or the next start
@@ -10144,15 +10349,10 @@ app.whenReady().then(async () => {
     if (process.platform === 'win32' && safeStorage.isEncryptionAvailable()) {
       safeStorage.encryptString('')
     }
-    sealStoredAiSettings(join(app.getPath('userData'), 'ai-settings.json'))
-    const storedSearch = readAppSettings(APP_SETTINGS_PATH()).fileSearch
-    if (fileSearchHoldsPlainKeys(storedSearch)) {
-      const sealed = sealFileSearchKeys(readFileSearchSettings())
-      if (!fileSearchHoldsPlainKeys(sealed))
-        writeAppSetting(APP_SETTINGS_PATH(), 'fileSearch', sealed)
-    }
+    resealStoredKeys()
   } catch {
-    // an unwritable data folder keeps the plain file; the next save tries again
+    // an unwritable data folder keeps the plain file; the next save tries again. A
+    // security key lock refuses the write too: the v2 keys cannot be opened then.
   }
   // a registry left by a crashed instance must not block genoffice writes
   ownsOpenDocumentsRegistry = true
@@ -10174,6 +10374,21 @@ app.whenReady().then(async () => {
   currentLang()
   // native menus/dialogs/scrollbars follow the persisted theme from first paint
   nativeTheme.themeSource = currentTheme()
+  // the security key gate (spec 7-3): before any window, MCP server or AI
+  // settings write. whenReady has no catch, so a failure here must end the app.
+  try {
+    if ((await secureKey.runGate()) === 'quit') {
+      app.quit()
+      return
+    }
+  } catch (error) {
+    dialog.showErrorBox(tSecureKey(currentLang(), 'skTitle'), String(error))
+    app.quit()
+    return
+  }
+  // Hanpan: a local AI server on this PC becomes the default AI (once, only while the choice is "auto");
+  // it writes the AI settings, so it waits for the vault the gate may have opened
+  hanpan.adoptLocalAi()
   // off the startup path: a symlink / registry write nobody is waiting for
   setTimeout(() => installCliLinkBestEffort(APP_SETTINGS_PATH()), 3000)
   startSheetsCaptureServer()
@@ -10549,6 +10764,8 @@ app.whenReady().then(async () => {
   installPointerSize(app)
   installTabShortcuts()
   createShellWindow()
+  // the security key window stays up until the shell window exists, so the app is never windowless
+  secureKey.closeWindow()
   // deferred to ready: labels need currentLang(), which reads app.getLocale()
   installBackToHomeItems()
   installDocumentLinkMenuItems()
@@ -10667,6 +10884,8 @@ app.whenReady().then(async () => {
       },
       findTab: (path) => tabManager?.findTabByPath(path) ?? findDetachedTabByPath(path),
     }),
+    // refused while Hanpan's security key is locked (spec 7-4)
+    { isLocked: isAiLocked },
   ).then(
     (server) => {
       controlServer = server

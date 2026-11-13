@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws://localhost:*"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hanpan</title>
+    <style>
+      /* form-dialog palette (same tokens as pdf-password.html) */
+      :root {
+        --color-btn-primary: #232425;
+        --color-btn-primary-hover: #393a3b;
+        --color-btn-primary-text: #ffffff;
+        --color-text-primary: #232425;
+        --color-text-secondary: #6b6f76;
+        --color-text-tertiary: #9aa0a6;
+        --color-border-default: #eaeaea;
+        --color-border-strong: #d9d9d9;
+        --color-bg-card: #ffffff;
+        --color-bg-subtle: #f5f5f5;
+        --color-bg-cover: rgb(255 255 255 / 92%);
+        --color-warning-bg: #fff7e6;
+        --color-warning-text: #8a5300;
+        --color-error: #ef4444;
+        --focus-ring: rgb(35 36 37 / 20%);
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-btn-primary: #f2f2f2;
+          --color-btn-primary-hover: #d9d9d9;
+          --color-btn-primary-text: #1b1c1d;
+          --color-text-primary: #ececec;
+          --color-text-secondary: #a8acb3;
+          --color-text-tertiary: #7d828a;
+          --color-border-default: #34363a;
+          --color-border-strong: #45484d;
+          --color-bg-card: #1f2023;
+          --color-bg-subtle: #2a2b2f;
+          --color-bg-cover: rgb(24 25 27 / 92%);
+          --color-warning-bg: #3a2e14;
+          --color-warning-text: #f1c27a;
+          --color-error: #f87171;
+          --focus-ring: rgb(242 242 242 / 25%);
+        }
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --ui-cjk: 'Microsoft YaHei', 'PingFang SC';
+      }
+      :root:lang(ja) {
+        --ui-cjk:
+          'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo';
+      }
+      :root:lang(ko) {
+        --ui-cjk: 'Apple SD Gothic Neo', 'Malgun Gothic';
+      }
+      :root:lang(zh-TW) {
+        --ui-cjk: 'PingFang TC', 'Microsoft JhengHei';
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        font-family: -apple-system, 'Segoe UI', var(--ui-cjk), sans-serif;
+        color: var(--color-text-primary);
+        background: var(--color-bg-card);
+        user-select: none;
+        -webkit-app-region: drag;
+      }
+      body.cover {
+        background: var(--color-bg-cover);
+      }
+      #card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        border: 1px solid var(--color-border-default);
+        padding: 24px;
+      }
+      body.cover #card {
+        border: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      #title {
+        font-size: 17px;
+        font-weight: 600;
+      }
+      .text {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--color-text-secondary);
+      }
+      .small {
+        font-size: 12px;
+        color: var(--color-text-tertiary);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .choices {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .choice {
+        -webkit-app-region: no-drag;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 10px 12px;
+        border: 1.5px solid var(--color-border-default);
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .choice[aria-checked='true'] {
+        border-color: var(--color-btn-primary);
+        background: var(--color-bg-subtle);
+      }
+      .choice b {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .choice .sub {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--color-text-secondary);
+      }
+      .badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 0 7px;
+        border-radius: 999px;
+        background: var(--color-btn-primary);
+        color: var(--color-btn-primary-text);
+      }
+      .terms {
+        -webkit-app-region: no-drag;
+        max-height: 190px;
+        overflow: auto;
+        padding: 10px 12px;
+        border: 1px solid var(--color-border-default);
+        border-radius: 10px;
+        background: var(--color-bg-subtle);
+        font-size: 12.5px;
+        line-height: 1.6;
+        user-select: text;
+      }
+      .terms li {
+        margin: 0 0 6px 16px;
+      }
+      #usb-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .place {
+        -webkit-app-region: no-drag;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        padding: 8px 10px;
+        border: 1px solid var(--color-border-default);
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .check {
+        -webkit-app-region: no-drag;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        font-size: 13px;
+        line-height: 1.5;
+        cursor: pointer;
+      }
+      .check input {
+        margin-top: 3px;
+      }
+      #warning {
+        font-size: 12px;
+        line-height: 1.5;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--color-warning-bg);
+        color: var(--color-warning-text);
+      }
+      #error {
+        font-size: 12px;
+        color: var(--color-error);
+      }
+      #spacer {
+        flex: 1;
+      }
+      #buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      button {
+        -webkit-app-region: no-drag;
+        height: 34px;
+        padding: 0 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        border: 1px solid var(--color-border-default);
+        background: var(--color-bg-card);
+        color: var(--color-text-primary);
+        transition: all var(--transition-fast);
+      }
+      button:hover:not(:disabled) {
+        background: var(--color-bg-subtle);
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      button:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--focus-ring);
+      }
+      button.primary {
+        border-color: var(--color-btn-primary);
+        background: var(--color-btn-primary);
+        color: var(--color-btn-primary-text);
+      }
+      button.primary:hover:not(:disabled) {
+        background: var(--color-btn-primary-hover);
+      }
+      button.link {
+        border: none;
+        background: none;
+        padding: 0;
+        height: auto;
+        text-decoration: underline;
+        color: var(--color-text-secondary);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="card">
+      <div id="title"></div>
+      <div id="message" class="text"></div>
+
+      <section id="terms-step" class="hidden">
+        <ul id="terms-list" class="terms"></ul>
+        <button id="terms-full" class="link"></button>
+        <label class="check" style="margin-top: 10px">
+          <input id="terms-agree" type="checkbox" />
+          <span id="terms-agree-text"></span>
+        </label>
+      </section>
+
+      <section id="choose-step" class="hidden">
+        <div class="choices" role="radiogroup">
+          <div class="choice" id="choose-usb" role="radio" tabindex="0" aria-checked="true">
+            <div>
+              <b><span id="usb-name"></span><span id="usb-badge" class="badge"></span></b
+              ><span id="usb-sub" class="sub"></span>
+            </div>
+          </div>
+          <div class="choice" id="choose-pc" role="radio" tabindex="0" aria-checked="false">
+            <div><b id="pc-name"></b><span id="pc-sub" class="sub"></span></div>
+          </div>
+        </div>
+        <div id="note-sub" class="small" style="margin-top: 8px"></div>
+        <div id="note-lock" class="small"></div>
+      </section>
+
+      <section id="usb-step" class="hidden">
+        <div id="usb-list"></div>
+        <div id="no-usb" class="small hidden"></div>
+        <div id="spare-hint" class="text" style="margin-top: 6px"></div>
+      </section>
+
+      <section id="pc-step" class="hidden">
+        <div id="warning" role="note"></div>
+        <label class="check" style="margin-top: 8px">
+          <input id="pc-agree" type="checkbox" />
+          <span id="pc-agree-text"></span>
+        </label>
+      </section>
+
+      <section id="lock-step" class="hidden">
+        <div id="reason" class="text"></div>
+        <div id="lost" class="small" style="margin-top: 8px">
+          <span id="lost-text"></span> <button id="lost-link" class="link"></button>
+        </div>
+      </section>
+
+      <section id="reset-step" class="hidden">
+        <ul id="reset-list" class="terms"></ul>
+        <label class="check" style="margin-top: 10px">
+          <input id="reset-agree" type="checkbox" />
+          <span id="reset-agree-text"></span>
+        </label>
+      </section>
+
+      <div id="error" role="alert"></div>
+      <div id="spacer"></div>
+      <div id="buttons">
+        <button id="quit"></button>
+        <button id="back" class="hidden"></button>
+        <button id="retry" class="hidden"></button>
+        <button id="submit" class="primary hidden"></button>
+      </div>
+    </div>
+    <script type="module" src="/src/securekey.ts"></script>
+  </body>
+</html>

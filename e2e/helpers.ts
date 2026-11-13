@@ -28,6 +28,9 @@ const SHELL_MAIN = join(SHELL_DIR, 'out/main/index.js')
  */
 const AI_SETTINGS_NOTICE_SEEN = { providers: {}, subscriptionNoticeSeen: true }
 
+/** keep in step with TERMS_VERSION in apps/shell/src/main/consent.ts */
+const E2E_TERMS_VERSION = '2026-11-20'
+
 interface LaunchOptions {
   /** reuse a previous scratch dir to simulate a second launch */
   userDataDir?: string
@@ -43,6 +46,11 @@ interface LaunchOptions {
    * would otherwise cover Settings and the ask panel. Pass false to see it.
    */
   subscriptionNoticeSeen?: boolean
+  /**
+   * pre-seed consent.json with the current terms accepted (default true), so
+   * the first-run terms step does not stand before the home. Pass false to see it.
+   */
+  consent?: boolean
   /** subdir of e2e/artifacts to store this launch's video in */
   videoDir: string
   /** absolute document path passed as argv, opened in an editor tab on launch */
@@ -79,6 +87,18 @@ export async function launchShell(options: LaunchOptions): Promise<LaunchedApp> 
         koreanDocFeatures: true,
         ...(options.onboardingSeen ? { onboardingSeen: true } : {}),
         ...options.settings,
+      }),
+    )
+  }
+  // the terms of this build accepted, as apps/shell/src/main/consent.ts TERMS_VERSION
+  const consentPath = join(userDataDir, 'consent.json')
+  if (options.consent !== false && !existsSync(consentPath)) {
+    await writeFile(
+      consentPath,
+      JSON.stringify({
+        v: 1,
+        termsVersion: E2E_TERMS_VERSION,
+        acceptedAt: '2026-11-20T00:00:00.000Z',
       }),
     )
   }

@@ -230,6 +230,10 @@ export interface HomeApi {
   starred(query?: RecentQuery): Promise<RecentPage>
   /** starred group names that currently have at least one file, in creation order */
   starredGroups(): Promise<string[]>
+  /** Settings › Security key (Windows): the key in use with the card's words, or null without one */
+  secureKeyInfo(): Promise<SecureKeySettings | null>
+  /** a Settings › Security key action: null when done, else an error line in the UI language */
+  secureKeyAct(action: SecureKeyAction, letter?: string, agreed?: boolean): Promise<string | null>
   /** put each starred path into `group` (null = remove from its group) */
   setStarredGroup(paths: string[], group: string | null): Promise<void>
   /** stat a specific set of paths (project view); unstat-able files come back flagged `missing` */
@@ -418,6 +422,8 @@ export interface HomeApi {
   openFeedbackSurvey(): Promise<void>
   /** open the bundled license and copyright notices (THIRD-PARTY-NOTICES.txt) */
   openLicenseNotices(): Promise<void>
+  /** open the installer's license and disclaimer in the UI language (license-terms.ts) */
+  openLicenseTerms(): Promise<void>
   /** start an e-mail to the trademark and copyright contact address */
   openRightsContact(): Promise<void>
   /** AI settings (userData/ai-settings.json, shared by every editor) */
@@ -579,6 +585,8 @@ export const HOME_CHANNELS = {
   toggleStar: 'home:toggle-star',
   unstarPaths: 'home:unstar-paths',
   starredGroups: 'home:starred-groups',
+  secureKeyInfo: 'home:securekey-info',
+  secureKeyAct: 'home:securekey-act',
   setStarredGroup: 'home:set-starred-group',
   openPath: 'home:open-path',
   browse: 'home:browse',
@@ -647,5 +655,20 @@ export const HOME_CHANNELS = {
   openGitHubRepo: 'home:open-github-repo',
   openFeedbackSurvey: 'home:open-feedback-survey',
   openLicenseNotices: 'home:open-license-notices',
+  openLicenseTerms: 'home:open-license-terms',
   openRightsContact: 'home:open-rights-contact',
 } as const
+
+/** Settings › Security key: where the key is and the sticks to pick from */
+export interface SecureKeySettings {
+  where: 'usb' | 'pc'
+  createdAt: string
+  /** sticks on the record */
+  sticks: number
+  /** drive letters plugged in now */
+  usbLetters: string[]
+  /** the card's words in the UI language, with the date and count filled in */
+  strings: Record<string, string>
+}
+
+export type SecureKeyAction = 'spare' | 'to-usb' | 'to-pc' | 'reset'

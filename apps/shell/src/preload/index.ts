@@ -35,6 +35,7 @@ import type {
   FileSearchPage,
   FileSearchRerank,
   FileSearchSettings,
+  SecureKeySettings,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
 import { RECOVERY_LIST_CHANNELS } from '../shared/recovery-list-api'
@@ -177,6 +178,19 @@ const homeApi: HomeApi = {
   async starredGroups() {
     const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.starredGroups)
     return Array.isArray(result) ? result.filter((g): g is string => typeof g === 'string') : []
+  },
+  async secureKeyInfo() {
+    const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.secureKeyInfo)
+    return (result ?? null) as SecureKeySettings | null
+  },
+  async secureKeyAct(action, letter, agreed) {
+    const result: unknown = await ipcRenderer.invoke(
+      HOME_CHANNELS.secureKeyAct,
+      action,
+      letter,
+      agreed,
+    )
+    return typeof result === 'string' ? result : null
   },
   async setStarredGroup(paths, group) {
     await ipcRenderer.invoke(HOME_CHANNELS.setStarredGroup, paths, group)
@@ -572,6 +586,9 @@ const homeApi: HomeApi = {
   },
   async openLicenseNotices() {
     await ipcRenderer.invoke(HOME_CHANNELS.openLicenseNotices)
+  },
+  async openLicenseTerms() {
+    await ipcRenderer.invoke(HOME_CHANNELS.openLicenseTerms)
   },
   async openRightsContact() {
     await ipcRenderer.invoke(HOME_CHANNELS.openRightsContact)

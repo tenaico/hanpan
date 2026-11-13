@@ -15,6 +15,11 @@
  */
 
 export const SEALED_PREFIX = 'sealed:v1:'
+/**
+ * Hanpan's security key (spec 7-5): the value is first encrypted with the
+ * key's vault and then sealed like v1. Only a codec that holds the vault opens it.
+ */
+export const SEALED_PREFIX_V2 = 'sealed:v2:'
 
 export interface AiSecretCodec {
   /** the sealed form, or null when this PC cannot seal now (the value stays plain) */
@@ -30,7 +35,10 @@ export function setAiSecretCodec(next: AiSecretCodec | null): void {
 }
 
 export function isSealedSecret(value: unknown): value is string {
-  return typeof value === 'string' && value.startsWith(SEALED_PREFIX)
+  return (
+    typeof value === 'string' &&
+    (value.startsWith(SEALED_PREFIX) || value.startsWith(SEALED_PREFIX_V2))
+  )
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>

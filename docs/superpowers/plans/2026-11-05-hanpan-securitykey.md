@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **11/6 개정:** PR #2 끝(`9d776ab7`, AI 포토·AI 일러스트 탭과 완전 격리)을 기준으로 고쳤다. 바뀐 것: 가지, 결정 번호(0094), 줄 번호, 저장 함수의 비동기, 잠금 오류의 모양, AI 포토·AI 일러스트 도우미, 일정, 코드 서명 보류.
+
 **Goal:** 11/20 Windows 정식판은 tenai.kr에서 받은 보안키가 있어야 켜진다. 14일 유예 뒤부터다. USB를 뽑으면 잠기고, AI 키는 두 겹으로 잠긴다. Mac과 Linux의 동작은 그대로다.
 
 **Architecture:**
@@ -12,17 +14,22 @@
   - 화면 단계: 단일 실행 잠금 다음, 첫 창을 띄우기 전에 둔다. 판정에 따라 등록 창이나 잠금 창을 띄우거나 그냥 통과한다.
 - **실행 중:** 2초마다 등록된 `activation.json`을 `statSync`해 볼륨 번호(`dev`)를 비교한다. 빠지면 AI를 잠그고, 보이는 창마다 잠금 덮개 창을 띄운다. 탭이 셸 페이지 위에 그려지므로 셸 페이지 안의 덮개로는 가릴 수 없다.
 - **AI 차단:** 한곳에 모이는 길이 없다. 그래서 `@genoffice/ai-provider`에 프로세스 전체 잠금(`setAiLocked`)을 두고, 네 지점(`streamForProvider`, `chatForProvider`, `aiFetch`, `spawnSubscriptionProgram`)과 MCP·제어 채널에서 거절한다. 잠글 때 진행 중인 요청은 끊는다.
+  - AI 포토·AI 일러스트 탭의 AI 도우미도 문서 편집기와 같은 `ai:stream`과 구독 창구를 쓴다. 둘 다 docs-main이 앱 전체에 하나만 등록한다. 그래서 같은 지점에서 막힌다.
+  - 웹판 틀에는 다리가 없어서(완전 격리) 따로 막을 곳이 없다.
 - **서버(D):** 가짜 서버로 대신한다. 실제 주소와 공개키는 D가 준비되면 빌드 값으로 넣는다.
 
 **Tech Stack:** Node `crypto`(Ed25519 확인, AES-256-GCM), Electron `safeStorage`·`net.fetch`·`dialog`, PowerShell(CIM)과 `reg.exe`(전체 경로 실행), vitest
 
-**Spec:** `docs/superpowers/specs/2026-11-04-hanpan-vn-securitykey-design.md` (7장 C 전부, 2장 비목표·반목표, 8장, 9장). 앞선 계획: `docs/superpowers/plans/2026-11-05-hanpan-vi-demo.md`
+**Spec:** `docs/superpowers/specs/2026-11-04-hanpan-vn-securitykey-design.md` (7장 C 전부, 2장 비목표·반목표, 8장, 9장). 앞선 계획: `docs/superpowers/plans/2026-11-05-hanpan-vi-demo.md`. AI 포토·AI 일러스트와 겹치는 곳: `docs/tracking/decisions/0093-hanpan-graphics-web-tabs.md`
 
 ## Global Constraints
 
-- 시연판 계획의 Global Constraints를 모두 따른다(가지, 커밋 글과 작성자 주소, 영어 코드·주석, 테스트 위치, 합치기 전 검사 10개, 의존성 금지).
+- 시연판 계획의 Global Constraints를 따른다(커밋 글과 작성자 주소, 영어 코드·주석, 테스트 위치, 합치기 전 검사 10개, 의존성 금지, 내려받기 확인). **가지만 다르다.**
+  - 가지 `feat/security-key`에서 일한다. PR #2 끝(`9d776ab7`)에서 시작했고, 작업 폴더는 `C:\Users\ten\Desktop\hanpan\.claude\worktrees\security-key`다.
+  - PR #2가 `main`에 합쳐지면 `git rebase --onto origin/main 9d776ab7 feat/security-key`로 `main` 위로 옮긴다. 병합 방식(merge·squash)과 관계없이 이 명령이 맞다.
+  - push와 `main` 병합은 사용자가 정한다.
 - **Windows 전용:** `process.platform !== 'win32'`이면 보안키 코드 전체를 건너뛴다. Mac·Linux는 지금 동작 그대로다(스펙 2장, 사용자 결정).
-- **빌드 값:** `electron.vite.config.ts`의 `main.define`으로 넣는다. 읽을 때는 `declare const`와 `typeof` 확인을 쓴다(`drive-ipc.ts:38-46` 모양). 개발 모드는 환경변수로, GitHub 빌드는 저장소 변수(Task 13)로 값을 준다. 이 PC에는 Rust를 설치하지 않는다(11/5 사용자 결정, 시연판 계획 Global Constraints).
+- **빌드 값:** `electron.vite.config.ts`의 `main.define`으로 넣는다. 읽을 때는 `declare const`와 `typeof` 확인을 쓴다(`apps/shell/src/main/drive/drive-ipc.ts:38-46` 모양, define은 `electron.vite.config.ts` 24행). 개발 모드는 환경변수로, GitHub 빌드는 저장소 변수(Task 13)로 값을 준다. 이 계획에는 Rust가 필요 없다. 설치판은 시연판처럼 GitHub Actions에서 굽는다. Rust는 11/5에 hanpan-graphics 빌드용으로 이 PC에 설치됐지만, 한판 설치판을 이 PC에서 굽지는 않는다.
 
   | 환경변수                   | define                         | 뜻                                                  |
   | -------------------------- | ------------------------------ | --------------------------------------------------- |
@@ -43,25 +50,28 @@
   - AI가 잠긴 동안에는 `ai-settings.json`에 쓰지 않는다. 키가 빈 값으로 덮이거나 평문으로 남지 않게 하기 위해서다.
   - 화면 문구에 "복제 불가"·"해킹 불가" 같은 과장을 쓰지 않는다.
 - **구독 연동 규칙:** `docs/standards.md` "구독 연동에서 어기면 안 되는 것"을 그대로 지킨다.
-- **결정 기록:** 0093부터 쓴다.
+- **결정 기록:** 0094부터 쓴다. 0093은 AI 포토·AI 일러스트 탭이 썼다.
+- **줄 번호:** 이 계획의 줄 번호는 `9d776ab7` 기준이다. 어긋나면 함께 적은 함수 이름이나 문자열로 찾는다.
+- **코드 서명:** 보류됐다(11/6 사용자). 이 계획의 어떤 단계도 서명에 기대지 않는다. 11/20판은 서명 없이 나간다.
 
 ## Review Focus
 
 1. **AI 답이 문서로 흘러드는 중에 USB를 뽑음:** 흐름이 멈추고, 이미 쓴 내용은 남고, 앱이 죽지 않는다. 다시 꽂으면 AI를 다시 쓸 수 있다. → Task 10 `locking aborts running calls and unlocking lets new ones start`
-2. **AI 설정 화면에서 저장하는 순간 USB가 빠지거나, USB 없이 v2 키가 든 채로 켬:** 키가 빈 값이나 평문으로 덮이지 않는다. 시작할 때 도는 내 PC AI 찾기(`adoptLocalAi`)도 마찬가지다. → Task 11 `refuses to write ai-settings.json while locked`, Task 8 `adoptLocalAi runs after the gate`
-3. **등록·잠금 창이 떠 있는 동안 .hwp를 더블클릭:** 두 번째 확인 창이 뜨지 않는다. 확인을 통과한 뒤 그 파일이 열린다. → Task 8 `a second launch during the gate queues its files`
-4. **마지막 서버 확인보다 PC 시계를 과거로 돌림:** 확인 실패로 잠근다. → Task 4 `a clock set back before the last server time fails`
+2. **AI 포토·AI 일러스트에서 AI 도우미가 명령을 실행하는 중에 USB를 뽑음:** 도우미가 멈추고, 앱 틀의 입력 잠금이 풀린다. 이미 바뀐 것은 [되돌리기] 한 번으로 돌릴 수 있고, 탭과 문서는 그대로다. → Task 10 `a run ended by the security key lock unlocks the app frame and offers its undo`
+3. **AI 설정 화면에서 저장하는 순간 USB가 빠지거나, USB 없이 v2 키가 든 채로 켬:** 키가 빈 값이나 평문으로 덮이지 않는다. 시작할 때 도는 내 PC AI 찾기(`adoptLocalAi`)도 마찬가지다. → Task 11 `refuses to write ai-settings.json while locked`, Task 8 `adoptLocalAi runs after the gate`
+4. **등록·잠금 창이 떠 있는 동안 .hwp를 더블클릭:** 두 번째 확인 창이 뜨지 않는다. 확인을 통과한 뒤 그 파일이 열린다. → Task 8 `a second launch during the gate queues its files`
 5. **고유번호 없는 저가 USB와 다른 USB를 함께 꽂음:** 등록한 USB를 볼륨 번호로 찾고, 다른 USB는 판정에 영향을 주지 않는다. → Task 3 `picks the registered stick among two`
 
 ## 이번 계획에서 하지 않는 것 (스펙 2장 비목표)
 
-- tenai.kr 서버, 회원 페이지, 소개 페이지 이전, 코드 서명(D)
+- tenai.kr 서버, 회원 페이지, 소개 페이지 이전과 문구(D, 소개 페이지 수정 작업)
+- 코드 서명(11/6 보류)
 - 터미널 명령 `ieumoffice`와 `--headless-export`의 보안키 확인. 다만 v2 키는 vault 없이는 풀리지 않으므로, `--reveal-ai-secrets`는 보안키가 열려 있을 때만 값을 돌려준다.
 - 회사 AI 제공, Mac·Linux 보안키, FIDO2
 
 ---
 
-### Task 1: 키 형식과 서명 확인 (11/10)
+### Task 1: 키 형식과 서명 확인 (11/9)
 
 **Files:**
 
@@ -117,6 +127,11 @@
   - 디스크와 서버 응답의 모양: `hanpan.key`는 `Signed<KeyPayload>`, `activation.json`은 `Signed<ActivationPayload>`, 상태 응답은 `Signed<StatusPayload>`다. 이것이 D와의 약속이다(Task 12에서 `docs/contracts.md`에 적는다).
 - Produces(`test-signer.ts`): `makeTestSigner(kid = 'test1'): { keys: PublicKeys; sign<T>(payload: T): Signed<T> }`. `generateKeyPairSync('ed25519')`를 쓰고, 공개키는 spki DER의 마지막 32바이트다.
 
+- [ ] **Step 0: 작업 폴더 준비** (처음 한 번)
+  - 작업 폴더에서 `npm ci --prefer-offline`을 돌린다. 패키지를 받는 일이므로 돌리기 전에 사용자에게 알린다(시연판 계획 "내려받기").
+  - 기준선: 작업 공간마다 `npm test -w <이름>`을 한 번 돌리고, 실패한 테스트 이름을 `.superpowers/sdd/2026-11-05-hanpan-securitykey/baseline.md`에 적는다.
+  - 이 계획에서 "기준선 밖의 실패 없음"은 이 목록과 비교한 결과다.
+
 - [ ] **Step 1: 실패하는 테스트**
 
 ```ts
@@ -153,7 +168,7 @@ it('reads the build value of public keys', () => {
 - [ ] **Step 4:** 같은 테스트 → PASS
 - [ ] **Step 5: 커밋** `feat(hanpan): security key file format and Ed25519 check`
 
-### Task 2: 기기 식별 (11/11)
+### Task 2: 기기 식별 (11/9)
 
 **Files:**
 
@@ -218,7 +233,7 @@ it('runs PowerShell by full path from the system folder with the constant script
   - 다르면 멈추고 사용자에게 알린다. 그때는 볼륨 번호를 PowerShell `Get-Volume`의 `UniqueId`로 바꾼다.
 - [ ] **Step 6: 커밋** `feat(hanpan): identify USB sticks and the PC for the security key`
 
-### Task 3: 등록 정보 보관과 찾기 (11/11)
+### Task 3: 등록 정보 보관과 찾기 (11/9)
 
 **Files:**
 
@@ -240,7 +255,7 @@ it('runs PowerShell by full path from the system folder with the constant script
     - 기기만 다르면 `other-device`다.
     - 파일이 깨졌거나 서명이 틀렸거나 `vault.key`가 32바이트가 아니면 `damaged`다.
     - 결과가 섞이면 `found`를 먼저 고르고, 다음은 `damaged`, 그다음은 `other-device`다.
-  - `writeRegistration(dir: string, files: { key: Signed<KeyPayload>; activation: Signed<ActivationPayload>; vault: Buffer }): void`: 폴더를 만들고 파일마다 원자적으로 쓴다(`atomicWriteFile`).
+  - `writeRegistration(dir: string, files: { key: Signed<KeyPayload>; activation: Signed<ActivationPayload>; vault: Buffer }): Promise<void>`: 폴더를 만들고 파일마다 `atomicWriteFile`(`apps/shell/src/main/atomic-write.ts:16`)로 쓴다. 이 도우미가 비동기라 `writeRegistration`도 비동기다.
   - `newVaultKey(): Buffer`: `randomBytes(32)`
 
 - [ ] **Step 1: 실패하는 테스트** (임시 폴더, 가짜 probe, Task 1의 `makeTestSigner`)
@@ -252,7 +267,7 @@ it('reports other-device for files copied to another stick', async () => {}) // 
 it('falls back to the PC folder', async () => {}) // no USB, PC folder matches MachineGuid → where 'pc'
 it('reports damaged files', async () => {}) // activation.json not JSON / wrong signature / 31-byte vault → damaged
 it('finds nothing anywhere', async () => expect((await find()).kind).toBe('none'))
-it('round-trips what it writes', () => {}) // writeRegistration then findRegistration → same payloads and vault
+it('round-trips what it writes', async () => {}) // await writeRegistration, then findRegistration → same payloads and vault
 ```
 
 - [ ] **Step 2:** Run `npm test -w @genoffice/shell -- tests/securekey/store.test.ts` → FAIL
@@ -260,7 +275,7 @@ it('round-trips what it writes', () => {}) // writeRegistration then findRegistr
 - [ ] **Step 4:** 같은 테스트 → PASS
 - [ ] **Step 5: 커밋** `feat(hanpan): store and find the security key registration`
 
-### Task 4: 폐기 확인과 30일 규칙 (11/12)
+### Task 4: 폐기 확인과 30일 규칙 (11/10)
 
 **Files:**
 
@@ -274,7 +289,7 @@ it('round-trips what it writes', () => {}) // writeRegistration then findRegistr
   - 상수: `STATUS_MAX_AGE_MS = 30 * 24 * 3600_000`, `STATUS_EVERY_MS = 24 * 3600_000`, `CLOCK_SKEW_MS = 5 * 60_000`
   - `interface SecureKeyState { keyId: string; where: 'usb' | 'pc'; status?: Signed<StatusPayload>; checkedAt?: string }`: PC 쪽 기록이다. 등록한 곳과 마지막 서명 응답을 담는다.
   - `statePath(userData: string): string`: `join(userData, 'securekey-state.json')`
-  - `readState(path: string): SecureKeyState | null`, `writeState(path: string, state: SecureKeyState): void`
+  - `readState(path: string): SecureKeyState | null`, `writeState(path: string, state: SecureKeyState): Promise<void>`(`atomicWriteFile`)
   - `type StatusVerdict = { ok: true } | { ok: false; reason: 'revoked' | 'stale' | 'clock' }`
   - `judgeStatus(input: { now: Date; activatedAt: string; last: StatusPayload | null }): StatusVerdict`
     - 믿는 시각은 `max(activatedAt, last?.serverTime)`이다.
@@ -332,7 +347,7 @@ it('asks once a day', () => {}) // checkedAt 23 h ago → false, 25 h ago → tr
 - [ ] **Step 4:** 같은 테스트 → PASS
 - [ ] **Step 5: 커밋** `feat(hanpan): revocation check with signed server time and a 30-day limit`
 
-### Task 5: 시작 판정 (11/12)
+### Task 5: 시작 판정 (11/10)
 
 **Files:**
 
@@ -374,7 +389,7 @@ it('is in grace the day before the date and not on it', () => {
 - [ ] **Step 4:** 같은 테스트 → PASS
 - [ ] **Step 5: 커밋** `feat(hanpan): decide the security key gate at startup`
 
-### Task 6: 등록 흐름 (11/11)
+### Task 6: 등록 흐름 (11/10)
 
 **Files:**
 
@@ -394,8 +409,8 @@ it('is in grace the day before the date and not on it', () => {
     2. 대상 기기의 번호를 해시한다.
     3. `activateKey`를 부른다.
     4. `newVaultKey`로 vault 키를 만든다.
-    5. `writeRegistration`으로 대상 위치에 쓴다.
-    6. `writeState`로 `{ keyId, where }`를 남긴다.
+    5. `await writeRegistration(...)`으로 대상 위치에 쓴다.
+    6. `await writeState(...)`로 `{ keyId, where }`를 남긴다.
   - PC를 고를 때는 `consentAt`이 있어야 한다. 화면이 "이해했습니다"를 받은 시각이다.
 
 - [ ] **Step 1: 실패하는 테스트** (가짜 fetch는 Task 1 서명기로 응답한다. 임시 폴더, 가짜 probe를 쓴다)
@@ -438,14 +453,14 @@ it('needs the internet', async () => {}) // fetch throws → network
   - `showSecureKeyWindow(initial: SecureKeyUiState, handlers: { register(target): Promise<string | null>; retry(): Promise<SecureKeyUiState | 'passed'> }): Promise<'registered' | 'later' | 'passed' | 'quit'>`. `register`는 오류 문구를 돌려주고, 성공이면 `null`이다.
     - 창 속성: 테두리 없음, 가운데, `show: false` 다음 `ready-to-show`, `sandbox: true`. 셸 창이 아직 없으므로 부모를 두지 않는다.
     - 창을 다른 방법으로 닫으면 `quit`이다(`pdf-password-dialog.ts:94-97` 모양).
-  - 문구 키(`strings.json`, 11개 언어). 스펙이 정한 글은 그대로 쓴다.
+  - 문구 키(`strings.json`). JSON에는 시연판 규칙대로 11개 언어(ko·en·zh·zh-TW·ja·th·ru·ar·he·hi·vi)를 쓰고, 나머지 10개 언어 블록은 아래 도구가 영어로 채운다. 스펙이 정한 글은 그대로 쓴다.
     - `skPcWarning`: "이 PC가 해킹되면 AI 키가 함께 유출될 수 있습니다. USB 보관을 권장합니다."
     - `skPrivacy`: "등록하면 보안키 번호와 마지막 사용일이 tenai.kr에 기록됩니다"
     - `skLockStale`: "인터넷에 연결해 보안키를 확인해 주세요"
     - `skLater`: "나중에 하기 ({date}까지)"
     - `skGraceBanner`: "{date}부터 보안키가 있어야 한판이 켜집니다. tenai.kr에서 가입하고 보안키를 등록하세요."
     - 나머지 화면 글은 상태마다 하나씩 구현자가 쓴다: 제목, 키 고르기, USB·PC 선택, 동의, 등록, 다시 확인, 끝내기, 잠금 이유 여섯 가지, 등록 오류 일곱 가지.
-  - `strings.ts`: 21개 언어 블록을 `  ko: {` 꼴로 두고, `createI18n`으로 감싼다(`index.ts:969`의 `tMain` 모양). JSON 값은 `tools/hanpan-add-block-strings.mjs <strings.ts> skTitle <strings.json>`로 넣는다.
+  - `strings.ts`: 21개 언어 블록을 `  ko: {` 꼴로 두고, `createI18n`으로 감싼다(`index.ts:1011`의 `tMain` 모양). JSON 값은 `tools/hanpan-add-block-strings.mjs <strings.ts> skTitle <strings.json>`로 넣는다.
 
 화면 흐름(스펙 7-1):
 
@@ -478,14 +493,14 @@ it('the warning and privacy lines are the spec text in Korean', () => {}) // skP
 - [ ] **Step 4:** 두 테스트, `tests/quick-look-wiring.test.ts`(preload 가져오기 규칙), `npm run typecheck` → PASS
 - [ ] **Step 5: 커밋** `feat(hanpan): security key register and lock window`
 
-### Task 8: 시작 연결 (11/11~11/12)
+### Task 8: 시작 연결 (11/11)
 
 **Files:**
 
 - Create: `apps/shell/src/main/securekey/runtime.ts`
 - Modify
   - `apps/shell/electron.vite.config.ts`: `main.define`에 네 값
-  - `apps/shell/src/main/index.ts`: 8722-8729, 8733, 8410-8415, 8784 다음, 9165 앞
+  - `apps/shell/src/main/index.ts`: 9111-9118(코덱과 reveal), 9123(`adoptLocalAi`), 8800(`second-instance`), 9180-9183(`if (!hasLock)`) 다음, 9564(`createShellWindow()`) 앞
   - `apps/shell/tests/ai-secrets.test.ts:146-156`, `apps/shell/tests/subscription-lifetime.test.ts`: 시작 순서를 글로 확인하는 테스트를 새 순서에 맞춘다
   - 홈 안내 띠: `apps/shell/src/renderer/src/Home.tsx`, `apps/shell/src/preload/index.ts`(`aiOffice.secureKeyGrace`), `apps/shell/src/shared/home-api.ts`
 - Test: `apps/shell/tests/securekey/runtime.test.ts`, `apps/shell/tests/securekey/gate-wiring.test.ts`
@@ -509,9 +524,9 @@ it('the warning and privacy lines are the spec text in Korean', () => {}) // skP
     - `pending(): boolean`: 확인 창이 떠 있는 동안 참
 - `index.ts` 순서(탐색 결과 반영)
   1. `setAiSecretCodec(...)` 바로 뒤에 `await secureKey.openQuietly()`를 둔다. `runRevealEntry`보다 앞이다. 그래서 reveal은 USB가 있을 때만 v2를 연다.
-  2. `hanpan.adoptLocalAi()`(8733)는 확인 뒤로 옮긴다. 설정을 쓰는 일이라 vault 없이 돌면 키를 빈 값으로 덮을 수 있기 때문이다.
-  3. 단일 실행 잠금(8784) 다음, 언어·테마(8822-8824) 다음에 `if ((await secureKey.runGate()) === 'quit') { app.quit(); return }`를 둔다. 이 자리는 `configureQuickLookWindow`(8957), `startMcpFromSettings`(9159), `createShellWindow()`(9165)보다 앞이다.
-  4. `second-instance` 처리기(8410-8415): `secureKey.pending()`이면 받은 경로를 `pendingLaunchPaths`에 더하고 확인 창에 초점만 준다.
+  2. `hanpan.adoptLocalAi()`(9123)는 확인 뒤로 옮긴다. 설정을 쓰는 일이라 vault 없이 돌면 키를 빈 값으로 덮을 수 있기 때문이다.
+  3. 단일 실행 잠금(9156-9183) 다음, 언어·테마(9218-9223) 다음에 `if ((await secureKey.runGate()) === 'quit') { app.quit(); return }`를 둔다. 이 자리는 `configureQuickLookWindow`(9356), `startMcpFromSettings`(9558), `createShellWindow()`(9564)보다 앞이다.
+  4. `second-instance` 처리기(8800): `secureKey.pending()`이면 받은 경로를 `pendingLaunchPaths`에 더하고 확인 창에 초점만 준다.
   5. 확인 단계를 `try/catch`로 감싼다. 실패하면 `dialog.showErrorBox` 후 `app.quit()`이다. `whenReady`에는 `.catch`가 없어서, 감싸지 않으면 창 없는 프로세스가 남는다.
   6. 확인 창을 닫는 순간 `window-all-closed`가 앱을 끝내지 않도록, 셸 창을 먼저 만든 뒤 확인 창을 닫는다.
 - 홈 안내 띠: `aiOffice.secureKeyGrace(): Promise<string | null>`가 마감일을 주면 홈 위에 `skGraceBanner`를 보인다(스펙 7-9).
@@ -542,7 +557,7 @@ it('a second launch during the gate queues its files', () => {}) // second-insta
 - [ ] **Step 5:** 손 확인(등록 창, 유예의 [나중에 하기], 등록 성공 뒤 홈)은 가짜 서버가 생기는 Task 12 Step 5에서 함께 한다.
 - [ ] **Step 6: 커밋** `feat(hanpan): run the security key gate before the first window`
 
-### Task 9: 실행 중 감시와 잠금 덮개 (11/12)
+### Task 9: 실행 중 감시와 잠금 덮개 (11/11)
 
 **Files:**
 
@@ -601,11 +616,12 @@ it('follows the parent when it moves', () => {})
   - `packages/ai-provider/src/subscription/process.ts:312`(`spawnSubscriptionProgram`)
   - `apps/shell/src/main/file-index/rerank.ts:103`(`SearchReranker.rerank`)
 - Modify: `apps/docs/src/main/docs-main.ts`(`abortAllAiStreams()` export, `activeAiStreams` 3935행)
-- Modify: `apps/shell/src/main/mcp/mcp-server.ts`(`McpServerOptions` 31-54행, `route()` 150행, 도구 감싸기 120행), `apps/shell/src/main/control-server.ts`(`serve()`의 토큰 확인 다음, 126행)
+- Modify: `apps/shell/src/main/mcp/mcp-server.ts`(`McpServerOptions` 31-54행, `route()` 150행, 도구 감싸기 `registerTool` 114행), `apps/shell/src/main/control-server.ts`(`serve()` 107행, 토큰 확인 113행 다음)
+- Modify(아래 그래픽 테스트가 실패할 때만): `apps/graphics/src/renderer/ai/AiPanel.tsx`
 - Modify: `apps/shell/src/main/index.ts`
   - `startMcpFromSettings`, `startAgentMcpServer`, `startControlServer`에 `isLocked: isAiLocked`를 넘긴다.
   - `runtime`의 `lockAi`·`unlockAi`를 만든다.
-- Test: `packages/ai-provider/tests/ai-lock.test.ts`, `apps/docs/tests/abort-all-ai-streams.test.ts`, `apps/shell/tests/mcp/mcp-server.test.ts`(사례 추가), `apps/shell/tests/control-server.test.ts`(사례 추가)
+- Test: `packages/ai-provider/tests/ai-lock.test.ts`, `apps/docs/tests/abort-all-ai-streams.test.ts`, `apps/shell/tests/mcp/mcp-server.test.ts`(사례 추가), `apps/shell/tests/control-server.test.ts`(사례 추가), `apps/graphics/tests/ai-panel.test.tsx`(사례 추가)
 
 **Interfaces:**
 
@@ -613,10 +629,13 @@ it('follows the parent when it moves', () => {})
   - `@genoffice/ai-provider`
     - `setAiLocked(locked: boolean): void`, `isAiLocked(): boolean`
     - `aiLockSignal(): AbortSignal`: 잠그면 끊긴다. 풀면 새 신호다.
-    - `class AiLockedError extends Error`(`code = 'ai-locked'`), `assertAiUnlocked(): void`
+    - `class AiLockedError extends AiRunError`(`packages/ai-provider/src/run-error.ts:14`)
+      - `kind`는 기존 종류 `'not-connected'`다. `code = 'ai-locked'`, 글은 `'AI is locked until the security key is back'`이다.
+      - 새 오류 종류는 만들지 않는다. 덮개가 모든 창을 가려 사람이 이 오류를 볼 일이 거의 없고, 보이더라도 21개 언어로 된 기존 "연결 안 됨" 문구가 나온다.
+    - `assertAiUnlocked(): void`: 잠겨 있으면 `AiLockedError`를 던진다.
   - 각 지점이 하는 일
     - `aiFetch`: 먼저 `assertAiUnlocked()`를 부르고, 신호는 `AbortSignal.any([init.signal, aiLockSignal()])`로 묶는다.
-    - `streamForProvider`: 오류 조각 하나(`errorKind`는 기존 "막힘" 종류)를 내고 끝난다.
+    - `streamForProvider`: 맨 앞에서 `assertAiUnlocked()`를 부른다. 콜백에 오류 길이 없어서 던진다. docs-main은 이것을 `errorCode: 'not-connected'`인 오류 조각 하나로 렌더러에 보낸다(`aiStreamErrorChunk`).
     - `chatForProvider`: `AiLockedError`로 실패한다.
     - `spawnSubscriptionProgram`: 프로그램을 띄우지 않고 실패한다.
   - `abortAllAiStreams(): void`(docs-main)
@@ -626,9 +645,15 @@ it('follows the parent when it moves', () => {})
     3. `stopAgentSessions()`
     4. `shutdownSubscriptionChildren()`
     5. `shutdownCodexAppServers()`
+    - 1·2단계는 `await` 없이 한 흐름에서 차례로 부른다.
+      - 그래야 끊긴 요청의 catch가 돌 때 docs-main의 컨트롤러가 이미 끊겨 있다(`docs-main.ts` 4190-4195행).
+      - 그러면 그 실행은 오류가 아니라 [중지]를 누른 것과 같은 `done`으로 끝난다.
   - `unlockAi()`는 `setAiLocked(false)`다.
   - MCP는 잠긴 동안 HTTP 423과 `{ "error": "locked" }`로 답한다. 이미 열린 세션의 도구 호출은 오류 결과를 받는다. `/health`는 그대로 답한다.
   - 제어 채널은 `{ ok: false, reason: 'app_unavailable', message: 'locked' }`로 답한다. 이유 목록은 늘리지 않는다.
+  - AI 포토·AI 일러스트 도우미는 위 길로 이미 막힌다.
+    - 끊긴 실행은 [중지]와 같게 끝나야 한다. 앱 틀의 입력 잠금을 풀고, 바뀐 것이 있으면 [되돌리기]를 남긴다.
+    - MCP의 `open_documents`(그래픽 탭 목록)도 MCP 서버 전체 거절에 들어간다.
 
 - [ ] **Step 1: 실패하는 테스트**
 
@@ -641,12 +666,13 @@ it('locking aborts running calls and unlocking lets new ones start', async () =>
   // setAiLocked(false) → a new aiFetch reaches the stub
 })
 it('does not start subscription programs while locked', async () => {}) // spawn stand-in not called
-it('a locked stream ends with one error chunk', async () => {})
+it('streamForProvider refuses while locked with the not-connected kind', async () => {}) // rejects AiLockedError, kind 'not-connected', fetch stub not called
 ```
 
 ```ts
 // apps/docs/tests/abort-all-ai-streams.test.ts — handlers as in tests/ai-media-cancel.test.ts
 it('aborts every running stream', () => {})
+it('a run cut by the lock ends with done like Stop, not an error chunk', async () => {}) // stream stub waits on its signal; setAiLocked(true) then abortAllAiStreams() in one turn → { type: 'done' }, no 'error' chunk
 ```
 
 ```ts
@@ -655,9 +681,18 @@ it('refuses tool calls while locked', async () => {}) // SDK client gets an erro
 it('answers app_unavailable while locked', async () => {})
 ```
 
-- [ ] **Step 2:** Run 네 테스트 파일 → FAIL
+```ts
+// apps/graphics/tests/ai-panel.test.tsx — add the turn kind { cut: true }: the main ends the stream with a bare done, as abortAllAiStreams does
+it('a run ended by the security key lock unlocks the app frame and offers its undo', async () => {
+  // turns: [{ tools: [{ name: 'run_command', input: { id: 'shape.rect' } }] }, { cut: true }]
+  // → unlock called once, onBusyChange ends with false, the undo button undoes 1 step
+})
+```
+
+- [ ] **Step 2:** Run 다섯 테스트 파일 → FAIL
+  - 그래픽 사례는 지금 코드로 이미 통과할 수 있다. 통과하면 이미 맞는 동작을 고정하는 테스트로 두고 ledger에 적는다. 실패하면 `AiPanel.tsx`를 고친다.
 - [ ] **Step 3:** 만든다. `docs/standards.md`의 구독 규칙(가짜 연결부, 실제 `claude`·`codex`에 닿지 않기)을 지킨다.
-- [ ] **Step 4:** Run `npm test -w @genoffice/ai-provider`, `npm test -w @genoffice/docs`, 셸 테스트 두 파일 → 기준선 밖의 실패 없음
+- [ ] **Step 4:** Run `npm test -w @genoffice/ai-provider`, `npm test -w @genoffice/docs`, `npm test -w @genoffice/graphics`, 셸 테스트 두 파일 → 기준선 밖의 실패 없음
 - [ ] **Step 5: 커밋** `feat(hanpan): refuse AI, MCP and control requests while the security key is locked`
 
 ### Task 11: AI 키 이중 잠금 (sealed:v2) (11/12)
@@ -671,8 +706,8 @@ it('answers app_unavailable while locked', async () => {})
 - Modify(잠긴 동안 쓰기 거절)
   - `apps/docs/src/main/docs-main.ts`: `writeStoredAiSettings` 3969행, `setMeteredAccepted` 4015-4020행(봉인도 하게 고친다), `ai:set-settings` 4050행
   - `apps/docs/src/main/free-ai-ipc.ts`: 76행, 129행
-  - `apps/shell/src/main/index.ts`: `home:set-file-search-settings` 5682-5693행, 시작 때 다시 봉인 8796-8799행
-- Modify: `apps/shell/src/main/index.ts`. 8722-8725의 코덱을 `vaultCodec(safeStorageCodec(...), () => secureKey.vault())`로 바꾼다.
+  - `apps/shell/src/main/index.ts`: `HOME_CHANNELS.setFileSearchSettings` 처리기 5923-5935행, 시작 때 다시 봉인 9190-9203행. 시작 때 봉인은 이미 `try/catch` 안이라, 잠겨 있어 거절되면 조용히 건너뛴다.
+- Modify: `apps/shell/src/main/index.ts`. 9111-9114의 코덱을 `vaultCodec(safeStorageCodec(...), () => secureKey.vault())`로 바꾼다.
 - Test: `apps/shell/tests/securekey/vault-codec.test.ts`, `packages/ai-provider/tests/settings-secrets.test.ts`(사례 추가), `apps/shell/tests/ai-secrets.test.ts`(사례 추가), `apps/docs/tests/ai-settings-write-lock.test.ts`, `packages/cli/tests/secrets.test.ts`(사례 추가)
 
 **Interfaces:**
@@ -734,15 +769,15 @@ it('keeps v2 values for the reveal request', () => {})
 - [ ] **Step 4:** Run `npm test -w @genoffice/ai-provider`, `npm test -w @genoffice/docs`, `npm test -w @genoffice/cli`, `npm test -w @genoffice/shell` → 기준선 밖의 실패 없음
 - [ ] **Step 5: 커밋** `feat(hanpan): seal AI keys twice with the security key's vault`
 
-### Task 12: 가짜 서버, 문서, 손 시험 (11/13~11/16)
+### Task 12: 가짜 서버, 문서, 손 시험 (코드 11/12, 손 시험 11/16)
 
 **Files:**
 
 - Create: `tools/securekey-dev-server.mjs`
 - Modify
   - `docs/contracts.md`: 새 절 "보안키 파일과 서버 응답". Task 1의 형식, `canonicalJson`과 서명 규칙, 스펙 7-6의 요청 4개, 상태 코드 409·429를 적는다.
-  - `docs/security.md`: "키와 기록의 보관"에 `sealed:v2`와 vault 위치를 적는다. 새 절 "보안키"를 만든다(잠금 때 막는 것, 막지 못하는 것: 스펙 7-10).
-- Create: `docs/tracking/decisions/0093-hanpan-security-key.md`(오프라인 서명 확인, 온라인 폐기 확인, 30일, 이중 잠금, 잠금 때 AI·MCP 차단). Modify: `index.md`
+  - `docs/security.md`: "키와 기록의 보관"에 `sealed:v2`와 vault 위치를 적는다. 새 절 "보안키"를 만든다(잠금 때 막는 것, 막지 못하는 것: 스펙 7-10). 막는 것에 AI 포토·AI 일러스트 도우미를 넣는다.
+- Create: `docs/tracking/decisions/0094-hanpan-security-key.md`(오프라인 서명 확인, 온라인 폐기 확인, 30일, 이중 잠금, 잠금 때 AI·MCP 차단). Modify: `index.md`
 - Test: `packages/cli/tests/securekey-dev-server.test.ts`
 
 **Interfaces:**
@@ -762,12 +797,13 @@ it('reports a revoked key', async () => {})
 ```
 
 - [ ] **Step 2~4:** FAIL → 만든다 → PASS
-- [ ] **Step 5: 손 시험** (스펙 8장, 개발 모드)
+- [ ] **Step 5: 손 시험** (스펙 8장, 개발 모드, 시연(11/13) 뒤 사용자의 USB로 함께)
   - 가짜 서버를 띄우고, 출력된 값을 환경변수로 주어 개발 모드로 켠다: `HANPAN_REQUIRE_KEY=1 HANPAN_KEY_REQUIRED_FROM=<날짜> HANPAN_KEY_SERVER=http://127.0.0.1:3870 HANPAN_KEY_PUBKEYS='<출력된 값>' npm run dev`
   - Task 8의 손 확인(등록 창, 유예의 [나중에 하기], 등록 성공 뒤 홈)을 먼저 한다.
   - USB 2~3종에 등록한다. 고유번호 없는 저가 USB도 포함한다. 여러 개를 함께 꽂아도 되는지 본다.
   - PC 보관을 고르면 경고가 뜨고 동의가 있어야 하는지 본다.
   - 쓰는 중에 USB를 뽑는다. 저장하지 않은 문서가 그대로 있고, AI 답이 멈추고, MCP 요청이 423을 받는지 본다. 다시 꽂으면 풀리는지 본다.
+  - AI 포토 탭에서 도우미가 명령을 실행하는 중에 USB를 뽑는다. 도우미가 멈추는지, 다시 꽂은 뒤 앱을 바로 만질 수 있는지, [되돌리기]가 남는지 본다.
   - `--server-time`으로 31일 뒤를 흉내 내 `stale`이 나오는지, PC 시계를 과거로 돌려 `clock`이 나오는지, `--revoke`로 다음 확인 때 바로 잠기는지 본다.
   - `HANPAN_KEY_REQUIRED_FROM`을 내일로 두면 [나중에 하기]와 홈 안내 띠가 나오는지, 오늘로 두면 등록하지 않고는 켜지지 않는지 본다.
   - USB를 뺀 채 `--reveal-ai-secrets`를 실행하면 v2 키가 나오지 않는지 본다.
@@ -800,7 +836,8 @@ it('lets an unkeyed build through without them', () => {})
 
 - [ ] **Step 2~4:** FAIL → `beforePack`에 넣는다 → PASS
 - [ ] **Step 5: 문구** (스펙 7-8)
-  - 대표님이 승인한 PRIVACY·README·소개 페이지 글을 넣는다(혁준이 11/18까지 승인받음).
+  - 대표님이 승인한 PRIVACY·README 글을 넣는다(혁준이 11/18까지 승인받음).
+  - 소개 페이지(`site/index.html`)는 이 계획 밖의 "소개 페이지 수정" 작업에서 바꾼다.
   - 승인된 글이 없으면 보안키를 켠 정식판을 내지 않는다. 멈추고 사용자에게 알린다.
 - [ ] **Step 6: 실제 서버로 시험**
   - D의 서버에서 회원 키를 받아 등록한다.

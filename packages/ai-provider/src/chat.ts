@@ -8,6 +8,7 @@ import { chatChatGpt } from './chatgpt/responses'
 import { getProviderAdapter, type ResolvedEndpoint } from './registry'
 import type { AiChatResponse, AiProviderConfig, AiProviderSelection } from './types'
 import { AI_CHAT_RESPONSE_TIMEOUT_MS, createStreamWatchdog } from './watchdog'
+import { assertAiUnlocked } from './ai-lock'
 
 /** route a one-shot (non-streaming, non-tool-calling) chat call by provider id */
 export async function chatForProvider(
@@ -17,6 +18,7 @@ export async function chatForProvider(
   user: string,
   signal?: AbortSignal,
 ): Promise<AiChatResponse> {
+  assertAiUnlocked()
   // non-streaming: the server generates the full answer before the headers arrive,
   // so the connect phase gets the long budget; the body read then gets the idle budget
   const wd = createStreamWatchdog(signal, AI_CHAT_RESPONSE_TIMEOUT_MS)

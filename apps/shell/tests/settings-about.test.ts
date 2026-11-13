@@ -27,6 +27,7 @@ let root: Root
 let openGitHubRepo: ReturnType<typeof vi.fn<() => Promise<void>>>
 let openLicenseNotices: ReturnType<typeof vi.fn<() => Promise<void>>>
 let openRightsContact: ReturnType<typeof vi.fn<() => Promise<void>>>
+let openLicenseTerms: ReturnType<typeof vi.fn<() => Promise<void>>>
 
 beforeEach(() => {
   host = document.createElement('div')
@@ -35,6 +36,7 @@ beforeEach(() => {
   openGitHubRepo = vi.fn(async () => undefined)
   openLicenseNotices = vi.fn(async () => undefined)
   openRightsContact = vi.fn(async () => undefined)
+  openLicenseTerms = vi.fn(async () => undefined)
   const known: Record<string, unknown> = {
     getTheme: async () => 'system',
     getDocumentTheme: async () => 'follow',
@@ -47,6 +49,7 @@ beforeEach(() => {
     openGitHubRepo,
     openLicenseNotices,
     openRightsContact,
+    openLicenseTerms,
   }
   // every other call answers with something harmless
   window.aiOffice = new Proxy(known, {
@@ -81,6 +84,20 @@ const buttonLabeled = (label: string): HTMLButtonElement =>
 const repoButton = (): HTMLButtonElement => buttonLabeled(strings.en.viewOnGitHub)
 
 describe('Settings → About', () => {
+  it('the About window shows the same text as the installer license', async () => {
+    await openAbout('ko')
+    expect(host.textContent).toContain(strings.ko.setTerms)
+    expect(host.textContent).toContain(strings.ko.setTermsDesc)
+    const row = Array.from(host.querySelectorAll('.set-field')).find((f) =>
+      f.textContent?.includes(strings.ko.setTerms),
+    )!
+    await act(async () => {
+      row.querySelector<HTMLButtonElement>('.set-btn')!.click()
+      await Promise.resolve()
+    })
+    expect(openLicenseTerms).toHaveBeenCalledTimes(1)
+  })
+
   it('links to the product repository with a neutral label', async () => {
     await openAbout()
     expect(host.querySelector('.set-pane-title')!.textContent).toBe(strings.en.setSecAbout)
@@ -108,7 +125,11 @@ describe('Settings → About', () => {
     await openAbout()
     expect(host.textContent).toContain(PRODUCT_CONTACT_EMAIL)
     await act(async () => {
-      buttonLabeled(strings.en.setLicensesOpen).click()
+      // the row's own button: the license-and-disclaimer row above has a View too
+      Array.from(host.querySelectorAll('.set-field'))
+        .find((f) => f.textContent?.includes(strings.en.setLicenses))!
+        .querySelector<HTMLButtonElement>('.set-btn')!
+        .click()
       buttonLabeled(strings.en.setRightsContactSend).click()
       await Promise.resolve()
     })
@@ -134,6 +155,8 @@ describe('Settings → About', () => {
       'setLicenses',
       'setLicensesDesc',
       'setLicensesOpen',
+      'setTerms',
+      'setTermsDesc',
       'setRightsContact',
       'setRightsContactDesc',
       'setRightsContactSend',

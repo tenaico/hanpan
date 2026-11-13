@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { normalizeAiSettings } from '../src/legacy-settings'
 import {
   SEALED_PREFIX,
+  SEALED_PREFIX_V2,
+  isSealedSecret,
   mapAiSecrets,
   openAiSecrets,
   sealAiSecrets,
@@ -52,6 +54,25 @@ describe('mapAiSecrets', () => {
   it('leaves what is not settings alone', () => {
     expect(mapAiSecrets(null, () => 'x')).toBeNull()
     expect(mapAiSecrets('text', () => 'x')).toBe('text')
+  })
+})
+
+describe('sealed formats', () => {
+  it('knows both sealed formats', () => {
+    expect(isSealedSecret('sealed:v2:x')).toBe(true)
+    expect(isSealedSecret('sealed:v1:x')).toBe(true)
+    expect(isSealedSecret('sealed:v3:x')).toBe(false)
+    expect(SEALED_PREFIX_V2).toBe('sealed:v2:')
+  })
+
+  it('reads a v2 value it cannot open as empty, never as the sealed text', () => {
+    setAiSecretCodec({ seal: () => null, open: () => null })
+    expect(openAiSecrets({ providers: { openai: { apiKey: 'sealed:v2:abc' } } })).toEqual({
+      providers: { openai: { apiKey: '' } },
+    })
+    expect(sealedAiSecretsIn({ providers: { openai: { apiKey: 'sealed:v2:abc' } } })).toEqual([
+      'sealed:v2:abc',
+    ])
   })
 })
 

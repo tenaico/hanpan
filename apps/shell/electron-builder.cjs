@@ -566,6 +566,16 @@ const config = {
       from: 'build/THIRD-PARTY-NOTICES.txt',
       to: 'THIRD-PARTY-NOTICES.txt',
     },
+    // the installer's license and disclaimer, shown again from Settings > About
+    // and the first-run terms (spec 2026-11-12 5-6)
+    {
+      from: 'build/license_ko.txt',
+      to: 'license_ko.txt',
+    },
+    {
+      from: 'build/license_en.txt',
+      to: 'license_en.txt',
+    },
     {
       from: '../../node_modules/electron/dist/LICENSES.chromium.html',
       to: 'LICENSES.chromium.html',
@@ -890,6 +900,10 @@ const config = {
     // them off. rpm-level `fpm` (not linux-level) keeps it away from the deb.
     fpm: ['--rpm-rpmbuild-define=_build_id_links none'],
   },
+  // The license page (spec 2026-11-12 5-6): no `license` here or under dmg.
+  // Left unset, electron-builder reads build/license_ko.txt and license_en.txt
+  // and shows the one for the installer's language (English for the rest);
+  // a set `license` would name one file for every language.
   nsis: {
     oneClick: false,
     allowToChangeInstallationDirectory: true,

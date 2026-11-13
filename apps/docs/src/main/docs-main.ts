@@ -131,6 +131,8 @@ import {
   type AiStreamRequest,
   type AiSubscriptionProviderId,
   sealAiSecrets,
+  assertAiSecretsWritable,
+  assertAiUnlocked,
 } from '@genoffice/ai-provider'
 import { listCodexModels, shutdownCodexAppServers } from '@genoffice/ai-provider/codex-app-server'
 import { listCustomModelsForIpc } from '@genoffice/ai-provider/custom-models'
@@ -3967,6 +3969,15 @@ export function activeAiStreamCount(): number {
   return activeAiStreams.size
 }
 
+/**
+ * End every AI stream in flight, as [Stop] does: each ends with a bare `done`.
+ * The shell calls it when the security key locks, right after setAiLocked(true)
+ * and in the same turn, so the run's catch already sees its controller aborted.
+ */
+export function abortAllAiStreams(): void {
+  for (const controller of [...activeAiStreams.values()]) controller.abort()
+}
+
 /** every renderer (tabs, home) re-reads ai-settings.json — the composer chip and
  *  the settings page edit the same file from different windows */
 function broadcastAiSettingsChanged(): void {
@@ -3994,7 +4005,20 @@ export function readStoredAiSettings(): AiSettings {
  * same checks as the settings screen's save; every window re-reads them.
  * Returns false when the settings did not pass the checks (nothing written).
  */
+/**
+ * Before any write of ai-settings.json: refused while Hanpan's security key
+ * locks AI, and while the file holds v2 keys this run cannot open (the stick
+ * is out in a build that does not lock): they read as empty, and writing would
+ * replace them for good (spec 7-5).
+ */
+function guardAiSettingsWrite(): void {
+  assertAiUnlocked()
+  assertAiSecretsWritable(readJson<unknown>(SETTINGS_PATH(), {}))
+}
+
 export function writeStoredAiSettings(settings: AiSettings): boolean {
+  // locked by Hanpan's security key: the v2 keys read as empty now, a write would replace them
+  guardAiSettingsWrite()
   const sanitized = sanitizeAiSettings(settings)
   if (!sanitized) return false
   writeJsonAtomic(SETTINGS_PATH(), sealAiSecrets(sanitized))
@@ -4041,9 +4065,13 @@ export function registerAiIpc(): void {
   ensureSubscriptionIpc(ipcMain, {
     getSettings: storedAiSettings,
     setMeteredAccepted: (provider: AiSubscriptionProviderId, accepted: boolean) => {
+      guardAiSettingsWrite()
+      // the file as stored: sealed values stay as they are, a plain one (a hand edit) is sealed
       writeJsonAtomic(
         SETTINGS_PATH(),
-        withMeteredAccepted(readJson<unknown>(SETTINGS_PATH(), {}), provider, accepted),
+        sealAiSecrets(
+          withMeteredAccepted(readJson<unknown>(SETTINGS_PATH(), {}), provider, accepted),
+        ),
       )
       broadcastAiSettingsChanged()
     },
@@ -4076,6 +4104,7 @@ export function registerAiIpc(): void {
   )
 
   ipcMain.handle('ai:set-settings', (_event, settings: AiSettings) => {
+    guardAiSettingsWrite()
     // SECURITY.md: payloads are schema-checked in the main process. The settings
     // file feeds cliPath into spawn() and baseUrl receives the provider's API key,
     // so the renderer's copy is sanitized before it touches disk.
@@ -4090,7 +4119,9 @@ export function registerAiIpc(): void {
 
   registerFreeAiIpc({
     readSettings: storedAiSettings,
+    // connecting and disconnecting a free AI both come through here (free-ai-ipc.ts)
     writeSettings: (settings) => {
+      guardAiSettingsWrite()
       const sanitized = sanitizeAiSettings(settings)
       if (!sanitized) return false
       writeJsonAtomic(SETTINGS_PATH(), sealAiSecrets(sanitized))

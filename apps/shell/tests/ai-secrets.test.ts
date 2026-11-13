@@ -3,10 +3,20 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { SEALED_PREFIX, setAiSecretCodec } from '@genoffice/ai-provider'
+import { randomBytes } from 'node:crypto'
+import {
+  SEALED_PREFIX,
+  SEALED_PREFIX_V2,
+  openAiSecrets,
+  setAiSecretCodec,
+} from '@genoffice/ai-provider'
+import { vaultCodec } from '../src/main/securekey/vault-codec'
 import { normalizeFileSearchSettings } from '../src/main/file-index/rerank'
 import {
   MAX_REVEAL_VALUES,
+  assertFileSearchKeysWritable,
+  clearSealedV2FileSearchKeys,
+  clearSealedV2Secrets,
   fileSearchHoldsPlainKeys,
   openFileSearchKeys,
   sealFileSearchKeys,
@@ -113,6 +123,61 @@ describe('sealStoredAiSettings', () => {
     expect(sealStoredAiSettings(path)).toBe(false)
   })
 
+  it('upgrades v1 values to v2 once the vault is there', () => {
+    const v1 = safeStorageCodec(fakeStorage(), 'win32')
+    setAiSecretCodec(v1)
+    const path = file(stored)
+    expect(sealStoredAiSettings(path)).toBe(true)
+    const sealedV1 = JSON.parse(readFileSync(path, 'utf8')).providers.openai.apiKey as string
+    expect(sealedV1.startsWith(SEALED_PREFIX)).toBe(true)
+    // without the vault there is nothing to upgrade to
+    expect(sealStoredAiSettings(path, { upgrade: true })).toBe(false)
+    const vault = randomBytes(32)
+    setAiSecretCodec(vaultCodec(v1, () => vault))
+    expect(holdsPlainSecrets(JSON.parse(readFileSync(path, 'utf8')), { upgrade: true })).toBe(true)
+    expect(sealStoredAiSettings(path, { upgrade: true })).toBe(true)
+    const after = JSON.parse(readFileSync(path, 'utf8'))
+    expect(after.providers.openai.apiKey.startsWith(SEALED_PREFIX_V2)).toBe(true)
+    expect(openAiSecrets(after).providers.openai.apiKey).toBe('sk-plain')
+    expect(after.meteredAccepted).toEqual({ codex: true })
+  })
+
+  it('leaves v2 values alone', () => {
+    const vault = randomBytes(32)
+    setAiSecretCodec(vaultCodec(safeStorageCodec(fakeStorage(), 'win32'), () => vault))
+    const path = file(stored)
+    expect(sealStoredAiSettings(path, { upgrade: true })).toBe(true)
+    const before = readFileSync(path, 'utf8')
+    expect(sealStoredAiSettings(path, { upgrade: true })).toBe(false)
+    expect(readFileSync(path, 'utf8')).toBe(before)
+  })
+
+  it('keeps a v1 value it cannot open instead of emptying it', () => {
+    const vault = randomBytes(32)
+    setAiSecretCodec(vaultCodec(safeStorageCodec(fakeStorage(), 'win32'), () => vault))
+    const unreadable = `${SEALED_PREFIX}@@@`
+    const path = file({ providers: { openai: { apiKey: unreadable, model: '' } } })
+    expect(sealStoredAiSettings(path, { upgrade: true })).toBe(false)
+    expect(JSON.parse(readFileSync(path, 'utf8')).providers.openai.apiKey).toBe(unreadable)
+  })
+
+  it('upgrades the home search keys the same way', () => {
+    const v1 = safeStorageCodec(fakeStorage(), 'win32')
+    setAiSecretCodec(v1)
+    const disk = sealFileSearchKeys(
+      normalizeFileSearchSettings({ rerank: true, keys: { openrouter: 'sk-or' } }),
+    )
+    expect(fileSearchHoldsPlainKeys(disk)).toBe(false)
+    expect(fileSearchHoldsPlainKeys(disk, { upgrade: true })).toBe(true)
+    const vault = randomBytes(32)
+    setAiSecretCodec(vaultCodec(v1, () => vault))
+    const again = sealFileSearchKeys(
+      normalizeFileSearchSettings(openFileSearchKeys(disk) as Record<string, unknown>),
+    )
+    expect(again.keys.openrouter.startsWith(SEALED_PREFIX_V2)).toBe(true)
+    expect(fileSearchHoldsPlainKeys(again, { upgrade: true })).toBe(false)
+  })
+
   it('leaves the file alone where it cannot seal', () => {
     setAiSecretCodec(safeStorageCodec(fakeStorage(), 'darwin'))
     const path = file(stored)
@@ -157,6 +222,17 @@ describe('the reveal entry', () => {
 })
 
 describe('home search reranking keys', () => {
+  it('are not written while a v2 key among them cannot be opened', () => {
+    setAiSecretCodec({ seal: () => null, open: () => null })
+    expect(() => assertFileSearchKeysWritable({ keys: { openrouter: 'sealed:v2:x' } })).toThrow()
+    expect(() => assertFileSearchKeysWritable({ keys: { openrouter: 'sk-or' } })).not.toThrow()
+    expect(() => assertFileSearchKeysWritable(undefined)).not.toThrow()
+    setAiSecretCodec({ seal: () => null, open: () => 'sk-or' })
+    expect(() =>
+      assertFileSearchKeysWritable({ keys: { openrouter: 'sealed:v2:x' } }),
+    ).not.toThrow()
+  })
+
   it('seal on write and open before the settings are normalized', () => {
     setAiSecretCodec(safeStorageCodec(fakeStorage(), 'win32'))
     const settings = normalizeFileSearchSettings({ rerank: true, keys: { openrouter: 'sk-or' } })
@@ -168,5 +244,66 @@ describe('home search reranking keys', () => {
     // a pre-decision-model file keeps its old field name
     const old = openFileSearchKeys({ jevKeys: { openrouter: disk.keys.openrouter } })
     expect(normalizeFileSearchSettings(old).keys.openrouter).toBe('sk-or')
+  })
+})
+
+describe('a new security key (spec 2026-11-12 5-4)', () => {
+  it('clears the keys sealed with the old vault and keeps everything else', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ai-secrets-clear-'))
+    const path = join(dir, 'ai-settings.json')
+    writeFileSync(
+      path,
+      JSON.stringify({
+        provider: 'anthropic',
+        providers: {
+          anthropic: { apiKey: 'sealed:v2:AAAA', model: 'claude' },
+          openai: { apiKey: 'sealed:v1:BBBB' },
+        },
+      }),
+    )
+    expect(clearSealedV2Secrets(path)).toBe(1)
+    const after = JSON.parse(readFileSync(path, 'utf8'))
+    expect(after.providers).toEqual({
+      anthropic: { apiKey: '', model: 'claude' },
+      openai: { apiKey: 'sealed:v1:BBBB' },
+    })
+    expect(after.provider).toBe('anthropic')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('clears the reranking keys sealed with the old vault too', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ai-secrets-clear-'))
+    const path = join(dir, 'app-settings.json')
+    writeFileSync(
+      path,
+      JSON.stringify({
+        theme: 'dark',
+        fileSearch: {
+          rerank: 'cohere',
+          keys: { cohere: 'sealed:v2:AAAA', jina: 'sealed:v1:BBBB' },
+          jevKeys: { a: 'sealed:v2:CCCC' },
+        },
+      }),
+    )
+    expect(clearSealedV2FileSearchKeys(path)).toBe(2)
+    const after = JSON.parse(readFileSync(path, 'utf8'))
+    expect(after.theme).toBe('dark')
+    expect(after.fileSearch).toEqual({
+      rerank: 'cohere',
+      keys: { cohere: '', jina: 'sealed:v1:BBBB' },
+      jevKeys: { a: '' },
+    })
+    // once cleared, the settings can be written again
+    expect(() => assertFileSearchKeysWritable(after.fileSearch)).not.toThrow()
+    expect(clearSealedV2FileSearchKeys(join(dir, 'none.json'))).toBe(0)
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('leaves a missing or unreadable file alone', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ai-secrets-clear-'))
+    expect(clearSealedV2Secrets(join(dir, 'none.json'))).toBe(0)
+    writeFileSync(join(dir, 'bad.json'), '{')
+    expect(clearSealedV2Secrets(join(dir, 'bad.json'))).toBe(0)
+    rmSync(dir, { recursive: true, force: true })
   })
 })

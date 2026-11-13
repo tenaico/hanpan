@@ -75,6 +75,7 @@ import {
 } from './settings-ai'
 import type { MediaSpecialChoice } from './settings-ai'
 import { mergeLoadedModel } from './local-ai'
+import { SecureKeySettingsCard } from './SecureKeySettingsCard'
 import './settings.css'
 
 // ── Settings modal (opened from the account menu) ─────────
@@ -2090,6 +2091,7 @@ export function SettingsModal({
                 </div>
                 <QuickLookField />
                 <ResultStoreField />
+                <SecureKeySettingsCard lang={lang} />
               </>
             )}
             {section === 'skills' && <SkillsPane />}
@@ -2190,6 +2192,18 @@ export function SettingsModal({
                     onClick={() => void window.aiOffice.openFeedbackSurvey?.()}
                   >
                     {t('feedbackOpen')}
+                  </button>
+                </div>
+                <div className="set-field">
+                  <div className="set-field-text">
+                    <label className="set-field-label">{t('setTerms')}</label>
+                    <div className="set-field-desc">{t('setTermsDesc')}</div>
+                  </div>
+                  <button
+                    className="set-btn"
+                    onClick={() => void window.aiOffice.openLicenseTerms?.()}
+                  >
+                    {t('setLicensesOpen')}
                   </button>
                 </div>
                 <div className="set-field">

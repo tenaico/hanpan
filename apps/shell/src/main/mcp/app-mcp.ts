@@ -1,3 +1,4 @@
+import { isAiLocked } from '@genoffice/ai-provider'
 import { PRODUCT_NAME } from '@genoffice/i18n'
 import { McpServerService, DEFAULT_MCP_PORT, type McpToolDefinition } from './mcp-server'
 import { McpLogger } from './mcp-logger'
@@ -216,6 +217,8 @@ function ensureService(): McpServerService {
       toolsFactory: buildTools,
       logger: mcpLogger,
       version: deps.version,
+      // refused while Hanpan's security key is locked (spec 7-4), open_documents included
+      isLocked: isAiLocked,
     })
   }
   return service
