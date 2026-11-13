@@ -60,11 +60,8 @@ import {
   hideLockOverlays,
   showLockOverlays,
 } from './securekey/lock-overlay'
-import {
-  createSecureKeyRuntime,
-  secureKeyGraceLine,
-  type SecureKeyRuntime,
-} from './securekey/runtime'
+import { createSecureKeyRuntime, type SecureKeyRuntime } from './securekey/runtime'
+import { needsConsent, writeConsent } from './consent'
 import { tSecureKey } from './securekey/strings'
 import { vaultCodec } from './securekey/vault-codec'
 import { closeSecureKeyWindow, focusSecureKeyWindow, showSecureKeyWindow } from './securekey/window'
@@ -574,6 +571,7 @@ import {
   safeStorageCodec,
   sealStoredAiSettings,
   sealingKeyOnDisk,
+  clearSealedV2Secrets,
 } from './ai-secrets'
 import { homedir, tmpdir } from 'node:os'
 import {
@@ -6453,12 +6451,6 @@ function registerHomeIpc(): void {
   })
 
   ipcMain.handle(HOME_CHANNELS.starredGroups, (): string[] => readStarredGroups())
-  // the home banner during the security key grace (spec 7-9): the line in the UI language, or null
-  ipcMain.handle(HOME_CHANNELS.secureKeyGrace, (): string | null => {
-    const until = secureKey?.graceUntil() ?? null
-    return until ? secureKeyGraceLine(currentLang(), until) : null
-  })
-
   ipcMain.handle(HOME_CHANNELS.setStarredGroup, (_event, paths: unknown, group: unknown) => {
     setStarredGroup(stringPaths(paths), typeof group === 'string' && group ? group : null)
   })
@@ -10158,15 +10150,29 @@ function createAppSecureKey(): SecureKeyRuntime {
     config: readGateConfig(),
     userData: app.getPath('userData'),
     probe: windowsDeviceProbe(process.env),
-    fetch: (input, init) => net.fetch(input as string, init),
     now: () => new Date(),
     lang: () => currentLang(),
+    needsConsent: () => needsConsent(app.getPath('userData')),
+    acceptConsent: () => writeConsent(app.getPath('userData'), new Date()),
+    // the PC key's vault under the Windows account's protection (DPAPI)
+    sealPcVault: (vault) => safeStorage.encryptString(vault.toString('base64')),
+    openPcVault: (sealed) => {
+      try {
+        return Buffer.from(safeStorage.decryptString(sealed), 'base64')
+      } catch {
+        return null
+      }
+    },
     showWindow: showSecureKeyWindow,
     closeWindow: closeSecureKeyWindow,
     lockAi,
     unlockAi,
     overlays: { show: showLockOverlays, hide: hideLockOverlays },
-    // a new registration seals the keys again with its vault (spec 7-5)
+    // a new key: the AI keys sealed with the old vault cannot open again
+    onReset: async () => {
+      clearSealedV2Secrets(join(app.getPath('userData'), 'ai-settings.json'))
+    },
+    // a new key seals the keys again with its vault
     onRegistered: () => {
       try {
         resealStoredKeys()

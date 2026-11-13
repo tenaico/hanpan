@@ -1,56 +1,49 @@
-// Contract between the security key window (securekey.html) and the shell
-// main process: the register and lock screens shown before the first shell
-// window (spec 7-1, 7-3) and the lock cover over every window (spec 7-4).
+// Contract between the first-run window (securekey.html) and the shell main
+// process: the terms, the key creation, the wait screen before the first shell
+// window, and the lock cover over every window (spec 2026-11-12 5-3, 5-4).
 
 export const SECUREKEY_CHANNELS = {
   getState: 'securekey:get-state',
-  pickKeyFile: 'securekey:pick-key-file',
-  register: 'securekey:register',
-  later: 'securekey:later',
+  acceptTerms: 'securekey:accept-terms',
+  createKey: 'securekey:create-key',
   retry: 'securekey:retry',
+  resetKey: 'securekey:reset-key',
   quit: 'securekey:quit',
-  openKeyPage: 'securekey:open-key-page',
   changed: 'securekey:changed',
 } as const
 
 /** Why the app is locked; the same names as the gate's LockReason */
-export type SecureKeyLockReason =
-  'usb-missing' | 'other-device' | 'revoked' | 'stale' | 'clock' | 'damaged'
+export type SecureKeyLockReason = 'usb-missing' | 'unregistered-usb' | 'replaced' | 'damaged'
 
 export interface SecureKeyUiState {
-  mode: 'register' | 'lock'
-  /** register mode during the grace: [Later] is offered */
-  optional: boolean
-  /** the grace's last day as `YYYY-MM-DD`, or null */
-  until: string | null
+  /** the terms, making a key, or waiting for the key's stick */
+  mode: 'terms' | 'create' | 'lock'
   reason: SecureKeyLockReason | null
   /** drive letters of the USB sticks plugged in now */
   usbLetters: string[]
-  keyFileName: string | null
   busy: boolean
-  /** a register error, already in the window's language */
+  /** an error line, already in the window's language */
   error: string | null
   /** BCP-47 tag for documentElement.lang */
   lang: string
-  /** every string the window shows, in its language, with dates filled in */
+  /** every string the window shows, in its language, with times filled in */
   strings: Record<string, string>
   /** a cover over another window: only the title line, no buttons */
   cover?: boolean
-  /** false on a cover: [Register a key] is offered only in the gate window */
+  /** false on a cover: a new key is made only in the start window */
   canRegister?: boolean
 }
 
-/** What the window asks to register on: a stick by letter, or this PC once the warning is accepted */
-export type SecureKeyRegisterRequest =
+/** Where the window asks to make the key: a stick by letter, or this PC once its risk is accepted */
+export type SecureKeyCreateRequest =
   { where: 'usb'; letter: string } | { where: 'pc'; consent: boolean }
 
 export interface SecureKeyWindowApi {
   getState(): Promise<SecureKeyUiState | null>
-  pickKeyFile(): void
-  register(request: SecureKeyRegisterRequest): void
-  later(): void
+  acceptTerms(): void
+  create(request: SecureKeyCreateRequest): void
   retry(): void
+  reset(): void
   quit(): void
-  openKeyPage(): void
   onState(handler: (state: SecureKeyUiState) => void): () => void
 }

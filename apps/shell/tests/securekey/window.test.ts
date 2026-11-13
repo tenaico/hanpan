@@ -64,12 +64,9 @@ vi.mock('electron', () => ({
 }))
 
 const state = (patch: Partial<SecureKeyUiState> = {}): SecureKeyUiState => ({
-  mode: 'register',
-  optional: false,
-  until: null,
+  mode: 'create',
   reason: null,
   usbLetters: ['E'],
-  keyFileName: null,
   busy: false,
   error: null,
   lang: 'ko',
@@ -78,8 +75,10 @@ const state = (patch: Partial<SecureKeyUiState> = {}): SecureKeyUiState => ({
 })
 
 const noHandlers = () => ({
-  register: vi.fn(async () => null as string | null),
+  acceptTerms: vi.fn(async (): Promise<SecureKeyUiState | 'passed'> => state()),
+  create: vi.fn(async () => null as string | null),
   retry: vi.fn(async () => 'passed' as const),
+  reset: vi.fn(async () => state()),
 })
 
 const invoke = (channel: string, ...args: unknown[]) => handlers.get(channel)!({}, ...args)
@@ -115,7 +114,7 @@ describe('security key window', () => {
     expect(opts.parent).toBeUndefined()
     expect(opts.show).toBe(false)
     expect(String(windows[0]!.loaded).replace(/\\/g, '/')).toMatch(/securekey\.html$/)
-    expect(await invoke(SECUREKEY_CHANNELS.getState)).toMatchObject({ mode: 'register' })
+    expect(await invoke(SECUREKEY_CHANNELS.getState)).toMatchObject({ mode: 'create' })
   })
 
   it('closing the window counts as quit', async () => {
@@ -132,89 +131,88 @@ describe('security key window', () => {
     expect(await result).toBe('quit')
   })
 
-  it('later is offered only while optional', async () => {
+  it('moves from the terms to the key step once they are accepted', async () => {
     const mod = await load()
-    const strict = mod.showSecureKeyWindow(state({ optional: false }), noHandlers())
-    await invoke(SECUREKEY_CHANNELS.later)
-    expect(await settled(strict)).toBe(false)
-    windows[0]!.close()
-    await strict
-
-    const optional = mod.showSecureKeyWindow(state({ optional: true }), noHandlers())
-    await invoke(SECUREKEY_CHANNELS.later)
-    expect(await optional).toBe('later')
-    // the window stays until the caller has its shell window up
-    expect(windows[1]!.closeCalls).toBe(0)
-    mod.closeSecureKeyWindow()
-    expect(windows[1]!.closeCalls).toBe(1)
+    const h = noHandlers()
+    const result = mod.showSecureKeyWindow(state({ mode: 'terms' }), h)
+    await invoke(SECUREKEY_CHANNELS.createKey, { where: 'usb', letter: 'E' })
+    expect(h.create).not.toHaveBeenCalled()
+    await invoke(SECUREKEY_CHANNELS.acceptTerms)
+    expect(h.acceptTerms).toHaveBeenCalledTimes(1)
+    expect(sent.at(-1)!.state).toMatchObject({ mode: 'create', busy: false })
+    expect(await settled(result)).toBe(false)
   })
 
-  it('picks a key file and registers it on the chosen place', async () => {
+  it('passes when the terms were all that was needed', async () => {
+    const mod = await load()
+    const h = noHandlers()
+    h.acceptTerms.mockResolvedValueOnce('passed')
+    const result = mod.showSecureKeyWindow(state({ mode: 'terms' }), h)
+    await invoke(SECUREKEY_CHANNELS.acceptTerms)
+    expect(await result).toBe('passed')
+    // the window stays until the caller has its shell window up
+    expect(windows[0]!.closeCalls).toBe(0)
+  })
+
+  it('makes the key on a plugged-in stick only', async () => {
     const mod = await load()
     const h = noHandlers()
     const result = mod.showSecureKeyWindow(state(), h)
-    showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['C:\\Down\\hanpan.key'] })
-    await invoke(SECUREKEY_CHANNELS.pickKeyFile)
-    expect(sent.at(-1)!.state.keyFileName).toBe('hanpan.key')
-    const filters = (showOpenDialog.mock.calls[0]!.at(-1) as { filters: unknown[] }).filters
-    expect(filters).toEqual([expect.objectContaining({ extensions: ['key'] })])
-    await invoke(SECUREKEY_CHANNELS.register, { where: 'usb', letter: 'E' })
-    expect(h.register).toHaveBeenCalledWith('C:\\Down\\hanpan.key', { where: 'usb', letter: 'E' })
+    await invoke(SECUREKEY_CHANNELS.createKey, { where: 'usb', letter: 'G' })
+    expect(h.create).not.toHaveBeenCalled()
+    await invoke(SECUREKEY_CHANNELS.createKey, { where: 'usb', letter: 'E' })
+    expect(h.create).toHaveBeenCalledWith({ where: 'usb', letter: 'E' })
     expect(await result).toBe('registered')
-  })
-
-  it('needs a key file before registering', async () => {
-    const mod = await load()
-    const h = noHandlers()
-    void mod.showSecureKeyWindow(state(), h)
-    await invoke(SECUREKEY_CHANNELS.register, { where: 'usb', letter: 'E' })
-    expect(h.register).not.toHaveBeenCalled()
   })
 
   it('asks for the consent before the PC', async () => {
     const mod = await load()
     const h = noHandlers()
     void mod.showSecureKeyWindow(state(), h)
-    showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['C:\\k\\hanpan.key'] })
-    await invoke(SECUREKEY_CHANNELS.pickKeyFile)
-    await invoke(SECUREKEY_CHANNELS.register, { where: 'pc', consent: false })
-    expect(h.register).not.toHaveBeenCalled()
-    await invoke(SECUREKEY_CHANNELS.register, { where: 'pc', consent: true })
-    const target = h.register.mock.calls[0]!.at(1) as { where: string; consentAt: string }
+    await invoke(SECUREKEY_CHANNELS.createKey, { where: 'pc', consent: false })
+    expect(h.create).not.toHaveBeenCalled()
+    await invoke(SECUREKEY_CHANNELS.createKey, { where: 'pc', consent: true })
+    const target = h.create.mock.calls[0]!.at(0) as unknown as { where: string; consentAt: string }
     expect(target.where).toBe('pc')
     expect(Number.isFinite(Date.parse(target.consentAt))).toBe(true)
   })
 
-  it('shows the register error and stays open', async () => {
+  it('shows the create error and stays open', async () => {
     const mod = await load()
     const h = noHandlers()
-    h.register.mockResolvedValue('3 keys at most')
+    h.create.mockResolvedValue('could not write')
     const result = mod.showSecureKeyWindow(state(), h)
-    showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['C:\\k\\hanpan.key'] })
-    await invoke(SECUREKEY_CHANNELS.pickKeyFile)
-    await invoke(SECUREKEY_CHANNELS.register, { where: 'usb', letter: 'E' })
-    expect(sent.at(-1)!.state).toMatchObject({ error: '3 keys at most', busy: false })
+    await invoke(SECUREKEY_CHANNELS.createKey, { where: 'usb', letter: 'E' })
+    expect(sent.at(-1)!.state).toMatchObject({ error: 'could not write', busy: false })
     expect(windows[0]!.closeCalls).toBe(0)
     expect(await settled(result)).toBe(false)
+  })
+
+  it('makes a new key only from the wait screen', async () => {
+    const mod = await load()
+    const h = noHandlers()
+    void mod.showSecureKeyWindow(state(), h)
+    await invoke(SECUREKEY_CHANNELS.resetKey)
+    expect(h.reset).not.toHaveBeenCalled()
+    mod.closeSecureKeyWindow()
+    void mod.showSecureKeyWindow(state({ mode: 'lock', reason: 'usb-missing' }), h)
+    await invoke(SECUREKEY_CHANNELS.resetKey)
+    expect(h.reset).toHaveBeenCalledTimes(1)
+    expect(sent.at(-1)!.state).toMatchObject({ mode: 'create', busy: false })
   })
 
   it('retry passes or shows the new state', async () => {
     const mod = await load()
     const h = noHandlers()
-    h.retry.mockResolvedValueOnce(state({ mode: 'lock', reason: 'stale', usbLetters: [] }) as never)
+    h.retry.mockResolvedValueOnce(
+      state({ mode: 'lock', reason: 'unregistered-usb', usbLetters: [] }) as never,
+    )
     const result = mod.showSecureKeyWindow(state({ mode: 'lock', reason: 'usb-missing' }), h)
     await invoke(SECUREKEY_CHANNELS.retry)
-    expect(sent.at(-1)!.state.reason).toBe('stale')
+    expect(sent.at(-1)!.state.reason).toBe('unregistered-usb')
     expect(await settled(result)).toBe(false)
     await invoke(SECUREKEY_CHANNELS.retry)
     expect(await result).toBe('passed')
-  })
-
-  it('opens the key page in the browser', async () => {
-    const mod = await load()
-    void mod.showSecureKeyWindow(state(), noHandlers())
-    await invoke(SECUREKEY_CHANNELS.openKeyPage)
-    expect(openExternal).toHaveBeenCalledWith('https://tenai.kr')
   })
 
   it('reports whether it is open and brings it forward', async () => {

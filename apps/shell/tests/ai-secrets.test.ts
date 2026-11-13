@@ -15,6 +15,7 @@ import { normalizeFileSearchSettings } from '../src/main/file-index/rerank'
 import {
   MAX_REVEAL_VALUES,
   assertFileSearchKeysWritable,
+  clearSealedV2Secrets,
   fileSearchHoldsPlainKeys,
   openFileSearchKeys,
   sealFileSearchKeys,
@@ -242,5 +243,38 @@ describe('home search reranking keys', () => {
     // a pre-decision-model file keeps its old field name
     const old = openFileSearchKeys({ jevKeys: { openrouter: disk.keys.openrouter } })
     expect(normalizeFileSearchSettings(old).keys.openrouter).toBe('sk-or')
+  })
+})
+
+describe('a new security key (spec 2026-11-12 5-4)', () => {
+  it('clears the keys sealed with the old vault and keeps everything else', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ai-secrets-clear-'))
+    const path = join(dir, 'ai-settings.json')
+    writeFileSync(
+      path,
+      JSON.stringify({
+        provider: 'anthropic',
+        providers: {
+          anthropic: { apiKey: 'sealed:v2:AAAA', model: 'claude' },
+          openai: { apiKey: 'sealed:v1:BBBB' },
+        },
+      }),
+    )
+    expect(clearSealedV2Secrets(path)).toBe(1)
+    const after = JSON.parse(readFileSync(path, 'utf8'))
+    expect(after.providers).toEqual({
+      anthropic: { apiKey: '', model: 'claude' },
+      openai: { apiKey: 'sealed:v1:BBBB' },
+    })
+    expect(after.provider).toBe('anthropic')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('leaves a missing or unreadable file alone', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ai-secrets-clear-'))
+    expect(clearSealedV2Secrets(join(dir, 'none.json'))).toBe(0)
+    writeFileSync(join(dir, 'bad.json'), '{')
+    expect(clearSealedV2Secrets(join(dir, 'bad.json'))).toBe(0)
+    rmSync(dir, { recursive: true, force: true })
   })
 })

@@ -113,7 +113,62 @@
       .hidden {
         display: none !important;
       }
-      #places {
+      .choices {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .choice {
+        -webkit-app-region: no-drag;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 10px 12px;
+        border: 1.5px solid var(--color-border-default);
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .choice[aria-checked='true'] {
+        border-color: var(--color-btn-primary);
+        background: var(--color-bg-subtle);
+      }
+      .choice b {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .choice .sub {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--color-text-secondary);
+      }
+      .badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 0 7px;
+        border-radius: 999px;
+        background: var(--color-btn-primary);
+        color: var(--color-btn-primary-text);
+      }
+      .terms {
+        -webkit-app-region: no-drag;
+        max-height: 190px;
+        overflow: auto;
+        padding: 10px 12px;
+        border: 1px solid var(--color-border-default);
+        border-radius: 10px;
+        background: var(--color-bg-subtle);
+        font-size: 12.5px;
+        line-height: 1.6;
+        user-select: text;
+      }
+      .terms li {
+        margin: 0 0 6px 16px;
+      }
+      #usb-list {
         display: flex;
         flex-direction: column;
         gap: 6px;
@@ -129,8 +184,17 @@
         border-radius: 10px;
         cursor: pointer;
       }
-      .place:hover {
-        border-color: var(--color-border-strong);
+      .check {
+        -webkit-app-region: no-drag;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        font-size: 13px;
+        line-height: 1.5;
+        cursor: pointer;
+      }
+      .check input {
+        margin-top: 3px;
       }
       #warning {
         font-size: 12px;
@@ -139,11 +203,6 @@
         border-radius: 10px;
         background: var(--color-warning-bg);
         color: var(--color-warning-text);
-      }
-      #consent-row {
-        -webkit-app-region: no-drag;
-        font-size: 13px;
-        cursor: pointer;
       }
       #error {
         font-size: 12px;
@@ -206,33 +265,64 @@
       <div id="title"></div>
       <div id="message" class="text"></div>
 
-      <div id="register" class="hidden">
-        <div class="row">
-          <button id="pick"></button>
-          <span id="key-name" class="small"></span>
+      <section id="terms-step" class="hidden">
+        <ul id="terms-list" class="terms"></ul>
+        <label class="check" style="margin-top: 10px">
+          <input id="terms-agree" type="checkbox" />
+          <span id="terms-agree-text"></span>
+        </label>
+      </section>
+
+      <section id="choose-step" class="hidden">
+        <div class="choices" role="radiogroup">
+          <div class="choice" id="choose-usb" role="radio" tabindex="0" aria-checked="true">
+            <div>
+              <b><span id="usb-name"></span><span id="usb-badge" class="badge"></span></b
+              ><span id="usb-sub" class="sub"></span>
+            </div>
+          </div>
+          <div class="choice" id="choose-pc" role="radio" tabindex="0" aria-checked="false">
+            <div><b id="pc-name"></b><span id="pc-sub" class="sub"></span></div>
+          </div>
         </div>
-        <div id="where-label" class="text" style="margin-top: 12px"></div>
-        <div id="places"></div>
+        <div id="note-sub" class="small" style="margin-top: 8px"></div>
+        <div id="note-lock" class="small"></div>
+      </section>
+
+      <section id="usb-step" class="hidden">
+        <div id="usb-list"></div>
         <div id="no-usb" class="small hidden"></div>
-        <div id="pc-box" class="hidden" style="margin-top: 8px">
-          <div id="warning" role="note"></div>
-          <label id="consent-row" class="row" style="margin-top: 8px">
-            <input id="consent" type="checkbox" />
-            <span id="consent-text"></span>
-          </label>
+        <div id="spare-hint" class="text" style="margin-top: 6px"></div>
+      </section>
+
+      <section id="pc-step" class="hidden">
+        <div id="warning" role="note"></div>
+        <label class="check" style="margin-top: 8px">
+          <input id="pc-agree" type="checkbox" />
+          <span id="pc-agree-text"></span>
+        </label>
+      </section>
+
+      <section id="lock-step" class="hidden">
+        <div id="reason" class="text"></div>
+        <div id="lost" class="small" style="margin-top: 8px">
+          <span id="lost-text"></span> <button id="lost-link" class="link"></button>
         </div>
-        <div style="margin-top: 10px">
-          <button id="get-key" class="link"></button>
-        </div>
-        <div id="privacy" class="small" style="margin-top: 6px"></div>
-      </div>
+      </section>
+
+      <section id="reset-step" class="hidden">
+        <ul id="reset-list" class="terms"></ul>
+        <label class="check" style="margin-top: 10px">
+          <input id="reset-agree" type="checkbox" />
+          <span id="reset-agree-text"></span>
+        </label>
+      </section>
 
       <div id="error" role="alert"></div>
       <div id="spacer"></div>
       <div id="buttons">
         <button id="quit"></button>
-        <button id="later" class="hidden"></button>
-        <button id="to-register" class="hidden"></button>
+        <button id="back" class="hidden"></button>
         <button id="retry" class="hidden"></button>
         <button id="submit" class="primary hidden"></button>
       </div>

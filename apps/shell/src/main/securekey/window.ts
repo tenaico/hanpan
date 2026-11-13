@@ -1,36 +1,36 @@
-import { basename, join } from 'node:path'
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { join } from 'node:path'
+import { BrowserWindow, ipcMain } from 'electron'
 import {
   SECUREKEY_CHANNELS,
-  type SecureKeyRegisterRequest,
+  type SecureKeyCreateRequest,
   type SecureKeyUiState,
 } from '../../shared/securekey-api'
-import { KEY_PAGE_URL } from './gate'
+import type { CreateTarget } from './create'
 
 /**
- * The security key window shown before the first shell window: register a
- * key, or see why the app is locked (spec 7-1, 7-3). One call resolves once:
- * registered, later (grace only), passed (a retry found the key) or quit.
- * Closing the window any other way counts as quit. On the first three the
- * window stays up until the caller closes it, so the app always has a window
- * while the shell window is made.
+ * The first-run window shown before the first shell window (spec 2026-11-12
+ * 5-3, 5-4): the terms, making a key, or waiting for the key's stick. One call
+ * resolves once: registered (a key was made), passed (the terms or a retry let
+ * the app open) or quit. Closing the window any other way counts as quit. On
+ * the first two the window stays up until the caller closes it, so the app
+ * always has a window while the shell window is made.
  */
 
-export type SecureKeyRegisterTarget =
-  { where: 'usb'; letter: string } | { where: 'pc'; consentAt: string }
-
 export interface SecureKeyWindowHandlers {
-  /** an error line in the window's language, or null once registered */
-  register(keyFile: string, target: SecureKeyRegisterTarget): Promise<string | null>
+  /** the terms were accepted: the key step to show, or 'passed' */
+  acceptTerms(): Promise<SecureKeyUiState | 'passed'>
+  /** an error line in the window's language, or null once the key is made */
+  create(target: CreateTarget): Promise<string | null>
   /** look again: the next state to show, or 'passed' */
   retry(): Promise<SecureKeyUiState | 'passed'>
+  /** "make a new key": the old one is dropped, the create step comes next */
+  reset(): Promise<SecureKeyUiState>
 }
 
-export type SecureKeyWindowResult = 'registered' | 'later' | 'passed' | 'quit'
+export type SecureKeyWindowResult = 'registered' | 'passed' | 'quit'
 
 let win: BrowserWindow | null = null
 let current: SecureKeyUiState | null = null
-let keyFile: string | null = null
 let handlers: SecureKeyWindowHandlers | null = null
 let pending: ((result: SecureKeyWindowResult) => void) | null = null
 let ipcRegistered = false
@@ -70,7 +70,7 @@ function push(patch: Partial<SecureKeyUiState>): void {
   if (win && !win.isDestroyed()) win.webContents.send(SECUREKEY_CHANNELS.changed, current)
 }
 
-const isRequest = (v: unknown): v is SecureKeyRegisterRequest => {
+const isRequest = (v: unknown): v is SecureKeyCreateRequest => {
   if (typeof v !== 'object' || v === null) return false
   const r = v as Record<string, unknown>
   return (
@@ -83,34 +83,35 @@ function registerIpc(): void {
   if (ipcRegistered) return
   ipcRegistered = true
   ipcMain.handle(SECUREKEY_CHANNELS.getState, (event) => pageOf(event)?.state() ?? current)
-  ipcMain.handle(SECUREKEY_CHANNELS.pickKeyFile, async (event) => {
-    if (pageOf(event) || !current || current.busy) return
-    const options = {
-      properties: ['openFile' as const],
-      filters: [{ name: 'hanpan.key', extensions: ['key'] }],
-    }
-    const picked =
-      win && !win.isDestroyed()
-        ? await dialog.showOpenDialog(win, options)
-        : await dialog.showOpenDialog(options)
-    const path = picked.canceled ? undefined : picked.filePaths[0]
-    if (!path) return
-    keyFile = path
-    push({ keyFileName: basename(path), error: null })
-  })
-  ipcMain.handle(SECUREKEY_CHANNELS.register, async (event, request: unknown) => {
-    if (pageOf(event) || !current || current.busy || !handlers || !keyFile || !isRequest(request))
+  ipcMain.handle(SECUREKEY_CHANNELS.acceptTerms, async (event) => {
+    if (pageOf(event) || !current || current.busy || !handlers || current.mode !== 'terms') return
+    push({ busy: true, error: null })
+    let next: SecureKeyUiState | 'passed'
+    try {
+      next = await handlers.acceptTerms()
+    } catch (e) {
+      push({ busy: false, error: e instanceof Error ? e.message : String(e) })
       return
+    }
+    if (next === 'passed') {
+      settle('passed')
+      return
+    }
+    push({ ...next, busy: false })
+  })
+  ipcMain.handle(SECUREKEY_CHANNELS.createKey, async (event, request: unknown) => {
+    if (pageOf(event) || !current || current.busy || !handlers || !isRequest(request)) return
+    if (current.mode !== 'create') return
     if (request.where === 'pc' && !request.consent) return
     if (request.where === 'usb' && !current.usbLetters.includes(request.letter)) return
-    const target: SecureKeyRegisterTarget =
+    const target: CreateTarget =
       request.where === 'usb'
         ? { where: 'usb', letter: request.letter }
         : { where: 'pc', consentAt: new Date().toISOString() }
     push({ busy: true, error: null })
     let error: string | null
     try {
-      error = await handlers.register(keyFile, target)
+      error = await handlers.create(target)
     } catch (e) {
       error = e instanceof Error ? e.message : String(e)
     }
@@ -120,9 +121,14 @@ function registerIpc(): void {
     }
     push({ busy: false, error })
   })
-  ipcMain.handle(SECUREKEY_CHANNELS.later, (event) => {
-    if (pageOf(event)) return
-    if (current?.optional && !current.busy) settle('later')
+  ipcMain.handle(SECUREKEY_CHANNELS.resetKey, async (event) => {
+    if (pageOf(event) || !current || current.busy || !handlers || current.mode !== 'lock') return
+    push({ busy: true, error: null })
+    try {
+      push({ ...(await handlers.reset()), busy: false })
+    } catch (e) {
+      push({ busy: false, error: e instanceof Error ? e.message : String(e) })
+    }
   })
   ipcMain.handle(SECUREKEY_CHANNELS.retry, async (event) => {
     const page = pageOf(event)
@@ -140,7 +146,7 @@ function registerIpc(): void {
       settle('passed')
       return
     }
-    push({ ...next, keyFileName: current.keyFileName, busy: false })
+    push({ ...next, busy: false })
   })
   ipcMain.handle(SECUREKEY_CHANNELS.quit, (event) => {
     const page = pageOf(event)
@@ -148,7 +154,6 @@ function registerIpc(): void {
     settle('quit')
     closeSecureKeyWindow()
   })
-  ipcMain.handle(SECUREKEY_CHANNELS.openKeyPage, () => shell.openExternal(KEY_PAGE_URL))
 }
 
 /** Show the window and wait for its one answer */
@@ -157,8 +162,7 @@ export function showSecureKeyWindow(
   next: SecureKeyWindowHandlers,
 ): Promise<SecureKeyWindowResult> {
   settle('quit')
-  current = { ...initial, busy: false, error: null, keyFileName: null }
-  keyFile = null
+  current = { ...initial, busy: false, error: null }
   handlers = next
   registerIpc()
   const result = new Promise<SecureKeyWindowResult>((resolve) => {
@@ -217,7 +221,6 @@ export function closeSecureKeyWindow(): void {
   const closing = win
   win = null
   current = null
-  keyFile = null
   handlers = null
   if (closing && !closing.isDestroyed()) closing.close()
 }

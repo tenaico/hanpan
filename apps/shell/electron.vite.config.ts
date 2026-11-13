@@ -29,9 +29,6 @@ export default defineConfig({
       // Hanpan security key (spec 7-7): on, grace date, key server, public keys by kid.
       // Development passes them as environment variables, the release build as repository variables.
       __HANPAN_REQUIRE_KEY__: JSON.stringify(process.env.HANPAN_REQUIRE_KEY ?? ''),
-      __HANPAN_KEY_REQUIRED_FROM__: JSON.stringify(process.env.HANPAN_KEY_REQUIRED_FROM ?? ''),
-      __HANPAN_KEY_SERVER__: JSON.stringify(process.env.HANPAN_KEY_SERVER ?? ''),
-      __HANPAN_KEY_PUBKEYS__: JSON.stringify(process.env.HANPAN_KEY_PUBKEYS ?? ''),
     },
   },
   preload: {

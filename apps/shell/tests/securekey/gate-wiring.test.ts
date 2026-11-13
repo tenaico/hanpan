@@ -98,15 +98,13 @@ describe('security key wiring', () => {
     expect(source.slice(search, search + 300)).toContain('assertAiUnlocked()')
   })
 
-  it('reads the four build values from the environment', () => {
+  it('reads only the key switch from the environment', () => {
     const config = readFileSync(join(__dirname, '../../electron.vite.config.ts'), 'utf8')
-    for (const name of [
-      'HANPAN_REQUIRE_KEY',
-      'HANPAN_KEY_REQUIRED_FROM',
-      'HANPAN_KEY_SERVER',
-      'HANPAN_KEY_PUBKEYS',
-    ]) {
-      expect(config).toContain(`__${name}__: JSON.stringify(process.env.${name} ?? '')`)
+    expect(config).toContain(
+      `__HANPAN_REQUIRE_KEY__: JSON.stringify(process.env.HANPAN_REQUIRE_KEY ?? '')`,
+    )
+    for (const gone of ['HANPAN_KEY_REQUIRED_FROM', 'HANPAN_KEY_SERVER', 'HANPAN_KEY_PUBKEYS']) {
+      expect(config).not.toContain(gone)
     }
   })
 })

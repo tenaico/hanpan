@@ -300,26 +300,6 @@ body.vib .home {
   white-space: nowrap;
 }
 
-/* Hanpan: the security key grace line (spec 7-9), over the top of the home page */
-.securekey-grace {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  max-width: min(720px, calc(100% - 48px));
-  padding: 8px 16px;
-  border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  background: var(--bg-content);
-  box-shadow: var(--shadow-menu);
-  color: var(--text-primary);
-  font-size: 13px;
-  line-height: 1.5;
-  text-align: center;
-  pointer-events: none;
-}
-
 /* ---- main content ---- */
 
 .content {

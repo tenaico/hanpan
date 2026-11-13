@@ -45,17 +45,27 @@ describe('security key strings', () => {
     }
   })
 
-  it('the warning and privacy lines are the spec text in Korean', () => {
+  it('the Korean terms and warnings are the spec text', () => {
     const ko = secureKeyStrings('ko')
-    expect(ko.skPcWarning).toBe(
-      '이 PC가 해킹되면 AI 키가 함께 유출될 수 있습니다. USB 보관을 권장합니다.',
+    expect(ko.skTerms2).toBe(
+      '한판을 쓰면서 생긴 문서 손실, AI 서비스 요금, API 키 유출, 보안키 분실의 책임은 사용자에게 있습니다. 다만 TEN AI의 고의로 생긴 손해는 예외입니다.',
     )
-    expect(ko.skPrivacy).toBe('등록하면 보안키 번호와 마지막 사용일이 tenai.kr에 기록됩니다')
-    expect(ko.skLockStale).toBe('인터넷에 연결해 보안키를 확인해 주세요')
-    expect(tSecureKey('ko', 'skLater', { date: '12월 4일' })).toBe('나중에 하기 (12월 4일까지)')
-    expect(tSecureKey('ko', 'skGraceBanner', { date: '12월 4일' })).toBe(
-      '12월 4일부터 보안키가 있어야 한판이 켜집니다. tenai.kr에서 가입하고 보안키를 등록하세요.',
+    for (const lang of LANGS) {
+      expect(secureKeyStrings(lang).skTerms2).not.toMatch(/중대한 과실|gross negligence/i)
+    }
+    expect(ko.skPcAgree).toBe(
+      '이 PC를 쓰는 다른 사람이 한판과 내 API 키를 쓸 수 있으며, 그로 인한 요금과 피해는 제 책임임을 이해했습니다.',
     )
+    expect(ko.skNoteSubscription).toBe(
+      'Claude·ChatGPT 구독 로그인은 각 회사 프로그램이 따로 관리하며, 보안키와 관계없습니다.',
+    )
+    expect(tSecureKey('ko', 'skReplaced', { when: '11월 21일 오후 3:32' })).toBe(
+      '11월 21일 오후 3:32에 이 PC에서 보안키가 새로 만들어져 이 USB는 더 이상 쓸 수 없습니다. 본인이 한 일이 아니라면 Windows 비밀번호를 확인하세요.',
+    )
+    for (const lang of LANGS) {
+      expect(tSecureKey(lang, 'skReplaced', { when: 'WHEN' }), lang).toContain('WHEN')
+      expect(tSecureKey(lang, 'skUsbDrive', { letter: 'E' }), lang).toContain('E')
+    }
   })
 
   it('promises nothing the key cannot keep', () => {

@@ -1,44 +1,44 @@
 import { isLang, type Lang } from '@genoffice/i18n'
-import type { SecureKeyUiState } from '../../shared/securekey-api'
 import { join } from 'node:path'
+import type { SecureKeyUiState } from '../../shared/securekey-api'
+import { createKey, type CreateTarget } from './create'
 import type { DeviceProbe, UsbVolume } from './devices'
-import { isStatusPayload, verifySigned } from './format'
 import { decideGate, type GateConfig, type GateDecision, type LockReason } from './gate'
-import { registerKey, type RegisterError } from './register'
-import { findRegistration, KEY_FILES, type FindResult, type Registration } from './store'
+import { resetKey } from './manage'
 import {
-  fetchStatus,
-  judgeStatus,
-  readState,
-  statePath,
-  statusDue,
-  writeState,
-  type SecureKeyState,
-  type StatusVerdict,
-} from './status'
-import { secureKeyStrings, tSecureKey, type SecureKeyStringKey } from './strings'
+  findRegistration,
+  KEY_FILES,
+  pcKeyDir,
+  readRegistered,
+  usbKeyDir,
+  type FindResult,
+  type Registration,
+} from './store'
+import { secureKeyStrings, tSecureKey } from './strings'
 import { startPresenceWatch } from './watch'
-import type {
-  SecureKeyRegisterTarget,
-  SecureKeyWindowHandlers,
-  SecureKeyWindowResult,
-} from './window'
+import type { SecureKeyWindowHandlers, SecureKeyWindowResult } from './window'
 
 /**
- * The security key at run time (spec 7-3): open the key quietly before any
- * AI settings are read, then run the startup gate before the first window.
- * Everything here is skipped outside Windows (spec 2). A build without the
- * key requirement still opens the vault of a PC registered under an earlier
- * build, so its AI keys stay readable, but it never locks.
+ * The first run and the security key at run time (spec 2026-11-12 5-2..5-4).
+ * The terms are asked on every operating system before the first window; on
+ * Windows with the build switch on, a key must then open. The key is opened
+ * quietly before any AI settings are read. A build without the switch still
+ * opens the vault of a PC registered before, so its AI keys stay readable,
+ * but it never locks.
  */
 
 export interface SecureKeyRuntimeDeps {
   config: GateConfig
   userData: string
   probe: DeviceProbe
-  fetch: typeof fetch
   now(): Date
   lang(): string
+  /** the terms of this build were not accepted yet (consent.ts) */
+  needsConsent(): boolean
+  acceptConsent(): Promise<void>
+  /** seal and open the PC vault (Windows DPAPI) */
+  sealPcVault(vault: Buffer): Buffer
+  openPcVault(sealed: Buffer): Buffer | null
   showWindow(
     state: SecureKeyUiState,
     handlers: SecureKeyWindowHandlers,
@@ -46,9 +46,11 @@ export interface SecureKeyRuntimeDeps {
   closeWindow(): void
   lockAi(): void
   unlockAi(): void
-  /** after a new registration: seal the AI keys again with its vault (spec 7-5) */
+  /** after a new key: seal the AI keys again with its vault */
   onRegistered?(registration: Registration): void
-  /** a lock that came after the gate (a revoked answer, a removed stick) */
+  /** "make a new key": clear the AI keys sealed with the old vault */
+  onReset?(): Promise<void>
+  /** a lock that came after the gate (a removed stick) */
   onLocked?(reason: LockReason): void
   /** where a stick's folder is; tests point it at a temporary folder */
   usbDir?: (letter: string) => string
@@ -62,58 +64,44 @@ export interface SecureKeyRuntime {
   openQuietly(): Promise<void>
   runGate(): Promise<'continue' | 'quit'>
   vault(): Buffer | null
-  graceUntil(): string | null
+  /** the start window is deciding or up: a second launch only queues its files */
   pending(): boolean
-  /** the registration in use, once the gate passed */
+  /** the key in use, once the gate passed */
   registration(): Registration | null
   /** close the gate window once the shell window exists */
   closeWindow(): void
-  /** locked after the gate: the stick was removed, or the key was revoked */
+  /** locked after the gate: the stick was removed */
   locked(): boolean
   /** [Check again] on the shell window's cover */
   retryLock(): Promise<SecureKeyUiState | 'passed'>
 }
 
-const REGISTER_ERROR_TEXT: Record<RegisterError, SecureKeyStringKey> = {
-  'bad-key': 'skErrBadKey',
-  'no-usb': 'skErrNoUsb',
-  limit: 'skErrLimit',
-  used: 'skErrUsed',
-  refused: 'skErrRefused',
-  network: 'skErrNetwork',
-  'bad-answer': 'skErrBadAnswer',
-}
-
-const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
-
-/** `YYYY-MM-DD` plus `days`, shown as a month and day in `lang` */
-function shownDate(date: string | null, lang: Lang, days = 0): string {
-  const match = date ? DATE_PATTERN.exec(date) : null
-  if (!match) return ''
-  const day = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + days)
+/** an ISO time as a month, day and time of day in `lang` */
+function shownWhen(iso: string | undefined, lang: Lang): string {
+  if (!iso) return ''
+  const at = new Date(iso)
+  if (Number.isNaN(at.getTime())) return iso
   try {
-    return new Intl.DateTimeFormat(lang, { month: 'long', day: 'numeric' }).format(day)
+    return new Intl.DateTimeFormat(lang, {
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(at)
   } catch {
-    return date ?? ''
+    return iso
   }
-}
-
-/** The home banner while the grace runs (spec 7-9), in `lang` */
-export function secureKeyGraceLine(lang: string, until: string): string {
-  const l: Lang = isLang(lang) ? lang : 'en'
-  return tSecureKey(l, 'skGraceBanner', { date: shownDate(until, l) })
 }
 
 export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRuntime {
   const { config } = deps
   const onWindows = config.platform === 'win32'
-  const path = statePath(deps.userData)
-  let found: FindResult | null = null
+  const keyOn = onWindows && config.requireKey
+  const usbDir = deps.usbDir ?? usbKeyDir
   let lastVolumes: UsbVolume[] = []
   let current: Registration | null = null
-  let grace: string | null = null
   let showing = false
-  /** from the start of the run until the gate has decided: a second launch only queues its files */
+  /** from the start of the run until the gate has decided */
   let starting = true
   let lockedNow = false
   let stopWatch: (() => void) | null = null
@@ -123,22 +111,25 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     return isLang(l) ? l : 'en'
   }
 
-  /** one PowerShell run per look: the volumes are kept for the window's list */
-  async function look(): Promise<FindResult> {
-    const probe: DeviceProbe = {
-      listUsbVolumes: async () => {
-        lastVolumes = await deps.probe.listUsbVolumes()
-        return lastVolumes
-      },
-      machineGuid: () => deps.probe.machineGuid(),
-    }
-    found = await findRegistration({
+  async function volumes(): Promise<UsbVolume[]> {
+    lastVolumes = await deps.probe.listUsbVolumes()
+    return lastVolumes
+  }
+
+  function look(): Promise<FindResult> {
+    return findRegistration({
       userData: deps.userData,
-      probe,
-      keys: config.keys,
-      ...(deps.usbDir ? { usbDir: deps.usbDir } : {}),
+      listVolumes: volumes,
+      usbDir,
+      openPcVault: deps.openPcVault,
     })
-    return found
+  }
+
+  async function decide(): Promise<GateDecision> {
+    const decision = decideGate({ config, found: await look() })
+    // the create step lists the sticks to choose from
+    if (decision.kind === 'create') await volumes()
+    return decision
   }
 
   function open(registration: Registration): void {
@@ -146,75 +137,25 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     deps.unlockAi()
   }
 
-  /** the state record of this key, or null when it names another key */
-  function stateOf(registration: Registration): SecureKeyState | null {
-    const state = readState(path)
-    return state && state.keyId === registration.key.keyId ? state : null
-  }
-
-  function verdictOf(registration: Registration, state: SecureKeyState | null): StatusVerdict {
-    const last = state?.status ? verifySigned(state.status, config.keys, isStatusPayload) : null
-    return judgeStatus({
-      now: deps.now(),
-      activatedAt: registration.activation.activatedAt,
-      last: last && last.keyId === registration.key.keyId ? last : null,
-    })
-  }
-
-  /** ask tenai.kr, keep a good answer, and return the verdict it gives */
-  async function checkStatus(registration: Registration): Promise<StatusVerdict | null> {
-    const signed = await fetchStatus({
-      server: config.server,
-      keyId: registration.key.keyId,
-      keys: config.keys,
-      fetch: deps.fetch,
-    })
-    if (!signed) return null
-    const state: SecureKeyState = {
-      keyId: registration.key.keyId,
-      where: registration.where,
-      status: signed,
-      checkedAt: deps.now().toISOString(),
-    }
-    await writeState(path, state).catch(() => undefined)
-    return verdictOf(registration, state)
-  }
-
-  async function decide(): Promise<GateDecision> {
-    const result = await look()
-    let state = readState(path)
-    let status: StatusVerdict | null = null
-    if (result.kind === 'found') {
-      const own = stateOf(result.registration)
-      status = verdictOf(result.registration, own)
-      // a key past its 30 days gets one try at the server before the lock screen
-      if (!status.ok && status.reason === 'stale') {
-        status = (await checkStatus(result.registration)) ?? status
-      }
-      state = own ?? state
-    }
-    return decideGate({ config, now: deps.now(), found: result, state, status })
-  }
-
-  function uiState(decision: GateDecision): SecureKeyUiState {
+  function uiState(
+    mode: SecureKeyUiState['mode'],
+    decision: GateDecision | null = null,
+  ): SecureKeyUiState {
     const l = lang()
-    const until = decision.kind === 'register' ? decision.until : null
-    const strings = secureKeyStrings(l, { date: shownDate(config.requiredFrom, l) })
-    // [Later] names the last day the app opens without a key (spec 7-9)
-    strings.skLater = tSecureKey(l, 'skLater', { date: shownDate(config.requiredFrom, l, -1) })
+    const locked = decision?.kind === 'locked' ? decision : null
     return {
-      mode: decision.kind === 'register' ? 'register' : 'lock',
-      optional: decision.kind === 'register' && decision.optional,
-      until,
-      reason: decision.kind === 'locked' ? decision.reason : null,
+      mode,
+      reason: locked?.reason ?? null,
       usbLetters: lastVolumes.map((v) => v.letter),
-      keyFileName: null,
       busy: false,
       error: null,
       lang: l,
-      strings,
+      strings: secureKeyStrings(l, { when: shownWhen(locked?.replacedAt, l) }),
     }
   }
+
+  const stateOf = (decision: GateDecision): SecureKeyUiState =>
+    uiState(decision.kind === 'create' ? 'create' : 'lock', decision)
 
   function lockNow(decision: GateDecision): void {
     const reason: LockReason = decision.kind === 'locked' ? decision.reason : 'usb-missing'
@@ -224,18 +165,22 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
       deps.lockAi()
       deps.onLocked?.(reason)
     }
-    deps.overlays?.show(uiState(decision.kind === 'locked' ? decision : { kind: 'locked', reason }))
+    deps.overlays?.show(
+      uiState('lock', decision.kind === 'locked' ? decision : { kind: 'locked', reason }),
+    )
   }
 
   function unlockNow(registration: Registration): void {
     const wasLocked = lockedNow
     lockedNow = false
-    if (registration !== current) watch(registration)
+    if (registration.keyId !== current?.keyId || registration.letter !== current?.letter) {
+      watch(registration)
+    }
     open(registration)
     if (wasLocked) deps.overlays?.hide()
   }
 
-  /** look again after a change: open when the key passes, else keep the lock with the new reason */
+  /** look again after a change: open when the key passes, else keep the lock */
   async function recheck(): Promise<GateDecision> {
     const decision = await decide()
     if (decision.kind === 'open') unlockNow(decision.registration)
@@ -243,11 +188,15 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     return decision
   }
 
-  /** watch the registration's stick (or PC folder) while the app runs (spec 7-4) */
+  /** watch the key's stick (or the PC record) while the app runs */
   function watch(registration: Registration): void {
     stopWatch?.()
+    const path =
+      registration.where === 'usb' && registration.letter
+        ? join(usbDir(registration.letter), KEY_FILES.key)
+        : join(pcKeyDir(deps.userData), KEY_FILES.registered)
     stopWatch = (deps.startWatch ?? startPresenceWatch)({
-      activationPath: join(registration.dir, KEY_FILES.activation),
+      activationPath: path,
       volumeSerial: registration.volumeSerial ?? null,
       onChange: (present) => {
         if (!present) {
@@ -262,49 +211,80 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     })
   }
 
-  function backgroundCheck(registration: Registration): void {
-    if (!statusDue(stateOf(registration), deps.now())) return
-    void checkStatus(registration).then((verdict) => {
-      if (!verdict || verdict.ok || current !== registration) return
-      lockNow({ kind: 'locked', reason: verdict.reason })
-    })
+  /** after the terms or a retry: the key step, or 'passed' when there is none to take */
+  async function keyStep(): Promise<SecureKeyUiState | 'passed'> {
+    if (!keyOn) return 'passed'
+    const decision = await decide()
+    if (decision.kind === 'open') {
+      open(decision.registration)
+      return 'passed'
+    }
+    if (decision.kind === 'skip') return 'passed'
+    return stateOf(decision)
   }
 
   const handlers: SecureKeyWindowHandlers = {
-    async register(keyFile: string, target: SecureKeyRegisterTarget) {
-      const result = await registerKey({
+    async acceptTerms() {
+      await deps.acceptConsent()
+      return keyStep()
+    },
+    async create(target: CreateTarget) {
+      const result = await createKey({
         userData: deps.userData,
-        keyFile,
         target,
-        probe: deps.probe,
-        config,
-        fetch: deps.fetch,
-        ...(deps.usbDir ? { usbDir: deps.usbDir } : {}),
-        // the AI keys stay sealed with the vault of the registration being replaced
-        vault: current?.vault ?? null,
+        volumes: target.where === 'usb' ? await volumes() : lastVolumes,
+        now: deps.now(),
+        usbDir,
+        sealPcVault: deps.sealPcVault,
       })
-      if (!result.ok) return tSecureKey(lang(), REGISTER_ERROR_TEXT[result.error])
+      if (!result.ok) {
+        return tSecureKey(lang(), result.error === 'no-usb' ? 'skErrNoUsb' : 'skErrWriteFailed')
+      }
       open(result.registration)
       deps.onRegistered?.(result.registration)
       return null
     },
-    async retry() {
+    retry: () => keyStep(),
+    async reset() {
+      await resetKey({ userData: deps.userData, now: deps.now() })
+      current = null
+      await deps.onReset?.()
+      await volumes()
+      return uiState('create')
+    },
+  }
+
+  async function gate(): Promise<'continue' | 'quit'> {
+    let first: SecureKeyUiState | null = null
+    if (deps.needsConsent()) {
+      first = uiState('terms')
+    } else if (keyOn) {
       const decision = await decide()
       if (decision.kind === 'open') {
         open(decision.registration)
-        return 'passed'
+        watch(decision.registration)
+        return 'continue'
       }
-      if (decision.kind === 'skip') return 'passed'
-      return uiState(decision)
-    },
+      if (decision.kind !== 'skip') first = stateOf(decision)
+    }
+    if (!first) return 'continue'
+    showing = true
+    let answer: SecureKeyWindowResult
+    try {
+      answer = await deps.showWindow(first, handlers)
+    } finally {
+      showing = false
+    }
+    if (answer === 'quit') return 'quit'
+    if (current) watch(current)
+    return 'continue'
   }
 
   return {
     async openQuietly() {
       if (!onWindows) return
       // nobody registered on this PC: no tools run, the v1 keys stay as they are
-      const state = readState(path)
-      if (!state) return
+      if (!readRegistered(deps.userData)) return
       const result = await look()
       if (result.kind === 'found') {
         current = result.registration
@@ -323,7 +303,6 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     },
 
     vault: () => current?.vault ?? null,
-    graceUntil: () => grace,
     pending: () => starting || showing,
     registration: () => current,
     closeWindow: () => deps.closeWindow(),
@@ -331,46 +310,7 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
     async retryLock() {
       const decision = await recheck()
       if (decision.kind === 'open' || decision.kind === 'skip') return 'passed'
-      return uiState(decision)
+      return uiState('lock', decision)
     },
-  }
-
-  async function gate(): Promise<'continue' | 'quit'> {
-    if (!onWindows || !config.requireKey) return 'continue'
-    let decision: GateDecision
-    if (found?.kind === 'found') {
-      const registration = found.registration
-      const status = verdictOf(registration, stateOf(registration))
-      decision =
-        status.ok || status.reason !== 'stale'
-          ? decideGate({ config, now: deps.now(), found, state: readState(path), status })
-          : await decide()
-    } else {
-      decision = await decide()
-    }
-    if (decision.kind === 'skip') return 'continue'
-    if (decision.kind === 'open') {
-      open(decision.registration)
-      watch(decision.registration)
-      backgroundCheck(decision.registration)
-      return 'continue'
-    }
-    showing = true
-    let answer: SecureKeyWindowResult
-    try {
-      answer = await deps.showWindow(uiState(decision), handlers)
-    } finally {
-      showing = false
-    }
-    if (answer === 'quit') return 'quit'
-    if (answer === 'later') {
-      grace = config.requiredFrom
-      return 'continue'
-    }
-    if (current) {
-      watch(current)
-      backgroundCheck(current)
-    }
-    return 'continue'
   }
 }

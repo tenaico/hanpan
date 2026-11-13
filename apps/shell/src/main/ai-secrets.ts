@@ -153,6 +153,29 @@ export function sealStoredAiSettings(path: string, options: SealOptions = {}): b
 }
 
 /**
+ * "Make a new security key" (spec 2026-11-12 5-4): the keys sealed with the
+ * old key's vault can never open again, so they are emptied; everything else
+ * in the file stays. Returns how many keys were emptied.
+ */
+export function clearSealedV2Secrets(path: string): number {
+  let stored: unknown
+  try {
+    if (!existsSync(path)) return 0
+    stored = JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return 0
+  }
+  let cleared = 0
+  const next = mapAiSecrets(stored, (v) => {
+    if (!v.startsWith(SEALED_PREFIX_V2)) return v
+    cleared++
+    return ''
+  })
+  if (cleared > 0) writeJsonAtomic(path, next)
+  return cleared
+}
+
+/**
  * The home search's reranking keys (`fileSearch.keys` in app-settings.json)
  * under the same protection. Only the app reads that file, so no command needs
  * them opened. Opened before the settings are normalized (which trims and

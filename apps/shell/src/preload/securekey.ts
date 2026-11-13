@@ -8,23 +8,20 @@ const api: SecureKeyWindowApi = {
     const result: unknown = await ipcRenderer.invoke(SECUREKEY_CHANNELS.getState)
     return (result ?? null) as SecureKeyUiState | null
   },
-  pickKeyFile() {
-    void ipcRenderer.invoke(SECUREKEY_CHANNELS.pickKeyFile)
+  acceptTerms() {
+    void ipcRenderer.invoke(SECUREKEY_CHANNELS.acceptTerms)
   },
-  register(request) {
-    void ipcRenderer.invoke(SECUREKEY_CHANNELS.register, request)
-  },
-  later() {
-    void ipcRenderer.invoke(SECUREKEY_CHANNELS.later)
+  create(request) {
+    void ipcRenderer.invoke(SECUREKEY_CHANNELS.createKey, request)
   },
   retry() {
     void ipcRenderer.invoke(SECUREKEY_CHANNELS.retry)
   },
+  reset() {
+    void ipcRenderer.invoke(SECUREKEY_CHANNELS.resetKey)
+  },
   quit() {
     void ipcRenderer.invoke(SECUREKEY_CHANNELS.quit)
-  },
-  openKeyPage() {
-    void ipcRenderer.invoke(SECUREKEY_CHANNELS.openKeyPage)
   },
   onState(handler) {
     const listener = (_event: IpcRendererEvent, state: SecureKeyUiState) => handler(state)

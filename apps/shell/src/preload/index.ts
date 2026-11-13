@@ -181,10 +181,6 @@ const homeApi: HomeApi = {
   async setStarredGroup(paths, group) {
     await ipcRenderer.invoke(HOME_CHANNELS.setStarredGroup, paths, group)
   },
-  async secureKeyGrace() {
-    const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.secureKeyGrace)
-    return typeof result === 'string' && result !== '' ? result : null
-  },
   async statPaths(paths) {
     const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.statPaths, paths)
     return Array.isArray(result) ? (result as RecentEntry[]) : []
