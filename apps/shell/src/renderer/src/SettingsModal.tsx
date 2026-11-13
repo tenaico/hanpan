@@ -2196,6 +2196,18 @@ export function SettingsModal({
                 </div>
                 <div className="set-field">
                   <div className="set-field-text">
+                    <label className="set-field-label">{t('setTerms')}</label>
+                    <div className="set-field-desc">{t('setTermsDesc')}</div>
+                  </div>
+                  <button
+                    className="set-btn"
+                    onClick={() => void window.aiOffice.openLicenseTerms?.()}
+                  >
+                    {t('setLicensesOpen')}
+                  </button>
+                </div>
+                <div className="set-field">
+                  <div className="set-field-text">
                     <label className="set-field-label">{t('setLicenses')}</label>
                     <div className="set-field-desc">{t('setLicensesDesc')}</div>
                   </div>

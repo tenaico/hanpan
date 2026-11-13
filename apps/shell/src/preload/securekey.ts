@@ -11,6 +11,9 @@ const api: SecureKeyWindowApi = {
   acceptTerms() {
     void ipcRenderer.invoke(SECUREKEY_CHANNELS.acceptTerms)
   },
+  openLicense() {
+    void ipcRenderer.invoke(SECUREKEY_CHANNELS.openLicense)
+  },
   create(request) {
     void ipcRenderer.invoke(SECUREKEY_CHANNELS.createKey, request)
   },

@@ -1,0 +1,19 @@
+﻿Hanpan License and Disclaimer
+
+1. Free and open source
+Hanpan is an open-source program that TEN AI distributes free of charge, under the Apache License 2.0. It is built on the open-source project IeumOffice. The full license text and the copyright and license notices of the open-source software it uses are in the program under Settings > About.
+
+2. Provided as is
+Hanpan is provided as is, without any warranty that it fits a particular purpose or is free of errors.
+
+3. Your responsibility
+You are responsible for every result of using Hanpan, including lost documents, AI service charges, leaked API keys and lost security keys. This does not apply to damage that TEN AI causes on purpose.
+
+4. What AI writes
+Documents and answers that AI writes are drafts. Check facts such as figures, laws and quotations before you use them.
+
+5. Security key
+On Windows, you make a security key the first time you run Hanpan. The key is kept only on this PC and your USB stick. TEN AI does not keep a copy, so it cannot bring back a lost key.
+
+6. What is sent
+Hanpan does not send account details, documents, AI conversations or security keys to TEN AI. The trend card on the home screen gets its daily forecast from trend.tenai.kr, and Hanpan checks GitHub for a new version.

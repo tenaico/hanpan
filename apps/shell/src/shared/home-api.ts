@@ -422,6 +422,8 @@ export interface HomeApi {
   openFeedbackSurvey(): Promise<void>
   /** open the bundled license and copyright notices (THIRD-PARTY-NOTICES.txt) */
   openLicenseNotices(): Promise<void>
+  /** open the installer's license and disclaimer in the UI language (license-terms.ts) */
+  openLicenseTerms(): Promise<void>
   /** start an e-mail to the trademark and copyright contact address */
   openRightsContact(): Promise<void>
   /** AI settings (userData/ai-settings.json, shared by every editor) */
@@ -653,6 +655,7 @@ export const HOME_CHANNELS = {
   openGitHubRepo: 'home:open-github-repo',
   openFeedbackSurvey: 'home:open-feedback-survey',
   openLicenseNotices: 'home:open-license-notices',
+  openLicenseTerms: 'home:open-license-terms',
   openRightsContact: 'home:open-rights-contact',
 } as const
 

@@ -79,6 +79,7 @@ const noHandlers = () => ({
   create: vi.fn(async () => null as string | null),
   retry: vi.fn(async () => 'passed' as const),
   reset: vi.fn(async () => state()),
+  openLicense: vi.fn(),
 })
 
 const invoke = (channel: string, ...args: unknown[]) => handlers.get(channel)!({}, ...args)
@@ -141,6 +142,18 @@ describe('security key window', () => {
     expect(h.acceptTerms).toHaveBeenCalledTimes(1)
     expect(sent.at(-1)!.state).toMatchObject({ mode: 'create', busy: false })
     expect(await settled(result)).toBe(false)
+  })
+
+  it('opens the full license from the terms step only', async () => {
+    const mod = await load()
+    const h = noHandlers()
+    void mod.showSecureKeyWindow(state({ mode: 'create' }), h)
+    await invoke(SECUREKEY_CHANNELS.openLicense)
+    expect(h.openLicense).not.toHaveBeenCalled()
+    mod.closeSecureKeyWindow()
+    void mod.showSecureKeyWindow(state({ mode: 'terms' }), h)
+    await invoke(SECUREKEY_CHANNELS.openLicense)
+    expect(h.openLicense).toHaveBeenCalledTimes(1)
   })
 
   it('passes when the terms were all that was needed', async () => {

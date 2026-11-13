@@ -18,6 +18,7 @@ const title = el('title')
 const message = el('message')
 const termsStep = el('terms-step')
 const termsList = el('terms-list')
+const termsFull = el<HTMLButtonElement>('terms-full')
 const termsAgree = el<HTMLInputElement>('terms-agree')
 const termsAgreeText = el('terms-agree-text')
 const chooseStep = el('choose-step')
@@ -122,6 +123,7 @@ function render(): void {
     message.textContent = s('skTermsLead')
     show(termsStep, true)
     fillList(termsList, ['skTerms1', 'skTerms2', 'skTerms3', 'skTerms4'])
+    termsFull.textContent = s('skTermsFull')
     termsAgreeText.textContent = s('skTermsAgree')
     termsAgree.disabled = busy
     show(submit, true)
@@ -224,6 +226,7 @@ for (const [node, value] of [
     if (e.key === ' ' || e.key === 'Enter') setChoice(value)
   })
 }
+termsFull.addEventListener('click', () => api.openLicense())
 lostLink.addEventListener('click', () => {
   lockConfirm = true
   resetAgree.checked = false

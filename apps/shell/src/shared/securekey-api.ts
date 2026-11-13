@@ -5,6 +5,7 @@
 export const SECUREKEY_CHANNELS = {
   getState: 'securekey:get-state',
   acceptTerms: 'securekey:accept-terms',
+  openLicense: 'securekey:open-license',
   createKey: 'securekey:create-key',
   retry: 'securekey:retry',
   resetKey: 'securekey:reset-key',
@@ -41,6 +42,8 @@ export type SecureKeyCreateRequest =
 export interface SecureKeyWindowApi {
   getState(): Promise<SecureKeyUiState | null>
   acceptTerms(): void
+  /** [Read the full license] on the terms step */
+  openLicense(): void
   create(request: SecureKeyCreateRequest): void
   retry(): void
   reset(): void

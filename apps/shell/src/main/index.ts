@@ -60,6 +60,7 @@ import {
   showLockOverlays,
 } from './securekey/lock-overlay'
 import { createSecureKeyRuntime, type SecureKeyRuntime } from './securekey/runtime'
+import { licenseTermsPath } from './license-terms'
 import { needsConsent, writeConsent } from './consent'
 import { secureKeyStrings, tSecureKey } from './securekey/strings'
 import { resetKey } from './securekey/manage'
@@ -7148,6 +7149,10 @@ function registerHomeIpc(): void {
     void openThirdPartyNotices()
   })
 
+  ipcMain.handle(HOME_CHANNELS.openLicenseTerms, () => {
+    void openLicenseTerms()
+  })
+
   ipcMain.handle(HOME_CHANNELS.openRightsContact, () => {
     const url = safeExternalUrl(`mailto:${PRODUCT_CONTACT_EMAIL}`, {
       allowedProtocols: ['mailto:'],
@@ -9619,6 +9624,17 @@ ipcMain.handle(PDF_CHANNELS.saveAsDialog, async (e) => {
   await savePdfAs()
 })
 
+/** the installer's license and disclaimer in the UI language (spec 2026-11-12 5-6) */
+function openLicenseTerms(): Promise<string> {
+  return shell.openPath(
+    licenseTermsPath(currentLang(), {
+      packaged: app.isPackaged,
+      resourcesPath: process.resourcesPath,
+      appPath: app.getAppPath(),
+    }),
+  )
+}
+
 function openThirdPartyNotices(): Promise<string> {
   const path = app.isPackaged
     ? join(process.resourcesPath, 'THIRD-PARTY-NOTICES.txt')
@@ -10202,6 +10218,7 @@ function createAppSecureKey(): SecureKeyRuntime {
     lang: () => currentLang(),
     needsConsent: () => needsConsent(app.getPath('userData')),
     acceptConsent: () => writeConsent(app.getPath('userData'), new Date()),
+    openLicense: () => void openLicenseTerms(),
     // the PC key's vault under the Windows account's protection (DPAPI)
     sealPcVault: (vault) => safeStorage.encryptString(vault.toString('base64')),
     openPcVault: (sealed) => {

@@ -36,6 +36,8 @@ export interface SecureKeyRuntimeDeps {
   /** the terms of this build were not accepted yet (consent.ts) */
   needsConsent(): boolean
   acceptConsent(): Promise<void>
+  /** open the full license and disclaimer (license-terms.ts) */
+  openLicense?(): void
   /** seal and open the PC vault (Windows DPAPI) */
   sealPcVault(vault: Buffer): Buffer
   openPcVault(sealed: Buffer): Buffer | null
@@ -242,6 +244,7 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
       await deps.acceptConsent()
       return keyStep()
     },
+    openLicense: () => deps.openLicense?.(),
     async create(target: CreateTarget) {
       const result = await createKey({
         userData: deps.userData,

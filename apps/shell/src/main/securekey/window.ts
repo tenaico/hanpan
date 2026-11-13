@@ -25,6 +25,8 @@ export interface SecureKeyWindowHandlers {
   retry(): Promise<SecureKeyUiState | 'passed'>
   /** "make a new key": the old one is dropped, the create step comes next */
   reset(): Promise<SecureKeyUiState>
+  /** [Read the full license] on the terms step */
+  openLicense?(): void
 }
 
 export type SecureKeyWindowResult = 'registered' | 'passed' | 'quit'
@@ -98,6 +100,10 @@ function registerIpc(): void {
       return
     }
     push({ ...next, busy: false })
+  })
+  ipcMain.handle(SECUREKEY_CHANNELS.openLicense, (event) => {
+    if (pageOf(event) || current?.mode !== 'terms') return
+    handlers?.openLicense?.()
   })
   ipcMain.handle(SECUREKEY_CHANNELS.createKey, async (event, request: unknown) => {
     if (pageOf(event) || !current || current.busy || !handlers || !isRequest(request)) return

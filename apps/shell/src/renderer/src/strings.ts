@@ -548,6 +548,8 @@ export const strings = {
     setAiSharedKeyHint: '同一服务商的 key 与 Base URL 在各项能力间共用，只需填一次。',
     setGithub: '开源项目',
     setBasedOn: '基于开源项目 {{GenOffice}} 构建（Apache License 2.0）。',
+    setTerms: '使用许可与免责声明',
+    setTermsDesc: '再次查看安装时同意的使用许可与免责声明。',
     setLicenses: '开源许可',
     setLicensesDesc: '查看本应用附带的软件和字体的许可证与版权声明。',
     setLicensesOpen: '查看',
@@ -1274,6 +1276,8 @@ export const strings = {
       "A vendor's key and base URL are shared across capabilities; enter them once.",
     setGithub: 'Open Source',
     setBasedOn: 'Based on the open-source project {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'License and disclaimer',
+    setTermsDesc: 'Read again the license and disclaimer you agreed to when installing.',
     setLicenses: 'Open-source licenses',
     setLicensesDesc:
       'License and copyright notices for the software and fonts that ship with this app.',
@@ -2012,6 +2016,8 @@ export const strings = {
       'Khóa và URL cơ sở của nhà cung cấp được dùng chung cho các chức năng; chỉ cần nhập một lần.',
     setGithub: 'Mã nguồn mở',
     setBasedOn: 'Dựa trên dự án mã nguồn mở {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Giấy phép và miễn trừ trách nhiệm',
+    setTermsDesc: 'Xem lại giấy phép và phần miễn trừ trách nhiệm bạn đã đồng ý khi cài đặt.',
     setLicenses: 'Giấy phép mã nguồn mở',
     setLicensesDesc:
       'Xem thông báo giấy phép và bản quyền của phần mềm và phông chữ đi kèm ứng dụng này.',
@@ -2761,6 +2767,8 @@ export const strings = {
     setGithub: 'オープンソース',
     setBasedOn:
       'オープンソースプロジェクト {{GenOffice}}（Apache License 2.0）をもとに開発されています。',
+    setTerms: '使用許諾と免責事項',
+    setTermsDesc: 'インストール時に同意した使用許諾と免責事項をもう一度確認します。',
     setLicenses: 'オープンソースライセンス',
     setLicensesDesc:
       'このアプリに同梱されているソフトウェアとフォントのライセンスおよび著作権表示を表示します。',
@@ -3504,6 +3512,8 @@ export const strings = {
       '같은 제공업체의 키와 서버 주소는 모든 기능이 함께 쓰므로 한 번만 넣으면 됩니다.',
     setGithub: '오픈 소스',
     setBasedOn: '오픈 소스 프로젝트 {{GenOffice}}(Apache License 2.0)를 바탕으로 만들었습니다.',
+    setTerms: '사용권 및 면책 안내',
+    setTermsDesc: '설치할 때 동의한 사용권과 면책 안내를 다시 봅니다.',
     setLicenses: '오픈소스 라이선스',
     setLicensesDesc: '이 앱에 함께 들어 있는 프로그램과 글꼴의 라이선스, 저작권 고지를 봅니다.',
     setLicensesOpen: '보기',
@@ -4258,6 +4268,9 @@ export const strings = {
       "La clé et l'URL de base d'un fournisseur sont partagées entre les capacités ; saisissez-les une seule fois.",
     setGithub: 'Open source',
     setBasedOn: 'Basé sur le projet open source {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Licence et clause de non-responsabilité',
+    setTermsDesc:
+      "Relire la licence et la clause de non-responsabilité acceptées lors de l'installation.",
     setLicenses: 'Licences open source',
     setLicensesDesc:
       'Afficher les licences et mentions de droits d’auteur des logiciels et polices fournis avec cette application.',
@@ -5023,6 +5036,9 @@ export const strings = {
       'Schlüssel und Base URL eines Anbieters gelten für alle Fähigkeiten; einmal eintragen genügt.',
     setGithub: 'Open Source',
     setBasedOn: 'Basiert auf dem Open-Source-Projekt {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Lizenz und Haftungsausschluss',
+    setTermsDesc:
+      'Die bei der Installation akzeptierte Lizenz und den Haftungsausschluss erneut lesen.',
     setLicenses: 'Open-Source-Lizenzen',
     setLicensesDesc:
       'Lizenz- und Urheberrechtshinweise der Software und Schriften anzeigen, die mit dieser App geliefert werden.',
@@ -5787,6 +5803,9 @@ export const strings = {
       'La clave y la URL base de un proveedor se comparten entre capacidades; introdúcelas una sola vez.',
     setGithub: 'Código abierto',
     setBasedOn: 'Basado en el proyecto de código abierto {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Licencia y descargo de responsabilidad',
+    setTermsDesc:
+      'Vuelve a leer la licencia y el descargo de responsabilidad que aceptaste al instalar.',
     setLicenses: 'Licencias de código abierto',
     setLicensesDesc:
       'Ver los avisos de licencia y derechos de autor del software y las fuentes que se incluyen con esta aplicación.',
@@ -6526,6 +6545,8 @@ export const strings = {
       'คีย์และ Base URL ของผู้ให้บริการเดียวกันใช้ร่วมกันทุกความสามารถ กรอกครั้งเดียวพอ',
     setGithub: 'โอเพนซอร์ส',
     setBasedOn: 'พัฒนาต่อยอดจากโครงการโอเพนซอร์ส {{GenOffice}} (Apache License 2.0)',
+    setTerms: 'สัญญาอนุญาตและข้อจำกัดความรับผิดชอบ',
+    setTermsDesc: 'อ่านสัญญาอนุญาตและข้อจำกัดความรับผิดชอบที่ยอมรับตอนติดตั้งอีกครั้ง',
     setLicenses: 'สัญญาอนุญาตโอเพนซอร์ส',
     setLicensesDesc: 'ดูประกาศสัญญาอนุญาตและลิขสิทธิ์ของซอฟต์แวร์และฟอนต์ที่มาพร้อมกับแอปนี้',
     setLicensesOpen: 'ดู',
@@ -7275,6 +7296,8 @@ export const strings = {
       'Kunci dan Base URL satu penyedia dipakai bersama oleh semua kemampuan; cukup isi sekali.',
     setGithub: 'Sumber Terbuka',
     setBasedOn: 'Dibuat berdasarkan proyek sumber terbuka {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Lisensi dan penafian',
+    setTermsDesc: 'Baca lagi lisensi dan penafian yang Anda setujui saat memasang.',
     setLicenses: 'Lisensi sumber terbuka',
     setLicensesDesc:
       'Lihat pemberitahuan lisensi dan hak cipta untuk perangkat lunak dan font yang disertakan dengan aplikasi ini.',
@@ -8029,6 +8052,8 @@ export const strings = {
     setGithub: 'Открытый код',
     setBasedOn:
       'Создано на основе проекта с открытым исходным кодом {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Лицензия и отказ от ответственности',
+    setTermsDesc: 'Ещё раз прочитать лицензию и отказ от ответственности, принятые при установке.',
     setLicenses: 'Лицензии открытого ПО',
     setLicensesDesc:
       'Уведомления о лицензиях и авторских правах на программы и шрифты, входящие в приложение.',
@@ -8771,6 +8796,8 @@ export const strings = {
       'مفتاح المزوّد وعنوان Base URL مشتركان بين جميع القدرات؛ أدخلهما مرة واحدة فقط.',
     setGithub: 'مفتوح المصدر',
     setBasedOn: 'مبني على المشروع مفتوح المصدر {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'الترخيص وإخلاء المسؤولية',
+    setTermsDesc: 'اقرأ مرة أخرى الترخيص وإخلاء المسؤولية اللذين وافقت عليهما عند التثبيت.',
     setLicenses: 'تراخيص المصادر المفتوحة',
     setLicensesDesc: 'عرض إشعارات الترخيص وحقوق النشر للبرامج والخطوط المضمّنة في هذا التطبيق.',
     setLicensesOpen: 'عرض',
@@ -9517,6 +9544,8 @@ export const strings = {
       'A chave e a URL base de um provedor são compartilhadas entre as capacidades; insira-as uma só vez.',
     setGithub: 'Código aberto',
     setBasedOn: 'Baseado no projeto de código aberto {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Licença e isenção de responsabilidade',
+    setTermsDesc: 'Leia novamente a licença e a isenção de responsabilidade aceitas na instalação.',
     setLicenses: 'Licenças de código aberto',
     setLicensesDesc:
       'Ver os avisos de licença e direitos autorais do software e das fontes incluídos neste aplicativo.',
@@ -10264,6 +10293,9 @@ export const strings = {
       "La chiave e l'URL base di un provider sono condivisi tra le capacità; inseriscili una volta sola.",
     setGithub: 'Open source',
     setBasedOn: 'Basato sul progetto open source {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Licenza ed esclusione di responsabilità',
+    setTermsDesc:
+      "Rileggi la licenza e l'esclusione di responsabilità accettate durante l'installazione.",
     setLicenses: 'Licenze open source',
     setLicensesDesc:
       'Visualizza le note di licenza e copyright del software e dei font inclusi in questa app.',
@@ -11010,6 +11042,9 @@ export const strings = {
       'Klucz i bazowy URL dostawcy są wspólne dla wszystkich funkcji; wpisz je raz.',
     setGithub: 'Open source',
     setBasedOn: 'Oparte na projekcie open source {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Licencja i wyłączenie odpowiedzialności',
+    setTermsDesc:
+      'Przeczytaj ponownie licencję i wyłączenie odpowiedzialności zaakceptowane podczas instalacji.',
     setLicenses: 'Licencje open source',
     setLicensesDesc:
       'Wyświetl informacje o licencjach i prawach autorskich do oprogramowania i czcionek dołączonych do tej aplikacji.',
@@ -11704,6 +11739,9 @@ export const strings = {
       'Klíč a základní URL jednoho poskytovatele se sdílejí mezi funkcemi; zadejte je jen jednou.',
     setGithub: 'Open source',
     setBasedOn: 'Založeno na open source projektu {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Licence a vyloučení odpovědnosti',
+    setTermsDesc:
+      'Znovu si přečtěte licenci a vyloučení odpovědnosti, se kterými jste souhlasili při instalaci.',
     setLicenses: 'Licence open source',
     setLicensesDesc:
       'Zobrazit licenční a autorskoprávní upozornění k softwaru a písmům dodávaným s touto aplikací.',
@@ -12496,6 +12534,9 @@ export const strings = {
       'De sleutel en basis-URL van een provider gelden voor alle functies; één keer invoeren volstaat.',
     setGithub: 'Open source',
     setBasedOn: 'Gebaseerd op het opensourceproject {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Licentie en disclaimer',
+    setTermsDesc:
+      'Lees de licentie en disclaimer die u bij de installatie hebt geaccepteerd opnieuw.',
     setLicenses: 'Opensourcelicenties',
     setLicensesDesc:
       'Bekijk de licentie- en auteursrechtvermeldingen van de software en lettertypen die bij deze app worden geleverd.',
@@ -13244,6 +13285,8 @@ export const strings = {
       'Kunci dan Base URL pembekal dikongsi oleh semua keupayaan; isi sekali sahaja.',
     setGithub: 'Sumber Terbuka',
     setBasedOn: 'Berasaskan projek sumber terbuka {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'Lesen dan penafian',
+    setTermsDesc: 'Baca semula lesen dan penafian yang anda persetujui semasa memasang.',
     setLicenses: 'Lesen sumber terbuka',
     setLicensesDesc:
       'Lihat notis lesen dan hak cipta bagi perisian dan fon yang disertakan dengan aplikasi ini.',
@@ -13971,6 +14014,8 @@ export const strings = {
       'המפתח וכתובת ה-Base URL של ספק משותפים לכל היכולות; יש להזין אותם פעם אחת בלבד.',
     setGithub: 'קוד פתוח',
     setBasedOn: 'מבוסס על פרויקט הקוד הפתוח {{GenOffice}} (Apache License 2.0).',
+    setTerms: 'רישיון והסרת אחריות',
+    setTermsDesc: 'לקרוא שוב את הרישיון והסרת האחריות שאישרת בהתקנה.',
     setLicenses: 'רישיונות קוד פתוח',
     setLicensesDesc: 'הצגת הודעות הרישיון וזכויות היוצרים של התוכנות והגופנים שמצורפים לאפליקציה.',
     setLicensesOpen: 'הצגה',
@@ -14701,6 +14746,8 @@ export const strings = {
       'एक प्रदाता की कुंजी और Base URL सभी क्षमताओं में साझा होते हैं; एक बार ही दर्ज करें।',
     setGithub: 'ओपन सोर्स',
     setBasedOn: 'ओपन सोर्स प्रोजेक्ट {{GenOffice}} (Apache License 2.0) पर आधारित।',
+    setTerms: 'लाइसेंस और अस्वीकरण',
+    setTermsDesc: 'इंस्टॉल करते समय स्वीकार किया गया लाइसेंस और अस्वीकरण फिर से पढ़ें।',
     setLicenses: 'ओपन सोर्स लाइसेंस',
     setLicensesDesc:
       'इस ऐप के साथ आने वाले सॉफ़्टवेयर और फ़ॉन्ट के लाइसेंस और कॉपीराइट नोटिस देखें।',
@@ -15415,6 +15462,8 @@ export const strings = {
     setAiSharedKeyHint: '同一服務商的 key 與 Base URL 在各項能力間共用，只需填一次。',
     setGithub: '開源專案',
     setBasedOn: '以開源專案 {{GenOffice}} 為基礎打造（Apache License 2.0）。',
+    setTerms: '使用授權與免責聲明',
+    setTermsDesc: '再次查看安裝時同意的使用授權與免責聲明。',
     setLicenses: '開源授權',
     setLicensesDesc: '檢視本應用程式隨附的軟體與字型之授權與著作權聲明。',
     setLicensesOpen: '檢視',

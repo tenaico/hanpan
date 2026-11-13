@@ -582,6 +582,9 @@ const homeApi: HomeApi = {
   async openLicenseNotices() {
     await ipcRenderer.invoke(HOME_CHANNELS.openLicenseNotices)
   },
+  async openLicenseTerms() {
+    await ipcRenderer.invoke(HOME_CHANNELS.openLicenseTerms)
+  },
   async openRightsContact() {
     await ipcRenderer.invoke(HOME_CHANNELS.openRightsContact)
   },
