@@ -8,6 +8,7 @@ import { Italic } from '@tiptap/extension-italic'
 import { getListMarker, ListItem, TaskItem } from '@tiptap/extension-list'
 import { Table } from '@tiptap/extension-table'
 import { activeMarkdownStyle } from '../markdown/markdownStyle'
+import { normalizeParsedListItem } from './listItemContent'
 import { renderingTable } from './markdownEscape'
 
 /**
@@ -125,7 +126,12 @@ export function renderItem(
   return out
 }
 
+const stockListItemParse = ListItem.config.parseMarkdown
+
 export const StyledListItem = ListItem.extend({
+  // a block inside a tight item must not leave the item invalid (listItemContent.ts)
+  parseMarkdown: (token, helpers) =>
+    normalizeParsedListItem(stockListItemParse ? stockListItemParse(token, helpers) : []),
   renderMarkdown: (node, h, ctx) => {
     const style = activeMarkdownStyle()
     let prefix = `${style.bullet} `
