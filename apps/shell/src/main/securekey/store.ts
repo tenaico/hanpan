@@ -133,6 +133,18 @@ export async function findRegistration(opts: {
   return { kind: 'usb-missing' }
 }
 
+/** A key's two files in a stick's folder (or any folder), each written atomically */
+export async function writeKeyFiles(
+  dir: string,
+  key: { keyId: string; createdAt: string },
+  vault: Buffer,
+): Promise<void> {
+  await mkdir(dir, { recursive: true })
+  const file = { v: 2, keyId: key.keyId, createdAt: key.createdAt }
+  await atomicWriteFile(join(dir, KEY_FILES.key), Buffer.from(`${JSON.stringify(file)}\n`, 'utf8'))
+  await atomicWriteFile(join(dir, KEY_FILES.vault), vault)
+}
+
 export function newVaultKey(): Buffer {
   return randomBytes(VAULT_BYTES)
 }

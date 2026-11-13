@@ -10,6 +10,7 @@ import {
   pcKeyDir,
   readRegistered,
   usbKeyDir,
+  writeKeyFiles,
   writeRegistered,
   type Registration,
 } from './store'
@@ -19,12 +20,6 @@ export type CreateTarget = { where: 'usb'; letter: string } | { where: 'pc'; con
 
 export type CreateResult =
   { ok: true; registration: Registration } | { ok: false; error: 'no-usb' | 'write-failed' }
-
-async function writeKeyFiles(dir: string, key: LocalKeyFile, vault: Buffer): Promise<void> {
-  await mkdir(dir, { recursive: true })
-  await atomicWriteFile(join(dir, KEY_FILES.key), Buffer.from(`${JSON.stringify(key)}\n`, 'utf8'))
-  await atomicWriteFile(join(dir, KEY_FILES.vault), vault)
-}
 
 /**
  * Make a key (spec 2026-11-12 5-3): a new key id and vault, written to the

@@ -75,6 +75,7 @@ import {
 } from './settings-ai'
 import type { MediaSpecialChoice } from './settings-ai'
 import { mergeLoadedModel } from './local-ai'
+import { SecureKeySettingsCard } from './SecureKeySettingsCard'
 import './settings.css'
 
 // ── Settings modal (opened from the account menu) ─────────
@@ -2090,6 +2091,7 @@ export function SettingsModal({
                 </div>
                 <QuickLookField />
                 <ResultStoreField />
+                <SecureKeySettingsCard lang={lang} />
               </>
             )}
             {section === 'skills' && <SkillsPane />}

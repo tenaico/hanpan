@@ -1325,3 +1325,40 @@
   overflow-wrap: normal;
   white-space: nowrap;
 }
+
+/* Settings › General › Security key (spec 2026-11-12 5-5) */
+.set-securekey {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.set-securekey-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.set-securekey-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.set-securekey-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.set-securekey-agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.set-securekey-error {
+  color: var(--danger);
+}

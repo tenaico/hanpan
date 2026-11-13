@@ -363,3 +363,51 @@ describe('while running', () => {
     expect(w.rt.locked()).toBe(false)
   })
 })
+
+describe('the key in Settings', () => {
+  it('reports the key in use and the sticks to pick from', async () => {
+    await keyOnE()
+    volumes = [E, F]
+    const rt = runtime()
+    await rt.openQuietly()
+    await rt.runGate()
+    expect(await rt.info()).toEqual({
+      where: 'usb',
+      createdAt: NOW.toISOString(),
+      sticks: 1,
+      usbLetters: ['E', 'F'],
+    })
+  })
+
+  it('has nothing to report without a key', async () => {
+    expect(await runtime().info()).toBeNull()
+  })
+
+  it('adds a spare stick that opens the key too', async () => {
+    await keyOnE()
+    volumes = [E, F]
+    const rt = runtime()
+    await rt.openQuietly()
+    await rt.runGate()
+    expect(await rt.spare('F')).toBe('ok')
+    expect(await rt.spare('G')).toBe('no-usb')
+    volumes = [F]
+    const again = runtime()
+    await again.openQuietly()
+    expect(again.vault()?.equals(rt.vault()!)).toBe(true)
+  })
+
+  it('moves to this PC and no longer needs the stick', async () => {
+    await keyOnE()
+    volumes = [E]
+    const rt = runtime()
+    await rt.openQuietly()
+    await rt.runGate()
+    expect(await rt.moveToPc()).toBe('ok')
+    expect(rt.registration()?.where).toBe('pc')
+    volumes = []
+    const again = runtime()
+    await again.openQuietly()
+    expect(again.vault()?.equals(rt.vault()!)).toBe(true)
+  })
+})

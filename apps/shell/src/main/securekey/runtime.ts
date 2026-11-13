@@ -4,7 +4,7 @@ import type { SecureKeyUiState } from '../../shared/securekey-api'
 import { createKey, type CreateTarget } from './create'
 import type { DeviceProbe, UsbVolume } from './devices'
 import { decideGate, type GateConfig, type GateDecision, type LockReason } from './gate'
-import { resetKey } from './manage'
+import { addSpareUsb, moveToPc, moveToUsb, resetKey, type ManageResult } from './manage'
 import {
   findRegistration,
   KEY_FILES,
@@ -74,6 +74,20 @@ export interface SecureKeyRuntime {
   locked(): boolean
   /** [Check again] on the shell window's cover */
   retryLock(): Promise<SecureKeyUiState | 'passed'>
+  /** Settings › Security key: the key in use and the sticks plugged in, or null without one */
+  info(): Promise<SecureKeyInfo | null>
+  spare(letter: string): Promise<ManageResult | 'no-usb'>
+  moveToUsb(letter: string): Promise<ManageResult | 'no-usb'>
+  moveToPc(): Promise<ManageResult>
+}
+
+export interface SecureKeyInfo {
+  where: 'usb' | 'pc'
+  createdAt: string
+  /** sticks on the record */
+  sticks: number
+  /** drive letters plugged in now */
+  usbLetters: string[]
 }
 
 /** an ISO time as a month, day and time of day in `lang` */
@@ -311,6 +325,58 @@ export function createSecureKeyRuntime(deps: SecureKeyRuntimeDeps): SecureKeyRun
       const decision = await recheck()
       if (decision.kind === 'open' || decision.kind === 'skip') return 'passed'
       return uiState('lock', decision)
+    },
+
+    async info() {
+      const record = readRegistered(deps.userData)
+      if (!current || !record || record.keyId !== current.keyId) return null
+      const letters = (await volumes()).map((v) => v.letter)
+      return {
+        where: record.where,
+        createdAt: record.createdAt,
+        sticks: record.devices.length,
+        usbLetters: letters,
+      }
+    },
+
+    async spare(letter) {
+      const volume = (await volumes()).find((v) => v.letter === letter)
+      if (!volume) return 'no-usb'
+      if (!current) return 'no-record'
+      return addSpareUsb({ userData: deps.userData, current, volume, usbDir, now: deps.now() })
+    },
+
+    async moveToUsb(letter) {
+      const volume = (await volumes()).find((v) => v.letter === letter)
+      if (!volume) return 'no-usb'
+      if (!current) return 'no-record'
+      const result = await moveToUsb({
+        userData: deps.userData,
+        current,
+        volume,
+        usbDir,
+        now: deps.now(),
+      })
+      if (result === 'ok') {
+        current = { ...current, where: 'usb', letter, volumeSerial: volume.volumeSerial }
+        watch(current)
+      }
+      return result
+    },
+
+    async moveToPc() {
+      if (!current) return 'no-record'
+      const result = await moveToPc({
+        userData: deps.userData,
+        current,
+        consentAt: deps.now().toISOString(),
+        sealPcVault: deps.sealPcVault,
+      })
+      if (result === 'ok') {
+        current = { where: 'pc', keyId: current.keyId, vault: current.vault }
+        watch(current)
+      }
+      return result
     },
   }
 }

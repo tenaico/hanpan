@@ -21,7 +21,6 @@ import {
   ipcMain,
   nativeImage,
   nativeTheme,
-  net,
   screen,
   safeStorage,
   powerMonitor,
@@ -62,7 +61,8 @@ import {
 } from './securekey/lock-overlay'
 import { createSecureKeyRuntime, type SecureKeyRuntime } from './securekey/runtime'
 import { needsConsent, writeConsent } from './consent'
-import { tSecureKey } from './securekey/strings'
+import { secureKeyStrings, tSecureKey } from './securekey/strings'
+import { resetKey } from './securekey/manage'
 import { vaultCodec } from './securekey/vault-codec'
 import { closeSecureKeyWindow, focusSecureKeyWindow, showSecureKeyWindow } from './securekey/window'
 import { tabStripOverlay } from './title-bar-overlay'
@@ -425,6 +425,7 @@ import type {
   FileSearchQuery,
   FileSearchRerank,
   FileSearchSettings,
+  SecureKeySettings,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
 import { RELEASE_IS_BETA } from '../shared/release-stage'
@@ -6451,6 +6452,53 @@ function registerHomeIpc(): void {
   })
 
   ipcMain.handle(HOME_CHANNELS.starredGroups, (): string[] => readStarredGroups())
+  // Hanpan: Settings › Security key (spec 2026-11-12 5-5)
+  ipcMain.handle(HOME_CHANNELS.secureKeyInfo, async (): Promise<SecureKeySettings | null> => {
+    const info = await secureKey?.info()
+    if (!info) return null
+    const lang = currentLang()
+    let date = info.createdAt
+    try {
+      date = new Intl.DateTimeFormat(lang, { dateStyle: 'long' }).format(new Date(info.createdAt))
+    } catch {
+      // the ISO time stays
+    }
+    return { ...info, strings: secureKeyStrings(lang, { date, count: info.sticks }) }
+  })
+  ipcMain.handle(
+    HOME_CHANNELS.secureKeyAct,
+    async (_event, action: unknown, letter: unknown): Promise<string | null> => {
+      if (!secureKey) return null
+      const lang = currentLang()
+      const pick = typeof letter === 'string' && /^[A-Z]$/.test(letter) ? letter : ''
+      if (action === 'reset') {
+        await resetKey({ userData: app.getPath('userData'), now: new Date() })
+        clearSealedV2Secrets(join(app.getPath('userData'), 'ai-settings.json'))
+        // the first-run window makes the new key on the next start
+        app.relaunch()
+        app.quit()
+        return null
+      }
+      const result =
+        action === 'spare'
+          ? await secureKey.spare(pick)
+          : action === 'to-usb'
+            ? await secureKey.moveToUsb(pick)
+            : action === 'to-pc'
+              ? await secureKey.moveToPc()
+              : 'no-record'
+      if (result === 'ok') return null
+      const key =
+        result === 'same-usb'
+          ? 'skSameUsb'
+          : result === 'no-usb'
+            ? 'skErrNoUsb'
+            : result === 'write-failed'
+              ? 'skErrWriteFailed'
+              : 'skDamaged'
+      return tSecureKey(lang, key)
+    },
+  )
   ipcMain.handle(HOME_CHANNELS.setStarredGroup, (_event, paths: unknown, group: unknown) => {
     setStarredGroup(stringPaths(paths), typeof group === 'string' && group ? group : null)
   })
