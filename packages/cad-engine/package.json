@@ -1,0 +1,25 @@
+{
+  "name": "@genoffice/cad-engine",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "description": "AI drawing engine: an immutable CAD document with grouped undo, primitive and extruded solids, boolean evaluation, .ttukcad, STL, OBJ and DXF files, measuring and a dimensioned A4 sheet",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "earcut": "^3.2.4",
+    "manifold-3d": "3.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
