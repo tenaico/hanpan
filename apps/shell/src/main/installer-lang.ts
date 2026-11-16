@@ -54,7 +54,6 @@ const LANG_IDS: Readonly<Partial<Record<Lang, number>>> = {
   es: 3082,
   fr: 1036,
   he: 1037,
-  hi: 1081,
   id: 1057,
   it: 1040,
   ja: 1041,
@@ -69,7 +68,7 @@ const LANG_IDS: Readonly<Partial<Record<Lang, number>>> = {
   'zh-TW': 1028,
 }
 
-/** null for Malay, which the installer does not have: it opens in English */
+/** null for Malay and Hindi, which the installer does not have: it opens in English */
 export function windowsLangIdFor(lang: Lang): number | null {
   return LANG_IDS[lang] ?? null
 }

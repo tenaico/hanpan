@@ -75,7 +75,7 @@ describe('windowsLangIdFor', () => {
   it('gives every Hanpan language an id that maps back to it', () => {
     for (const lang of LANGS) {
       const id = windowsLangIdFor(lang)
-      if (lang === 'ms') expect(id).toBeNull()
+      if (lang === 'ms' || lang === 'hi') expect(id).toBeNull()
       else expect(langFromWindowsLangId(id!)).toBe(lang)
     }
   })
@@ -86,7 +86,8 @@ describe('windowsLangIdFor', () => {
     const { lcid } = require('app-builder-lib/out/util/langs') as { lcid: Record<string, number> }
     // Spanish is NSIS's SpanishInternational, LANGID 3082, whatever lcid says
     const ids = new Set([...config.nsis.installerLanguages.map((l) => lcid[l]), 3082])
-    for (const lang of LANGS) if (lang !== 'ms') expect(ids.has(windowsLangIdFor(lang)!)).toBe(true)
+    for (const lang of LANGS)
+      if (lang !== 'ms' && lang !== 'hi') expect(ids.has(windowsLangIdFor(lang)!)).toBe(true)
   })
 })
 
@@ -123,8 +124,9 @@ describe('the installer offers exactly the languages Hanpan has', () => {
     const langs = config.nsis.installerLanguages
     expect(langs[0]).toBe('en_US')
     const covered = new Set(langs.map((l) => langFromWindowsLangId(lcid[l]!)))
-    // Malay: NSIS 3.0.4.1 lacks its install-mode strings, so the installer opens in English
-    expect([...covered].sort()).toEqual(LANGS.filter((l) => l !== 'ms').sort())
+    // Malay and Hindi: NSIS 3.0.4.1's files break on the install-mode page, so the
+    // installer opens in English
+    expect([...covered].sort()).toEqual(LANGS.filter((l) => l !== 'ms' && l !== 'hi').sort())
   })
 
   it('shows the picker from installer.nsh, not from electron-builder', () => {

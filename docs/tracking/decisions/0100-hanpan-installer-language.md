@@ -6,7 +6,7 @@
 
 ## 결정
 
-- **설치 프로그램의 언어는 한판의 21개 언어다.** `electron-builder.cjs`의 `nsis.installerLanguages`에 English를 맨 앞에 두고 나열한다. Windows 표시 언어가 이 중에 없으면 설치 프로그램은 English로 열린다. 포르투갈어는 브라질·포르투갈 두 가지를 두고, 둘 다 한판의 `pt`가 된다.
+- **설치 프로그램의 언어는 한판의 21개 언어 가운데 말레이어와 힌디어를 뺀 19개다.** NSIS 3.0.4.1의 두 언어 파일이 "모든 사용자/나만" 설치 화면 문구에서 깨진다(말레이어는 문구가 없고, 힌디어는 따옴표가 닫히지 않았다). 이 두 언어 Windows에서는 설치 프로그램이 English로 열리고, 앱은 0092대로 그 언어로 켜진다. `electron-builder.cjs`의 `nsis.installerLanguages`에 English를 맨 앞에 두고 나열한다. Windows 표시 언어가 이 중에 없으면 설치 프로그램은 English로 열린다. 포르투갈어는 브라질·포르투갈 두 가지를 두고, 둘 다 한판의 `pt`가 된다.
 - **언어 창은 처음 설치하거나 사람이 다시 설치할 때 한 번 뜬다.** Windows 표시 언어가 미리 골라져 있다. `build/installer.nsh`의 `customInit`이 `MUI_LANGDLL_DISPLAY`로 띄우고, 고른 언어 번호(Windows LANGID)를 `HKCU\Software\Hanpan`의 `InstallerLanguage`에 적는다.
 - **업데이트(`--updated`), 조용한 설치(`/S`), 관리자 권한으로 다시 시작된 두 번째 실행에서는 창을 띄우지 않는다.** 대신 HKCU에 적힌 언어를 쓴다. 그래서 "모든 사용자" 설치에서 권한을 올린 뒤의 화면도 고른 언어로 이어진다. electron-builder의 `displayLanguageSelector`는 쓰지 않는다. 그 옵션은 업데이트 창과 두 번째 실행에서도 창을 띄운다.
 - **설치하면서 고른 언어 번호를 `Hanpan.exe` 옆 `installer-language.txt`에 적는다.** 언어를 고른 적이 없으면(창도 HKCU 값도 없으면) 적지 않는다.

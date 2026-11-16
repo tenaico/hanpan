@@ -907,10 +907,11 @@ const config = {
   nsis: {
     oneClick: false,
     allowToChangeInstallationDirectory: true,
-    // The installer's languages are Hanpan's 21 but Malay (decision 0100), English
-    // first: the installer opens in English when Windows' language is none of them.
-    // NSIS 3.0.4.1's Malay file lacks the install-mode page strings, a warning
-    // makensis treats as an error.
+    // The installer's languages are Hanpan's 21 but Malay and Hindi (decision 0100),
+    // English first: the installer opens in English when Windows' language is none
+    // of them. NSIS 3.0.4.1's Malay file lacks the install-mode page strings (a
+    // warning makensis treats as an error) and its Hindi file has an unterminated
+    // string in them (an error), and electron-builder's installer has that page.
     // The picker itself is build/installer.nsh's customInit, not
     // displayLanguageSelector, which would also open in an update's window.
     installerLanguages: [
@@ -922,7 +923,6 @@ const config = {
       'vi_VN',
       'th_TH',
       'id_ID',
-      'hi_IN',
       'ar_SA',
       'he_IL',
       'ru_RU',
