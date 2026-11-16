@@ -30,3 +30,8 @@ tools/ooxml-validate/schemas/
 
 # Built-in skills: third-party skill files kept byte-identical to upstream (see NOTICE).
 apps/shell/resources/builtin-skills/*/
+
+# Korean user docs: prettier turns "F97~F99, F101~F102" ranges into strikethrough and renumbers
+# the section links at the top, changing what readers see.
+docs/매뉴얼.md
+docs/프로젝트이해.md

@@ -907,6 +907,34 @@ const config = {
   nsis: {
     oneClick: false,
     allowToChangeInstallationDirectory: true,
+    // The installer's languages are Hanpan's 21 (decision 0100), English first:
+    // the installer opens in English when Windows' language is none of them.
+    // The picker itself is build/installer.nsh's customInit, not
+    // displayLanguageSelector, which would also open in an update's window.
+    installerLanguages: [
+      'en_US',
+      'ko_KR',
+      'zh_CN',
+      'zh_TW',
+      'ja_JP',
+      'vi_VN',
+      'th_TH',
+      'id_ID',
+      'ms_MY',
+      'hi_IN',
+      'ar_SA',
+      'he_IL',
+      'ru_RU',
+      'fr_FR',
+      'de_DE',
+      'es_ES',
+      'pt_BR',
+      'pt_PT',
+      'it_IT',
+      'nl_NL',
+      'pl_PL',
+      'cs_CZ',
+    ],
     // no spaces: GitHub Releases rewrites them in asset names, and the update
     // feed must name the file exactly as it is downloaded
     artifactName: winArm64
