@@ -68,6 +68,7 @@ export function SketchBar({ tool, onFinish, onCancel }: SketchBarProps) {
       <label className="cad-sketch-height">
         {t('sketchHeight')}
         <input
+          className="cad-input"
           type="number"
           min="0.001"
           step="1"
@@ -84,13 +85,18 @@ export function SketchBar({ tool, onFinish, onCancel }: SketchBarProps) {
           }}
         />
       </label>
-      <button type="button" onClick={close}>
+      <button type="button" className="cad-button" onClick={close}>
         {t('sketchClose')}
       </button>
-      <button type="button" onClick={() => tool.undoPoint()} disabled={points.length === 0}>
+      <button
+        type="button"
+        className="cad-button"
+        onClick={() => tool.undoPoint()}
+        disabled={points.length === 0}
+      >
         {t('sketchUndoPoint')}
       </button>
-      <button type="button" onClick={cancel}>
+      <button type="button" className="cad-button" onClick={cancel}>
         {t('sketchCancel')}
       </button>
       {refusal && (

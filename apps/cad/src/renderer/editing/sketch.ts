@@ -141,7 +141,12 @@ export class SketchTool {
     return { ok: true, ring: reversed }
   }
 
-  /** A new solid extruded from z = 0 to `heightMm`; refuses an unusable height with 'bad-number'. */
+  /**
+   * A new solid extruded from z = 0 to `heightMm`; refuses an unusable height
+   * with 'bad-number'. The part stands at the middle of the outline's box and
+   * the ring is kept around that point, so the handles, the property panel's
+   * position and a rotation all centre on the solid, not on the plate's middle.
+   */
   toPart(ring: number[], heightMm: number): ExtrudePart {
     if (
       typeof heightMm !== 'number' ||
@@ -151,17 +156,21 @@ export class SketchTool {
     ) {
       throw new CadEditError('bad-number', 'height')
     }
+    const xs = ring.filter((_, k) => k % 2 === 0)
+    const ys = ring.filter((_, k) => k % 2 === 1)
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2
+    const cy = (Math.min(...ys) + Math.max(...ys)) / 2
     return {
       id: newId(),
       type: 'extrude',
       name: 'sketch',
       role: 'solid',
       color: DEFAULT_SOLID_COLOR,
-      position: [0, 0, 0],
+      position: [cx, cy, 0],
       rotation: [0, 0, 0],
       hidden: false,
       locked: false,
-      rings: [[...ring]],
+      rings: [ring.map((v, k) => v - (k % 2 === 0 ? cx : cy))],
       height: heightMm,
     }
   }

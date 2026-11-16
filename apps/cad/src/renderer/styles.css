@@ -483,6 +483,34 @@ html.genoffice-popover-open .ribbon-tabs {
   box-shadow: var(--shadow-menu);
 }
 
+.cad-sketch-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.cad-sketch-hint {
+  color: var(--text-secondary);
+}
+
+.cad-sketch-height {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.cad-sketch-height .cad-input {
+  width: 64px;
+}
+
+.cad-sketch-refusal {
+  color: var(--danger);
+}
+
 .cad-side {
   display: flex;
   flex-direction: column;

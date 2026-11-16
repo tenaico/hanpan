@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest'
 import { PerspectiveCamera, Vector3 } from 'three'
 import type { Box3 } from '@genoffice/cad-engine'
-import { fitTo, viewDirection } from '../src/renderer/scene/camera'
+import { fitTo, orbitDirection, viewDirection } from '../src/renderer/scene/camera'
 
 describe('the camera', () => {
   it('names the directions of the view buttons', () => {
@@ -42,6 +42,25 @@ describe('the camera', () => {
           1e-6,
         )
       }
+    }
+  })
+
+  it('"Show all" keeps the angle the camera looks from (its offset is not a unit vector)', () => {
+    // the camera of a new drawing: in front, a little to the right and above
+    const offset: [number, number, number] = [120, -220, 160]
+    const dir = orbitDirection(offset)
+    const len = Math.hypot(...dir)
+    const unit = offset.map((v) => v / Math.hypot(...offset))
+    // the same direction, not snapped to the view from straight above
+    for (let k = 0; k < 3; k++) expect(dir[k]! / len).toBeCloseTo(unit[k]!, 6)
+    // straight down still gets its nudge towards the front, whatever the length
+    for (const down of [
+      [0, 0, 1],
+      [0, 0, 350],
+    ] as const) {
+      const nudged = orbitDirection([...down])
+      expect(nudged[1]).toBeLessThan(0)
+      expect(nudged[2]).toBeGreaterThan(0)
     }
   })
 })

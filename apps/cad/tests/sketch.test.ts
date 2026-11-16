@@ -37,6 +37,29 @@ function closed(tool: SketchTool): number[] {
 }
 
 describe('SketchTool', () => {
+  it('a sketched part stands at the middle of its outline, so its handles sit on it', async () => {
+    const tool = new SketchTool(1)
+    addAll(tool, [
+      [40, 10],
+      [60, 10],
+      [50, 30],
+    ])
+    const part = tool.toPart(closed(tool), 5)
+    // the middle of the outline's box, on the plate
+    expect(part.position).toEqual([50, 20, 0])
+    // the solid is where it was drawn
+    const kernel = await createKernel()
+    const [evaluated] = evaluateDocument(addPart(createDocument(), part), kernel)
+    const box = meshBounds(evaluated!.mesh!)
+    expect(box.min[0]).toBeCloseTo(40)
+    expect(box.max[0]).toBeCloseTo(60)
+    expect(box.min[1]).toBeCloseTo(10)
+    expect(box.max[1]).toBeCloseTo(30)
+    expect(box.min[2]).toBeCloseTo(0)
+    expect(box.max[2]).toBeCloseTo(5)
+    kernel.dispose()
+  })
+
   it('a square sketch makes one extrude part 10 mm high', async () => {
     const tool = new SketchTool(1)
     square(tool)
@@ -47,14 +70,15 @@ describe('SketchTool', () => {
       name: 'sketch',
       role: 'solid',
       color: DEFAULT_SOLID_COLOR,
-      position: [0, 0, 0],
+      position: [10, 10, 0],
       rotation: [0, 0, 0],
       hidden: false,
       locked: false,
       height: 10,
     })
     expect(part.id).toMatch(/^[0-9a-f]{12}$/)
-    expect(part.rings).toEqual([ring])
+    // the ring is kept around the part's position
+    expect(part.rings).toEqual([ring.map((v) => v - 10)])
     const doc = addPart(createDocument(), part)
     expect(doc.parts).toHaveLength(1)
     const kernel = await createKernel()

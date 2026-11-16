@@ -1,15 +1,26 @@
-import { readFileSync, rmSync } from 'node:fs'
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { execFileSync } from 'node:child_process'
+import { readFileSync, realpathSync, rmSync } from 'node:fs'
+import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test, expect, type ElectronApplication, type Page } from '@playwright/test'
-import { makeMesh, openCadFile, writeStl } from '@genoffice/cad-engine'
+import {
+  SHAPE_DIMS,
+  makeMesh,
+  meshVolume,
+  openCadFile,
+  readStl,
+  writeStl,
+  type CadDocument,
+  type ShapeKind,
+} from '@genoffice/cad-engine'
 import {
   closeAndSaveVideo,
   launchShell,
   openFromAllApps,
   screenshotPath,
   waitForPageWithUrl,
+  type LaunchedApp,
 } from './helpers'
 
 /**
@@ -189,3 +200,381 @@ test.describe('AI Drawing tab (stage 2)', () => {
     }
   })
 })
+
+// ---- stage 3: editing ----
+
+const ALL_SHAPES = Object.keys(SHAPE_DIMS) as ShapeKind[]
+
+/** Clicks File › Export › <format> in the application menu. */
+const clickExportItem = (app: ElectronApplication, label: string): Promise<boolean> =>
+  app.evaluate(({ Menu }, itemLabel) => {
+    const file = Menu.getApplicationMenu()?.items.find((item) => item.label === 'File')
+    const exp = file?.submenu?.items.find((item) => item.label === 'Export')
+    const item = exp?.submenu?.items.find((candidate) => candidate.label === itemLabel)
+    if (!item) return false
+    item.click()
+    return true
+  }, label)
+
+/** Opens a new drawing from All apps and waits for its editor to be ready. */
+async function newDrawing(launched: LaunchedApp): Promise<Page> {
+  await openFromAllApps(launched.page, 'ttukcad')
+  const cad = await waitForPageWithUrl(launched.app, '://cad/')
+  await expect(cad.locator('[data-cad-ready]')).toBeVisible({ timeout: 30_000 })
+  await expect(cad.locator('.cad-viewport canvas')).toHaveCount(1)
+  return cad
+}
+
+/** Shows a ribbon tab of the drawing (file, home, view, help). */
+const ribbonTab = (cad: Page, name: string): Promise<void> =>
+  cad.locator(`[data-ribbon-tab="${name}"]`).click()
+
+/** Places one shape from the Home tab (the four common ones) or the gallery. */
+async function placeShape(cad: Page, kind: ShapeKind): Promise<void> {
+  await ribbonTab(cad, 'home')
+  const direct = cad.locator(`[data-ribbon-pane="home"] [data-action="shape-${kind}"]`)
+  if (await direct.count()) {
+    await direct.click()
+    return
+  }
+  await cad.locator('[data-action="more-shapes"]').click()
+  await cad.locator(`.cad-gallery-item[data-shape="${kind}"]`).click()
+}
+
+/** Types the words of a text shape in the text prompt and places it. */
+async function placeText(cad: Page, words: string): Promise<void> {
+  await cad.locator('[data-text-input]').fill(words)
+  await cad.locator('[data-text-place]').click()
+}
+
+/** Saves the drawing (File › Save, the dialog answered with `target`) and reads it back. */
+async function savedDocument(
+  app: ElectronApplication,
+  page: Page,
+  target: string,
+): Promise<CadDocument> {
+  await answerSaveDialogs(app, target)
+  expect(await clickMenuItem(app, 'File', 'Save')).toBe(true)
+  await expect
+    .poll(async () => (await cadTabs(page)).find((t) => t.active)?.filePath, { timeout: 30_000 })
+    .toBe(target)
+  const opened = openCadFile(new Uint8Array(await readFile(target)))
+  if (opened.status !== 'ok') throw new Error(`the saved drawing did not open: ${opened.status}`)
+  return opened.document
+}
+
+/** The property panel's position of the one selected part, as numbers. */
+const panelPosition = (cad: Page): Promise<number[]> =>
+  Promise.all(
+    ['x', 'y', 'z'].map(async (axis) =>
+      Number(await cad.locator(`[data-prop="position.${axis}"]`).inputValue()),
+    ),
+  )
+
+test.describe('AI Drawing tab (stage 3: editing)', () => {
+  test('places all 15 shapes from the gallery', async () => {
+    test.setTimeout(240_000)
+    const dir = await mkdtemp(join(tmpdir(), 'genoffice-cad-shapes-'))
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-shapes' })
+    const { app, page } = launched
+    try {
+      const cad = await newDrawing(launched)
+      await ribbonTab(cad, 'home')
+      await cad.locator('[data-action="more-shapes"]').click()
+      const items = cad.locator('.cad-gallery-item')
+      await expect(items).toHaveCount(15)
+      expect(
+        await items.evaluateAll((els) => els.map((el) => el.getAttribute('data-shape'))),
+      ).toEqual(ALL_SHAPES)
+      await cad.keyboard.press('Escape')
+
+      const info = cad.locator('[data-cad-status-info]')
+      for (const kind of ALL_SHAPES) {
+        await cad.locator('[data-action="more-shapes"]').click()
+        const item = cad.locator(`.cad-gallery-item[data-shape="${kind}"]`)
+        const label = (await item.innerText()).trim()
+        await item.click()
+        if (kind === 'text') await placeText(cad, 'AB')
+        // the new part is the one selected: its name leads the status line
+        await expect(info).toContainText(kind === 'text' ? 'AB' : label, { timeout: 15_000 })
+        await expect(cad.locator('[data-cad-message]')).toHaveText('')
+      }
+      await cad.screenshot({ path: screenshotPath('cad-all-shapes') })
+
+      const doc = await savedDocument(app, page, join(dir, 'shapes.ttukcad'))
+      expect(doc.parts).toHaveLength(15)
+      expect(
+        doc.parts.map((part) => (part.type === 'shape' ? part.shape : part.type)).sort(),
+      ).toEqual([...ALL_SHAPES].sort())
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-shapes')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('a box with a cylinder hole exports an STL that reopens in a new cad tab with a smaller volume', async () => {
+    test.setTimeout(240_000)
+    const dir = realpathSync(await mkdtemp(join(tmpdir(), 'genoffice-cad-hole-')))
+    const stl = join(dir, 'holed.stl')
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-hole' })
+    const { app, page } = launched
+    try {
+      const cad = await newDrawing(launched)
+      await placeShape(cad, 'box')
+      await placeShape(cad, 'cylinder')
+      // a thinner cylinder, so the hole has walls all round
+      const diameter = cad.locator('[data-prop="dims.diameter"]')
+      await diameter.fill('10')
+      await diameter.press('Enter')
+      await expect(diameter).toHaveValue('10')
+      // H turns the selected cylinder into a hole (the key goes to the page, not the box)
+      await cad.locator('.cad-viewport canvas').hover()
+      await diameter.blur()
+      await cad.keyboard.press('h')
+      await expect(cad.locator('[data-prop="role.hole"]')).toHaveClass(/active/)
+      await cad.keyboard.press('ControlOrMeta+a')
+      await cad.keyboard.press('ControlOrMeta+g')
+      await expect(cad.locator('[data-cad-status-info]')).toContainText('20 × 20 × 20')
+      await cad.screenshot({ path: screenshotPath('cad-box-with-hole') })
+
+      await answerSaveDialogs(app, stl)
+      expect(await clickExportItem(app, 'STL (3D Printing)…')).toBe(true)
+      await expect
+        .poll(
+          () =>
+            readFile(stl).then(
+              () => true,
+              () => false,
+            ),
+          { timeout: 30_000 },
+        )
+        .toBe(true)
+      const read = readStl(new Uint8Array(await readFile(stl)))
+      expect(read.status).toBe('ok')
+      if (read.status !== 'ok') return
+      expect(read.closed).toBe(true)
+      const volume = meshVolume(read.mesh)
+      const solidBox = 20 * 20 * 20
+      const hole = Math.PI * 5 * 5 * 20
+      expect(volume).toBeLessThan(solidBox - hole * 0.9)
+      expect(volume).toBeGreaterThan(solidBox - hole * 1.1)
+
+      // a picture of several shapes beside the holed box, nothing selected, the view framed
+      for (const [kind, x] of [
+        ['sphere', -30],
+        ['cone', 30],
+      ] as const) {
+        await placeShape(cad, kind)
+        const field = cad.locator('[data-prop="position.x"]')
+        await field.fill(String(x))
+        await field.press('Enter')
+        await expect(field).toHaveValue(String(x))
+      }
+      const canvas = cad.locator('.cad-viewport canvas')
+      await canvas.click({ position: { x: 8, y: 8 } })
+      await expect(cad.locator('[data-cad-properties] [data-prop]')).toHaveCount(0)
+      await ribbonTab(cad, 'view')
+      await cad.locator('[data-action="view-fit"]').click()
+      await cad.screenshot({ path: screenshotPath('cad-shapes-and-hole') })
+
+      // the STL opens in a second cad tab, named after the file
+      await openPath(page, stl)
+      await expect.poll(async () => (await cadTabs(page)).length, { timeout: 30_000 }).toBe(2)
+      expect((await cadTabs(page)).map((tab) => tab.title)).toContain('holed')
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-hole')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('handles move a part and one undo puts it back', async () => {
+    test.setTimeout(240_000)
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-handles' })
+    try {
+      const cad = await newDrawing(launched)
+      await placeShape(cad, 'box')
+      const before = await panelPosition(cad)
+      // looking straight down, the box (and the move handle on it) sits in the middle
+      await ribbonTab(cad, 'view')
+      await cad.locator('[data-action="view-top"]').click()
+      await cad.locator('[data-action="handle-move"]').click()
+      const canvas = cad.locator('.cad-viewport canvas')
+      const box = (await canvas.boundingBox())!
+      const cx = box.x + box.width / 2
+      const cy = box.y + box.height / 2
+      // the red X arrow points right from the middle; grab it a little way out
+      const grab = cx + box.height * 0.07
+      await cad.mouse.move(grab, cy)
+      await cad.mouse.down()
+      for (let step = 1; step <= 10; step += 1) {
+        await cad.mouse.move(grab + step * 12, cy)
+      }
+      await cad.mouse.up()
+      await cad.screenshot({ path: screenshotPath('cad-handle-moved') })
+      const moved = await panelPosition(cad)
+      expect(moved[0]).toBeGreaterThan(before[0]! + 1)
+      expect(moved[1]).toBeCloseTo(before[1]!, 3)
+      expect(moved[2]).toBeCloseTo(before[2]!, 3)
+
+      await cad.keyboard.press('ControlOrMeta+z')
+      await expect.poll(() => panelPosition(cad)).toEqual(before)
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-handles')
+    }
+  })
+
+  test('the text button and the sketch tool each add a part', async () => {
+    test.setTimeout(240_000)
+    const dir = await mkdtemp(join(tmpdir(), 'genoffice-cad-text-'))
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-text-sketch' })
+    const { app, page } = launched
+    try {
+      const cad = await newDrawing(launched)
+      await ribbonTab(cad, 'home')
+      await cad.locator('[data-action="text"]').click()
+      await placeText(cad, '한판')
+      await expect(cad.locator('[data-cad-status-info]')).toContainText('한판', {
+        timeout: 15_000,
+      })
+      await expect(cad.locator('[data-cad-message]')).toHaveText('')
+
+      await cad.locator('[data-action="sketch"]').click()
+      await expect(cad.locator('[data-cad-sketch]')).toBeVisible()
+      const canvas = cad.locator('.cad-viewport canvas')
+      const box = (await canvas.boundingBox())!
+      // three points on the plate in front of the text
+      for (const [fx, fy] of [
+        [0.3, 0.75],
+        [0.45, 0.75],
+        [0.38, 0.62],
+      ] as const) {
+        await cad.mouse.click(box.x + box.width * fx, box.y + box.height * fy)
+      }
+      await expect(cad.locator('.cad-sketch-count')).toHaveText('3')
+      await cad.screenshot({ path: screenshotPath('cad-sketching') })
+      await cad.locator('.cad-sketch-bar button').first().click()
+      await expect(cad.locator('[data-cad-sketch]')).toHaveCount(0)
+      // the new solid is selected, and its position is the middle of what was drawn
+      const [sx, sy] = await panelPosition(cad)
+      expect(Math.abs(sx!) + Math.abs(sy!)).toBeGreaterThan(1)
+      await cad.screenshot({ path: screenshotPath('cad-sketch-made') })
+      await canvas.click({ position: { x: 8, y: 8 } })
+      await ribbonTab(cad, 'view')
+      await cad.locator('[data-action="view-fit"]').click()
+      await cad.screenshot({ path: screenshotPath('cad-text-and-sketch') })
+      await cad.locator('[data-action="view-top"]').click()
+      await cad.screenshot({ path: screenshotPath('cad-text-and-sketch-top') })
+
+      const doc = await savedDocument(app, page, join(dir, 'text.ttukcad'))
+      expect(doc.parts.map((part) => part.type)).toEqual(['shape', 'extrude'])
+      expect(doc.parts[1]!.position).toEqual([sx, sy, 0])
+      const text = doc.parts[0]!
+      expect(text.type === 'shape' && text.text?.value).toBe('한판')
+      expect(text.type === 'shape' && text.text!.outlines.length).toBeGreaterThan(0)
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-text-sketch')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('a crashed cad tab offers its recovery copy', async () => {
+    test.setTimeout(480_000)
+    const first = await launchShell({
+      onboardingSeen: true,
+      recordVideo: false,
+      videoDir: 'cad-recovery-first',
+    })
+    const userDataDir = first.userDataDir
+    let title: string | undefined
+    try {
+      const cad = await newDrawing(first)
+      await placeShape(cad, 'box')
+      await placeShape(cad, 'sphere')
+      await expect(cad.locator('.cad-state')).toHaveAttribute('data-dirty', '')
+      title = (await cadTabs(first.page))[0]!.title
+      // copies are made about every 30 s
+      await expect
+        .poll(() => cadCopyMetas(userDataDir), { timeout: 150_000, intervals: [2_000] })
+        .toEqual([expect.objectContaining({ kind: 'cad', filePath: null, state: 'undecided' })])
+    } finally {
+      await hardKill(first)
+    }
+
+    const second = await launchShell({
+      userDataDir,
+      recordVideo: false,
+      videoDir: 'cad-recovery-second',
+    })
+    const dir = await mkdtemp(join(tmpdir(), 'genoffice-cad-recovered-'))
+    try {
+      const { app, page } = second
+      const list = page.locator('.recovery-list')
+      await expect(list).toBeVisible({ timeout: 30_000 })
+      await expect(list.locator('.recovery-row-name')).toHaveText([title!])
+      expect((await cadTabs(page)).map((tab) => tab.filePath ?? null)).toEqual([null])
+      await list.locator('.recovery-confirm').click()
+      await expect(list).toBeHidden()
+
+      // the drawing comes back with both parts, unsaved and still untitled
+      const cad = await waitForPageWithUrl(app, '://cad/', 60_000)
+      await expect(cad.locator('[data-cad-ready]')).toBeVisible({ timeout: 30_000 })
+      await expect(cad.locator('.cad-state')).toHaveAttribute('data-dirty', '')
+      expect((await cadTabs(page))[0]?.filePath).toBeUndefined()
+      const doc = await savedDocument(app, page, join(dir, 'recovered.ttukcad'))
+      expect(doc.parts.map((part) => (part.type === 'shape' ? part.shape : part.type))).toEqual([
+        'box',
+        'sphere',
+      ])
+    } finally {
+      await closeAndSaveVideo(second, 'cad-recovery-second')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
+interface CopyMeta {
+  kind: string
+  filePath: string | null
+  title: string
+  state: string
+}
+
+/** The cad recovery copies' metadata under a data folder (file and untitled copies). */
+async function cadCopyMetas(userDataDir: string): Promise<CopyMeta[]> {
+  const metas: CopyMeta[] = []
+  const root = join(userDataDir, 'cad-autosave')
+  for (const folder of [root, join(root, 'untitled')]) {
+    const names = await readdir(folder).catch(() => [] as string[])
+    for (const name of names.filter((n) => n.endsWith('.meta.json'))) {
+      try {
+        metas.push(JSON.parse(await readFile(join(folder, name), 'utf8')) as CopyMeta)
+      } catch {
+        // a meta file mid-write: the next poll reads it
+      }
+    }
+  }
+  return metas
+}
+
+/**
+ * Ends the app like a power cut (as e2e/crash-recovery.spec.ts does): the main
+ * process by the PID this test started, with its children. No quit path runs.
+ */
+async function hardKill(launched: LaunchedApp): Promise<void> {
+  const child = launched.app.process()
+  const pid = child.pid
+  if (pid === undefined) throw new Error('the app has no process id')
+  const closed = launched.app.waitForEvent('close', { timeout: 30_000 }).catch(() => undefined)
+  if (process.platform === 'win32') {
+    try {
+      execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'pipe' })
+    } catch (error) {
+      // a child that ended on its own makes /T report a failure; the main process must be gone
+      if (child.exitCode === null && child.signalCode === null) throw error
+    }
+  } else {
+    process.kill(pid, 'SIGKILL')
+  }
+  await closed
+  await expect.poll(() => child.exitCode !== null || child.signalCode !== null).toBe(true)
+}

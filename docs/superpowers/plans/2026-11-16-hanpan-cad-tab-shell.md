@@ -131,7 +131,7 @@
   - `app.test.ts`: 가짜 `window.cadApi`로 `opens the pending path and shows its title`, `shows the no-WebGL screen with both remedies`, `menu Save calls cadApi.save with bytes that reopen`, `a refused save shows the refusal and stays dirty`, `close-save request answers closeSaveResult(true) after a save`.
   - `i18n.test.ts`: 21개 언어가 `zh`와 같은 열쇠, 빈 값 없음, `ko.untitled === '제목 없는 도면'`, `en.untitled === 'Untitled Drawing'`.
 - [ ] **Step 2:** `npx vitest run` (in `apps/cad`) Expected: 새 시험 FAIL.
-- [ ] **Step 3:** 구현. CSP는 마인드맵 `index.html`과 같고 `script-src 'self' 'wasm-unsafe-eval'`(3단계에서 manifold wasm을 쓴다).
+- [ ] **Step 3:** 구현. CSP는 마인드맵 `index.html`과 같고 `script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'`(manifold가 시작할 때 `new Function`을 쓴다. 결정 0101 추가 결정).
 - [ ] **Step 4:** `npx vitest run` Expected: PASS. `npm run typecheck -w @genoffice/cad` PASS.
 - [ ] **Step 5:** 커밋 `feat(cad): document session, recovery copies and an empty 3D workplane`.
 

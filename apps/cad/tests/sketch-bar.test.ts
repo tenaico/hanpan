@@ -2,6 +2,8 @@
  * The bar shown while sketching: the point count, the height box and the
  * three buttons; a refused outline shows its reason and makes nothing.
  */
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
@@ -79,6 +81,15 @@ function typeInto(input: HTMLInputElement, value: string): void {
 }
 
 describe('SketchBar', () => {
+  it('wears the app styles: one laid-out row, its buttons and its height box', () => {
+    show(new SketchTool(1))
+    // in the app the bar ran its words together with bare browser buttons
+    const css = readFileSync(join(__dirname, '../src/renderer/styles.css'), 'utf8')
+    expect(css).toMatch(/\.cad-sketch-bar\s*\{[^}]*display:\s*flex/)
+    for (const b of host.querySelectorAll('button')) expect(b.className).toContain('cad-button')
+    expect(heightInput().className).toContain('cad-input')
+  })
+
   it('shows the title, the hint, the point count and a 10 mm height', () => {
     const tool = new SketchTool(1)
     show(tool)

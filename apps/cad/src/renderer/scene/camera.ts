@@ -103,3 +103,14 @@ export function fitTo(box: Box3, options: FitOptions = {}): CameraPose {
     up,
   }
 }
+
+/**
+ * The direction the orbiting camera looks from: straight down is nudged a hair
+ * towards the front, so the orbit keeps +Z up and +Y away. `direction` points
+ * from the target towards the camera and need not be a unit vector ("fit"
+ * passes the camera's offset from the target).
+ */
+export function orbitDirection(direction: Vec3): Vec3 {
+  const unit = normalize(direction)
+  return Math.abs(unit[2]) > 0.999 ? [0, -1e-3, 1] : unit
+}

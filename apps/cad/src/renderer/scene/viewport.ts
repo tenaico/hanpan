@@ -54,7 +54,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 import type { Box3, CadDocument, EvalIssue, Mesh as CadMesh, Vec3 } from '@genoffice/cad-engine'
-import { fitTo, viewDirection, type ViewName } from './camera'
+import { fitTo, orbitDirection, viewDirection, type ViewName } from './camera'
 import { CANVAS_COLORS, type CanvasColors, type CanvasTheme } from './canvas-colors'
 import { lineColor } from './drawing-lines'
 import { HandleSession, type DocChange, type HandleMode } from './handles'
@@ -691,9 +691,11 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
   // ---- the camera ----
 
   const lookFrom = (direction: Vec3, box: Box3): void => {
-    // straight down is nudged a hair towards the front, so the orbit keeps +Z up and +Y away
-    const dir: Vec3 = Math.abs(direction[2]) > 0.999 ? [0, -1e-3, 1] : direction
-    const pose = fitTo(box, { direction: dir, aspect: camera.aspect, fovDeg: FOV_DEG })
+    const pose = fitTo(box, {
+      direction: orbitDirection(direction),
+      aspect: camera.aspect,
+      fovDeg: FOV_DEG,
+    })
     camera.position.set(...pose.position)
     controls.target.set(...pose.target)
     controls.update()
