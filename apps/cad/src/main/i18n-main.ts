@@ -1,6 +1,6 @@
 /**
- * Texts the AI Drawing main process shows itself: the save dialog and the
- * question before closing a drawing with unsaved changes. Everything else the
+ * Texts the AI Drawing main process shows itself: the save and export dialogs
+ * and the question before closing a drawing with unsaved changes. Everything else the
  * user reads is in the renderer's dictionaries.
  */
 import { createI18n, defineStrings, getUiLang } from '@genoffice/i18n'
@@ -17,6 +17,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: '不保存',
     btnCancel: '取消',
     saveRefused: '无法保存此图纸，因为保存后的文件将无法再次打开。',
+    dlgExportTitle: '导出 AI 图纸',
+    filterModel3d: '3D 模型',
+    filterImage: '图片',
   },
   en: {
     dlgSaveTitle: 'Save AI Drawing',
@@ -29,6 +32,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: "Don't Save",
     btnCancel: 'Cancel',
     saveRefused: 'This drawing could not be saved because the file would not reopen.',
+    dlgExportTitle: 'Export AI Drawing',
+    filterModel3d: '3D Model',
+    filterImage: 'Image',
   },
   vi: {
     dlgSaveTitle: 'Lưu bản vẽ AI',
@@ -41,6 +47,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'Không lưu',
     btnCancel: 'Hủy',
     saveRefused: 'Không thể lưu bản vẽ này vì tệp sẽ không mở lại được.',
+    dlgExportTitle: 'Xuất bản vẽ AI',
+    filterModel3d: 'Mô hình 3D',
+    filterImage: 'Hình ảnh',
   },
   ja: {
     dlgSaveTitle: 'AI 図面を保存',
@@ -53,6 +62,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: '保存しない',
     btnCancel: 'キャンセル',
     saveRefused: '保存したファイルを開き直せないため、この図面は保存できませんでした。',
+    dlgExportTitle: 'AI 図面をエクスポート',
+    filterModel3d: '3D モデル',
+    filterImage: '画像',
   },
   ko: {
     dlgSaveTitle: 'AI 도면 저장',
@@ -65,6 +77,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: '저장 안 함',
     btnCancel: '취소',
     saveRefused: '저장한 파일을 다시 열 수 없어서 이 도면을 저장하지 않았습니다.',
+    dlgExportTitle: 'AI 도면 내보내기',
+    filterModel3d: '3D 모델',
+    filterImage: '이미지',
   },
   fr: {
     dlgSaveTitle: 'Enregistrer le dessin IA',
@@ -78,6 +93,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnCancel: 'Annuler',
     saveRefused:
       'Ce dessin n’a pas pu être enregistré, car le fichier ne pourrait pas être rouvert.',
+    dlgExportTitle: 'Exporter le dessin IA',
+    filterModel3d: 'Modèle 3D',
+    filterImage: 'Image',
   },
   de: {
     dlgSaveTitle: 'KI-Zeichnung speichern',
@@ -91,6 +109,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnCancel: 'Abbrechen',
     saveRefused:
       'Diese Zeichnung konnte nicht gespeichert werden, weil sich die Datei nicht wieder öffnen ließe.',
+    dlgExportTitle: 'KI-Zeichnung exportieren',
+    filterModel3d: '3D-Modell',
+    filterImage: 'Bild',
   },
   es: {
     dlgSaveTitle: 'Guardar dibujo IA',
@@ -103,6 +124,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'No guardar',
     btnCancel: 'Cancelar',
     saveRefused: 'No se pudo guardar este dibujo porque el archivo no se podría volver a abrir.',
+    dlgExportTitle: 'Exportar dibujo IA',
+    filterModel3d: 'Modelo 3D',
+    filterImage: 'Imagen',
   },
   th: {
     dlgSaveTitle: 'บันทึกแบบวาด AI',
@@ -115,6 +139,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'ไม่บันทึก',
     btnCancel: 'ยกเลิก',
     saveRefused: 'บันทึกแบบวาดนี้ไม่ได้ เพราะไฟล์ที่บันทึกจะเปิดอีกครั้งไม่ได้',
+    dlgExportTitle: 'ส่งออกแบบร่าง AI',
+    filterModel3d: 'โมเดล 3D',
+    filterImage: 'รูปภาพ',
   },
   id: {
     dlgSaveTitle: 'Simpan gambar AI',
@@ -127,6 +154,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'Jangan Simpan',
     btnCancel: 'Batal',
     saveRefused: 'Gambar ini tidak dapat disimpan karena berkasnya tidak akan bisa dibuka lagi.',
+    dlgExportTitle: 'Ekspor gambar AI',
+    filterModel3d: 'Model 3D',
+    filterImage: 'Gambar',
   },
   ru: {
     dlgSaveTitle: 'Сохранить ИИ-чертёж',
@@ -139,6 +169,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'Не сохранять',
     btnCancel: 'Отмена',
     saveRefused: 'Не удалось сохранить чертёж: сохранённый файл нельзя было бы открыть снова.',
+    dlgExportTitle: 'Экспорт ИИ-чертежа',
+    filterModel3d: '3D-модель',
+    filterImage: 'Изображение',
   },
   ar: {
     dlgSaveTitle: 'حفظ رسم الذكاء الاصطناعي',
@@ -151,6 +184,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'عدم الحفظ',
     btnCancel: 'إلغاء',
     saveRefused: 'تعذّر حفظ هذا الرسم لأن الملف لن يُفتح مرة أخرى.',
+    dlgExportTitle: 'تصدير رسم هندسي بالذكاء الاصطناعي',
+    filterModel3d: 'نموذج ثلاثي الأبعاد',
+    filterImage: 'صورة',
   },
   pt: {
     dlgSaveTitle: 'Salvar desenho IA',
@@ -163,6 +199,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'Não Salvar',
     btnCancel: 'Cancelar',
     saveRefused: 'Não foi possível salvar este desenho porque o arquivo não poderia ser reaberto.',
+    dlgExportTitle: 'Exportar desenho IA',
+    filterModel3d: 'Modelo 3D',
+    filterImage: 'Imagem',
   },
   it: {
     dlgSaveTitle: 'Salva disegno IA',
@@ -175,6 +214,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'Non salvare',
     btnCancel: 'Annulla',
     saveRefused: 'Impossibile salvare questo disegno perché il file non si potrebbe riaprire.',
+    dlgExportTitle: 'Esporta disegno IA',
+    filterModel3d: 'Modello 3D',
+    filterImage: 'Immagine',
   },
   pl: {
     dlgSaveTitle: 'Zapisz rysunek AI',
@@ -187,6 +229,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'Nie zapisuj',
     btnCancel: 'Anuluj',
     saveRefused: 'Nie zapisano tego rysunku, ponieważ pliku nie dałoby się ponownie otworzyć.',
+    dlgExportTitle: 'Eksportuj rysunek AI',
+    filterModel3d: 'Model 3D',
+    filterImage: 'Obraz',
   },
   cs: {
     dlgSaveTitle: 'Uložit výkres AI',
@@ -199,6 +244,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'Neukládat',
     btnCancel: 'Zrušit',
     saveRefused: 'Tento výkres nelze uložit, protože soubor by nešel znovu otevřít.',
+    dlgExportTitle: 'Exportovat výkres AI',
+    filterModel3d: '3D model',
+    filterImage: 'Obrázek',
   },
   nl: {
     dlgSaveTitle: 'AI-tekening opslaan',
@@ -212,6 +260,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnCancel: 'Annuleren',
     saveRefused:
       'Deze tekening kon niet worden opgeslagen, omdat het bestand niet opnieuw te openen zou zijn.',
+    dlgExportTitle: 'AI-tekening exporteren',
+    filterModel3d: '3D-model',
+    filterImage: 'Afbeelding',
   },
   ms: {
     dlgSaveTitle: 'Simpan lukisan AI',
@@ -224,6 +275,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'Jangan Simpan',
     btnCancel: 'Batal',
     saveRefused: 'Lukisan ini tidak dapat disimpan kerana failnya tidak akan dapat dibuka semula.',
+    dlgExportTitle: 'Eksport lukisan AI',
+    filterModel3d: 'Model 3D',
+    filterImage: 'Imej',
   },
   he: {
     dlgSaveTitle: 'שמירת שרטוט AI',
@@ -236,6 +290,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'אל תשמור',
     btnCancel: 'ביטול',
     saveRefused: 'לא ניתן היה לשמור את השרטוט, כי לא היה אפשר לפתוח את הקובץ מחדש.',
+    dlgExportTitle: 'ייצוא שרטוט AI',
+    filterModel3d: 'מודל תלת-ממדי',
+    filterImage: 'תמונה',
   },
   hi: {
     dlgSaveTitle: 'AI ड्रॉइंग सहेजें',
@@ -248,6 +305,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: 'न सहेजें',
     btnCancel: 'रद्द करें',
     saveRefused: 'यह ड्रॉइंग सहेजी नहीं जा सकी, क्योंकि फ़ाइल दोबारा नहीं खुलती।',
+    dlgExportTitle: 'AI ड्रॉइंग निर्यात करें',
+    filterModel3d: '3D मॉडल',
+    filterImage: 'छवि',
   },
   'zh-TW': {
     dlgSaveTitle: '儲存 AI 圖面',
@@ -260,6 +320,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     btnDontSave: '不儲存',
     btnCancel: '取消',
     saveRefused: '無法儲存此圖面，因為儲存後的檔案將無法再次開啟。',
+    dlgExportTitle: '匯出 AI 圖面',
+    filterModel3d: '3D 模型',
+    filterImage: '圖片',
   },
 })
 

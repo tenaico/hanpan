@@ -101,10 +101,10 @@ describe('format registry', () => {
   it('registers the AI Drawing family: opens .ttukcad and imports, saves .ttukcad only', () => {
     const cad = formatFamily('cad')
     expect(cad.label).toBe('AI drawing')
-    expect(cad.editorOpen).toEqual(['ttukcad', 'dxf', 'stl', 'obj'])
+    expect(cad.editorOpen).toEqual(['ttukcad', 'dxf', 'stl', 'obj', '3mf', 'glb', 'ply'])
     for (const ext of cad.editorOpen) expect(appForPath(`/x/a.${ext}`), `.${ext}`).toBe('cad')
     expect(cad.editorSave).toEqual(['ttukcad'])
-    expect(cad.editorExport).toEqual([])
+    expect(cad.editorExport).toEqual(['stl', 'obj', 'png'])
     // reached through open_documents only (read a summary, save)
     expect(cad.mcp).toBeUndefined()
   })

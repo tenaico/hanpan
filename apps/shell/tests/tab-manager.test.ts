@@ -444,6 +444,19 @@ describe('opening tabs', () => {
     expect(manager.findCadTabByPath('/tmp/Bracket.STL')).toBeUndefined()
   })
 
+  it('opens a .3mf import and a .dwg it only explains as untitled drawings, never as those files', () => {
+    for (const [path, title] of [
+      ['/tmp/Bracket.3mf', 'Bracket'],
+      ['/tmp/Floor Plan.dwg', 'Floor Plan'],
+    ] as const) {
+      const id = manager.openCadTab(path)
+      expect(createCadView).toHaveBeenLastCalledWith(path)
+      const tab = manager.list().find((t) => t.id === id)
+      expect(tab).toMatchObject({ kind: 'cad', title })
+      expect(tab?.filePath).toBeUndefined()
+    }
+  })
+
   it('opens a book tab for its file, titled by the file name', () => {
     const id = manager.openEpubTab('/tmp/novel.epub')
     expect(createEpubView).toHaveBeenLastCalledWith('/tmp/novel.epub')

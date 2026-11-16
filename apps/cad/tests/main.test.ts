@@ -145,8 +145,9 @@ describe('channels', () => {
     ] as const) {
       expect(handlers.has(CAD_CHANNELS[name])).toBe(true)
     }
+    expect(handlers.has(CAD_CHANNELS.exportFile)).toBe(true)
     // later stages add these
-    for (const name of ['exportFile', 'copyImage', 'sendToDocument'] as const) {
+    for (const name of ['copyImage', 'sendToDocument'] as const) {
       expect(handlers.has(CAD_CHANNELS[name])).toBe(false)
     }
   })

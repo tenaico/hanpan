@@ -36,6 +36,9 @@ describe('main-process texts of the AI Drawing editor', () => {
         'btnDontSave',
         'btnCancel',
         'saveRefused',
+        'dlgExportTitle',
+        'filterModel3d',
+        'filterImage',
       ].sort(),
     )
   })
@@ -51,7 +54,7 @@ describe('main-process texts of the AI Drawing editor', () => {
     for (const lang of LANGS) {
       if (lang === 'en') continue
       const dict = CAD_MAIN_TEXTS[lang] as Record<string, string>
-      for (const key of ['dlgSaveTitle', 'closeUnsavedDetail', 'saveRefused']) {
+      for (const key of ['dlgSaveTitle', 'closeUnsavedDetail', 'saveRefused', 'dlgExportTitle']) {
         expect(dict[key], `${lang}.${key}`).not.toBe(
           (CAD_MAIN_TEXTS.en as Record<string, string>)[key],
         )

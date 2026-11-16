@@ -125,3 +125,80 @@ body,
   padding-left: 20px;
   line-height: 1.7;
 }
+
+/* "How to open this file": a CAD program's file this editor cannot read */
+.cad-guide {
+  max-width: 520px;
+  margin: 48px auto;
+  padding: 24px 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+}
+
+.cad-guide-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.cad-guide-file {
+  margin: 0 0 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cad-guide-body,
+.cad-guide-ask {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.cad-guide-body {
+  color: var(--text-secondary);
+}
+
+.cad-guide-ask {
+  margin-bottom: 0;
+}
+
+/* ---- inside the 3D view: the reason beside a part that could not be computed ---- */
+
+.cad-issue-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cad-issue-label {
+  position: absolute;
+  max-width: 280px;
+  padding: 2px 8px;
+  border: 1px solid var(--danger-border);
+  border-radius: 4px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
+/* ---- the status line under the view (the ribbon stage fills it in) ---- */
+
+.cad-status {
+  min-height: 22px;
+  padding: 3px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--chrome-bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cad-status[data-error] {
+  color: var(--danger);
+}

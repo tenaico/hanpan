@@ -1,23 +1,33 @@
 /**
- * The AI Drawing editor screen, stage 2: a title line with the saved state, a
- * notice line when the file did not open as asked, and the 3D view (or the
- * explanation when this PC cannot show 3D).
+ * The AI Drawing editor screen: a title line with the saved state, a notice
+ * line when the file did not open as asked, the 3D view (or the explanation
+ * when this PC cannot show 3D) and a status line.
+ *
+ * The tab holds one boolean kernel (manifold wasm) and evaluates the document
+ * on every history change; unchanged parts come from its cache. A click in the
+ * view sets the selection (editing/selection.ts); a handle release is one
+ * `history.edit`. An edit the engine refuses (a locked part) leaves the
+ * document as it is and says why on the status line.
  *
  * Open, save, the close prompt's save, the save request answer, the unsaved
  * mark, renames, crash-recovery copies and the in-app MCP server's questions
  * follow the mind map editor (apps/mindmap/src/renderer/App.tsx).
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createDocument } from '@genoffice/cad-engine'
+import { CadEditError, createDocument, type Kernel } from '@genoffice/cad-engine'
 import { useAutoSavePref } from '@genoffice/ui'
 import type { CadMenuCommand, SaveMode } from '../shared/ipc'
 import { useAutoSave } from './document/autosave'
 import { openResultToSession, type OpenNotice } from './document/open'
 import { useRecoveryCopies } from './document/recovery-copies'
 import { CadSession } from './document/session'
+import { selection } from './editing/selection'
 import { t as translate, useI18n, type StringKey } from './i18n/locale'
 import { NoWebGl } from './scene/NoWebGl'
 import type { CanvasTheme } from './scene/canvas-colors'
+import { DocEvaluator, loadKernel } from './scene/evaluator'
+import { HandleRefusedError, type DocChange } from './scene/handles'
+import { sceneModel } from './scene/scene-model'
 import { createViewport, type Viewport, type ViewportFactory } from './scene/viewport'
 
 type LoadStatus = 'loading' | 'ready'
@@ -40,12 +50,24 @@ function pageTheme(): CanvasTheme {
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
+/** The status-line text for an edit that was refused. */
+function refusalText(err: unknown): StringKey {
+  if (err instanceof HandleRefusedError) return 'editNotScalable'
+  if (err instanceof CadEditError && err.code === 'locked') return 'editLocked'
+  return 'editRefused'
+}
+
 export interface AppProps {
   /** makes the 3D view; tests hand in a fake so they need no WebGL */
   viewportFactory?: ViewportFactory
+  /** starts the boolean kernel; tests hand in their own */
+  kernelFactory?: () => Promise<Kernel>
 }
 
-export default function App({ viewportFactory = createViewport }: AppProps = {}) {
+export default function App({
+  viewportFactory = createViewport,
+  kernelFactory = loadKernel,
+}: AppProps = {}) {
   const { t } = useI18n()
   const [status, setStatus] = useState<LoadStatus>('loading')
   const [session, setSession] = useState<CadSession | null>(null)
@@ -55,6 +77,8 @@ export default function App({ viewportFactory = createViewport }: AppProps = {})
   const [path, setPath] = useState<string | undefined>(undefined)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [webgl, setWebgl] = useState(true)
+  const [evaluator, setEvaluator] = useState<DocEvaluator | null>(null)
+  const [refusal, setRefusal] = useState<StringKey | null>(null)
   const [autoSave] = useAutoSavePref('cadapp.autoSave', window.cadApi)
 
   const sessionRef = useRef<CadSession | null>(null)
@@ -62,6 +86,7 @@ export default function App({ viewportFactory = createViewport }: AppProps = {})
   statusRef.current = status
   const savingRef = useRef(false)
   const stageRef = useRef<HTMLDivElement | null>(null)
+  const viewRef = useRef<Viewport | null>(null)
 
   // ---- opening ----
 
@@ -118,6 +143,44 @@ export default function App({ viewportFactory = createViewport }: AppProps = {})
     if (dirty && saveState === 'saved') setSaveState('idle')
   }, [dirty, saveState])
 
+  // ---- editing ----
+
+  /** The one way the screen changes the model; a refusal leaves it as it is and says why. */
+  const applyEdit = useCallback((label: string, change: DocChange): void => {
+    const current = sessionRef.current
+    if (!current) return
+    try {
+      current.history.edit(label, change)
+      setRefusal(null)
+    } catch (err) {
+      if (!(err instanceof CadEditError)) console.error('[cad] edit failed:', err)
+      setRefusal(refusalText(err))
+    }
+  }, [])
+
+  // ---- the boolean kernel: one per tab ----
+
+  useEffect(() => {
+    let made: DocEvaluator | null = null
+    let cancelled = false
+    kernelFactory().then(
+      (kernel) => {
+        if (cancelled) {
+          kernel.dispose()
+          return
+        }
+        made = new DocEvaluator(kernel)
+        setEvaluator(made)
+      },
+      // the plate still shows; parts appear once a kernel runs (a reopened tab tries again)
+      (err: unknown) => console.error('[cad] the 3D kernel did not start:', err),
+    )
+    return () => {
+      cancelled = true
+      made?.dispose()
+    }
+  }, [kernelFactory])
+
   // ---- the 3D view ----
 
   useEffect(() => {
@@ -125,16 +188,28 @@ export default function App({ viewportFactory = createViewport }: AppProps = {})
     if (!session || !host || !webgl) return
     let view: Viewport | null = viewportFactory(host, pageTheme(), {
       onUnavailable: () => setWebgl(false),
+      onPick: (id, add) => {
+        if (id === null) {
+          if (!add) selection.clear()
+        } else if (add) {
+          const ids = selection.ids()
+          selection.set(ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id])
+        } else {
+          selection.set([id])
+        }
+      },
+      onEdit: (mode, change) => applyEdit(mode, change),
+      onRefused: (err) => setRefusal(refusalText(err)),
+      issueText: (issue) => translate(issue === 'open-mesh' ? 'issueOpenMesh' : 'issueTooLarge'),
     })
     if (!view) {
       setWebgl(false)
       return
     }
     const current = view
-    current.showDocument(session.history.current())
-    const offHistory = session.history.subscribe(() =>
-      current.showDocument(session.history.current()),
-    )
+    viewRef.current = current
+    current.setSelection(selection.ids())
+    const offSelection = selection.subscribe(() => current.setSelection(selection.ids()))
     // the shell's theme lands on <html data-theme>; "system" follows the OS
     const retheme = (): void => current.setTheme(pageTheme())
     const observer = new MutationObserver(retheme)
@@ -145,13 +220,27 @@ export default function App({ viewportFactory = createViewport }: AppProps = {})
     const media = window.matchMedia?.('(prefers-color-scheme: dark)')
     media?.addEventListener?.('change', retheme)
     return () => {
-      offHistory()
+      offSelection()
+      if (viewRef.current === current) viewRef.current = null
       observer.disconnect()
       media?.removeEventListener?.('change', retheme)
       current.dispose()
       view = null
     }
-  }, [session, webgl, viewportFactory])
+  }, [session, webgl, viewportFactory, applyEdit])
+
+  // every change of the history: evaluate (unchanged parts come from the cache) and draw
+  useEffect(() => {
+    const view = viewRef.current
+    if (!session || !view) return
+    const show = (): void => {
+      const doc = session.history.current()
+      selection.prune(doc)
+      view.showDocument(doc, evaluator ? sceneModel(doc, evaluator.update(doc)) : [])
+    }
+    show()
+    return session.history.subscribe(show)
+  }, [session, webgl, viewportFactory, evaluator])
 
   // ---- crash-recovery copies ----
 
@@ -232,8 +321,20 @@ export default function App({ viewportFactory = createViewport }: AppProps = {})
       case 'redo':
         current.history.redo()
         break
+      case 'view-top':
+        viewRef.current?.view('top')
+        break
+      case 'view-front':
+        viewRef.current?.view('front')
+        break
+      case 'view-side':
+        viewRef.current?.view('side')
+        break
+      case 'view-fit':
+        viewRef.current?.view('fit')
+        break
       default:
-        // selection and the view buttons come with the ribbon (stage 3)
+        // select-all and delete come with the ribbon and the shortcuts (stage 3, Task 3)
         break
     }
   }, [])
@@ -330,6 +431,14 @@ export default function App({ viewportFactory = createViewport }: AppProps = {})
       <main className="cad-stage">
         {webgl ? <div className="cad-viewport" ref={stageRef} /> : <NoWebGl />}
       </main>
+      <footer
+        className="cad-status"
+        role="status"
+        data-cad-status=""
+        data-error={refusal ? '' : undefined}
+      >
+        {refusal ? t(refusal) : ''}
+      </footer>
     </div>
   )
 }

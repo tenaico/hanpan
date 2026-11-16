@@ -153,6 +153,12 @@ describe('partitionDropPayload', () => {
     expect(KNOWN_UNSUPPORTED_DOC_RE.test('a.odt')).toBe(false)
   })
 
+  it('routes dropped AI Drawing imports and the CAD files it explains to the shell', () => {
+    for (const ext of ['3mf', 'GLB', 'ply', 'dwg', 'step', 'stp', 'iges', 'igs', 'brep']) {
+      expect(OPENABLE_DOC_RE.test(`a.${ext}`), ext).toBe(true)
+    }
+  })
+
   it('routes dropped pictures and vector art as openable (decision 0093)', () => {
     const result = partitionDropPayload(['/p/cat.png', '/p/CAT.PSD', '/p/logo.svg', '/p/logo.ai'])
     expect(result.supported).toEqual(['/p/cat.png', '/p/CAT.PSD', '/p/logo.svg', '/p/logo.ai'])

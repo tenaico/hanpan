@@ -13,10 +13,25 @@ export const vi = {
     'Không thể mở tệp này dưới dạng bản vẽ. Tệp có thể bị hỏng hoặc được tạo bằng phiên bản mới hơn. Đã mở một bản vẽ trống; khi lưu sẽ hỏi tệp mới.',
   noticeTooLarge: 'Tệp quá lớn để mở (giới hạn 100 MB). Đã mở một bản vẽ trống.',
   noticeUnreadable: 'Không đọc được tệp này. Đã mở một bản vẽ trống.',
-  noticeUnsupported: 'Không thể mở loại tệp này ở đây. Có thể mở tệp .ttukcad, .dxf, .stl và .obj.',
+  noticeUnsupported:
+    'Không thể mở loại tệp này ở đây. Có thể mở tệp .ttukcad, .dxf, .stl, .obj, .3mf, .glb và .ply.',
   noticeImportFailed: 'Không đọc được các hình trong tệp này. Đã mở một bản vẽ trống.',
   saveRefused:
     'Không thể lưu bản vẽ. Các thay đổi của bạn vẫn còn; hãy thử lại hoặc dùng Lưu thành.',
   saveFailed:
     'Đã xảy ra lỗi khi lưu bản vẽ. Các thay đổi của bạn vẫn còn; hãy thử lại hoặc dùng Lưu thành.',
+  guideTitle: 'Cách mở tệp này',
+  guideBody:
+    'Tệp {ext} được tạo bởi các chương trình CAD chuyên nghiệp nên Bản vẽ AI không đọc được.',
+  guideAsk:
+    'Hãy nhờ người gửi lưu lại dưới dạng DXF (bản vẽ 2D) hoặc STL (mô hình 3D) rồi gửi tệp đó. Cả hai đều mở được ở đây.',
+  exportEmpty: 'Không có gì để xuất. Hãy hiện ít nhất một hình rồi thử lại.',
+  exportFailed: 'Không thể xuất tệp. Hãy thử lại hoặc chọn thư mục khác.',
+  exportSourcePath: 'Không thể xuất đè lên tệp gốc của bản vẽ này. Hãy chọn tên khác.',
+  issueOpenMesh: 'Không thể tính nhóm này: nhóm chứa một lưới hở',
+  issueTooLarge: 'Quá nhiều tam giác để hiển thị (giới hạn 2 triệu)',
+  editLocked: 'Phần này đang bị khóa. Hãy mở khóa để thay đổi.',
+  editNotScalable:
+    'Không thể đổi kích thước phần này bằng tay cầm. Lưới đã nhập, bản vẽ, nhóm và chữ chỉ có thể di chuyển và xoay.',
+  editRefused: 'Không thể thực hiện thay đổi đó. Bản vẽ không thay đổi.',
 } satisfies Record<keyof typeof zh, string>

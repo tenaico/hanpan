@@ -36,7 +36,21 @@ describe('packaged file associations', () => {
   // declares. A routing entry without a matching declaration means a file the
   // app opens fine can never reach it from Finder/Explorer — the .txt/.json
   // gap this closes.
-  const CAD_LAUNCH_ONLY_EXTS: ReadonlySet<string> = new Set(['ttukcad', 'dxf', 'stl', 'obj'])
+  const CAD_LAUNCH_ONLY_EXTS: ReadonlySet<string> = new Set([
+    'ttukcad',
+    'dxf',
+    'stl',
+    'obj',
+    '3mf',
+    'glb',
+    'ply',
+    'dwg',
+    'step',
+    'stp',
+    'iges',
+    'igs',
+    'brep',
+  ])
 
   it('advertises every extension the app launches', () => {
     for (const ext of LAUNCHABLE_EXTS) {
@@ -137,6 +151,6 @@ describe('packaged file associations', () => {
       ...fileAssociations.map((entry) => entry.ext),
       ...config.win.fileAssociations.map((entry: { ext: string }) => entry.ext),
     ]
-    for (const ext of ['ttukcad', 'dxf', 'stl', 'obj']) expect(associated).not.toContain(ext)
+    for (const ext of CAD_LAUNCH_ONLY_EXTS) expect(associated).not.toContain(ext)
   })
 })

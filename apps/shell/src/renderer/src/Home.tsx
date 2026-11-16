@@ -174,18 +174,27 @@ const FILE_ICONS: Record<string, string> = {
   svgz: iconIllust,
   ai: iconIllust,
   vectorcraft: iconIllust,
-  // AI Drawing and the 3D/DXF files it imports
+  // AI Drawing, the 3D/DXF files it imports and the CAD files it explains how to convert
   ttukcad: iconCad,
   dxf: iconCad,
   stl: iconCad,
   obj: iconCad,
+  '3mf': iconCad,
+  glb: iconCad,
+  ply: iconCad,
+  dwg: iconCad,
+  step: iconCad,
+  stp: iconCad,
+  iges: iconCad,
+  igs: iconCad,
+  brep: iconCad,
 }
 
 /* Formats the open-local card advertises. Too long for the card at any window
    width, so it ellipsizes and a hover ScreenTip carries the full list. Keep in
    sync with the main-process open-dialog filter (OPEN_DIALOG_EXTENSIONS). */
 const OPEN_LOCAL_EXTENSIONS =
-  '.docx / .odt / .xlsx / .xlsm / .xls / .csv / .tsv / .pptx / .pdf / .md / .html / .xmind / .hwp / .hwpx / .epub / .psd / .png / .jpg / .webp / .svg / .ai / .ttukcad / .dxf / .stl / .obj'
+  '.docx / .odt / .xlsx / .xlsm / .xls / .csv / .tsv / .pptx / .pdf / .md / .html / .xmind / .hwp / .hwpx / .epub / .psd / .png / .jpg / .webp / .svg / .ai / .ttukcad / .dxf / .stl / .obj / .3mf / .glb / .ply'
 
 /** drag payload of home file/folder rows (JSON array of absolute paths) */
 const DRAG_PATHS_MIME = 'application/x-genoffice-paths'

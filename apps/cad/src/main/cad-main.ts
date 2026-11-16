@@ -14,8 +14,13 @@
  *   with the engine itself and seen `ok`. A view made for a path writes
  *   nothing until its open has been answered here (`unopenedByWc`); after a
  *   failed open the drawing is untitled, so its first save asks where.
- * - A DXF, STL or OBJ file is only ever read: it opens as a new untitled
- *   drawing, and no save lands on anything but a `.ttukcad` path.
+ * - A DXF, STL, OBJ, 3MF, GLB or PLY file is only ever read: it opens as a
+ *   new untitled drawing, and no save lands on anything but a `.ttukcad` path.
+ *   A DWG, STEP, IGES or BREP file is not even read: the screen explains how
+ *   to get a DXF or STL file instead.
+ * - An export writes the bytes the renderer made to a path picked in the save
+ *   dialog, with the format's extension, never onto a file this view opened or
+ *   saved. It grants nothing and does not change the save target.
  * - Bytes a save brings are opened with the engine first; bytes that would
  *   not reopen as `ok` are refused and nothing is written.
  *
@@ -27,7 +32,7 @@
  */
 import { existsSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
-import { basename, dirname, extname, join } from 'node:path'
+import { basename, dirname, extname, join, resolve } from 'node:path'
 import { BrowserWindow, WebContentsView, app, dialog, ipcMain } from 'electron'
 import type { WebContents } from 'electron'
 import {
@@ -72,6 +77,8 @@ import {
 import { APP_CHANNELS, CAD_CHANNELS } from '../shared/ipc'
 import type {
   CadMenuCommand,
+  ExportFormat,
+  ExportResult,
   ImportExt,
   OpenFileResult,
   RecoveryCopyResult,
@@ -87,7 +94,25 @@ export { DONT_SAVE_HOLD_MS as CAD_DONT_SAVE_HOLD_MS } from './recovery-main'
 /** The one extension a drawing is saved with. */
 const DRAWING_EXTENSION = '.ttukcad'
 /** Files that open as a new untitled drawing and are never written. */
-const IMPORT_EXTENSIONS: ReadonlySet<string> = new Set<ImportExt>(['dxf', 'stl', 'obj'])
+const IMPORT_EXTENSIONS: ReadonlySet<string> = new Set<ImportExt>([
+  'dxf',
+  'stl',
+  'obj',
+  '3mf',
+  'glb',
+  'ply',
+])
+/**
+ * Files of CAD programs this editor cannot read. They are not read at all:
+ * the screen says to ask the sender for a DXF or STL file instead.
+ */
+const GUIDE_EXTENSIONS: ReadonlySet<string> = new Set(['dwg', 'step', 'stp', 'iges', 'igs', 'brep'])
+/** Everything a view can be made for, as the standalone window's argv filter. */
+const OPENABLE_RE = new RegExp(
+  `\\.(${['ttukcad', ...IMPORT_EXTENSIONS, ...GUIDE_EXTENSIONS].join('|')})$`,
+  'i',
+)
+const EXPORT_FORMATS: ReadonlySet<string> = new Set<ExportFormat>(['stl', 'obj', 'png'])
 
 export interface CadRuntimePaths {
   preloadPath: string
@@ -449,6 +474,12 @@ export function sendCadMenuCommand(contents: WebContents, command: CadMenuComman
   if (!contents.isDestroyed()) contents.send(CAD_CHANNELS.menuCommand, command)
 }
 
+/** The menu's File › Export items: the renderer makes the bytes and calls `cad:export-file`. */
+export function sendCadExportRequest(contents: WebContents, format: ExportFormat): void {
+  if (!EXPORT_FORMATS.has(format) || contents.isDestroyed()) return
+  contents.send(CAD_CHANNELS.exportRequest, format)
+}
+
 function fileNameBase(name: string | undefined): string {
   return (name ?? '')
     .replace(/[/\\:*?"<>|]/g, '_')
@@ -594,6 +625,76 @@ async function openDrawingFile(
   return { status: 'ok', bytes: read.bytes }
 }
 
+/** The exported file keeps the format's extension; a picked name without it gets it added. */
+function withExportExtension(path: string, format: ExportFormat): string {
+  return extname(path).toLowerCase() === `.${format}` ? path : `${path}.${format}`
+}
+
+/** One file, as the file system compares names: Windows and macOS ignore case. */
+function pathKey(path: string): string {
+  const full = resolve(path)
+  return process.platform === 'win32' || process.platform === 'darwin' ? full.toLowerCase() : full
+}
+
+/** A file this view opened, was granted or saved to: an export never replaces it. */
+function isViewSourcePath(wcId: number, path: string): boolean {
+  const key = pathKey(path)
+  const known = [...(allowedByWc.get(wcId) ?? []), openPathByWc.get(wcId), savePathByWc.get(wcId)]
+  return known.some((p) => p !== undefined && pathKey(p) === key)
+}
+
+function exportFilterName(format: ExportFormat): string {
+  return format === 'png'
+    ? `${tm('filterImage')} (PNG)`
+    : `${tm('filterModel3d')} (${format.toUpperCase()})`
+}
+
+/**
+ * `cad:export-file`: the bytes the renderer made for one format, written to
+ * the path picked in the save dialog. The request comes from a renderer, so
+ * the format and bytes are checked first; the path gets the format's
+ * extension and is refused when it is a file this view came from.
+ */
+async function exportFile(e: Electron.IpcMainInvokeEvent, request: unknown): Promise<ExportResult> {
+  const wcId = e.sender.id
+  const {
+    format,
+    bytes: rawBytes,
+    suggestedName,
+  } = (request ?? {}) as { format?: unknown; bytes?: unknown; suggestedName?: unknown }
+  const bytes = bytesOf(rawBytes)
+  if (
+    typeof format !== 'string' ||
+    !EXPORT_FORMATS.has(format) ||
+    !bytes ||
+    bytes.byteLength === 0
+  ) {
+    return { ok: false, error: 'bad-request' }
+  }
+  const kind = format as ExportFormat
+  if (!mayWrite(wcId)) return { ok: false, error: 'not-open' }
+  const name =
+    fileNameBase(typeof suggestedName === 'string' ? suggestedName : undefined) ||
+    tm('untitledFile')
+  const current = savePathByWc.get(wcId)
+  const folder = current ? dirname(current) : configuredDefaultSaveDir(app)
+  const picked = await showSaveDialogWithMemory(dialog, parentWindowOf(e.sender) ?? undefined, {
+    title: tm('dlgExportTitle'),
+    defaultPath: join(folder, `${name}.${kind}`),
+    filters: [{ name: exportFilterName(kind), extensions: [kind] }],
+  })
+  if (picked.canceled || !picked.filePath) return { ok: true, canceled: true }
+  const target = withExportExtension(picked.filePath, kind)
+  if (isViewSourcePath(wcId, target)) return { ok: false, error: 'source-path' }
+  try {
+    await atomicWriteFile(target, Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength))
+    return { ok: true, path: target }
+  } catch (err) {
+    console.warn('[cad] the export could not be written:', err)
+    return { ok: false, error: 'write-failed' }
+  }
+}
+
 let ipcRegistered = false
 
 function registerCadIpc(): void {
@@ -620,6 +721,8 @@ function registerCadIpc(): void {
     }
     // anything else becomes an untitled drawing: its first save asks where
     openedUntitled(wcId)
+    // a CAD program's own file: not read, the screen says how to get one that opens
+    if (GUIDE_EXTENSIONS.has(ext)) return { status: 'guide', ext, name: importName(path) }
     if (!IMPORT_EXTENSIONS.has(ext)) return { status: 'unknown-type' }
     const read = await readChecked(path)
     if (!('bytes' in read)) return { status: read.status }
@@ -691,6 +794,8 @@ function registerCadIpc(): void {
       return done({ ok: false, error: 'write-failed' })
     }
   })
+
+  ipcMain.handle(CAD_CHANNELS.exportFile, (e, request: unknown) => exportFile(e, request))
 
   ipcMain.on(CAD_CHANNELS.dirtyChanged, (e, dirty: unknown) => {
     if (dirty === true && mayWrite(e.sender.id)) dirtyByWc.add(e.sender.id)
@@ -812,9 +917,7 @@ export function startCadStandalone(): void {
       height: 850,
       webPreferences: { preload: runtime.preloadPath, ...VIEW_PREFERENCES },
     })
-    const argPath = process.argv
-      .slice(1)
-      .find((a) => /\.(ttukcad|dxf|stl|obj)$/i.test(a) && existsSync(a))
+    const argPath = process.argv.slice(1).find((a) => OPENABLE_RE.test(a) && existsSync(a))
     grantAndTrack(win.webContents, argPath)
     void win.loadURL(cadRendererUrl())
   })

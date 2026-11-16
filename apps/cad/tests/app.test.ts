@@ -7,11 +7,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Lang } from '@genoffice/i18n'
-import { addShape, createDocument, openCadFile, saveCadFile } from '@genoffice/cad-engine'
+import {
+  CadEditError,
+  addShape,
+  createDocument,
+  openCadFile,
+  saveCadFile,
+} from '@genoffice/cad-engine'
 import App from '../src/renderer/App'
 import { LocaleProvider } from '../src/renderer/i18n/locale'
 import { strings } from '../src/renderer/i18n/strings'
-import type { ViewportFactory } from '../src/renderer/scene/viewport'
+import { HandleRefusedError } from '../src/renderer/scene/handles'
+import type { ViewportFactory, ViewportOptions } from '../src/renderer/scene/viewport'
 import type {
   BytesReply,
   CadApi,
@@ -112,6 +119,9 @@ function fakeViewport() {
   const factory: ViewportFactory = () => ({
     setTheme: () => {},
     showDocument: (doc) => void shown.push(doc.parts.length),
+    setSelection: () => {},
+    setHandleMode: () => {},
+    view: () => {},
     dispose: () => {},
   })
   return { factory, shown }
@@ -150,6 +160,8 @@ async function until(done: () => boolean, what: string): Promise<void> {
   }
 }
 
+const pendingKernel = (): Promise<never> => new Promise(() => {})
+
 async function mountApp(fake: Fake, viewportFactory: ViewportFactory): Promise<void> {
   ;(window as unknown as { cadApi: CadApi }).cadApi = fake.api
   container = document.createElement('div')
@@ -159,7 +171,8 @@ async function mountApp(fake: Fake, viewportFactory: ViewportFactory): Promise<v
     root.render(
       createElement(LocaleProvider, {
         initial: 'en',
-        children: createElement(App, { viewportFactory }),
+        // the boolean kernel never starts here: the screen tests need no wasm
+        children: createElement(App, { viewportFactory, kernelFactory: pendingKernel }),
       }),
     )
   })
@@ -335,5 +348,43 @@ describe('the AI Drawing screen', () => {
     )
     const reply = fake.bytes[0]!
     expect('bytes' in reply && openCadFile(reply.bytes).status).toBe('ok')
+  })
+
+  it('sends the view commands to the 3D view and says on the status line why a drag was refused', async () => {
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: bracketBytes() })
+    const views: string[] = []
+    let options: ViewportOptions | undefined
+    const factory: ViewportFactory = (_host, _theme, opts) => {
+      options = opts
+      return {
+        setTheme: () => {},
+        showDocument: () => {},
+        setSelection: () => {},
+        setHandleMode: () => {},
+        view: (command) => void views.push(command),
+        dispose: () => {},
+      }
+    }
+    await mountApp(fake, factory)
+    for (const command of ['view-top', 'view-front', 'view-side', 'view-fit'] as const) {
+      await act(async () => fake.emit.menu(command))
+    }
+    expect(views).toEqual(['top', 'front', 'side', 'fit'])
+
+    // a release on a locked part: the engine refuses, the drawing stays as it was
+    expect(text('[data-cad-status]')).toBe('')
+    await act(async () =>
+      options!.onEdit!('move', () => {
+        throw new CadEditError('locked', 'x')
+      }),
+    )
+    expect(text('[data-cad-status]')).toBe(en.editLocked)
+    expect(text('.cad-state')).toBe(en.saved)
+    await act(async () => options!.onRefused!(new HandleRefusedError('x')))
+    expect(text('[data-cad-status]')).toBe(en.editNotScalable)
+    // a change that lands clears the line and makes one undo step
+    await act(async () => options!.onEdit!('move', (doc) => ({ ...doc, parts: [] })))
+    expect(text('[data-cad-status]')).toBe('')
+    expect(text('.cad-state')).toBe(en.unsaved)
   })
 })

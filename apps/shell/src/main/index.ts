@@ -396,10 +396,11 @@ import {
   cadSaveToPath,
   configureCadRuntime,
   requestCadSave,
+  sendCadExportRequest,
   sendCadMenuCommand,
   setCadFileSavedHook,
 } from '../../../cad/src/main/cad-main'
-import type { CadMenuCommand } from '../../../cad/src/shared/ipc'
+import type { CadMenuCommand, ExportFormat as CadExportFormat } from '../../../cad/src/shared/ipc'
 import {
   EPUB_ASSET_SCHEME_PRIVILEGE,
   configureEpubRuntime,
@@ -490,6 +491,7 @@ import {
   MINDMAP_RE,
   CAD_RE,
   CAD_IMPORT_RE,
+  CAD_GUIDE_RE,
   HWP_RE,
   EPUB_RE,
   PHOTO_RE,
@@ -1238,6 +1240,10 @@ const tMain = createI18n({
     menuExportHtml: '导出为单文件 HTML…',
     menuExportMapImage: '导出为图片 (PNG)…',
     menuExportMapOutline: '导出为 Markdown 大纲…',
+    menuCadExport: '导出',
+    menuCadExportStl: 'STL（3D 打印）…',
+    menuCadExportObj: 'OBJ（3D 模型）…',
+    menuCadExportPng: '图片 (PNG)…',
     menuMakeFromDocument: '用此文档新建其他文档',
     menuDocumentSources: '查看资料',
     menuDerivedDocuments: '用此文档新建的文档',
@@ -1416,6 +1422,10 @@ const tMain = createI18n({
     menuExportHtml: 'Export as Single-File HTML…',
     menuExportMapImage: 'Export as Image (PNG)…',
     menuExportMapOutline: 'Export as Markdown Outline…',
+    menuCadExport: 'Export',
+    menuCadExportStl: 'STL (3D Printing)…',
+    menuCadExportObj: 'OBJ (3D Model)…',
+    menuCadExportPng: 'Image (PNG)…',
     menuMakeFromDocument: 'Make Another Document from This',
     menuDocumentSources: 'View Sources',
     menuDerivedDocuments: 'Documents Made from This',
@@ -1595,6 +1605,10 @@ const tMain = createI18n({
     menuExportHtml: 'Xuất dưới dạng HTML một tệp…',
     menuExportMapImage: 'Xuất dưới dạng hình ảnh (PNG)…',
     menuExportMapOutline: 'Xuất dưới dạng dàn ý Markdown…',
+    menuCadExport: 'Xuất',
+    menuCadExportStl: 'STL (in 3D)…',
+    menuCadExportObj: 'OBJ (mô hình 3D)…',
+    menuCadExportPng: 'Hình ảnh (PNG)…',
     menuMakeFromDocument: 'Tạo tài liệu khác từ tài liệu này',
     menuDocumentSources: 'Xem tài liệu nguồn',
     menuDerivedDocuments: 'Tài liệu tạo từ tài liệu này',
@@ -1779,6 +1793,10 @@ const tMain = createI18n({
     menuExportHtml: '単一ファイル HTML として書き出す…',
     menuExportMapImage: '画像 (PNG) としてエクスポート…',
     menuExportMapOutline: 'Markdown アウトラインとしてエクスポート…',
+    menuCadExport: 'エクスポート',
+    menuCadExportStl: 'STL（3D プリント用）…',
+    menuCadExportObj: 'OBJ（3D モデル）…',
+    menuCadExportPng: '画像 (PNG)…',
     menuMakeFromDocument: 'この文書から別の文書を作成',
     menuDocumentSources: '資料を表示',
     menuDerivedDocuments: 'この文書から作成した文書',
@@ -1964,6 +1982,10 @@ const tMain = createI18n({
     menuExportHtml: '단일 파일 HTML로 내보내기…',
     menuExportMapImage: '이미지(PNG)로 내보내기…',
     menuExportMapOutline: '마크다운 개요로 내보내기…',
+    menuCadExport: '내보내기',
+    menuCadExportStl: 'STL(3D 프린팅)…',
+    menuCadExportObj: 'OBJ(3D 모형)…',
+    menuCadExportPng: '이미지(PNG)…',
     menuMakeFromDocument: '이 문서로 새 문서 만들기',
     menuDocumentSources: '자료 보기',
     menuDerivedDocuments: '이 문서로 만든 문서',
@@ -2146,6 +2168,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exporter en HTML (fichier unique)…',
     menuExportMapImage: 'Exporter en image (PNG)…',
     menuExportMapOutline: 'Exporter en plan Markdown…',
+    menuCadExport: 'Exporter',
+    menuCadExportStl: 'STL (impression 3D)…',
+    menuCadExportObj: 'OBJ (modèle 3D)…',
+    menuCadExportPng: 'Image (PNG)…',
     menuMakeFromDocument: 'Créer un autre document à partir de celui-ci',
     menuDocumentSources: 'Voir les sources',
     menuDerivedDocuments: 'Documents créés à partir de celui-ci',
@@ -2332,6 +2358,10 @@ const tMain = createI18n({
     menuExportHtml: 'Als Einzeldatei-HTML exportieren…',
     menuExportMapImage: 'Als Bild (PNG) exportieren…',
     menuExportMapOutline: 'Als Markdown-Gliederung exportieren…',
+    menuCadExport: 'Exportieren',
+    menuCadExportStl: 'STL (3D-Druck)…',
+    menuCadExportObj: 'OBJ (3D-Modell)…',
+    menuCadExportPng: 'Bild (PNG)…',
     menuMakeFromDocument: 'Anderes Dokument aus diesem erstellen',
     menuDocumentSources: 'Quellen anzeigen',
     menuDerivedDocuments: 'Aus diesem erstellte Dokumente',
@@ -2518,6 +2548,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exportar como HTML de archivo único…',
     menuExportMapImage: 'Exportar como imagen (PNG)…',
     menuExportMapOutline: 'Exportar como esquema Markdown…',
+    menuCadExport: 'Exportar',
+    menuCadExportStl: 'STL (impresión 3D)…',
+    menuCadExportObj: 'OBJ (modelo 3D)…',
+    menuCadExportPng: 'Imagen (PNG)…',
     menuMakeFromDocument: 'Crear otro documento a partir de este',
     menuDocumentSources: 'Ver fuentes',
     menuDerivedDocuments: 'Documentos creados a partir de este',
@@ -2703,6 +2737,10 @@ const tMain = createI18n({
     menuExportHtml: 'ส่งออกเป็น HTML ไฟล์เดียว…',
     menuExportMapImage: 'ส่งออกเป็นรูปภาพ (PNG)…',
     menuExportMapOutline: 'ส่งออกเป็นโครงร่าง Markdown…',
+    menuCadExport: 'ส่งออก',
+    menuCadExportStl: 'STL (พิมพ์ 3 มิติ)…',
+    menuCadExportObj: 'OBJ (โมเดล 3 มิติ)…',
+    menuCadExportPng: 'รูปภาพ (PNG)…',
     menuMakeFromDocument: 'สร้างเอกสารอื่นจากเอกสารนี้',
     menuDocumentSources: 'ดูแหล่งข้อมูล',
     menuDerivedDocuments: 'เอกสารที่สร้างจากเอกสารนี้',
@@ -2884,6 +2922,10 @@ const tMain = createI18n({
     menuExportHtml: 'Ekspor sebagai HTML satu file…',
     menuExportMapImage: 'Ekspor sebagai gambar (PNG)…',
     menuExportMapOutline: 'Ekspor sebagai kerangka Markdown…',
+    menuCadExport: 'Ekspor',
+    menuCadExportStl: 'STL (cetak 3D)…',
+    menuCadExportObj: 'OBJ (model 3D)…',
+    menuCadExportPng: 'Gambar (PNG)…',
     menuMakeFromDocument: 'Buat dokumen lain dari dokumen ini',
     menuDocumentSources: 'Lihat sumber',
     menuDerivedDocuments: 'Dokumen yang dibuat dari dokumen ini',
@@ -3069,6 +3111,10 @@ const tMain = createI18n({
     menuExportHtml: 'Экспортировать в один файл HTML…',
     menuExportMapImage: 'Экспорт в изображение (PNG)…',
     menuExportMapOutline: 'Экспорт в структуру Markdown…',
+    menuCadExport: 'Экспорт',
+    menuCadExportStl: 'STL (3D-печать)…',
+    menuCadExportObj: 'OBJ (3D-модель)…',
+    menuCadExportPng: 'Изображение (PNG)…',
     menuMakeFromDocument: 'Создать другой документ из этого',
     menuDocumentSources: 'Показать источники',
     menuDerivedDocuments: 'Документы, созданные из этого',
@@ -3253,6 +3299,10 @@ const tMain = createI18n({
     menuExportHtml: 'تصدير كملف HTML واحد…',
     menuExportMapImage: 'تصدير كصورة (PNG)…',
     menuExportMapOutline: 'تصدير كمخطط Markdown…',
+    menuCadExport: 'تصدير',
+    menuCadExportStl: 'STL (طباعة ثلاثية الأبعاد)…',
+    menuCadExportObj: 'OBJ (نموذج ثلاثي الأبعاد)…',
+    menuCadExportPng: 'صورة (PNG)…',
     menuMakeFromDocument: 'إنشاء مستند آخر من هذا المستند',
     menuDocumentSources: 'عرض المصادر',
     menuDerivedDocuments: 'المستندات المُنشأة من هذا المستند',
@@ -3434,6 +3484,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exportar como HTML de arquivo único…',
     menuExportMapImage: 'Exportar como imagem (PNG)…',
     menuExportMapOutline: 'Exportar como estrutura de tópicos Markdown…',
+    menuCadExport: 'Exportar',
+    menuCadExportStl: 'STL (impressão 3D)…',
+    menuCadExportObj: 'OBJ (modelo 3D)…',
+    menuCadExportPng: 'Imagem (PNG)…',
     menuMakeFromDocument: 'Criar outro documento a partir deste',
     menuDocumentSources: 'Ver fontes',
     menuDerivedDocuments: 'Documentos criados a partir deste',
@@ -3619,6 +3673,10 @@ const tMain = createI18n({
     menuExportHtml: 'Esporta come HTML a file singolo…',
     menuExportMapImage: 'Esporta come immagine (PNG)…',
     menuExportMapOutline: 'Esporta come struttura Markdown…',
+    menuCadExport: 'Esporta',
+    menuCadExportStl: 'STL (stampa 3D)…',
+    menuCadExportObj: 'OBJ (modello 3D)…',
+    menuCadExportPng: 'Immagine (PNG)…',
     menuMakeFromDocument: 'Crea un altro documento da questo',
     menuDocumentSources: 'Mostra le fonti',
     menuDerivedDocuments: 'Documenti creati da questo',
@@ -3804,6 +3862,10 @@ const tMain = createI18n({
     menuExportHtml: 'Eksportuj jako pojedynczy plik HTML…',
     menuExportMapImage: 'Eksportuj jako obraz (PNG)…',
     menuExportMapOutline: 'Eksportuj jako konspekt Markdown…',
+    menuCadExport: 'Eksportuj',
+    menuCadExportStl: 'STL (druk 3D)…',
+    menuCadExportObj: 'OBJ (model 3D)…',
+    menuCadExportPng: 'Obraz (PNG)…',
     menuMakeFromDocument: 'Utwórz inny dokument z tego',
     menuDocumentSources: 'Pokaż źródła',
     menuDerivedDocuments: 'Dokumenty utworzone z tego',
@@ -3988,6 +4050,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exportovat jako samostatné HTML…',
     menuExportMapImage: 'Exportovat jako obrázek (PNG)…',
     menuExportMapOutline: 'Exportovat jako osnovu Markdown…',
+    menuCadExport: 'Exportovat',
+    menuCadExportStl: 'STL (3D tisk)…',
+    menuCadExportObj: 'OBJ (3D model)…',
+    menuCadExportPng: 'Obrázek (PNG)…',
     menuMakeFromDocument: 'Vytvořit jiný dokument z tohoto',
     menuDocumentSources: 'Zobrazit zdroje',
     menuDerivedDocuments: 'Dokumenty vytvořené z tohoto',
@@ -4171,6 +4237,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exporteren als één HTML-bestand…',
     menuExportMapImage: 'Exporteren als afbeelding (PNG)…',
     menuExportMapOutline: 'Exporteren als Markdown-overzicht…',
+    menuCadExport: 'Exporteren',
+    menuCadExportStl: 'STL (3D-printen)…',
+    menuCadExportObj: 'OBJ (3D-model)…',
+    menuCadExportPng: 'Afbeelding (PNG)…',
     menuMakeFromDocument: 'Ander document maken van dit document',
     menuDocumentSources: 'Bronnen weergeven',
     menuDerivedDocuments: 'Documenten gemaakt van dit document',
@@ -4357,6 +4427,10 @@ const tMain = createI18n({
     menuExportHtml: 'Eksport sebagai HTML fail tunggal…',
     menuExportMapImage: 'Eksport sebagai imej (PNG)…',
     menuExportMapOutline: 'Eksport sebagai rangka Markdown…',
+    menuCadExport: 'Eksport',
+    menuCadExportStl: 'STL (cetakan 3D)…',
+    menuCadExportObj: 'OBJ (model 3D)…',
+    menuCadExportPng: 'Imej (PNG)…',
     menuMakeFromDocument: 'Buat dokumen lain daripada dokumen ini',
     menuDocumentSources: 'Lihat sumber',
     menuDerivedDocuments: 'Dokumen yang dibuat daripada dokumen ini',
@@ -4540,6 +4614,10 @@ const tMain = createI18n({
     menuExportHtml: 'ייצוא כ-HTML בקובץ יחיד…',
     menuExportMapImage: 'ייצוא כתמונה (PNG)…',
     menuExportMapOutline: 'ייצוא כמתאר Markdown…',
+    menuCadExport: 'ייצוא',
+    menuCadExportStl: 'STL (הדפסה תלת-ממדית)…',
+    menuCadExportObj: 'OBJ (מודל תלת-ממדי)…',
+    menuCadExportPng: 'תמונה (PNG)…',
     menuMakeFromDocument: 'יצירת מסמך אחר מהמסמך הזה',
     menuDocumentSources: 'הצגת מקורות',
     menuDerivedDocuments: 'מסמכים שנוצרו מהמסמך הזה',
@@ -4722,6 +4800,10 @@ const tMain = createI18n({
     menuExportHtml: 'एकल-फ़ाइल HTML के रूप में निर्यात…',
     menuExportMapImage: 'छवि (PNG) के रूप में निर्यात…',
     menuExportMapOutline: 'Markdown रूपरेखा के रूप में निर्यात…',
+    menuCadExport: 'निर्यात',
+    menuCadExportStl: 'STL (3D प्रिंटिंग)…',
+    menuCadExportObj: 'OBJ (3D मॉडल)…',
+    menuCadExportPng: 'छवि (PNG)…',
     menuMakeFromDocument: 'इस दस्तावेज़ से दूसरा दस्तावेज़ बनाएँ',
     menuDocumentSources: 'स्रोत देखें',
     menuDerivedDocuments: 'इस दस्तावेज़ से बने दस्तावेज़',
@@ -4905,6 +4987,10 @@ const tMain = createI18n({
     menuExportHtml: '匯出為單檔 HTML…',
     menuExportMapImage: '匯出為圖片 (PNG)…',
     menuExportMapOutline: '匯出為 Markdown 大綱…',
+    menuCadExport: '匯出',
+    menuCadExportStl: 'STL（3D 列印）…',
+    menuCadExportObj: 'OBJ（3D 模型）…',
+    menuCadExportPng: '圖片 (PNG)…',
     menuMakeFromDocument: '用此文件新增其他文件',
     menuDocumentSources: '檢視資料',
     menuDerivedDocuments: '用此文件新增的文件',
@@ -6002,11 +6088,15 @@ const OPEN_DIALOG_EXTENSIONS = [
   'epub',
   ...OPEN_EXTS.photo,
   ...OPEN_EXTS.illust,
-  // AI Drawing and the 3D/DXF files it imports
+  // AI Drawing and the 3D/DXF files it imports (a .dwg/.step/.iges/.brep still opens a guide
+  // when picked through "All files", but is not offered as a supported file)
   'ttukcad',
   'dxf',
   'stl',
   'obj',
+  '3mf',
+  'glb',
+  'ply',
 ]
 
 function notifyUnsupportedFile(filePath: string): void {
@@ -6145,8 +6235,10 @@ function routeDocumentPath(filePath: string): boolean {
     else tabManager.openCadTab(filePath)
     return true
   }
-  // a .dxf/.stl/.obj becomes a new untitled drawing every time: the file is a source, not the document
-  if (CAD_IMPORT_RE.test(filePath)) {
+  // a .dxf/.stl/.obj/.3mf/.glb/.ply becomes a new untitled drawing every time: the file is a
+  // source, not the document. A .dwg/.step/.iges/.brep opens the same way, with the guide that
+  // says how to get a file AI Drawing can read
+  if (CAD_IMPORT_RE.test(filePath) || CAD_GUIDE_RE.test(filePath)) {
     recordRecentFile(filePath)
     tabManager.openCadTab(filePath)
     return true
@@ -6778,7 +6870,10 @@ function registerHomeIpc(): void {
         { name: tm('filterMarkdown'), extensions: ['md', 'markdown', 'txt', 'json'] },
         { name: tm('filterHtml'), extensions: ['html', 'htm'] },
         { name: tm('filterMindmap'), extensions: ['xmind'] },
-        { name: tm('filterCad'), extensions: ['ttukcad', 'dxf', 'stl', 'obj'] },
+        {
+          name: tm('filterCad'),
+          extensions: ['ttukcad', 'dxf', 'stl', 'obj', '3mf', 'glb', 'ply'],
+        },
         { name: tm('filterHwp'), extensions: ['hwp', 'hwpx'] },
         { name: tm('filterEpub'), extensions: ['epub'] },
         { name: tm('filterPhoto'), extensions: [...OPEN_EXTS.photo] },
@@ -9336,6 +9431,11 @@ function buildCadMenu(): void {
     const tab = activeCadTarget()
     if (tab) sendCadMenuCommand(tab.webContents, cmd)
   }
+  // the drawing makes the bytes; cad-main asks where to write them
+  const exportAs = (format: CadExportFormat) => () => {
+    const tab = activeCadTarget()
+    if (tab) sendCadExportRequest(tab.webContents, format)
+  }
   const template: MenuItemConstructorOptions[] = [
     ...(isMac ? [{ role: 'appMenu' as const }] : []),
     {
@@ -9373,6 +9473,15 @@ function buildCadMenu(): void {
             const tab = activeCadTarget()
             if (tab) void requestCadSave(tab.webContents, 'saveAs')
           },
+        },
+        { type: 'separator' },
+        {
+          label: tm('menuCadExport'),
+          submenu: [
+            { label: tm('menuCadExportStl'), click: exportAs('stl') },
+            { label: tm('menuCadExportObj'), click: exportAs('obj') },
+            { label: tm('menuCadExportPng'), click: exportAs('png') },
+          ],
         },
         { type: 'separator' },
         {

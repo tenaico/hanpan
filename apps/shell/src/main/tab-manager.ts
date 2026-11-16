@@ -42,7 +42,7 @@ import {
   requestMindmapClose,
 } from '../../../mindmap/src/main/mindmap-main'
 import { cadIsDirty, createCadView, requestCadClose } from '../../../cad/src/main/cad-main'
-import { CAD_IMPORT_RE } from './app-routing'
+import { CAD_GUIDE_RE, CAD_IMPORT_RE } from './app-routing'
 import { createEpubView, epubIsDirty, requestEpubClose } from '../../../epub/src/main/epub-main'
 import {
   createGraphicsView,
@@ -771,10 +771,11 @@ export class TabManager {
   }
 
   /**
-   * AI Drawing: a .ttukcad file, a new untitled drawing, or a .dxf/.stl/.obj the
-   * editor imports into a new untitled drawing named after the file. An import
-   * has no file behind the tab, so a save asks where to write a .ttukcad and the
-   * source file is never written.
+   * AI Drawing: a .ttukcad file, a new untitled drawing, or a .dxf/.stl/.obj/.3mf/
+   * .glb/.ply the editor imports into a new untitled drawing named after the file.
+   * An import has no file behind the tab, so a save asks where to write a .ttukcad
+   * and the source file is never written. A .dwg/.step/.iges/.brep opens the same
+   * way, with a guide in place of its content (the editor cannot read it).
    */
   openCadTab(openPath?: string): string {
     const view = createCadView(openPath)
@@ -783,7 +784,8 @@ export class TabManager {
     view.setVisible(false)
     this.trackHtmlFullScreen(view)
     this.trackPaneFocus(view)
-    const imported = openPath !== undefined && CAD_IMPORT_RE.test(openPath)
+    const imported =
+      openPath !== undefined && (CAD_IMPORT_RE.test(openPath) || CAD_GUIDE_RE.test(openPath))
     const name = openPath ? basename(openPath) : undefined
     this.tabs.push({
       id,

@@ -27,7 +27,15 @@ describe('the 3D view', () => {
     expect(Object.keys(CANVAS_COLORS).sort()).toEqual(['dark', 'light'])
     for (const theme of ['light', 'dark'] as const) {
       const colors = CANVAS_COLORS[theme]
-      expect(Object.keys(colors).sort()).toEqual(['background', 'grid', 'gridMajor', 'plane'])
+      expect(Object.keys(colors).sort()).toEqual([
+        'background',
+        'grid',
+        'gridMajor',
+        'ink',
+        'issue',
+        'plane',
+        'selection',
+      ])
       for (const [name, value] of Object.entries(colors)) {
         expect(value, `${theme}.${name}`).toMatch(/^#[0-9a-f]{6}$/)
       }

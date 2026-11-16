@@ -59,6 +59,28 @@ describe('appForPath', () => {
     expect(renameStaysInApp('/x/part.ttukcad', 'other.ttukcad')).toBe(true)
   })
 
+  it('routing sends .3mf to a cad tab, with the GLB and PLY files it imports', () => {
+    expect(appForPath('/x/bracket.3mf')).toBe('cad')
+    expect(appForPath('C:/x/SCENE.GLB')).toBe('cad')
+    expect(appForPath('/x/scan.ply')).toBe('cad')
+  })
+
+  it('sends the CAD files it cannot read to a cad tab, which explains how to get one it can', () => {
+    for (const ext of ['dwg', 'step', 'stp', 'iges', 'igs', 'brep', 'DWG']) {
+      expect(appForPath(`/x/part.${ext}`), ext).toBe('cad')
+    }
+    // only AI Drawing names these: a .gltf stays unrouted, as before
+    expect(appForPath('/x/scene.gltf')).toBeUndefined()
+  })
+
+  it('keeps an AI Drawing file in its format when it is renamed', () => {
+    expect(renameStaysInApp('/x/plan.dxf', 'plan2.DXF')).toBe(true)
+    // the bytes stay those of the old format: the editor would read them as the wrong kind
+    expect(renameStaysInApp('/x/plan.dxf', 'plan.stl')).toBe(false)
+    expect(renameStaysInApp('/x/part.ttukcad', 'part.3mf')).toBe(false)
+    expect(renameStaysInApp('/x/part.dwg', 'part.dxf')).toBe(false)
+  })
+
   it('opens OpenDocument text in the Word tab', () => {
     expect(appForPath('/x/a.odt')).toBe('docs')
     expect(appForPath('C:/x/REPORT.ODT')).toBe('docs')

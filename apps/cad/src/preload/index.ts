@@ -6,9 +6,11 @@ import type {
   AutoSaveDefault,
   CadApi,
   CadCoreApi,
+  CadExportApi,
   CadMenuCommand,
   CadQueryApi,
   CadRecoveryApi,
+  ExportFormat,
   SaveMode,
   UiTheme,
 } from '../shared/ipc'
@@ -72,7 +74,14 @@ const recovery: CadRecoveryApi = {
   onRecoveryReset: (handler) => listen<[]>(CAD_CHANNELS.recoveryReset, handler),
 }
 
-const api: CadApi = { ...core, ...queries, ...recovery }
+// ---- export: the renderer makes the bytes, the main process asks where and writes ----
+
+const exporting: CadExportApi = {
+  exportFile: (request) => ipcRenderer.invoke(CAD_CHANNELS.exportFile, request),
+  onExportRequest: (handler) => listen<[ExportFormat]>(CAD_CHANNELS.exportRequest, handler),
+}
+
+const api: CadApi = { ...core, ...queries, ...recovery, ...exporting }
 
 contextBridge.exposeInMainWorld('cadApi', api)
 

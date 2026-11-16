@@ -117,8 +117,12 @@ export interface AutoSaveDefault {
 /** The engine's open status for a `.ttukcad` file (`openCadFile`). */
 export type CadOpenStatus = 'ok' | 'empty' | 'too-large' | 'broken' | 'unsupported'
 
-/** Files that open as a new untitled drawing; the file itself is never written. */
-export type ImportExt = 'dxf' | 'stl' | 'obj'
+/**
+ * Files that open as a new untitled drawing; the file itself is never written.
+ * The engine reads DXF, STL and OBJ; the renderer reads 3MF, GLB and PLY with
+ * three's readers (they need a DOM, so they stay out of the engine).
+ */
+export type ImportExt = 'dxf' | 'stl' | 'obj' | '3mf' | 'glb' | 'ply'
 
 /**
  * How a path opens.
@@ -127,14 +131,18 @@ export type ImportExt = 'dxf' | 'stl' | 'obj'
  *   is now this view's save target. `restored`: the bytes are the drawing's
  *   crash-recovery copy, not the file (`file`: the path stays the target;
  *   `untitled`: the drawing has no path).
- * - `import`: a DXF, STL or OBJ file. The renderer turns it into a new drawing
- *   named `name`; nothing is granted, so the first save asks where.
+ * - `import`: a DXF, STL, OBJ, 3MF, GLB or PLY file. The renderer turns it
+ *   into a new drawing named `name`; nothing is granted, so the first save asks where.
+ * - `guide`: a file of a CAD program this editor cannot read (DWG, STEP,
+ *   IGES, BREP). It is not read; the screen explains how to get a DXF or STL
+ *   instead. `ext` is the lower-case extension, `name` the file name without it.
  * - any other status: a `.ttukcad` that does not open, or a file that cannot
  *   be read. No bytes travel and nothing is granted.
  */
 export type OpenFileResult =
   | { status: 'ok'; bytes: Uint8Array; restored?: 'file' | 'untitled' }
   | { status: 'import'; bytes: Uint8Array; name: string; ext: ImportExt }
+  | { status: 'guide'; ext: string; name: string }
   | { status: Exclude<CadOpenStatus, 'ok'> | 'unreadable' | 'not-found' | 'unknown-type' }
 
 // ---- save ----
@@ -177,8 +185,15 @@ export interface ExportFileRequest {
   suggestedName: string
 }
 
+/**
+ * `bad-request`: no bytes or an unknown format; `not-open`: the view's file has
+ * not opened yet; `source-path`: the picked path is the file this drawing came
+ * from (or was saved as), which an export never replaces.
+ */
 export type ExportResult =
-  { ok: true; path: string } | { ok: true; canceled: true } | { ok: false; error: string }
+  | { ok: true; path: string }
+  | { ok: true; canceled: true }
+  | { ok: false; error: 'bad-request' | 'not-open' | 'source-path' | 'write-failed' }
 
 // ---- send to a document (stage 4) ----
 
@@ -254,5 +269,12 @@ export interface CadRecoveryApi {
   onRecoveryReset(handler: () => void): () => void
 }
 
-/** API exposed by preload to the renderer (window.cadApi). Stages 3 to 5 extend it. */
-export type CadApi = CadCoreApi & CadQueryApi & CadRecoveryApi
+/** Export (stage 3): the renderer makes the bytes, the main process asks where and writes. */
+export interface CadExportApi {
+  exportFile(request: ExportFileRequest): Promise<ExportResult>
+  /** the menu's File › Export items */
+  onExportRequest(handler: (format: ExportFormat) => void): () => void
+}
+
+/** API exposed by preload to the renderer (window.cadApi). Stages 4 and 5 extend it. */
+export type CadApi = CadCoreApi & CadQueryApi & CadRecoveryApi & CadExportApi

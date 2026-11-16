@@ -137,13 +137,29 @@ describe('listFolder', () => {
     touch('plan.DXF')
     touch('model.stl')
     touch('model.obj')
+    touch('model.3mf')
+    touch('scene.glb')
+    touch('scan.ply')
+    // CAD files it cannot read open a tab that explains how to get one it can
     touch('model.step')
+    touch('plan.dwg')
+    touch('scene.gltf')
 
     expect(
       listFolder(root, new Set())
         .files.map((f) => f.name)
         .sort(),
-    ).toEqual(['model.obj', 'model.stl', 'part.ttukcad', 'plan.DXF'])
+    ).toEqual([
+      'model.3mf',
+      'model.obj',
+      'model.step',
+      'model.stl',
+      'part.ttukcad',
+      'plan.DXF',
+      'plan.dwg',
+      'scan.ply',
+      'scene.glb',
+    ])
     expect(isSupportedTreeFile('part.ttukcad')).toBe(true)
   })
 

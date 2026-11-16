@@ -36,6 +36,17 @@ describe('the AI Drawing dictionaries', () => {
         'noticeImportFailed',
         'saveRefused',
         'saveFailed',
+        'guideTitle',
+        'guideBody',
+        'guideAsk',
+        'exportEmpty',
+        'exportFailed',
+        'exportSourcePath',
+        'issueOpenMesh',
+        'issueTooLarge',
+        'editLocked',
+        'editNotScalable',
+        'editRefused',
       ].sort(),
     )
   })
