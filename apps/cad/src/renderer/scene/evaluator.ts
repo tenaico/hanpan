@@ -20,7 +20,7 @@ import {
   type EvaluatedPart,
   type Kernel,
 } from '@genoffice/cad-engine'
-import manifoldWasmUrl from '../../../../../packages/cad-engine/node_modules/manifold-3d/manifold.wasm?url'
+import manifoldWasmUrl from 'manifold-3d/manifold.wasm?url'
 
 /** Starts the boolean kernel for this tab with the bundled wasm. */
 export async function loadKernel(): Promise<Kernel> {
