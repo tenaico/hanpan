@@ -58,6 +58,12 @@ function props(over: Partial<RibbonProps> = {}): RibbonProps {
     onAlign: vi.fn(),
     onView: vi.fn(),
     onHandleMode: vi.fn(),
+    measuring: false,
+    sheetBlocked: null,
+    onMeasure: vi.fn(),
+    onSheet: vi.fn(),
+    onCopyPicture: vi.fn(),
+    onSend: vi.fn(),
     ...over,
   }
 }
@@ -76,7 +82,7 @@ describe('the ribbon', () => {
     const tabs = [...host.querySelectorAll<HTMLButtonElement>('[data-ribbon-tab]')].map(
       (b) => b.dataset.ribbonTab,
     )
-    expect(tabs).toEqual(['file', 'home', 'view', 'help'])
+    expect(tabs).toEqual(['file', 'home', 'view', 'dims', 'help'])
     act(() => host.querySelector<HTMLButtonElement>('[data-ribbon-tab="view"]')!.click())
     expect(pane('view').hidden).toBe(false)
     expect(pane('home').hidden).toBe(true)

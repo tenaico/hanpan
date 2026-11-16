@@ -51,9 +51,15 @@ const SCALES: readonly { label: string; factor: number }[] = [
   { label: '1:200', factor: 1 / 200 },
   { label: '1:500', factor: 1 / 500 },
   { label: '1:1000', factor: 1 / 1000 },
+  // site plans: a model may be up to 1 km on a side (MAX_SIZE_MM), which needs 1:20000 on A4
+  { label: '1:2000', factor: 1 / 2000 },
+  { label: '1:5000', factor: 1 / 5000 },
+  { label: '1:10000', factor: 1 / 10000 },
+  { label: '1:20000', factor: 1 / 20000 },
+  { label: '1:50000', factor: 1 / 50000 },
 ]
 
-/** The largest standard scale at which `sizeMm` fits in `roomMm`; 1:1000 when none does. */
+/** The largest standard scale at which `sizeMm` fits in `roomMm`; 1:50000 when none does. */
 export function chooseScale(sizeMm: number, roomMm: number): { label: string; factor: number } {
   for (const s of SCALES) if (sizeMm * s.factor <= roomMm) return s
   return SCALES[SCALES.length - 1]!

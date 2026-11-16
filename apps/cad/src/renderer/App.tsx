@@ -13,6 +13,11 @@
  * the engine refuses (a locked part) leaves the document as it is and says
  * why on the status line.
  *
+ * Measuring (measure/), the dimension sheet dialog, "Copy picture" and
+ * "Send to Hangul / Word" (sheet/) read the drawing as it is when they run;
+ * the only edit among them is the title block, one `history.edit`. A
+ * measurement is cleared by any change of the drawing and by Esc.
+ *
  * Open, save, the close prompt's save, the save request answer, the unsaved
  * mark, renames, crash-recovery copies and the in-app MCP server's questions
  * follow the mind map editor (apps/mindmap/src/renderer/App.tsx).
@@ -32,6 +37,25 @@ import {
 } from '@genoffice/cad-engine'
 import { useAutoSavePref } from '@genoffice/ui'
 import type { CadMenuCommand, SaveMode } from '../shared/ipc'
+import { MeasureOverlay } from './measure/MeasureOverlay'
+import { MeasureTool, bindMeasure, measureEntities, measureSnaps } from './measure/measure-tool'
+import { SheetDialog } from './sheet/SheetDialog'
+import {
+  copyPng,
+  copySheet,
+  runSend,
+  sheetBlocked,
+  type SendTarget,
+  type SheetSource,
+} from './sheet/send'
+import {
+  PICTURE_LIMIT_BYTES,
+  browserRasterize,
+  sheetLabels,
+  todayIso,
+  type Rasterize,
+} from './sheet/sheet-png'
+import { useSendTarget } from './sheet/use-send-target'
 import { GuideScreen } from './components/GuideScreen'
 import { PropertyPanel, type PanelPatch } from './components/PropertyPanel'
 import { Ribbon } from './components/Ribbon'
@@ -65,7 +89,12 @@ import type { CanvasTheme } from './scene/canvas-colors'
 import { DocEvaluator, loadKernel } from './scene/evaluator'
 import { HandleRefusedError, MOVE_SNAP_MM, type DocChange, type HandleMode } from './scene/handles'
 import { sceneModel } from './scene/scene-model'
-import { createViewport, type Viewport, type ViewportFactory } from './scene/viewport'
+import {
+  createViewport,
+  type MeasureView,
+  type Viewport,
+  type ViewportFactory,
+} from './scene/viewport'
 
 type LoadStatus = 'loading' | 'ready'
 type SaveState = 'idle' | 'saving' | 'saved' | 'refused' | 'failed'
@@ -109,11 +138,14 @@ export interface AppProps {
   viewportFactory?: ViewportFactory
   /** starts the boolean kernel; tests hand in their own */
   kernelFactory?: () => Promise<Kernel>
+  /** draws the sheet as PNG; tests hand in their own (jsdom has no canvas) */
+  rasterize?: Rasterize
 }
 
 export default function App({
   viewportFactory = createViewport,
   kernelFactory = loadKernel,
+  rasterize = browserRasterize,
 }: AppProps = {}) {
   const { t } = useI18n()
   const [status, setStatus] = useState<LoadStatus>('loading')
@@ -133,6 +165,9 @@ export default function App({
   const [view, setView] = useState<Viewport | null>(null)
   const [handleMode, setHandleMode] = useState<HandleMode>('move')
   const [sketch, setSketch] = useState<SketchTool | null>(null)
+  const [measure, setMeasure] = useState<MeasureTool | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const send = useSendTarget()
   const [autoSave, setAutoSave] = useAutoSavePref('cadapp.autoSave', window.cadApi)
   const selected = useSelection().ids
 
@@ -146,6 +181,11 @@ export default function App({
   evaluatorRef.current = evaluator
   const sketchRef = useRef<SketchTool | null>(null)
   sketchRef.current = sketch
+  const measureRef = useRef<MeasureTool | null>(null)
+  measureRef.current = measure
+  const sendTargetRef = useRef<SendTarget>(send.target)
+  sendTargetRef.current = send.target
+  const busyRef = useRef(false)
   const guideRef = useRef(guide)
   guideRef.current = guide
 
@@ -269,8 +309,48 @@ export default function App({
     if (!sessionRef.current || guideRef.current) return
     selection.clear()
     setMessage(null)
+    // one tool at a time: sketching ends measuring
+    setMeasure(null)
     setSketch(new SketchTool(MOVE_SNAP_MM))
   }, [])
+
+  /** The measure button: start measuring, or leave it. */
+  const toggleMeasure = useCallback((): void => {
+    if (measureRef.current) {
+      setMeasure(null)
+      return
+    }
+    const current = sessionRef.current
+    if (!current || guideRef.current) return
+    sketchRef.current?.cancel()
+    setSketch(null)
+    setMessage(null)
+    // the snap points of a drawing are worked out once per state of it (and of the kernel)
+    let cached: {
+      doc: CadDocument
+      evaluator: DocEvaluator | null
+      snaps: ReturnType<typeof measureSnaps>
+    } | null = null
+    const snaps = () => {
+      const doc = current.history.current()
+      const evaluator = evaluatorRef.current
+      if (cached?.doc !== doc || cached.evaluator !== evaluator) {
+        cached = { doc, evaluator, snaps: measureSnaps(doc, evaluator?.update(doc) ?? []) }
+      }
+      return cached.snaps
+    }
+    setMeasure(new MeasureTool(snaps, () => measureEntities(current.history.current())))
+  }, [])
+
+  // a measurement goes with any change of the drawing; Esc clears it, then leaves the tool
+  useEffect(() => {
+    if (!measure || !session) return
+    return bindMeasure(measure, {
+      history: session.history,
+      keys: window,
+      onExit: () => setMeasure(null),
+    })
+  }, [measure, session])
 
   const finishSketch = useCallback(
     (part: ExtrudePart): void => {
@@ -337,6 +417,8 @@ export default function App({
       onRefused: (err) => setMessage({ key: refusalText(err), error: true }),
       issueText: (issue) => translate(issue === 'open-mesh' ? 'issueOpenMesh' : 'issueTooLarge'),
       onWorkplanePoint: (point) => sketchRef.current?.addPoint(point),
+      onMeasureHover: (point, reach) => void measureRef.current?.hover(point, reach),
+      onMeasureClick: (point, reach) => void measureRef.current?.click(point, reach),
     })
     if (!made) {
       setWebgl(false)
@@ -394,6 +476,101 @@ export default function App({
     draw()
     return sketch.subscribe(draw)
   }, [view, sketch])
+
+  // the measuring marks follow the tool
+  useEffect(() => {
+    if (!view) return
+    if (!measure) {
+      view.setMeasure(null)
+      return
+    }
+    const draw = (): void => {
+      const reading = measure.reading()
+      const marks: MeasureView = {
+        snap: measure.hovered()?.at ?? null,
+        a: reading?.a ?? measure.first(),
+        b: reading?.b ?? null,
+        label: reading?.label ?? null,
+      }
+      view.setMeasure(marks)
+    }
+    draw()
+    return measure.subscribe(draw)
+  }, [view, measure])
+
+  // ---- the dimension sheet, copy picture and send ----
+
+  /** The drawing as the sheet and the send read it now. */
+  const sheetSource = useCallback((): SheetSource | null => {
+    const current = sessionRef.current
+    if (!current) return null
+    const now = current.history.current()
+    return {
+      doc: now,
+      evaluated: evaluatorRef.current?.update(now) ?? [],
+      tabTitle: current.title(),
+      today: todayIso(),
+      labels: sheetLabels(translate),
+      header: [
+        translate('tableName'),
+        translate('tableWidth'),
+        translate('tableDepth'),
+        translate('tableHeight'),
+      ],
+    }
+  }, [])
+
+  /** One send or copy at a time; a second press while one runs is ignored. */
+  const once = useCallback(async <T,>(job: () => Promise<T>): Promise<T | null> => {
+    if (busyRef.current) return null
+    busyRef.current = true
+    try {
+      return await job()
+    } finally {
+      busyRef.current = false
+    }
+  }, [])
+
+  /** Sends the sheet; null when the new tab opened, else what to say. */
+  const sendSheet = useCallback(
+    async (target: SendTarget = sendTargetRef.current): Promise<StringKey | null> => {
+      const source = sheetSource()
+      if (!source || statusRef.current !== 'ready' || guideRef.current) return null
+      const outcome = await once(() => runSend(source, target, window.cadApi, rasterize))
+      if (outcome === null) {
+        setMessage({ key: 'sendDone', error: false })
+        return null
+      }
+      setMessage({ key: outcome, error: true })
+      return outcome
+    },
+    [sheetSource, once, rasterize],
+  )
+
+  /** The 3D view as a picture on the clipboard (the dialog copies the sheet instead). */
+  const copyView = useCallback((): void => {
+    void once(async () => {
+      const current = viewRef.current
+      let png: Uint8Array | null = null
+      if (current) {
+        try {
+          png = await current.snapshot()
+        } catch (err) {
+          console.warn('[cad] the 3D view gave no picture:', err)
+        }
+      }
+      const key: StringKey = png
+        ? await copyPng(png.length <= PICTURE_LIMIT_BYTES ? png : null, window.cadApi)
+        : 'copyFailed'
+      setMessage({ key, error: key !== 'copyDone' })
+    })
+  }, [once])
+
+  const copySheetPicture = useCallback(async (): Promise<StringKey> => {
+    const source = sheetSource()
+    if (!source) return 'copyFailed'
+    return (await once(() => copySheet(source, window.cadApi, rasterize))) ?? 'copyFailed'
+  }, [sheetSource, once, rasterize])
 
   // ---- crash-recovery copies ----
 
@@ -660,6 +837,8 @@ export default function App({
         canUngroup={chosen.some((p) => p.type === 'group')}
         handleMode={handleMode}
         sketching={!!sketch}
+        measuring={!!measure}
+        sheetBlocked={doc ? sheetBlocked(doc) : 'sheetEmpty'}
         onToggleAutoSave={setAutoSave}
         onSave={() => void doSave('save')}
         onSaveAs={() => void doSave('saveAs')}
@@ -675,6 +854,10 @@ export default function App({
         onAlign={(axis, anchor) => command((s) => alignSelected(s, axis, anchor))}
         onView={(cmd) => viewRef.current?.view(cmd)}
         onHandleMode={setHandleMode}
+        onMeasure={toggleMeasure}
+        onSheet={() => setSheetOpen(true)}
+        onCopyPicture={copyView}
+        onSend={() => void sendSheet()}
       />
       {notice && (
         <div className="cad-notice" role="status" data-cad-notice="">
@@ -700,6 +883,11 @@ export default function App({
               <SketchBar tool={sketch} onFinish={finishSketch} onCancel={() => setSketch(null)} />
             </div>
           )}
+          {measure && (
+            <div className="cad-sketch-dock cad-measure-dock" data-cad-measure="">
+              <MeasureOverlay tool={measure} onDone={() => setMeasure(null)} />
+            </div>
+          )}
         </main>
         <aside className="cad-side">
           {doc && (
@@ -723,6 +911,25 @@ export default function App({
         size={size}
         message={shown}
       />
+      {sheetOpen && doc && session && (
+        <SheetDialog
+          doc={doc}
+          evaluated={evaluated}
+          tabTitle={title}
+          onTitle={(next) =>
+            command((s) => {
+              s.history.edit('title', (d) => ({ ...d, title: next }))
+            })
+          }
+          onCopy={copySheetPicture}
+          onSend={async (target) => {
+            const outcome = await sendSheet(target)
+            if (outcome === null) setSheetOpen(false)
+            return outcome
+          }}
+          onClose={() => setSheetOpen(false)}
+        />
+      )}
     </div>
   )
 }

@@ -18,6 +18,12 @@
  * `snapshot` draws one frame on the light colours without the selection and
  * the handles and reads it as PNG (scene/snapshot.ts).
  *
+ * While measuring (`setMeasure`), the handles are hidden too; the point under
+ * the pointer (on a part's surface or drawing lines, else on the plate) goes
+ * to `onMeasureHover` as the pointer moves and to `onMeasureClick` on a click,
+ * with how far a snap may reach at that depth. The view draws what it is told:
+ * the snap marker, the measured line and its label.
+ *
  * The view draws on demand (after a camera move, a resize or a change), not in
  * a loop. A PC that cannot make a WebGL context gets `null`, and the screen
  * explains what to do instead of staying blank. When the context is lost while
@@ -58,7 +64,7 @@ import { fitTo, orbitDirection, viewDirection, type ViewName } from './camera'
 import { CANVAS_COLORS, type CanvasColors, type CanvasTheme } from './canvas-colors'
 import { lineColor } from './drawing-lines'
 import { HandleSession, type DocChange, type HandleMode } from './handles'
-import { pickPart, rayToWorkplane, type Ray } from './picking'
+import { pickPart, pickPoint, rayToWorkplane, type Ray } from './picking'
 import { sceneBounds, type SceneItem } from './scene-model'
 import { snapshotPng } from './snapshot'
 
@@ -78,9 +84,23 @@ export interface Viewport {
    * sketching (clicks go to `onWorkplanePoint`), null ends it.
    */
   setSketch(points: readonly (readonly [number, number])[] | null): void
+  /** What the measuring tool shows; null ends measuring (clicks pick parts again). */
+  setMeasure(view: MeasureView | null): void
   /** One frame on the light colours, without selection and handles, as PNG bytes. */
   snapshot(): Promise<Uint8Array>
   dispose(): void
+}
+
+/** The measuring tool's marks, in millimetres. */
+export interface MeasureView {
+  /** the point a click would stick to now */
+  snap: Vec3 | null
+  /** the first point, or the start of the measured line */
+  a: Vec3 | null
+  /** the end of the measured line, once there is a reading */
+  b: Vec3 | null
+  /** the reading, shown at the middle of the line */
+  label: string | null
 }
 
 export interface ViewportOptions {
@@ -96,6 +116,10 @@ export interface ViewportOptions {
   issueText?: (issue: Exclude<EvalIssue, 'empty' | null>) => string
   /** a click on the workplane while sketching, in millimetres (instead of `onPick`) */
   onWorkplanePoint?: (point: [number, number]) => void
+  /** while measuring: the point under the pointer and how far (mm) a snap may be from it */
+  onMeasureHover?: (point: Vec3, reach: number) => void
+  /** while measuring: a click, instead of `onPick` */
+  onMeasureClick?: (point: Vec3, reach: number) => void
 }
 
 export type ViewportFactory = (
@@ -120,6 +144,8 @@ const LINE_LIFT_MM = 0.05
 const SKETCH_LIFT_MM = 0.1
 /** The size of a sketched point, in pixels. */
 const SKETCH_POINT_PX = 6
+/** A measuring click sticks to a corner this many pixels away. */
+const MEASURE_SNAP_PX = 12
 /** How strongly the outline of a part that could not be computed shows. */
 const ISSUE_OPACITY = 0.7
 const FOV_DEG = 45
@@ -279,6 +305,29 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
   sketchPoints.visible = false
   scene.add(sketchLine, sketchPoints)
   let sketching = false
+  // the measured line, over everything, in the selection colour; its marks are page elements
+  const measureMaterial = new LineBasicMaterial({ color: colors.selection, depthTest: false })
+  const measureLine = new Line(new BufferGeometry(), measureMaterial)
+  measureLine.renderOrder = 3
+  measureLine.visible = false
+  scene.add(measureLine)
+  let measure: MeasureView | null = null
+  const measureLayer = document.createElement('div')
+  measureLayer.className = 'cad-measure-layer'
+  const snapMark = document.createElement('div')
+  snapMark.className = 'cad-measure-snap'
+  snapMark.setAttribute('data-cad-measure-snap', '')
+  const firstMark = document.createElement('div')
+  firstMark.className = 'cad-measure-snap cad-measure-first'
+  const measureLabel = document.createElement('div')
+  measureLabel.className = 'cad-measure-label'
+  measureLabel.setAttribute('data-cad-measure-label', '')
+  measureLayer.append(snapMark, firstMark, measureLabel)
+  measureLayer.hidden = true
+  host.append(measureLayer)
+  /** a hover waiting for the next frame (one ray per frame, however fast the pointer moves) */
+  let hoverAt: { x: number; y: number } | null = null
+  let hoverFrame = 0
   /** GPU buffers by engine mesh: an unchanged part keeps its buffers */
   let geometries = new Map<CadMesh, BufferGeometry>()
   /** what is drawn per item id: its mesh, lines and outlines (carried by the handles) */
@@ -316,7 +365,38 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
   let disposed = false
   let press: { x: number; y: number } | null = null
 
+  /** Puts a page element over a model point; hides it when the point is behind or off screen. */
+  const placeAt = (el: HTMLElement, point: Vec3 | null): void => {
+    if (!point) {
+      el.style.display = 'none'
+      return
+    }
+    const at = new Vector3(...point).project(camera)
+    const visible = at.z < 1 && Math.abs(at.x) <= 1 && Math.abs(at.y) <= 1
+    el.style.display = visible ? '' : 'none'
+    el.style.left = `${((at.x + 1) / 2) * host.clientWidth}px`
+    el.style.top = `${((1 - at.y) / 2) * host.clientHeight}px`
+  }
+
+  const placeMeasure = (): void => {
+    measureLayer.hidden = measure === null
+    if (!measure) return
+    placeAt(snapMark, measure.snap)
+    placeAt(firstMark, measure.b ? null : measure.a)
+    const middle: Vec3 | null =
+      measure.a && measure.b && measure.label
+        ? [
+            (measure.a[0] + measure.b[0]) / 2,
+            (measure.a[1] + measure.b[1]) / 2,
+            (measure.a[2] + measure.b[2]) / 2,
+          ]
+        : null
+    measureLabel.textContent = middle ? measure.label : ''
+    placeAt(measureLabel, middle)
+  }
+
   const placeLabels = (): void => {
+    placeMeasure()
     if (labelFor.length === 0) return
     const width = host.clientWidth
     const height = host.clientHeight
@@ -436,7 +516,7 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
   /** Puts the pivot where the selection is and shows the handles on it, or hides them. */
   function placeHandles(): void {
     if (!handles) return
-    if (sketching) {
+    if (sketching || measure) {
       handles.detach()
       return
     }
@@ -562,8 +642,54 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
     handleGesture = false
   }
 
+  /** The ray from the camera through a page point, or null when the canvas has no size. */
+  const rayAt = (clientX: number, clientY: number): Ray | null => {
+    if (!renderer) return null
+    const rect = renderer.domElement.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) return null
+    const ndc = new Vector2(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1,
+    )
+    const caster = new Raycaster()
+    caster.setFromCamera(ndc, camera)
+    const { origin, direction } = caster.ray
+    return {
+      origin: [origin.x, origin.y, origin.z],
+      direction: [direction.x, direction.y, direction.z],
+    }
+  }
+
+  /** How many millimetres one pixel covers at `distance` from the camera. */
+  const mmPerPixel = (distance: number): number => {
+    const height = renderer?.domElement.getBoundingClientRect().height || 1
+    return (2 * distance * Math.tan((FOV_DEG * DEG) / 2)) / height
+  }
+
+  /** The measuring point under a page point, and how far a snap may reach there. */
+  const measureAt = (clientX: number, clientY: number): { point: Vec3; reach: number } | null => {
+    const ray = rayAt(clientX, clientY)
+    if (!ray) return null
+    const orbit = camera.position.distanceTo(controls.target)
+    const point = pickPoint(items, ray, { lineTolerance: mmPerPixel(orbit) * LINE_PICK_PX })
+    if (!point) return null
+    const depth = camera.position.distanceTo(new Vector3(...point))
+    return { point, reach: mmPerPixel(depth) * MEASURE_SNAP_PX }
+  }
+
   const onPointerMove = (event: PointerEvent): void => {
     snap = !event.altKey
+    if (!measure || press) return
+    hoverAt = { x: event.clientX, y: event.clientY }
+    if (hoverFrame) return
+    hoverFrame = requestAnimationFrame(() => {
+      hoverFrame = 0
+      const at = hoverAt
+      hoverAt = null
+      if (!at || !measure || disposed) return
+      const found = measureAt(at.x, at.y)
+      if (found) options.onMeasureHover?.(found.point, found.reach)
+    })
   }
 
   const onPointerUp = (event: PointerEvent): void => {
@@ -580,6 +706,11 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
     const caster = new Raycaster()
     caster.setFromCamera(ndc, camera)
     const { origin, direction } = caster.ray
+    if (measure) {
+      const found = measureAt(event.clientX, event.clientY)
+      if (found) options.onMeasureClick?.(found.point, found.reach)
+      return
+    }
     if (sketching) {
       const ray: Ray = {
         origin: [origin.x, origin.y, origin.z],
@@ -757,6 +888,7 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
     selectionMaterial.color.set(colors.selection)
     issueMaterial.color.set(colors.issue)
     sketchLineMaterial.color.set(colors.selection)
+    measureMaterial.color.set(colors.selection)
     sketchPointMaterial.color.set(colors.selection)
     // drawing lines take the new ink
     if (!session.active) drawItems()
@@ -813,6 +945,22 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
       }
       render()
     },
+    setMeasure(next) {
+      const was = measure
+      measure = next
+      // starting or ending the tool: a drag in progress is dropped, the handles hide or come back
+      if (!was !== !next) {
+        if (next) cancelDrag()
+        placeHandles()
+      }
+      const line = next?.a && next.b ? [...next.a, ...next.b] : []
+      measureLine.geometry.dispose()
+      measureLine.geometry = new BufferGeometry()
+      measureLine.geometry.setAttribute('position', new Float32BufferAttribute(line, 3))
+      measureLine.visible = line.length > 0
+      placeMeasure()
+      render()
+    },
     snapshot() {
       if (!renderer) return Promise.reject(new Error('the 3D view has no renderer'))
       const current = renderer
@@ -826,6 +974,7 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
         },
         overlays: (visible) => {
           selectionMaterial.visible = visible
+          measureMaterial.visible = visible
           helper.visible = visible
         },
       })
@@ -835,6 +984,7 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
       cancelDrag()
       disposed = true
       if (frame) cancelAnimationFrame(frame)
+      if (hoverFrame) cancelAnimationFrame(hoverFrame)
       if (restoreTimer !== null) clearTimeout(restoreTimer)
       observer?.disconnect()
       window.removeEventListener('keydown', onKeyDown)
@@ -845,6 +995,9 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
       for (const geometry of geometries.values()) geometry.dispose()
       geometries.clear()
       labels.remove()
+      measureLayer.remove()
+      measureLine.geometry.dispose()
+      measureMaterial.dispose()
       plane.geometry.dispose()
       minorLines.geometry.dispose()
       majorLines.geometry.dispose()

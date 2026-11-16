@@ -5,11 +5,15 @@
  * state; the band below shows the tab that is picked, with big buttons.
  *
  * Tabs (apps/cad plan, Global Constraints): File (save, export), Home (place
- * shapes; make: hole, sketch, text; arrange: group, ungroup, align), View
- * (look from the top, front or side, show all; the handle: move, rotate,
- * size) and Help (the shortcuts). The Dimensions tab and Home's Dimensions
- * and "send to a document" groups arrive with stage 4; until then they are
- * not shown at all rather than shown empty.
+ * shapes; make: hole, sketch, text; arrange: group, ungroup, align;
+ * dimensions: measure, dimension sheet; send to a document: copy picture,
+ * send to Hangul / Word), View (look from the top, front or side, show all;
+ * the handle: move, rotate, size), Dimensions (the same dimension and send
+ * buttons as Home) and Help (the shortcuts).
+ *
+ * The send button says where it sends: "Send to Hangul" while the Korean
+ * document features are on, "Send to Word" when off (decision 0091). With no
+ * part placed, the sheet and the send are off and their tip says why.
  *
  * Every pane is drawn and the ones not picked are hidden; the tab picked last
  * is remembered in `cadapp.ribbonTab`.
@@ -23,17 +27,21 @@ import type { HandleMode } from '../scene/handles'
 import type { ViewCommand } from '../scene/viewport'
 import { AlignMenu, type AlignAnchor, type AlignAxis } from './AlignMenu'
 import {
+  IconCopy,
   IconExport,
   IconFit,
   IconGroup,
   IconHole,
   IconKeyboard,
+  IconMeasure,
   IconMove,
   IconPicture,
   IconRedo,
   IconRotate,
   IconSave,
   IconScale,
+  IconSend,
+  IconSheet,
   IconSketch,
   IconUndo,
   IconUngroup,
@@ -44,14 +52,16 @@ import {
 } from './icons'
 import { RibbonMenu } from './RibbonMenu'
 import { ShapeGallery } from './ShapeGallery'
+import { useSendTarget } from '../sheet/use-send-target'
 
-export const RIBBON_TABS = ['file', 'home', 'view', 'help'] as const
+export const RIBBON_TABS = ['file', 'home', 'view', 'dims', 'help'] as const
 export type RibbonTab = (typeof RIBBON_TABS)[number]
 
 const TAB_LABEL: Record<RibbonTab, StringKey> = {
   file: 'tabFile',
   home: 'tabHome',
   view: 'tabView',
+  dims: 'tabDims',
   help: 'tabHelp',
 }
 
@@ -98,6 +108,10 @@ export interface RibbonProps {
   handleMode: HandleMode
   /** an outline is being sketched */
   sketching: boolean
+  /** the measuring tool is on */
+  measuring: boolean
+  /** why there is no dimension sheet to show or send (nothing placed); null when there is */
+  sheetBlocked: StringKey | null
   onToggleAutoSave(on: boolean): void
   onSave(): void
   onSaveAs(): void
@@ -114,6 +128,11 @@ export interface RibbonProps {
   onAlign(axis: AlignAxis, anchor: AlignAnchor): void
   onView(command: ViewCommand): void
   onHandleMode(mode: HandleMode): void
+  onMeasure(): void
+  onSheet(): void
+  /** the 3D view as a picture on the clipboard */
+  onCopyPicture(): void
+  onSend(): void
 }
 
 export function Ribbon(p: RibbonProps) {
@@ -128,6 +147,52 @@ export function Ribbon(p: RibbonProps) {
     }
   }, [tab])
   const off = p.disabled || p.sketching
+  const send = useSendTarget()
+  const blockedTip = p.sheetBlocked ? t(p.sheetBlocked) : undefined
+  // the same two groups on Home and on the Dimensions tab
+  const dimensionGroups = (
+    <>
+      <Group label={t('groupDims')}>
+        <Big
+          action="measure"
+          label={t('measure')}
+          active={p.measuring}
+          disabled={p.disabled}
+          onClick={p.onMeasure}
+        >
+          <IconMeasure />
+        </Big>
+        <Big
+          action="sheet"
+          label={t('sheet')}
+          tip={blockedTip}
+          disabled={off || !!p.sheetBlocked}
+          onClick={p.onSheet}
+        >
+          <IconSheet />
+        </Big>
+      </Group>
+      <Group label={t('groupSend')} last>
+        <Big
+          action="copy-picture"
+          label={t('copyPicture')}
+          disabled={off}
+          onClick={p.onCopyPicture}
+        >
+          <IconCopy />
+        </Big>
+        <Big
+          action="send"
+          label={t(send.label)}
+          tip={blockedTip}
+          disabled={off || !!p.sheetBlocked}
+          onClick={p.onSend}
+        >
+          <IconSend />
+        </Big>
+      </Group>
+    </>
+  )
   const pane = (name: RibbonTab, children: ReactNode) => (
     <div className="cad-pane" data-ribbon-pane={name} hidden={tab !== name}>
       {children}
@@ -306,7 +371,7 @@ export function Ribbon(p: RibbonProps) {
                 )}
               </RibbonMenu>
             </Group>
-            <Group label={t('groupArrange')} last>
+            <Group label={t('groupArrange')}>
               <Big
                 action="group"
                 label={t('group')}
@@ -327,6 +392,7 @@ export function Ribbon(p: RibbonProps) {
               </Big>
               <AlignMenu disabled={off || p.selected < 2} onAlign={p.onAlign} />
             </Group>
+            {dimensionGroups}
           </>,
         )}
         {pane(
@@ -397,6 +463,7 @@ export function Ribbon(p: RibbonProps) {
             </Group>
           </>,
         )}
+        {pane('dims', dimensionGroups)}
         {pane(
           'help',
           <Group label={t('tabHelp')} last>
@@ -474,6 +541,8 @@ function Group({ label, last, children }: { label: string; last?: boolean; child
 function Big(p: {
   action: string
   label: string
+  /** the tip, when it is not the label (why the button is off) */
+  tip?: string
   kbd?: string
   active?: boolean
   disabled: boolean
@@ -485,7 +554,7 @@ function Big(p: {
       type="button"
       className={`rb-big${p.active ? ' active' : ''}`}
       data-action={p.action}
-      data-tip={p.label}
+      data-tip={p.tip ?? p.label}
       data-tip-kbd={p.kbd}
       aria-label={p.label}
       aria-pressed={p.active === undefined ? undefined : p.active}

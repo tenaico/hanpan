@@ -578,3 +578,155 @@ async function hardKill(launched: LaunchedApp): Promise<void> {
   await closed
   await expect.poll(() => child.exitCode !== null || child.signalCode !== null).toBe(true)
 }
+
+// ---- stage 4: measuring, the dimension sheet and sending it to a document ----
+
+/** Types one value into a property panel field and waits for the part to take it. */
+async function setProp(cad: Page, prop: string, value: string): Promise<void> {
+  const field = cad.locator(`[data-prop="${prop}"]`)
+  await field.fill(value)
+  await field.press('Enter')
+  await expect(field).toHaveValue(value)
+}
+
+/**
+ * Walks the pointer from the middle of the 3D view towards one of its corners
+ * until the measuring tool shows its snap marker: the first corner it sticks
+ * to coming from inside the top face. Gives where the pointer was then.
+ */
+async function hoverToSnap(cad: Page, dx: -1 | 1, dy: -1 | 1): Promise<{ x: number; y: number }> {
+  const canvas = (await cad.locator('.cad-viewport canvas').boundingBox())!
+  const cx = canvas.x + canvas.width / 2
+  const cy = canvas.y + canvas.height / 2
+  const marker = cad.locator('[data-cad-measure-snap]')
+  const reach = Math.min(canvas.width, canvas.height) / 2 - 4
+  for (let step = 4; step < reach; step += 3) {
+    const at = { x: cx + dx * step, y: cy + dy * step }
+    await cad.mouse.move(at.x, at.y)
+    // the view looks once per frame; give it two
+    await cad.waitForTimeout(40)
+    if (await marker.isVisible()) return at
+  }
+  throw new Error('no corner to stick to on that diagonal')
+}
+
+interface SentTab {
+  kind: string
+  title: string
+}
+
+const listTabs = (page: Page): Promise<SentTab[]> =>
+  page.evaluate(() => (window as unknown as ShellApisOnWindow).aiOfficeTabs.list())
+
+test.describe('AI Drawing tab (stage 4: measure, sheet, send)', () => {
+  test('measure reads 80 mm on an 80 mm box', async () => {
+    test.setTimeout(240_000)
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-measure' })
+    try {
+      const cad = await newDrawing(launched)
+      await placeShape(cad, 'box')
+      for (const dim of ['width', 'depth', 'height']) await setProp(cad, `dims.${dim}`, '80')
+      await expect(cad.locator('[data-cad-status-info]')).toContainText('80 × 80 × 80')
+      await ribbonTab(cad, 'view')
+      await cad.locator('[data-action="view-top"]').click()
+
+      await ribbonTab(cad, 'dims')
+      await cad.locator('[data-ribbon-pane="dims"] [data-action="measure"]').click()
+      await expect(cad.locator('[data-cad-measure]')).toBeVisible()
+      // two corners of the top face, one edge apart
+      const left = await hoverToSnap(cad, -1, -1)
+      const right = await hoverToSnap(cad, 1, -1)
+      await cad.mouse.click(left.x, left.y)
+      await cad.mouse.click(right.x, right.y)
+      await expect(cad.locator('[data-cad-measure-reading]')).toHaveText('80 mm')
+      await expect(cad.locator('[data-cad-measure-label]')).toHaveText('80 mm')
+      await cad.screenshot({ path: screenshotPath('cad-measure-80') })
+
+      // a change to the drawing takes the reading away; Esc twice leaves the tool
+      await cad.keyboard.press('ControlOrMeta+z')
+      await expect(cad.locator('[data-cad-measure-reading]')).toHaveText('')
+      await cad.keyboard.press('Escape')
+      await expect(cad.locator('[data-cad-measure]')).toHaveCount(0)
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-measure')
+    }
+  })
+
+  test('send to Hangul opens a new hwp tab', async () => {
+    test.setTimeout(240_000)
+    // the helpers start with the Korean document features on
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-send-hwp' })
+    const { app, page } = launched
+    try {
+      const cad = await newDrawing(launched)
+      await placeShape(cad, 'box')
+      await setProp(cad, 'dims.width', '60')
+      await placeShape(cad, 'cylinder')
+      await setProp(cad, 'position.x', '70')
+      await ribbonTab(cad, 'dims')
+      const send = cad.locator('[data-ribbon-pane="dims"] [data-action="send"]')
+      await expect(send).toHaveText('Send to Hangul')
+
+      await cad.locator('[data-ribbon-pane="dims"] [data-action="sheet"]').click()
+      const dialog = cad.locator('.cad-sheet-dialog')
+      await expect(dialog.locator('[data-sheet-preview]')).toBeVisible()
+      await dialog.locator('[data-sheet-field="name"]').fill('Pencil holder')
+      await dialog.locator('[data-sheet-field="date"]').fill('2026-11-16')
+      await expect(dialog.locator('[data-sheet-send]')).toHaveText('Send to Hangul')
+      await cad.screenshot({ path: screenshotPath('cad-sheet-dialog') })
+
+      await dialog.locator('[data-sheet-send]').click()
+      await expect
+        .poll(
+          async () => (await listTabs(page)).filter((t) => t.kind === 'hwp').map((t) => t.title),
+          {
+            timeout: 60_000,
+          },
+        )
+        .toEqual(['Pencil holder'])
+      await expect(dialog).toHaveCount(0)
+      // the title block edit is one undo step of the drawing
+      await expect(cad.locator('.cad-state')).toHaveAttribute('data-dirty', '')
+
+      const hwp = await waitForPageWithUrl(app, '://hwp/')
+      await hwp.waitForTimeout(8000)
+      await hwp.screenshot({ path: screenshotPath('cad-sent-hwp-tab') })
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-send-hwp')
+    }
+  })
+
+  test('send to Word when Korean document features are off opens a docs tab', async () => {
+    test.setTimeout(240_000)
+    const launched = await launchShell({
+      onboardingSeen: true,
+      settings: { koreanDocFeatures: false },
+      videoDir: 'cad-send-docx',
+    })
+    const { app, page } = launched
+    try {
+      const cad = await newDrawing(launched)
+      await placeShape(cad, 'box')
+      const title = (await cadTabs(page))[0]!.title
+      await ribbonTab(cad, 'dims')
+      const send = cad.locator('[data-ribbon-pane="dims"] [data-action="send"]')
+      await expect(send).toHaveText('Send to Word')
+      await send.click()
+      await expect
+        .poll(
+          async () => (await listTabs(page)).filter((t) => t.kind === 'docs').map((t) => t.title),
+          {
+            timeout: 60_000,
+          },
+        )
+        .toEqual([title])
+      await expect(cad.locator('[data-cad-message]')).toHaveText('Opened in a new tab.')
+      expect((await listTabs(page)).some((t) => t.kind === 'hwp')).toBe(false)
+      const docs = await waitForPageWithUrl(app, '://docs/')
+      await docs.waitForTimeout(4000)
+      await docs.screenshot({ path: screenshotPath('cad-sent-docx-tab') })
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-send-docx')
+    }
+  })
+})

@@ -808,3 +808,181 @@ html.genoffice-popover-open .ribbon-tabs {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- measuring: the bar over the view, and the marks the view places over the model ---- */
+
+.cad-measure-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.cad-measure-reading {
+  min-width: 4em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cad-measure-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cad-measure-layer[hidden] {
+  display: none;
+}
+
+.cad-measure-snap {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 2px solid var(--accent);
+  background: var(--surface);
+  transform: translate(-50%, -50%);
+}
+
+.cad-measure-first {
+  background: var(--accent);
+}
+
+.cad-measure-label {
+  position: absolute;
+  padding: 2px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
+.cad-measure-label:empty {
+  display: none;
+}
+
+/* ---- the dimension sheet dialog: a themed frame around paper that is always white ---- */
+
+.cad-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-overlay);
+}
+
+.cad-modal {
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 18px 20px 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-modal-strong);
+}
+
+.cad-modal-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cad-sheet-dialog {
+  width: min(960px, calc(100vw - 48px));
+}
+
+.cad-sheet-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cad-sheet-paper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 297 / 210;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-subtle);
+}
+
+/* the sheet paints its own white paper (the engine's SVG); it is shown as it is */
+.cad-sheet-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cad-sheet-empty {
+  margin: 0;
+  padding: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.cad-sheet-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.cad-sheet-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cad-sheet-field .cad-input[readonly] {
+  color: var(--text-muted);
+}
+
+.cad-sheet-status {
+  min-height: 18px;
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.cad-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cad-button-primary {
+  border-color: var(--color-btn-primary);
+  background: var(--color-btn-primary);
+  color: var(--color-btn-primary-text);
+}
+
+.cad-button-primary:hover:not(:disabled) {
+  background: var(--color-btn-primary-hover);
+}
+
+/* the measuring bar sits at the bottom, so it never covers the line being measured at the top */
+.cad-measure-dock {
+  top: auto;
+  bottom: 8px;
+}

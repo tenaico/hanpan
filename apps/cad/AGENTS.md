@@ -5,14 +5,21 @@ AI 도면 편집기다. 간단한 3D 모형과 DXF 도면을 `.ttukcad` 파일�
 ## 맡은 범위
 
 - 렌더러(`src/renderer/`)
+  - `App.tsx`: 편집기 화면 한 장(위 리본, 알림 줄, 가운데 3D 화면 또는 안내 화면, 오른쪽 속성 창과 AI 도우미 자리, 아래 상태 줄). `main.tsx`는 시작점이다.
   - `document/`: 열려 있는 문서 하나(`session.ts`: `CadHistory`, 저장할 바이트, 바뀜 표시), 열기 결과를 문서로 바꾸기(`open.ts`), 복구 사본(`recovery-copies.ts`), 자동 저장(`autosave.ts`).
+  - `components/`: 리본(`Ribbon.tsx`, 탭 파일·홈·보기·치수·도면·도움말), 리본 단추가 여는 작은 창(`RibbonMenu.tsx`), 도형 15종 고르기(`ShapeGallery.tsx`), 줄 맞추기 9가지(`AlignMenu.tsx`), 직접 그리기 막대(`SketchBar.tsx`), 속성 창(`PropertyPanel.tsx`), 상태 줄(`StatusBar.tsx`), 이 앱이 직접 그린 아이콘(`icons.tsx`), DWG·STEP·IGES·BREP을 열면 보이는 "이 파일을 여는 방법" 안내(`GuideScreen.tsx`).
+  - `editing/`: 리본·단축키·메뉴·속성 창이 하는 편집(`commands.ts`, 명령 하나는 `edit` 한 번), 선택(`selection.ts`), 단축키(`shortcuts.ts`), 직접 그리기의 점 모으기와 검사(`sketch.ts`), 글자 도형의 윤곽(`text-outlines.ts`, 한판에 든 OFL 글꼴).
+  - `scene/`: three.js 3D 화면(`viewport.ts`), 보기 단추와 전체 보기(`camera.ts`), 손잡이 끌기(`handles.ts`), 누른 도형 찾기(`picking.ts`), 그릴 것 정리(`scene-model.ts`), 입체 계산기와 결과 기억(`evaluator.ts`), DXF 선 그리기(`drawing-lines.ts`), PNG 그림(`snapshot.ts`), 테마별 3D 색 표(`canvas-colors.ts`), 3D를 못 쓰는 PC의 안내 화면(`NoWebGl.tsx`).
+  - `measure/`: 치수 재기 도구(`measure-tool.ts`: 두 점 거리, DXF 선 길이, 원·호 지름. 계산은 엔진)와 화면 위 막대(`MeasureOverlay.tsx`).
+  - `sheet/`: 치수 도면 대화 상자(`SheetDialog.tsx`), 도면 PNG(`sheet-png.ts`), 그림 복사와 한글·워드로 보내기(`send.ts`), 보낼 곳 고르기(`use-send-target.ts`, 결정 0091의 한국 문서 기능 스위치를 따른다).
   - `import/three-mesh.ts`: 3MF·GLB·PLY를 three의 읽기 코드로 읽어 엔진 그물 하나로 바꾼다(색·재질 버림, GLB는 m→mm·+Y 위→+Z 위).
   - `export/`: STL·OBJ·PNG 내보내기 바이트(`export.ts`)와 메뉴 요청을 받는 훅(`use-export.ts`).
-  - `components/GuideScreen.tsx`: DWG·STEP·IGES·BREP을 열면 보이는 "이 파일을 여는 방법" 안내.
-  - `scene/`: three.js 3D 화면(`viewport.ts`), 테마별 3D 색 표(`canvas-colors.ts`), 3D를 못 쓰는 PC의 안내 화면(`NoWebGl.tsx`).
-  - `i18n/`: 21개 언어 문구(`app/<언어>.ts`, AI 창 문구는 `ai/<언어>.ts`).
-- 메인 프로세스(`src/main/cad-main.ts`): 뷰 만들기, 뷰마다 허용된 경로, 열기·저장, 닫기 전 저장 확인, 이름 바뀜 따라가기, 단독 실행. 복구 사본 저장소는 `recovery-main.ts`, 메인 문구는 `i18n-main.ts`, 앱 안 MCP 서버의 질문은 `mcp-queries.ts`.
+  - `ai/`: AI 도우미의 skill(`cad-skill.ts`: 영어 지시문, 도구 8개의 설명)과 도구가 문서를 고치는 일(`cad-tools.ts`, 고치는 도구 호출 하나는 `edit` 한 번).
+  - `i18n/`: 21개 언어 문구(`app/<언어>.ts`를 `strings-app.ts`·`strings.ts`가 합친다), 현재 언어(`locale.tsx`).
+- 메인 프로세스(`src/main/`): `cad-main.ts`(뷰 만들기, 뷰마다 허용된 경로, 열기·저장, 닫기 전 저장 확인, 이름 바뀜 따라가기, 단독 실행), `recovery-main.ts`(복구 사본 저장소), `i18n-main.ts`(메인 문구), `mcp-queries.ts`(앱 안 MCP 서버의 질문: 모형 요약, 저장할 바이트), `atomic-write.ts`(파일을 끊김 없이 쓰기), `index.ts`(셸에 내보내는 함수 목록).
+- preload `src/preload/index.ts`: 화면에 `window.cadApi`를 건넨다.
 - IPC 계약 `src/shared/ipc.ts`(`CAD_CHANNELS`). 이 편집기의 창구 이름과 주고받는 자료의 모양이 전부 여기 있다.
+- 시험 `tests/`(jsdom). three의 그리기 부분은 가짜로 바꾸고 문서·저장·복구·편집·AI 도구를 본다. e2e는 루트 `e2e/cad-tab.spec.ts`.
 
 ## 맡지 않는 것 (경계)
 

@@ -154,4 +154,36 @@ export const de = {
   editBadNumber: 'Dieser Wert kann nicht verwendet werden. Die Zeichnung bleibt unverändert.',
   kernelFailed:
     'Die 3D-Berechnung konnte nicht starten, daher werden keine Formen angezeigt. Öffnen Sie den Tab erneut.',
+  // stage 4: measuring, the dimension sheet and sending it
+  tabDims: 'Maße',
+  groupDims: 'Maße',
+  groupSend: 'An ein Dokument senden',
+  measure: 'Messen',
+  measureHint:
+    'Zwei Punkte anklicken für einen Abstand, oder einen Kreis bzw. eine Linie für Durchmesser oder Länge. Esc löscht.',
+  measureFirst: 'Jetzt den zweiten Punkt anklicken',
+  measureDone: 'Fertig',
+  sheet: 'Maßblatt',
+  sheetEmpty: 'Es wurden noch keine Teile platziert',
+  sheetFieldTitle: 'Titel',
+  sheetFieldDate: 'Datum',
+  sheetFieldScale: 'Maßstab',
+  sheetFront: 'Vorderansicht',
+  sheetTop: 'Draufsicht',
+  sheetSide: 'Seitenansicht',
+  sheetClose: 'Schließen',
+  copyPicture: 'Bild kopieren',
+  copyDone: 'Bild kopiert. Fügen Sie es in ein Dokument ein.',
+  copyFailed: 'Das Bild konnte nicht kopiert werden. Versuchen Sie es erneut.',
+  sendHwp: 'An Hangul senden',
+  sendDocx: 'An Word senden',
+  sendDone: 'In einem neuen Tab geöffnet.',
+  sendFailed:
+    'Die Zeichnung konnte nicht an ein Dokument gesendet werden. Versuchen Sie es erneut.',
+  pictureTooLarge:
+    'Das Bild ist auch in der kleinsten Größe über 10 MB und kann nicht gesendet werden.',
+  tableName: 'Name',
+  tableWidth: 'Breite (mm)',
+  tableDepth: 'Tiefe (mm)',
+  tableHeight: 'Höhe (mm)',
 } satisfies Record<keyof typeof zh, string>

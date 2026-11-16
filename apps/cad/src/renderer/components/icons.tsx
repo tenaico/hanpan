@@ -215,3 +215,35 @@ export const IconKeyboard = () => (
     <path d="M5.5 8h1M9.5 8h1M13.5 8h1M6.5 12h7" />
   </Icon>
 )
+
+/** A ruler laid on a slant, with its marks. */
+export const IconMeasure = () => (
+  <Icon>
+    <path d="m3 13.5 10.5-10.5 3.5 3.5L6.5 17z" />
+    <path d="m6 10.5 1.5 1.5M8.5 8l2 2M11 5.5l1.5 1.5" />
+  </Icon>
+)
+
+/** A landscape sheet with a part and one dimension line over it. */
+export const IconSheet = () => (
+  <Icon>
+    <rect x="2.5" y="4" width="15" height="12" rx="1" />
+    <path d="M5.5 13h5v-4h-5zM5.5 7h5M5.5 6v2M10.5 6v2M12.5 13h3v-2h-3" />
+  </Icon>
+)
+
+/** Two sheets, one over the other. */
+export const IconCopy = () => (
+  <Icon>
+    <rect x="7" y="7" width="10" height="10" rx="1.5" />
+    <path d="M13 7V4.5A1.5 1.5 0 0 0 11.5 3h-7A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13H7" />
+  </Icon>
+)
+
+/** A page with an arrow going into it. */
+export const IconSend = () => (
+  <Icon>
+    <path d="M9 3H5.5A1.5 1.5 0 0 0 4 4.5v11A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5V10" />
+    <path d="M11 3h6v6M17 3l-7 7" />
+  </Icon>
+)

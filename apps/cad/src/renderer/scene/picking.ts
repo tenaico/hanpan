@@ -164,3 +164,35 @@ export function rayToWorkplane(ray: Ray): [number, number] | null {
   if (t < 0) return null
   return [ox + dx * t, oy + dy * t]
 }
+
+/**
+ * Where a measuring click lands: the nearest point the ray hits on a part's
+ * surface or drawing lines, else where it meets the workplane, else null.
+ * Unlike `pickPart`, parts that could not be computed and holes count only by
+ * what is drawn of them.
+ */
+export function pickPoint(
+  items: readonly SceneItem[],
+  ray: Ray,
+  options: PickOptions = {},
+): Vec3 | null {
+  const tolerance = options.lineTolerance ?? 1
+  let bestT = Infinity
+  for (const item of items) {
+    const enter = hitBox(ray, item.box, tolerance)
+    if (enter === null || enter > bestT) continue
+    if (item.mesh) {
+      const t = hitMesh(ray, item.mesh)
+      if (t !== null && t < bestT) bestT = t
+    }
+    for (const line of item.lines ?? []) {
+      const t = hitLines(ray, line.points, tolerance)
+      if (t !== null && t < bestT) bestT = t
+    }
+  }
+  const [ox, oy, oz] = ray.origin
+  const [dx, dy, dz] = ray.direction
+  if (bestT < Infinity) return [ox + dx * bestT, oy + dy * bestT, oz + dz * bestT]
+  const plate = rayToWorkplane(ray)
+  return plate ? [plate[0], plate[1], 0] : null
+}

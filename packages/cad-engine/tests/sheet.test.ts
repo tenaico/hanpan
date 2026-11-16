@@ -50,7 +50,8 @@ describe('chooseScale', () => {
     [5000, 120, '1:50'],
     [10, 120, '10:1'],
     [50, 120, '2:1'],
-    [1e9, 120, '1:1000'],
+    [1e6, 120, '1:10000'],
+    [1e9, 120, '1:50000'],
   ])('fits %s mm into %s mm at %s', (size, room, label) => {
     expect(chooseScale(size, room).label).toBe(label)
   })
@@ -135,6 +136,26 @@ describe('makeSheet', () => {
       LABELS,
     )
     expect(sheet.scale).toBe('1:50')
+  })
+
+  it('keeps a 1 km model on the A4 page', () => {
+    const added = addShape(createDocument(), 'box')
+    const size = 1_000_000
+    const sheet = makeSheet(
+      added.doc,
+      [{ id: added.id, mesh: cube([0, 0, 0], [size, size, size]) }],
+      LABELS,
+    )
+    expect(sheet.scale).toBe('1:20000')
+    for (const m of sheet.svg.matchAll(
+      /<line x1="([-\d.e]+)" y1="([-\d.e]+)" x2="([-\d.e]+)" y2="([-\d.e]+)"/g,
+    )) {
+      const [x1, y1, x2, y2] = m.slice(1).map(Number)
+      for (const x of [x1!, x2!]) expect(x).toBeGreaterThanOrEqual(0)
+      for (const x of [x1!, x2!]) expect(x).toBeLessThanOrEqual(297)
+      for (const y of [y1!, y2!]) expect(y).toBeGreaterThanOrEqual(0)
+      for (const y of [y1!, y2!]) expect(y).toBeLessThanOrEqual(210)
+    }
   })
 
   it('escapes the title', () => {

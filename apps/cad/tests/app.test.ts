@@ -11,6 +11,9 @@ import {
   CadEditError,
   addShape,
   createDocument,
+  createKernel,
+  evaluateDocument,
+  meshBounds,
   openCadFile,
   saveCadFile,
   type CadDocument,
@@ -18,10 +21,12 @@ import {
 } from '@genoffice/cad-engine'
 import App from '../src/renderer/App'
 import { selection } from '../src/renderer/editing/selection'
+import type { Rasterize } from '../src/renderer/sheet/sheet-png'
 import { LocaleProvider } from '../src/renderer/i18n/locale'
 import { strings } from '../src/renderer/i18n/strings'
 import { HandleRefusedError } from '../src/renderer/scene/handles'
-import type { ViewportFactory, ViewportOptions } from '../src/renderer/scene/viewport'
+import type { MeasureView, ViewportFactory, ViewportOptions } from '../src/renderer/scene/viewport'
+import { applyKoreanDocFeatures } from '@genoffice/ui'
 import type {
   BytesReply,
   CadApi,
@@ -32,6 +37,8 @@ import type {
   SaveCadRequest,
   SaveCadResult,
   SaveMode,
+  SendToDocumentRequest,
+  SendToDocumentResult,
   SummaryReply,
 } from '../src/shared/ipc'
 
@@ -54,6 +61,10 @@ interface Fake {
   bytes: BytesReply[]
   saveResult: SaveCadResult
   exports: ExportFileRequest[]
+  sends: SendToDocumentRequest[]
+  sendResult: SendToDocumentResult | Error
+  copies: Uint8Array[]
+  copyResult: boolean
   emit: {
     exportRequest(format: ExportFormat): void
     saveRequest(mode: SaveMode): void
@@ -86,6 +97,10 @@ function fakeApi(pending: string | null, file: OpenFileResult | null): Fake {
     bytes: [],
     saveResult: { ok: true, path: 'C:/models/new.ttukcad' },
     exports: [],
+    sends: [],
+    sendResult: { ok: true, title: 'sent' },
+    copies: [],
+    copyResult: true,
     emit: {
       exportRequest: (format) => call('export', format),
       saveRequest: (mode) => call('save', mode),
@@ -129,9 +144,15 @@ function fakeApi(pending: string | null, file: OpenFileResult | null): Fake {
         return { ok: true, path: 'C:/out/x.' + request.format }
       },
       onExportRequest: on('export'),
-      // stage 4: not used by these screens
-      sendToDocument: async () => ({ ok: false as const, error: 'not used' }),
-      copyImage: async () => false,
+      sendToDocument: async (request: SendToDocumentRequest) => {
+        fake.sends.push(request)
+        if (fake.sendResult instanceof Error) throw fake.sendResult
+        return fake.sendResult
+      },
+      copyImage: async (png: Uint8Array) => {
+        fake.copies.push(png)
+        return fake.copyResult
+      },
     },
   }
   return fake
@@ -147,6 +168,7 @@ function fakeViewport() {
     setHandleMode: () => {},
     view: () => {},
     setSketch: () => {},
+    setMeasure: () => {},
     snapshot: async () => new Uint8Array([0x89, 0x50]),
     dispose: () => {},
   })
@@ -192,6 +214,7 @@ async function mountApp(
   fake: Fake,
   viewportFactory: ViewportFactory,
   kernelFactory: () => Promise<Kernel> = pendingKernel,
+  rasterize?: Rasterize,
 ): Promise<void> {
   ;(window as unknown as { cadApi: CadApi }).cadApi = fake.api
   container = document.createElement('div')
@@ -202,7 +225,7 @@ async function mountApp(
       createElement(LocaleProvider, {
         initial: 'en',
         // the boolean kernel never starts here: the screen tests need no wasm
-        children: createElement(App, { viewportFactory, kernelFactory }),
+        children: createElement(App, { viewportFactory, kernelFactory, rasterize }),
       }),
     )
   })
@@ -393,6 +416,7 @@ describe('the AI Drawing screen', () => {
         setHandleMode: () => {},
         view: (command) => void views.push(command),
         setSketch: () => {},
+        setMeasure: () => {},
         snapshot: async () => new Uint8Array(),
         dispose: () => {},
       }
@@ -427,6 +451,7 @@ function probeViewport() {
     options: undefined as ViewportOptions | undefined,
     docs: [] as CadDocument[],
     sketches: [] as (readonly [number, number][] | null)[],
+    measures: [] as (MeasureView | null)[],
   }
   const factory: ViewportFactory = (_host, _theme, opts) => {
     probe.options = opts
@@ -437,6 +462,7 @@ function probeViewport() {
       setHandleMode: () => {},
       view: () => {},
       setSketch: (points) => void probe.sketches.push(points ? [...points] : null),
+      setMeasure: (view) => void probe.measures.push(view),
       snapshot: async () => new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
       dispose: () => {},
     }
@@ -653,5 +679,180 @@ describe('the AI Drawing screen, editing (stage 3)', () => {
     expect(view.probe.sketches.at(-1)).toBeNull()
     await press('z', { ctrlKey: true })
     expect(view.doc().parts).toHaveLength(0)
+  })
+})
+
+// ---- stage 4: measuring, the dimension sheet and sending it to a document ----
+
+const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 7])
+const fakeRasterize: Rasterize = async () => PNG_BYTES
+const realKernel = (): Promise<Kernel> => createKernel()
+
+function twoPartBytes(title?: CadDocument['title']): Uint8Array {
+  const base = addShape(createDocument(), 'box', {
+    name: 'Base',
+    dims: { width: 80, depth: 50, height: 30 },
+  })
+  const leg = addShape(base.doc, 'cylinder', { name: 'Leg', position: [100, 0, 0] })
+  const ghost = addShape(leg.doc, 'box', { name: 'Ghost', position: [-100, 0, 0] })
+  const doc = {
+    ...ghost.doc,
+    parts: ghost.doc.parts.map((p) => (p.name === 'Ghost' ? { ...p, hidden: true } : p)),
+    title: title ?? ghost.doc.title,
+  }
+  return saveCadFile(doc)
+}
+
+const pane = (name: string, action: string): string =>
+  `[data-ribbon-pane="${name}"] [data-action="${action}"]`
+
+async function mountWithParts(fake: Fake, view = probeViewport()) {
+  await mountApp(fake, view.factory, realKernel, fakeRasterize)
+  await until(
+    () => container.querySelector(pane('dims', 'send'))?.hasAttribute('disabled') === false,
+    'the parts to be computed',
+  )
+  return view
+}
+
+function localToday(): string {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+describe('the AI Drawing screen, dimensions and sending (stage 4)', () => {
+  afterEach(() => {
+    selection.clear()
+    applyKoreanDocFeatures(null)
+  })
+
+  it('an empty drawing disables the sheet and the send button and says why', async () => {
+    const fake = fakeApi(null, null)
+    await mountApp(fake, probeViewport().factory, realKernel, fakeRasterize)
+    for (const action of ['sheet', 'send']) {
+      const button = container.querySelector<HTMLButtonElement>(pane('dims', action))!
+      expect(button.disabled).toBe(true)
+      expect(button.getAttribute('data-tip')).toBe(en.sheetEmpty)
+    }
+    // the measuring tool and the 3D picture need no parts
+    expect(container.querySelector<HTMLButtonElement>(pane('dims', 'measure'))!.disabled).toBe(
+      false,
+    )
+  })
+
+  it('send builds the title, date, picture, rows and target from the drawing', async () => {
+    applyKoreanDocFeatures(true)
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: twoPartBytes() })
+    await mountWithParts(fake)
+    expect(text(pane('dims', 'send'))).toBe(en.sendHwp)
+    await click(pane('dims', 'send'))
+    await until(() => fake.sends.length === 1, 'the send')
+    const request = fake.sends[0]!
+    expect(request.target).toBe('hwp')
+    // no title in the title block: the tab title; no date: today
+    expect(request.title).toBe('bracket')
+    expect(request.date).toBe(localToday())
+    expect([...request.drawingPng]).toEqual([...PNG_BYTES])
+    expect(request.rows[0]).toEqual([en.tableName, en.tableWidth, en.tableDepth, en.tableHeight])
+    // the hidden part is not in the table
+    expect(request.rows.map((r) => r[0])).toEqual([en.tableName, 'Base', 'Leg'])
+    expect(request.rows[1]).toEqual(['Base', '80', '50', '30'])
+    await until(() => text('[data-cad-message]') === en.sendDone, 'the sent note')
+    expect(container.querySelector('[data-cad-status]')!.hasAttribute('data-error')).toBe(false)
+  })
+
+  it('the title block of the drawing names the document and dates it', async () => {
+    const fake = fakeApi('C:/models/bracket.ttukcad', {
+      status: 'ok',
+      bytes: twoPartBytes({ name: 'Bracket A', date: '2026-12-01', scale: '' }),
+    })
+    await mountWithParts(fake)
+    await click(pane('dims', 'send'))
+    await until(() => fake.sends.length === 1, 'the send')
+    expect(fake.sends[0]!.title).toBe('Bracket A')
+    expect(fake.sends[0]!.date).toBe('2026-12-01')
+  })
+
+  it('the send button follows the Korean document switch', async () => {
+    applyKoreanDocFeatures(true)
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: twoPartBytes() })
+    await mountWithParts(fake)
+    expect(text(pane('dims', 'send'))).toBe(en.sendHwp)
+    expect(text(pane('home', 'send'))).toBe(en.sendHwp)
+    await act(async () => applyKoreanDocFeatures(false))
+    expect(text(pane('dims', 'send'))).toBe(en.sendDocx)
+    await click(pane('dims', 'send'))
+    await until(() => fake.sends.length === 1, 'the send')
+    expect(fake.sends[0]!.target).toBe('docx')
+  })
+
+  it('a failed send says so in the UI language, never with the main process words', async () => {
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: twoPartBytes() })
+    fake.sendResult = { ok: false, error: 'rhwp engine crashed' }
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    await mountWithParts(fake)
+    await click(pane('dims', 'send'))
+    await until(() => text('[data-cad-message]') !== '', 'the failure')
+    expect(text('[data-cad-message]')).toBe(en.sendFailed)
+    expect(container.querySelector('[data-cad-status]')!.hasAttribute('data-error')).toBe(true)
+    expect(container.textContent).not.toContain('rhwp engine crashed')
+    // a thrown IPC error reads the same
+    fake.sendResult = new Error('ipc broke')
+    await click(pane('dims', 'send'))
+    await until(() => fake.sends.length === 2, 'the second send')
+    await settle()
+    expect(text('[data-cad-message]')).toBe(en.sendFailed)
+    expect(container.textContent).not.toContain('ipc broke')
+    warn.mockRestore()
+  })
+
+  it('copy picture on the ribbon copies the 3D view', async () => {
+    const fake = fakeApi(null, null)
+    await mountApp(fake, probeViewport().factory, realKernel, fakeRasterize)
+    await click(pane('dims', 'copy-picture'))
+    await until(() => fake.copies.length === 1, 'the copy')
+    expect([...fake.copies[0]!]).toEqual([0x89, 0x50, 0x4e, 0x47])
+    await until(() => text('[data-cad-message]') === en.copyDone, 'the copied note')
+    fake.copyResult = false
+    await click(pane('dims', 'copy-picture'))
+    await until(() => text('[data-cad-message]') === en.copyFailed, 'the refusal')
+  })
+
+  it('the sheet dialog opens from the ribbon and copies the sheet picture', async () => {
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: twoPartBytes() })
+    await mountWithParts(fake)
+    await click(pane('dims', 'sheet'))
+    expect(container.querySelector('[data-sheet-preview]')).not.toBeNull()
+    await click('[data-sheet-copy]')
+    await until(() => fake.copies.length === 1, 'the copy')
+    expect([...fake.copies[0]!]).toEqual([...PNG_BYTES])
+    await click('[data-sheet-close]')
+    expect(container.querySelector('[data-sheet-preview]')).toBeNull()
+  })
+
+  it('measuring: clicks in the view read a distance, and a document change clears it', async () => {
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: twoPartBytes() })
+    const view = await mountWithParts(fake)
+    await click(pane('dims', 'measure'))
+    expect(container.querySelector('[data-cad-measure]')).not.toBeNull()
+    expect(view.probe.measures.at(-1)).not.toBeNull()
+    // the 80 × 50 × 30 box: two corners of its long top edge, a little off
+    const opts = view.probe.options!
+    const evaluated = evaluateDocument(view.doc(), await realKernel())
+    const b = meshBounds(evaluated[0]!.mesh!)
+    await act(async () => opts.onMeasureClick!([b.min[0] + 0.3, b.min[1], b.max[2]], 2))
+    await act(async () => opts.onMeasureClick!([b.max[0], b.min[1] + 0.2, b.max[2]], 2))
+    expect(text('[data-cad-measure-reading]')).toBe('80 mm')
+    expect(view.probe.measures.at(-1)?.label).toBe('80 mm')
+    // a change to the drawing (here from the menu) takes the reading away
+    await act(async () => fake.emit.menu('select-all'))
+    await act(async () => fake.emit.menu('delete'))
+    expect(text('[data-cad-measure-reading]')).toBe('')
+    expect(view.probe.measures.at(-1)?.label ?? null).toBeNull()
+    // Esc with nothing to clear leaves the tool
+    await press('Escape')
+    expect(container.querySelector('[data-cad-measure]')).toBeNull()
+    expect(view.probe.measures.at(-1)).toBeNull()
   })
 })

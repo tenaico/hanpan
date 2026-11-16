@@ -16,7 +16,7 @@ import {
   type Vec3,
 } from '@genoffice/cad-engine'
 import { DocEvaluator } from '../src/renderer/scene/evaluator'
-import { pickPart, rayToWorkplane } from '../src/renderer/scene/picking'
+import { pickPart, pickPoint, rayToWorkplane } from '../src/renderer/scene/picking'
 import { sceneModel } from '../src/renderer/scene/scene-model'
 
 async function itemsOf(doc: CadDocument) {
@@ -67,6 +67,20 @@ describe('pickPart', () => {
     const items = await itemsOf(addPart(createDocument(), plan))
     expect(pickPart(items, down(25, 0.2))).toBe(plan.id)
     expect(pickPart(items, down(25, 20))).toBeNull()
+  })
+})
+
+describe('pickPoint', () => {
+  it('lands on the top of a part, else on the plate', async () => {
+    const box = addShape(createDocument(), 'box', { name: 'B' })
+    const items = await itemsOf(box.doc)
+    const top = Math.max(...items[0]!.mesh!.positions.filter((_, i) => i % 3 === 2))
+    const hit = pickPoint(items, down(3, 4))!
+    expect(hit[0]).toBeCloseTo(3, 6)
+    expect(hit[1]).toBeCloseTo(4, 6)
+    expect(hit[2]).toBeCloseTo(top, 6)
+    expect(pickPoint(items, down(80, 0))).toEqual([80, 0, 0])
+    expect(pickPoint(items, { origin: [0, 0, 50], direction: [1, 0, 0] })).toBeNull()
   })
 })
 
