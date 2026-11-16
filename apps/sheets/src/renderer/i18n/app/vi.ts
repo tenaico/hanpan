@@ -1137,7 +1137,7 @@ export const vi = {
   appCalculateSheetTitle: 'Chỉ tính toán lại trang tính hiện hoạt',
   appCalculateNow: 'Tính toán ngay',
   appCalculateSheet: 'Tính toán trang tính',
-  appOoxmlPivot: 'OOXML PivotTable',
+  appOoxmlPivot: 'PivotTable OOXML',
   appGroupGetData: 'Lấy dữ liệu',
   appFromTextCsv: 'Từ Văn bản/CSV',
   appRefreshAll: 'Làm mới tất cả',

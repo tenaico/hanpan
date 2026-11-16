@@ -134,6 +134,24 @@ jobs:
           status=$(powershell -NoProfile -Command "(Get-AuthenticodeSignature '$installer').Status")
           [ "$(echo "$status" | tr -d '\r')" = "NotSigned" ] || { echo "the installer is signed ($status)"; exit 1; }
 
+      # The installer's language (decision 0100): a silent install takes the
+      # language picked last from HKCU and writes it next to Hanpan.exe
+      - name: Check the installer writes the language picked
+        shell: pwsh
+        run: |
+          $version = node -p "require('./apps/shell/package.json').version"
+          $installer = "apps/shell/release/Hanpan-Setup-$version.exe"
+          $dir = Join-Path $env:RUNNER_TEMP 'hanpan-install'
+          New-Item -Path 'HKCU:\Software\Hanpan' -Force | Out-Null
+          Set-ItemProperty -Path 'HKCU:\Software\Hanpan' -Name InstallerLanguage -Value '1066'
+          $p = Start-Process -FilePath $installer -ArgumentList '/S', '/currentuser', "/D=$dir" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "installer exit code $($p.ExitCode)" }
+          $file = Join-Path $dir 'installer-language.txt'
+          if (-not (Test-Path $file)) { throw "missing: $file" }
+          $text = (Get-Content -Raw $file).Trim()
+          if ($text -ne '1066') { throw "installer-language.txt says '$text', expected 1066" }
+          Write-Output "installer-language.txt: $text"
+
       # The packaged app itself, run without a window: a Markdown and a CSV file
       # (the latter through the xlsx sidecar) are exported to PDF
       - name: Smoke test the packaged app

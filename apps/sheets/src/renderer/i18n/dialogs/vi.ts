@@ -224,7 +224,7 @@ export const vi = {
 
   dlgSlicerInsertTitle: 'Chèn Slicer',
   dlgSlicerPickNote: 'Chọn trường cho slicer; nhấp vào các mục trong slicer để lọc PivotTable.',
-  dlgSlicerAria: 'Slicer {name}',
+  dlgSlicerAria: 'Bộ lọc slicer {name}',
   dlgSlicerClear: 'Xóa bộ lọc (chọn tất cả)',
   dlgSlicerRemove: 'Xóa slicer (khôi phục tất cả các mục)',
   dlgTimelineInsertTitle: 'Chèn Dòng thời gian',

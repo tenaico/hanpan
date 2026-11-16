@@ -1,3 +1,4 @@
+import type { Lang } from '@genoffice/i18n'
 import { parseFragment } from 'parse5'
 import type {
   UpdateNoteBlock,
@@ -75,6 +76,39 @@ export function normalizeReleaseNotes(input: unknown): UpdateReleaseNotes | null
   const kept = capped.sections.filter((section) => section.blocks.length > 0)
   if (kept.length === 0) return null
   return { sections: kept, truncated: truncated || capped.truncated }
+}
+
+/** the heading that starts the English part of a release body (decision 0100) */
+const ENGLISH_HEADING = 'English'
+
+/**
+ * The part of each version's notes for the UI language: release bodies are
+ * Korean, then a heading "English" and the English text. A Korean UI gets the
+ * part before the heading, every other UI the part after it (Hanpan does not
+ * write notes in the other 19 languages). Notes without the heading are kept
+ * whole, as are older releases written in Korean only.
+ */
+export function notesForLang(
+  notes: UpdateReleaseNotes | null,
+  lang: Lang,
+): UpdateReleaseNotes | null {
+  if (notes === null) return null
+  const sections = notes.sections
+    .map((section) => {
+      const at = section.blocks.findIndex(
+        (block) =>
+          block.kind === 'heading' &&
+          block.runs
+            .map((run) => run.text)
+            .join('')
+            .trim() === ENGLISH_HEADING,
+      )
+      if (at < 0) return section
+      const blocks = lang === 'ko' ? section.blocks.slice(0, at) : section.blocks.slice(at + 1)
+      return { ...section, blocks }
+    })
+    .filter((section) => section.blocks.length > 0)
+  return sections.length > 0 ? { ...notes, sections } : null
 }
 
 function noteInputs(input: unknown): Array<{ version: string | null; html: string }> {

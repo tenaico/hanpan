@@ -202,7 +202,55 @@
   !insertmacro MUI_PAGE_FINISH
 !macroend
 
+; The language picker on the installer's first screen (decision 0100). It opens
+; once, on a first install or a reinstall the person starts, with Windows' own
+; display language picked already (English when Hanpan has none of them). An
+; update (--updated), a silent install and the elevated second run of an "all
+; users" install show no picker: they take the language picked last from HKCU,
+; so the pages after the elevation stay in the language picked. customInstall
+; then writes the language id next to Hanpan.exe, and the app's first launch
+; takes it when no language is chosen in Settings. With no language ever picked
+; (an update of an install from before the picker, a silent install) nothing is
+; written, and the app keeps following Windows' language (decision 0092).
+!define GENOFFICE_LANG_KEY "Software\Hanpan"
+!define GENOFFICE_LANG_VALUE "InstallerLanguage"
+
+!ifndef BUILD_UNINSTALLER
+Var GenOfficeLangPicked
+!endif
+
+!macro customInit
+  StrCpy $GenOfficeLangPicked ""
+  ${If} ${UAC_IsInnerInstance}
+  ${OrIf} ${isUpdated}
+  ${OrIf} ${Silent}
+    ReadRegStr $0 HKCU "${GENOFFICE_LANG_KEY}" "${GENOFFICE_LANG_VALUE}"
+    ${If} $0 != ""
+      StrCpy $LANGUAGE $0
+      StrCpy $GenOfficeLangPicked "1"
+    ${EndIf}
+  ${Else}
+    !insertmacro MUI_LANGDLL_DISPLAY
+    WriteRegStr HKCU "${GENOFFICE_LANG_KEY}" "${GENOFFICE_LANG_VALUE}" $LANGUAGE
+    StrCpy $GenOfficeLangPicked "1"
+  ${EndIf}
+!macroend
+
+!macro GenOfficeWriteInstallerLanguage
+  ${If} $GenOfficeLangPicked == "1"
+    Push $0
+    ClearErrors
+    FileOpen $0 "$INSTDIR\installer-language.txt" w
+    ${IfNot} ${Errors}
+      FileWrite $0 "$LANGUAGE"
+      FileClose $0
+    ${EndIf}
+    Pop $0
+  ${EndIf}
+!macroend
+
 !macro customInstall
+  !insertmacro GenOfficeWriteInstallerLanguage
   Push "$INSTDIR\resources\cli"
   Call GenOfficeAddToUserPath
   !insertmacro GenOfficeRegisterShellNew "docx" "Hanpan.WordDocument"
@@ -230,6 +278,11 @@
   !insertmacro GenOfficeUnregisterOpenWithMindmap
   !insertmacro GenOfficeUnregisterOpenWithEpub
   !insertmacro GenOfficeUnregisterApplicationCapabilities
+  ; an update keeps the language picked, for its own installer to read
+  ${ifNot} ${isUpdated}
+    DeleteRegValue HKCU "${GENOFFICE_LANG_KEY}" "${GENOFFICE_LANG_VALUE}"
+    DeleteRegKey /ifempty HKCU "${GENOFFICE_LANG_KEY}"
+  ${endIf}
   Pop $0
   !insertmacro UPDATEFILEASSOC
 !macroend

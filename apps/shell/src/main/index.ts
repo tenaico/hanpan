@@ -171,6 +171,7 @@ import { KOREAN_DOC_FEATURES_KEY, readKoreanDocFeatures } from './korean-doc-fea
 import { trendForecastUrl } from './trend/trend-config'
 import { registerTrendIpc } from './trend/trend-ipc'
 import type { TrendService } from './trend/trend-service'
+import { installerLanguageRegArgs, readInstallerLang } from './installer-lang'
 import { fallbackUiLang } from './ui-lang-fallback'
 import {
   builtinSkillsDirFor,
@@ -1019,8 +1020,21 @@ function currentLang(): Lang {
     return uiLang
   }
   const saved = readAppSettings(APP_SETTINGS_PATH()).language
-  if (isLang(saved)) uiLang = saved
-  // Hanpan: with no language chosen in Settings the UI follows the first OS display language
+  if (isLang(saved)) {
+    uiLang = saved
+    syncInstallerLanguage(saved)
+  }
+  // Hanpan: with no language chosen in Settings, the language picked in the Windows installer
+  // (decision 0100). It is saved as if chosen in Settings, so an update, whose installer
+  // replaces the install folder, keeps it.
+  if (!uiLang && process.platform === 'win32' && app.isPackaged) {
+    const chosen = readInstallerLang(dirname(app.getPath('exe')))
+    if (chosen) {
+      uiLang = chosen
+      persistLang(chosen)
+    }
+  }
+  // Hanpan: with no language chosen in Settings or the installer the UI follows the first OS display language
   // Hanpan has, and is Korean when it has none of them (decision 0092)
   uiLang ??= fallbackUiLang(app.getPreferredSystemLanguages())
   setUiLang(uiLang)
@@ -1033,6 +1047,21 @@ function persistLang(lang: Lang): void {
   writeAppSettingThen(APP_SETTINGS_PATH(), 'language', lang, (persisted) => {
     uiLang = persisted
     setUiLang(persisted)
+    syncInstallerLanguage(persisted)
+  })
+}
+
+/**
+ * Hanpan: leave the language chosen in Settings where the next update's installer reads it
+ * (decision 0100), so its window opens in that language. Windows installs only; a failed
+ * write leaves the installer on the language it had.
+ */
+function syncInstallerLanguage(lang: Lang): void {
+  if (process.platform !== 'win32' || !app.isPackaged) return
+  const args = installerLanguageRegArgs(lang)
+  if (!args) return
+  execFileRunner('reg.exe', args).catch((err) => {
+    console.warn('[installer-lang] could not keep the language for the installer:', err)
   })
 }
 
