@@ -605,3 +605,228 @@ describe('drawingPartFromDxf and closedOutlines', () => {
     expect(Math.hypot(rings[1]![0]! - 50, rings[1]![1]! - 50)).toBeCloseTo(5, 9)
   })
 })
+
+/** Every number an entity holds, in any field. */
+function numbersIn(entity: DrawingEntity): number[] {
+  const out: number[] = []
+  const walk = (value: unknown): void => {
+    if (typeof value === 'number') out.push(value)
+    else if (Array.isArray(value)) value.forEach(walk)
+    else if (value && typeof value === 'object') Object.values(value).forEach(walk)
+  }
+  walk(entity)
+  return out
+}
+
+function allFinite(result: Ok): boolean {
+  return result.entities.every((e) => numbersIn(e).every((n) => Number.isFinite(n)))
+}
+
+function ellipse(t0: number | string, t1: number | string): Group[] {
+  return [
+    [0, 'ELLIPSE'],
+    [8, '0'],
+    [10, 0],
+    [20, 0],
+    [11, 10],
+    [21, 0],
+    [40, 0.5],
+    [41, t0],
+    [42, t1],
+  ]
+}
+
+describe('readDxf: hostile numbers', () => {
+  const inches: Group[] = [
+    [9, '$INSUNITS'],
+    [70, 1],
+  ]
+
+  it('drops an LWPOLYLINE with a coordinate that overflows to Infinity', () => {
+    const poly: Group[] = [
+      [0, 'LWPOLYLINE'],
+      [8, '0'],
+      [90, 2],
+      [70, 0],
+      [10, '1e400'],
+      [20, 0],
+      [10, 5],
+      [20, 5],
+    ]
+    const result = ok(dxf({ entities: [poly, line(0, 0, 1, 1)] }))
+    expect(allFinite(result)).toBe(true)
+    expect(only(result.entities, 'polyline')).toEqual([])
+    expect(only(result.entities, 'line')).toHaveLength(1)
+    expect(result.skipped.LWPOLYLINE).toBeGreaterThanOrEqual(1)
+  })
+
+  it('drops a LINE that overflows only after the inch factor', () => {
+    const result = ok(dxf({ header: inches, entities: [line(1e307, 0, 0, 0), line(0, 0, 1, 0)] }))
+    expect(allFinite(result)).toBe(true)
+    expect(only(result.entities, 'line')).toHaveLength(1)
+    expect(result.skipped.LINE).toBeGreaterThanOrEqual(1)
+  })
+
+  it('an extreme bulge gives no NaN', () => {
+    const result = ok(
+      dxf({
+        entities: [
+          lwpolyline(
+            [
+              [0, 0, 1e308],
+              [10, 0],
+            ],
+            false,
+          ),
+          lwpolyline(
+            [
+              [0, 0, -1e308],
+              [1e-300, 0],
+            ],
+            false,
+          ),
+        ],
+      }),
+    )
+    expect(allFinite(result)).toBe(true)
+  })
+
+  it('a non-numeric value reads as 0 and gives no NaN', () => {
+    const poly: Group[] = [
+      [0, 'LWPOLYLINE'],
+      [8, '0'],
+      [90, 2],
+      [70, 0],
+      [10, 'abc'],
+      [20, 'NaN'],
+      [10, 5],
+      [20, 5],
+    ]
+    const result = ok(dxf({ entities: [poly] }))
+    expect(allFinite(result)).toBe(true)
+    expect(only(result.entities, 'polyline')[0]!.points).toEqual([0, 0, 5, 5])
+  })
+
+  it('every number in every entity of a hostile file is finite', () => {
+    const huge = '1e400'
+    const entities: Group[][] = [
+      line(Number.MAX_VALUE, 0, 1, 1),
+      [...circle(0, 0, 1).slice(0, 5), [40, huge]],
+      [
+        [0, 'ARC'],
+        [8, '0'],
+        [10, 0],
+        [20, 0],
+        [40, 1e307],
+        [50, huge],
+        [51, '-1e400'],
+      ],
+      [...text(0, 0, 1, 'A').slice(0, 5), [40, huge], [50, 1e308], [1, 'A']],
+      [
+        [0, 'MTEXT'],
+        [8, '0'],
+        [10, 1e308],
+        [20, 0],
+        [40, 1e308],
+        [11, huge],
+        [21, huge],
+        [1, 'B'],
+      ],
+      ellipse(0, huge),
+      ellipse('-1e400', 1),
+      [
+        [0, 'SPLINE'],
+        [8, '0'],
+        [70, 0],
+        [10, 0],
+        [20, 0],
+        [10, huge],
+        [20, 'x'],
+      ],
+      [
+        [0, 'POLYLINE'],
+        [8, '0'],
+        [66, 1],
+        [70, 0],
+        [0, 'VERTEX'],
+        [8, '0'],
+        [10, 0],
+        [20, 0],
+        [42, huge],
+        [0, 'VERTEX'],
+        [8, '0'],
+        [10, 1e308],
+        [20, -1e308],
+        [0, 'SEQEND'],
+      ],
+      insert('B', 0, 0, [
+        [41, 1e300],
+        [42, 1e300],
+      ]),
+      insert('B', 1e308, 0, [[50, huge]]),
+    ]
+    const result = ok(
+      dxf({
+        header: inches,
+        blocks: [{ name: 'B', entities: [line(0, 0, 1e10, 1e10), circle(1e10, 0, 1e10)] }],
+        entities,
+      }),
+    )
+    expect(allFinite(result)).toBe(true)
+    const b = result.bounds
+    if (b) expect([...b.min, ...b.max].every((n) => Number.isFinite(n))).toBe(true)
+  })
+})
+
+describe('readDxf: runaway loops', () => {
+  it('a 30000 x 30000 array insert of an empty block ends quickly as too-large', () => {
+    const source = dxf({
+      blocks: [{ name: 'EMPTY', entities: [] }],
+      entities: [
+        insert('EMPTY', 0, 0, [
+          [70, 30000],
+          [71, 30000],
+          [44, 1],
+          [45, 1],
+        ]),
+      ],
+    })
+    const started = Date.now()
+    const result = readDxf(bytesOf(source))
+    expect(Date.now() - started).toBeLessThan(2000)
+    expect(result.status).toBe('too-large')
+  })
+
+  it('a small array insert of an empty block is still ok', () => {
+    const source = dxf({
+      blocks: [{ name: 'EMPTY', entities: [] }],
+      entities: [
+        insert('EMPTY', 0, 0, [
+          [70, 10],
+          [71, 10],
+        ]),
+      ],
+    })
+    expect(ok(source).entities).toEqual([])
+  })
+
+  it.each([
+    [0, 1e20],
+    [1e20, 0],
+    [0, -1e11],
+  ])('an ELLIPSE with parameters %d .. %d ends quickly with finite points', (t0, t1) => {
+    const started = Date.now()
+    const result = ok(dxf({ entities: [ellipse(t0, t1)] }))
+    expect(Date.now() - started).toBeLessThan(2000)
+    expect(allFinite(result)).toBe(true)
+    const p = only(result.entities, 'polyline')
+    expect(p).toHaveLength(1)
+    expect(p[0]!.points.length).toBeGreaterThanOrEqual(16)
+  })
+
+  it('an ELLIPSE whose end equals start + 4 pi is a full ellipse', () => {
+    const p = only(ok(dxf({ entities: [ellipse(1, 1 + 4 * Math.PI)] })).entities, 'polyline')[0]!
+    expect(p.closed).toBe(true)
+    expect(p.points.length / 2).toBe(64)
+  })
+})

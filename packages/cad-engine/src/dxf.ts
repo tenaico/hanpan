@@ -132,19 +132,27 @@ function groupValue(entity: RawEntity, code: number): string | undefined {
   return undefined
 }
 
+/**
+ * A group value as a number. Text that is not a number reads as the fallback; a number too
+ * large for a double stays ±Infinity, so the entity holding it is dropped when it is emitted.
+ */
+function parseNumber(value: string, fallback: number): number {
+  const n = Number(value)
+  return Number.isNaN(n) || value === '' ? fallback : n
+}
+
 function groupNumber(entity: RawEntity, code: number, fallback: number): number {
   const value = groupValue(entity, code)
-  if (value === undefined) return fallback
-  const n = Number(value)
-  return Number.isFinite(n) ? n : fallback
+  return value === undefined ? fallback : parseNumber(value, fallback)
 }
 
 /** Pairs of (xCode, yCode) values in file order, e.g. LWPOLYLINE vertices or SPLINE points. */
 function pointList(entity: RawEntity, xCode: number, yCode: number): number[] {
   const points: number[] = []
   for (const g of entity.groups) {
-    if (g.code === xCode) points.push(Number(g.value) || 0, 0)
-    else if (g.code === yCode && points.length > 0) points[points.length - 1] = Number(g.value) || 0
+    if (g.code === xCode) points.push(parseNumber(g.value, 0), 0)
+    else if (g.code === yCode && points.length > 0)
+      points[points.length - 1] = parseNumber(g.value, 0)
   }
   return points
 }
@@ -343,6 +351,22 @@ function arcPoints(cx: number, cy: number, r: number, startDeg: number, sweepDeg
   return points
 }
 
+/** True when every number the entity holds is finite (a saved document must not hold NaN). */
+function isFiniteEntity(e: DrawingEntity): boolean {
+  switch (e.kind) {
+    case 'line':
+      return [...e.a, ...e.b].every(Number.isFinite)
+    case 'polyline':
+      return e.points.every(Number.isFinite)
+    case 'circle':
+      return [...e.center, e.radius].every(Number.isFinite)
+    case 'arc':
+      return [...e.center, e.radius, e.startDeg, e.endDeg].every(Number.isFinite)
+    case 'text':
+      return [...e.at, e.height, e.rotationDeg].every(Number.isFinite)
+  }
+}
+
 function mapPoints(m: Matrix, points: number[]): number[] {
   const out = new Array<number>(points.length)
   for (let i = 0; i < points.length; i += 2) {
@@ -370,17 +394,29 @@ class Reader {
     this.skipped[type] = (this.skipped[type] ?? 0) + 1
   }
 
-  private emit(entity: DrawingEntity): void {
+  /** type is the DXF entity type, counted in skipped when the entity is dropped. */
+  private emit(entity: DrawingEntity, type: string): void {
+    if (!isFiniteEntity(entity)) {
+      this.skip(type)
+      return
+    }
     this.entities.push(entity)
     if (this.entities.length > this.maxEntities) throw new TooLarge()
   }
 
-  private polyline(m: Matrix, points: number[], closed: boolean, layer: string): void {
+  private polyline(
+    type: string,
+    m: Matrix,
+    points: number[],
+    closed: boolean,
+    layer: string,
+  ): void {
     if (points.length < 4) return
-    this.emit({ kind: 'polyline', points: mapPoints(m, points), closed, layer })
+    this.emit({ kind: 'polyline', points: mapPoints(m, points), closed, layer }, type)
   }
 
   private text(
+    type: string,
     m: Matrix,
     x: number,
     y: number,
@@ -402,7 +438,7 @@ class Reader {
       rotationDeg = normalizeDeg((Math.atan2(dir[1], dir[0]) * 180) / Math.PI)
       height = h * Math.hypot(up[0], up[1])
     }
-    this.emit({ kind: 'text', at: apply(m, x, y), height, rotationDeg, value, layer })
+    this.emit({ kind: 'text', at: apply(m, x, y), height, rotationDeg, value, layer }, type)
   }
 
   private expand(name: string, m: Matrix, depth: number, layer: string, useBase: boolean): boolean {
@@ -427,24 +463,22 @@ class Reader {
 
     switch (entity.type) {
       case 'LINE':
-        this.emit({
-          kind: 'line',
-          a: apply(m, num(10), num(20)),
-          b: apply(m, num(11), num(21)),
-          layer,
-        })
+        this.emit(
+          { kind: 'line', a: apply(m, num(10), num(20)), b: apply(m, num(11), num(21)), layer },
+          entity.type,
+        )
         return
       case 'LWPOLYLINE': {
         const vertices: [number, number, number][] = []
         for (const g of entity.groups) {
-          if (g.code === 10) vertices.push([Number(g.value) || 0, 0, 0])
+          if (g.code === 10) vertices.push([parseNumber(g.value, 0), 0, 0])
           else if (g.code === 20 && vertices.length)
-            vertices[vertices.length - 1]![1] = Number(g.value) || 0
+            vertices[vertices.length - 1]![1] = parseNumber(g.value, 0)
           else if (g.code === 42 && vertices.length)
-            vertices[vertices.length - 1]![2] = Number(g.value) || 0
+            vertices[vertices.length - 1]![2] = parseNumber(g.value, 0)
         }
         const closed = (num(70) & 1) === 1
-        this.polyline(m, flattenBulges(vertices, closed), closed, layer)
+        this.polyline(entity.type, m, flattenBulges(vertices, closed), closed, layer)
         return
       }
       case 'POLYLINE': {
@@ -457,7 +491,7 @@ class Reader {
           .filter((v) => (groupNumber(v, 70, 0) & 16) === 0)
           .map((v) => [groupNumber(v, 10, 0), groupNumber(v, 20, 0), groupNumber(v, 42, 0)])
         const closed = (flags & 1) === 1
-        this.polyline(m, flattenBulges(vertices, closed), closed, layer)
+        this.polyline(entity.type, m, flattenBulges(vertices, closed), closed, layer)
         return
       }
       case 'CIRCLE':
@@ -472,18 +506,18 @@ class Reader {
         if (turn) {
           const center = apply(m, cx, cy)
           const radius = r * turn.scale
-          if (!isArc) this.emit({ kind: 'circle', center, radius, layer })
+          if (!isArc) this.emit({ kind: 'circle', center, radius, layer }, entity.type)
           else {
             const a = mapAngle(turn, startDeg)
             const b = mapAngle(turn, endDeg)
             const [s, e] = turn.mirrored ? [b, a] : [a, b]
-            this.emit({ kind: 'arc', center, radius, startDeg: s, endDeg: e, layer })
+            this.emit({ kind: 'arc', center, radius, startDeg: s, endDeg: e, layer }, entity.type)
           }
           return
         }
         let sweep = isArc ? normalizeDeg(endDeg - startDeg) : 360
         if (sweep === 0) sweep = 360
-        this.polyline(m, arcPoints(cx, cy, r, startDeg, sweep), !isArc, layer)
+        this.polyline(entity.type, m, arcPoints(cx, cy, r, startDeg, sweep), !isArc, layer)
         return
       }
       case 'ELLIPSE': {
@@ -496,20 +530,27 @@ class Reader {
         const nx = -my * ratio * side
         const ny = mx * ratio * side
         const t0 = num(41, 0)
-        let span = num(42, 2 * Math.PI) - t0
-        while (span <= 1e-12) span += 2 * Math.PI
-        const full = span >= 2 * Math.PI - 1e-9
+        const t1 = num(42, 2 * Math.PI)
+        const turn = 2 * Math.PI
+        // Reduce both ends first: for huge parameters t1 - t0 loses all precision.
+        let span = ((((t1 % turn) - (t0 % turn)) % turn) + turn) % turn
+        if (!Number.isFinite(span)) {
+          this.skip('ELLIPSE')
+          return
+        }
+        if (span <= 1e-12 || span >= turn - 1e-12) span = turn
+        const full = span >= turn - 1e-9
         const n = full
           ? CIRCLE_SEGMENTS
           : Math.max(8, Math.ceil((CIRCLE_SEGMENTS * span) / (2 * Math.PI)))
         const points: number[] = []
         for (let s = 0; s <= (full ? n - 1 : n); s++) {
-          const t = t0 + (span * s) / n
+          const t = (t0 % turn) + (span * s) / n
           const cos = Math.cos(t)
           const sin = Math.sin(t)
           points.push(cx + cos * mx + sin * nx, cy + cos * my + sin * ny)
         }
-        this.polyline(m, points, full, layer)
+        this.polyline(entity.type, m, points, full, layer)
         return
       }
       case 'SPLINE': {
@@ -519,7 +560,7 @@ class Reader {
           this.skip('SPLINE')
           return
         }
-        this.polyline(m, points, (num(70) & 1) === 1, layer)
+        this.polyline(entity.type, m, points, (num(70) & 1) === 1, layer)
         return
       }
       case 'TEXT':
@@ -529,7 +570,7 @@ class Reader {
         const x = aligned ? num(11) : num(10)
         const y = aligned ? num(21) : num(20)
         const value = decodeSpecials(groupValue(entity, 1) ?? '')
-        this.text(m, x, y, num(40), num(50), value, layer)
+        this.text(entity.type, m, x, y, num(40), num(50), value, layer)
         return
       }
       case 'MTEXT': {
@@ -541,7 +582,7 @@ class Reader {
           deg = (Math.atan2(num(21), num(11)) * 180) / Math.PI
         }
         const value = decodeSpecials(stripMtext(raw))
-        this.text(m, num(10), num(20), num(40), deg, value, layer)
+        this.text(entity.type, m, num(10), num(20), num(40), deg, value, layer)
         return
       }
       case 'INSERT': {
@@ -551,6 +592,10 @@ class Reader {
         const rot = num(50)
         const cols = Math.max(1, Math.floor(num(70, 1)))
         const rows = Math.max(1, Math.floor(num(71, 1)))
+        // Every array cell costs a visit, even when the block is empty or past the depth
+        // limit, so a huge array ends as too-large instead of spinning.
+        this.budget -= cols * rows - 1
+        if (!(this.budget >= 0)) throw new TooLarge()
         const base = multiply(multiply(m, translate(num(10), num(20))), rotate(rot))
         let found = true
         for (let r = 0; r < rows && found; r++) {
