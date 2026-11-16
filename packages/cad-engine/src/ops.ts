@@ -98,22 +98,27 @@ function replacePart(
   change: (part: Part) => Part[] | Part,
 ): CadDocument {
   let found = false
-  const walk = (parts: readonly Part[]): Part[] => {
+  // Returns the same array when nothing under it changed, so untouched groups
+  // keep their identity and caches keyed by part objects stay valid.
+  const walk = (parts: Part[]): Part[] => {
     const out: Part[] = []
+    let changed = false
     for (const p of parts) {
       if (p.id === id) {
         found = true
+        changed = true
         const next = change(p)
         if (Array.isArray(next)) out.push(...next)
         else out.push(next)
       } else if (p.type === 'group') {
         const children = walk(p.children)
+        if (children !== p.children) changed = true
         out.push(children === p.children ? p : { ...p, children })
       } else {
         out.push(p)
       }
     }
-    return out
+    return changed ? out : parts
   }
   const parts = walk(doc.parts)
   if (!found) throw new CadEditError('unknown-id', id)

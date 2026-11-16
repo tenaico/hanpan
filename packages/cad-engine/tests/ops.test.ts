@@ -145,6 +145,25 @@ describe('updatePart', () => {
   })
 })
 
+describe('unchanged parts keep their identity', () => {
+  it('reuses every group and part an edit did not touch', () => {
+    const a = addShape(createDocument(), 'box')
+    const b = addShape(a.doc, 'sphere')
+    const g1 = groupParts(b.doc, [a.id, b.id])
+    const c = addShape(g1.doc, 'cone')
+    const d = addShape(c.doc, 'cylinder')
+    const g2 = groupParts(d.doc, [c.id, d.id])
+    const outer = groupParts(g2.doc, [g1.id, g2.id])
+    const before = outer.doc
+    const next = updatePart(before, a.id, { name: 'changed' })
+    const groupOf = (doc: CadDocument, id: string) => findPart(doc, id) as GroupPart
+    expect(groupOf(next, g2.id)).toBe(groupOf(before, g2.id))
+    expect(groupOf(next, g2.id).children).toBe(groupOf(before, g2.id).children)
+    expect(findPart(next, b.id)).toBe(findPart(before, b.id))
+    expect(groupOf(next, g1.id)).not.toBe(groupOf(before, g1.id))
+  })
+})
+
 describe('removeParts', () => {
   it('removes top-level and nested parts', () => {
     const a = addShape(createDocument(), 'box')
