@@ -175,6 +175,7 @@ describe('closeSavePath', () => {
     ['html', '.html'],
     ['pdf', '.pdf'],
     ['mindmap', '.xmind'],
+    ['cad', '.ttukcad'],
   ] as const)('resolves an untitled %s document to a %s target', (kind, ext) => {
     const untitled = doc({ id: `untitled-${kind}`, kind, title: `untitled ${kind}`, dirty: true })
     const target = closeSavePath(untitled, () => dir)
@@ -272,6 +273,35 @@ describe('open_documents tool', () => {
       content: outline,
     })
     expect(read).toHaveBeenCalledWith(expect.objectContaining({ id: 't8', kind: 'mindmap' }))
+  })
+
+  it('lists and reads an AI Drawing as the model summary its control returns', async () => {
+    const summary = 'AI Drawing "part": 1 parts\n- Box (box) 10x20x30 mm at (0, 0, 0)\n'
+    const drawing = doc({
+      id: 'c1',
+      kind: 'cad',
+      title: 'part.ttukcad',
+      filePath: 'C:/parts/part.ttukcad',
+      dirty: true,
+    })
+    const read = vi.fn(async () => summary)
+    await startService(controlOf({ list: vi.fn(async () => [drawing]), read }))
+    const listed = jsonOf(
+      await client!.callTool({ name: 'open_documents', arguments: { action: 'list' } }),
+    )
+    expect((listed.documents as Array<Record<string, unknown>>)[0]).toMatchObject({
+      type: 'AI drawing',
+      kind: 'cad',
+      format: 'ttukcad',
+    })
+    const result = jsonOf(
+      await client!.callTool({
+        name: 'open_documents',
+        arguments: { action: 'read', target: 'C:/parts/part.ttukcad' },
+      }),
+    )
+    expect(result).toMatchObject({ id: 'c1', type: 'AI drawing', kind: 'cad', content: summary })
+    expect(read).toHaveBeenCalledWith(expect.objectContaining({ id: 'c1', kind: 'cad' }))
   })
 
   it('reads an untitled document by its tab id', async () => {

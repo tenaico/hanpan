@@ -22,6 +22,8 @@ export interface TabDocumentActionDeps {
   printHwp(contents: WebContents): void
   saveMindmap(contents: WebContents, mode: 'save' | 'saveAs'): void
   printMindmap(contents: WebContents): void
+  /** AI Drawing: no print workflow (it exports drawings instead) */
+  saveCad(contents: WebContents, mode: 'save' | 'saveAs'): void
   saveEpub(contents: WebContents, mode: 'save' | 'saveAs'): void
   /** AI 포토 and AI 일러스트 */
   saveGraphics(contents: WebContents, mode: 'save' | 'saveAs'): void
@@ -30,7 +32,7 @@ export interface TabDocumentActionDeps {
 }
 
 /** document kinds whose editor has no print workflow: the tab menu switches Print off for them */
-const NO_PRINT: ReadonlySet<TabKind> = new Set(['epub'])
+const NO_PRINT: ReadonlySet<TabKind> = new Set(['epub', 'cad'])
 
 /** Whether the tab menu can run this action on a tab of this kind (Home and the manual have none). */
 export function tabDocumentActionSupported(kind: TabKind, action: TabDocumentAction): boolean {
@@ -90,6 +92,9 @@ export function runTabDocumentAction(
     case 'mindmap':
       if (action === 'print') deps.printMindmap(contents)
       else deps.saveMindmap(contents, mode)
+      break
+    case 'cad':
+      deps.saveCad(contents, mode)
       break
     case 'epub':
       deps.saveEpub(contents, mode)

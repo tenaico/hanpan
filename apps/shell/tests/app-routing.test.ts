@@ -50,6 +50,15 @@ describe('appForPath', () => {
     expect(renameStaysInApp('/x/logo.svg', 'logo.ai')).toBe(false)
   })
 
+  it('routes AI Drawing files and the 3D/DXF files it imports to the cad app', () => {
+    expect(appForPath('/x/part.ttukcad')).toBe('cad')
+    expect(appForPath('C:/x/PART.TTUKCAD')).toBe('cad')
+    expect(appForPath('/x/plan.dxf')).toBe('cad')
+    expect(appForPath('/x/model.STL')).toBe('cad')
+    expect(appForPath('/x/model.obj')).toBe('cad')
+    expect(renameStaysInApp('/x/part.ttukcad', 'other.ttukcad')).toBe(true)
+  })
+
   it('opens OpenDocument text in the Word tab', () => {
     expect(appForPath('/x/a.odt')).toBe('docs')
     expect(appForPath('C:/x/REPORT.ODT')).toBe('docs')

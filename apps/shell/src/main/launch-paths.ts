@@ -20,6 +20,11 @@ export const LAUNCHABLE_EXTS = [
   'html',
   'htm',
   'xmind',
+  // AI Drawing and the 3D/DXF files it imports
+  'ttukcad',
+  'dxf',
+  'stl',
+  'obj',
   'hwp',
   'hwpx',
   'epub',

@@ -9,7 +9,7 @@ import type { CardSize, HomeBoard } from './home-board'
 export const APP_GROUPS = [
   { id: 'docs', keys: ['xmind', 'hwp', 'pptx', 'docx', 'xlsx', 'md', 'html', 'templates'] },
   { id: 'pdf', keys: ['pdf', 'pdf-tools', 'md-convert'] },
-  { id: 'graphics', keys: ['photo', 'illust', 'design'] },
+  { id: 'graphics', keys: ['photo', 'illust', 'design', 'ttukcad'] },
   { id: 'file', keys: ['open'] },
 ] as const
 

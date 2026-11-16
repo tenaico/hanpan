@@ -171,6 +171,13 @@ describe('partitionDropPayload', () => {
     expect(result.unsupportedExts).toEqual([])
   })
 
+  it('routes dropped AI Drawing files and the 3D/DXF files it imports as openable', () => {
+    const paths = ['/parts/a.ttukcad', '/parts/B.TTUKCAD', '/p/plan.dxf', '/p/m.STL', '/p/m.obj']
+    const result = partitionDropPayload(paths)
+    expect(result.supported).toEqual(paths)
+    expect(result.unsupportedExts).toEqual([])
+  })
+
   it('collects known-unsupported extensions uniquely, first-seen order', () => {
     const result = partitionDropPayload(['old.doc', 'x.pages', 'y.rtf', 'z.doc'])
     expect(result.supported).toEqual([])

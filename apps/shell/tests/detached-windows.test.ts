@@ -127,6 +127,11 @@ vi.mock('../../mindmap/src/main/mindmap-main', () => ({
   requestMindmapClose: vi.fn(() => Promise.resolve(true)),
 }))
 
+vi.mock('../../cad/src/main/cad-main', () => ({
+  cadIsDirty: vi.fn(() => false),
+  requestCadClose: vi.fn(() => Promise.resolve(true)),
+}))
+
 vi.mock('../../epub/src/main/epub-main', () => ({
   epubIsDirty: vi.fn(() => false),
   requestEpubClose: vi.fn(() => Promise.resolve(true)),
@@ -372,6 +377,49 @@ describe('a detached mind map', () => {
     await flush()
     expect(win.destroyed).toBe(true)
     vi.mocked(mindmapIsDirty).mockReturnValue(false)
+  })
+})
+
+describe('a detached AI Drawing', () => {
+  it('is reported to MCP agents as kind cad, with its own dirty state', async () => {
+    const { cadIsDirty } = await import('../../cad/src/main/cad-main')
+    vi.mocked(cadIsDirty).mockImplementation((id) => id === 61)
+    detached.createDetachedEditorWindow({
+      view: fakeView(61) as never,
+      kind: 'cad',
+      title: 'part.ttukcad',
+      filePath: 'C:/parts/part.ttukcad',
+      applyMenuFor: () => {},
+    })
+    const docs = await detached.detachedOpenDocuments()
+    expect(docs.map((d) => [d.id, d.kind, d.filePath, d.dirty])).toEqual([
+      ['detached:61', 'cad', 'C:/parts/part.ttukcad', true],
+    ])
+    vi.mocked(cadIsDirty).mockReturnValue(false)
+  })
+
+  it('asks before closing when dirty and keeps the window on cancel', async () => {
+    const { cadIsDirty, requestCadClose } = await import('../../cad/src/main/cad-main')
+    vi.mocked(cadIsDirty).mockReturnValue(true)
+    vi.mocked(requestCadClose).mockResolvedValueOnce(false)
+    const view = fakeView(62)
+    detached.createDetachedEditorWindow({
+      view: view as never,
+      kind: 'cad',
+      title: 'part.ttukcad',
+      applyMenuFor: () => {},
+    })
+    const win = instances[0]!
+    win.emit('close', { preventDefault: vi.fn() })
+    await flush()
+    expect(requestCadClose).toHaveBeenCalledWith(view.webContents, win)
+    expect(win.destroyed).toBe(false)
+
+    vi.mocked(requestCadClose).mockResolvedValueOnce(true)
+    win.emit('close', { preventDefault: vi.fn() })
+    await flush()
+    expect(win.destroyed).toBe(true)
+    vi.mocked(cadIsDirty).mockReturnValue(false)
   })
 })
 

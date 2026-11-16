@@ -10,6 +10,10 @@ const PPTX_RE = /\.pptx$/i
 const PDF_RE = /\.pdf$/i
 const HTML_RE = /\.html?$/i
 const MINDMAP_RE = /\.xmind$/i
+// AI Drawing: its own document, and the 3D and DXF files it imports into a new untitled drawing
+// (no other editor opens these three)
+const CAD_RE = /\.ttukcad$/i
+const CAD_IMPORT_RE = /\.(dxf|stl|obj)$/i
 const HWP_RE = /\.hwpx?$/i
 const EPUB_RE = /\.epub$/i
 // AI Photo and AI Illustration (decision 0093): the graphics editor's own format table
@@ -26,6 +30,8 @@ export {
   PDF_RE,
   HTML_RE,
   MINDMAP_RE,
+  CAD_RE,
+  CAD_IMPORT_RE,
   HWP_RE,
   EPUB_RE,
   PHOTO_RE,
@@ -41,6 +47,7 @@ export function appForPath(path: string): DocumentTabKind | undefined {
   if (TEXT_RE.test(path)) return 'markdown'
   if (HTML_RE.test(path)) return 'html'
   if (MINDMAP_RE.test(path)) return 'mindmap'
+  if (CAD_RE.test(path) || CAD_IMPORT_RE.test(path)) return 'cad'
   if (HWP_RE.test(path)) return 'hwp'
   if (EPUB_RE.test(path)) return 'epub'
   if (PHOTO_RE.test(path)) return 'photo'

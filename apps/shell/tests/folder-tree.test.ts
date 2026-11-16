@@ -132,6 +132,21 @@ describe('listFolder', () => {
     expect(isSupportedTreeFile('plan.xmind')).toBe(true)
   })
 
+  it('lists AI Drawing files and the 3D/DXF files it imports', () => {
+    touch('part.ttukcad')
+    touch('plan.DXF')
+    touch('model.stl')
+    touch('model.obj')
+    touch('model.step')
+
+    expect(
+      listFolder(root, new Set())
+        .files.map((f) => f.name)
+        .sort(),
+    ).toEqual(['model.obj', 'model.stl', 'part.ttukcad', 'plan.DXF'])
+    expect(isSupportedTreeFile('part.ttukcad')).toBe(true)
+  })
+
   it('lists books', () => {
     touch('novel.epub')
     touch('NOVEL2.EPUB')

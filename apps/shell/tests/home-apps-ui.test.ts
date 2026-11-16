@@ -63,7 +63,7 @@ function cards(keys: readonly AppKey[] = APP_KEYS): HomeAppCard[] {
 }
 
 describe('buildHomeApps', () => {
-  it('lists all 15 apps in APP_KEYS order with the Korean features on', () => {
+  it('lists all 16 apps in APP_KEYS order with the Korean features on', () => {
     const apps = buildHomeApps(deps())
     expect(apps.map((a) => a.key)).toEqual([...APP_KEYS])
   })
@@ -78,9 +78,22 @@ describe('buildHomeApps', () => {
     expect(design.sub).toBe('t:hpDesignCardSub')
   })
 
+  it('offers AI Drawing in the graphics group, in every build, but does not pin it by default', async () => {
+    const { APP_GROUPS, DEFAULT_PINS_OTHER } = await import('../src/shared/home-apps')
+    const graphics = APP_GROUPS.find((g) => g.id === 'graphics')!
+    expect(graphics.keys).toContain('ttukcad')
+    expect(DEFAULT_PINS_KOREAN).not.toContain('ttukcad')
+    expect(DEFAULT_PINS_OTHER).not.toContain('ttukcad')
+    for (const koreanDocs of [true, false]) {
+      const cad = buildHomeApps(deps({ koreanDocs })).find((a) => a.key === 'ttukcad')!
+      expect(cad.title).toBe('t:newCad')
+      expect(cad.sub).toBe('t:hpCardCadSub')
+    }
+  })
+
   it('drops hwp, templates and design with the Korean features off', () => {
     const keys = buildHomeApps(deps({ koreanDocs: false })).map((a) => a.key)
-    expect(keys).toHaveLength(12)
+    expect(keys).toHaveLength(13)
     expect(keys).not.toContain('hwp')
     expect(keys).not.toContain('templates')
     expect(keys).not.toContain('design')
@@ -91,7 +104,7 @@ describe('buildHomeApps', () => {
       deps({ offers: { templates: true, design: true, converter: false } }),
     ).map((a) => a.key)
     expect(keys).not.toContain('md-convert')
-    expect(keys).toHaveLength(14)
+    expect(keys).toHaveLength(15)
   })
 
   it('drops templates and design when the build does not offer them', () => {

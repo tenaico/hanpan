@@ -9,6 +9,7 @@ export type TabKind =
   | 'markdown'
   | 'html'
   | 'mindmap'
+  | 'cad'
   | 'hwp'
   | 'epub'
   | 'photo'

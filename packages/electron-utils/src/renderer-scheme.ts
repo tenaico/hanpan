@@ -39,6 +39,7 @@ export type RendererHost =
   | 'markdown'
   | 'html'
   | 'mindmap'
+  | 'cad'
   | 'hwp'
   | 'epub'
   | 'help'

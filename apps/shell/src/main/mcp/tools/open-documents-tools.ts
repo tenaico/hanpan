@@ -27,6 +27,7 @@ const FAMILY_BY_KIND: Record<Exclude<TabKind, 'home' | 'help'>, EditorFamily> = 
   html: 'html',
   pdf: 'pdf',
   mindmap: 'xmind',
+  cad: 'cad',
   hwp: 'hwp',
   epub: 'epub',
   photo: 'photo',
@@ -41,6 +42,7 @@ const READABLE_KINDS: ReadonlySet<TabKind> = new Set<TabKind>([
   'markdown',
   'html',
   'mindmap',
+  'cad',
   'hwp',
   'epub',
 ])
@@ -217,6 +219,8 @@ export function createOpenDocumentTools(deps: OpenDocumentsDeps): McpToolDefinit
         'family content tools (insert_content / apply_ops / apply_sheet_ops / apply_slide_ops): no ' +
         'session is needed, and the UI switches to that tab so the user sees the change land. ' +
         'A mind map (kind "mindmap") reads as its outline text; there is no tool that edits one. ' +
+        'An AI drawing (kind "cad") reads as a summary of its parts with their sizes in mm; ' +
+        'there is no tool that edits one. ' +
         'PDF tabs are listed but cannot be read or closed here: the pdf app is a viewer, so an ' +
         'open PDF has no readable or savable state through this tool. HWP tabs can be read ' +
         '(paragraphs as lines, tables as " | " rows) but not edited or saved here: "close" on ' +

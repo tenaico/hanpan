@@ -85,6 +85,7 @@ describe('copy addressing', () => {
       'mindmap-autosave',
       'photo-autosave',
       'illust-autosave',
+      'cad-autosave',
     ])
   })
 
@@ -120,6 +121,10 @@ describe('copy addressing', () => {
       join(root, 'hwp-autosave', `${sha16(hwpx)}.hwpx`),
     )
     expect(store.copyPath({ kind: 'mindmap', filePath: '/d/m.xmind' })).toMatch(/\.xmind$/)
+    const cad = '/d/part.ttukcad'
+    expect(store.copyPath({ kind: 'cad', filePath: cad })).toBe(
+      join(root, 'cad-autosave', `${sha16(cad)}.ttukcad`),
+    )
   })
 
   it('keeps AI Photo and AI Illustration copies in folders of their own, in the file format', () => {

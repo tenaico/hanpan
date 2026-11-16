@@ -34,6 +34,7 @@ const APP_TEXT: Record<AppKey, { title: StringKey; sub: StringKey }> = {
   photo: { title: 'newPhoto', sub: 'hpPhotoTip' },
   illust: { title: 'newIllust', sub: 'hpIllustTip' },
   design: { title: 'hpDesignCard', sub: 'hpDesignCardSub' },
+  ttukcad: { title: 'newCad', sub: 'hpCardCadSub' },
   open: { title: 'openLocal', sub: 'hbAppOpenSub' },
 }
 

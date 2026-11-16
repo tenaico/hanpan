@@ -33,7 +33,7 @@ export interface OpenDocumentsBridgeDeps {
   isUnloaded?: (tabId: string) => boolean
   /**
    * The editor's own "Don't Save" for its recovery copy on a discard close
-   * (docs, mind map, hwp); called before the tab is removed. Markdown, html
+   * (docs, mind map, AI Drawing, hwp); called before the tab is removed. Markdown, html
    * and slides drop theirs through their own discard hooks below.
    */
   recoveryDiscard?: (tab: OpenDocumentTab, contents: WebContents) => void
@@ -67,6 +67,15 @@ export interface OpenDocumentsBridgeDeps {
    * map, so a discard has nothing to clean up.
    */
   mindmap?: {
+    read: (contents: WebContents) => Promise<string>
+    save: (contents: WebContents, filePath: string) => Promise<void>
+  }
+  /**
+   * AI Drawing: a text summary of the model and the editor's own save to a
+   * given path (which refuses bytes that do not reopen). Nothing is staged
+   * beside a drawing, so a discard has nothing to clean up.
+   */
+  cad?: {
     read: (contents: WebContents) => Promise<string>
     save: (contents: WebContents, filePath: string) => Promise<void>
   }
@@ -188,6 +197,11 @@ export function createOpenDocumentsControl(deps: OpenDocumentsBridgeDeps): OpenD
         await deps.mindmap.save(await requireContents(tab, deps), filePath)
         return
       }
+      case 'cad': {
+        if (!deps.cad) throw new Error('the AI Drawing editor is unavailable in this build')
+        await deps.cad.save(await requireContents(tab, deps), filePath)
+        return
+      }
       case 'epub': {
         if (!deps.epub) throw new Error('the e-book editor is unavailable in this build')
         await deps.epub.save(await requireContents(tab, deps), filePath)
@@ -234,6 +248,9 @@ export function createOpenDocumentsControl(deps: OpenDocumentsBridgeDeps): OpenD
       case 'mindmap':
         if (!deps.mindmap) throw new Error('the mind map editor is unavailable in this build')
         return deps.mindmap.read(await requireContents(tab, deps))
+      case 'cad':
+        if (!deps.cad) throw new Error('the AI Drawing editor is unavailable in this build')
+        return deps.cad.read(await requireContents(tab, deps))
       case 'hwp':
         if (!deps.hwp) throw new Error('the HWP editor is unavailable in this build')
         return deps.hwp.read(await requireContents(tab, deps))

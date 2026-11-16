@@ -42,6 +42,7 @@ const DOCUMENT_KINDS: readonly DocumentTabKind[] = [
   'markdown',
   'html',
   'mindmap',
+  'cad',
   'hwp',
   'epub',
   'photo',

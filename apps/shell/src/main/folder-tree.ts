@@ -46,6 +46,11 @@ export const TREE_FILE_EXTENSIONS: ReadonlySet<string> = new Set([
   'html',
   'htm',
   'xmind',
+  // AI Drawing and the 3D/DXF files it imports
+  'ttukcad',
+  'dxf',
+  'stl',
+  'obj',
   'hwp',
   'hwpx',
   'epub',

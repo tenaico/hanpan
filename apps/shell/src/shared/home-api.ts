@@ -283,6 +283,8 @@ export interface HomeApi {
   newHtml(opts?: NewFileOpts): Promise<void>
   /** open a new, untitled mind map tab */
   newMindmap(opts?: NewFileOpts): Promise<void>
+  /** open a new, untitled AI Drawing tab */
+  newCad(opts?: NewFileOpts): Promise<void>
   /** open a blank HWP editor tab; the file is named at its first save */
   newHwp(opts?: NewFileOpts): Promise<void>
   /** open an AI Photo tab at the app's start screen (decision 0093) */
@@ -596,6 +598,7 @@ export const HOME_CHANNELS = {
   newMarkdown: 'home:new-markdown',
   newHtml: 'home:new-html',
   newMindmap: 'home:new-mindmap',
+  newCad: 'home:new-cad',
   newHwp: 'home:new-hwp',
   newPhoto: 'home:new-photo',
   newIllust: 'home:new-illust',

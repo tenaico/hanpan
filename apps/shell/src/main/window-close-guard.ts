@@ -7,6 +7,7 @@ import { requestPdfClose } from '../../../pdf/src/main/pdf-main'
 import { requestMarkdownClose } from '../../../markdown/src/main/markdown-main'
 import { requestHtmlClose } from '../../../html/src/main/html-main'
 import { requestMindmapClose } from '../../../mindmap/src/main/mindmap-main'
+import { requestCadClose } from '../../../cad/src/main/cad-main'
 import { requestHwpClose } from '../../../hwp/src/main/hwp-main'
 import { requestEpubClose } from '../../../epub/src/main/epub-main'
 import { requestGraphicsClose } from '../../../graphics/src/main/graphics-main'
@@ -64,6 +65,7 @@ export function installShellCloseGuard(
     const dirtyMarkdown = manager.dirtyMarkdownTabs()
     const dirtyHtml = manager.dirtyHtmlTabs()
     const dirtyMindmap = manager.dirtyMindmapTabs()
+    const dirtyCad = manager.dirtyCadTabs()
     // a clean document with an open memo editor must be asked too: its text is not saved
     const dirtyHwp = manager.dirtyOrMemoHwpTabs()
     const dirtyEpub = manager.dirtyEpubTabs()
@@ -81,6 +83,7 @@ export function installShellCloseGuard(
       dirtyMarkdown.length === 0 &&
       dirtyHtml.length === 0 &&
       dirtyMindmap.length === 0 &&
+      dirtyCad.length === 0 &&
       dirtyHwp.length === 0 &&
       dirtyEpub.length === 0 &&
       dirtyGraphics.length === 0 &&
@@ -120,6 +123,10 @@ export function installShellCloseGuard(
           for (const tab of dirtyMindmap) {
             manager.activateTab(tab.id)
             if (!(await requestMindmapClose(tab.webContents, win))) return true
+          }
+          for (const tab of dirtyCad) {
+            manager.activateTab(tab.id)
+            if (!(await requestCadClose(tab.webContents, win))) return true
           }
           for (const tab of dirtyHwp) {
             manager.activateTab(tab.id)

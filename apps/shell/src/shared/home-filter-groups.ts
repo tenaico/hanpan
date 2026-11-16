@@ -22,6 +22,6 @@ export const HOME_FILTER_GROUPS: Record<'documents' | 'others', readonly string[
     'htm',
     'epub',
   ],
-  // mind maps and pictures (AI 포토, AI 일러스트)
-  others: ['xmind', ...OPEN_EXTS.photo, ...OPEN_EXTS.illust],
+  // mind maps, pictures (AI 포토, AI 일러스트) and drawings (AI 도면 and the files it imports)
+  others: ['xmind', ...OPEN_EXTS.photo, ...OPEN_EXTS.illust, 'ttukcad', 'dxf', 'stl', 'obj'],
 }

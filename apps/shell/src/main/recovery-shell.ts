@@ -30,6 +30,11 @@ import {
   setMindmapRecoveryTitleHook,
 } from '../../../mindmap/src/main/mindmap-main'
 import {
+  cadRecoveryIdentity,
+  discardCadRecovery,
+  setCadRecoveryTitleHook,
+} from '../../../cad/src/main/cad-main'
+import {
   hwpDiscardRecoveryCopy,
   hwpRecoveryIdentity,
   setHwpRecoveryTitle,
@@ -91,6 +96,8 @@ export function editorRecoveryIdentity(
         return htmlRecoveryIdentity(contents.id)
       case 'mindmap':
         return mindmapRecoveryIdentity(contents.id)
+      case 'cad':
+        return cadRecoveryIdentity(contents.id)
       case 'hwp':
         return hwpRecoveryIdentity(contents)
       case 'slides':
@@ -263,6 +270,7 @@ export function discardEditorRecovery(kind: TabKind, contents: WebContents): voi
   if (kind === 'docs') discardDocsRecovery(contents)
   else if (kind === 'sheets') discardSheetsRecovery(contents)
   else if (kind === 'mindmap') discardMindmapRecovery(contents)
+  else if (kind === 'cad') discardCadRecovery(contents)
   else if (kind === 'hwp') hwpDiscardRecoveryCopy(contents)
   else if (kind === 'photo' || kind === 'illust') discardGraphicsRecovery(contents)
 }
@@ -274,6 +282,7 @@ export function installRecoveryTitleSources(
   setMarkdownRecoveryTitleSource(titleOf)
   setHtmlRecoveryTitleSource(titleOf)
   setMindmapRecoveryTitleHook(titleOf)
+  setCadRecoveryTitleHook(titleOf)
   // AI Photo and AI Illustration also name the document in their close question with it
   setGraphicsRecoveryTitleSource(titleOf)
 }

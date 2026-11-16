@@ -36,12 +36,17 @@ describe('packaged file associations', () => {
   // declares. A routing entry without a matching declaration means a file the
   // app opens fine can never reach it from Finder/Explorer — the .txt/.json
   // gap this closes.
+  const CAD_LAUNCH_ONLY_EXTS: ReadonlySet<string> = new Set(['ttukcad', 'dxf', 'stl', 'obj'])
+
   it('advertises every extension the app launches', () => {
     for (const ext of LAUNCHABLE_EXTS) {
       // .odt/.hwp/.hwpx/.xmind/.epub are offered by the NSIS script alone
       // (tests/odt-open-with.test.ts, tests/open-with-icons.test.ts): an
       // association would make the app their default opener on Windows
       if (INSTALLER_OPEN_WITH_EXTS.has(ext)) continue
+      // AI Drawing's files launch from a command line or a drop on the app, but the OS is
+      // not offered them yet (its file association is a later stage)
+      if (CAD_LAUNCH_ONLY_EXTS.has(ext)) continue
       const association = fileAssociations.find((entry) => entry.ext === ext)
       expect(association, `no file association declared for .${ext}`).toBeTruthy()
     }
@@ -119,5 +124,19 @@ describe('packaged file associations', () => {
       (entry) => entry.to === 'modules/epub',
     )
     expect(epub?.from).toBe('../epub/out')
+  })
+
+  // AI Drawing ships its module but asks the OS for no file type yet: .ttukcad and the
+  // files it imports open from inside the app only
+  it('ships the AI Drawing module without any OS file association', () => {
+    const cad = (config.extraResources as Array<{ from: string; to: string }>).find(
+      (entry) => entry.to === 'modules/cad',
+    )
+    expect(cad?.from).toBe('../cad/out')
+    const associated = [
+      ...fileAssociations.map((entry) => entry.ext),
+      ...config.win.fileAssociations.map((entry: { ext: string }) => entry.ext),
+    ]
+    for (const ext of ['ttukcad', 'dxf', 'stl', 'obj']) expect(associated).not.toContain(ext)
   })
 })

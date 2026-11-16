@@ -98,6 +98,17 @@ describe('format registry', () => {
     expect(book.mcp).toBeUndefined()
   })
 
+  it('registers the AI Drawing family: opens .ttukcad and imports, saves .ttukcad only', () => {
+    const cad = formatFamily('cad')
+    expect(cad.label).toBe('AI drawing')
+    expect(cad.editorOpen).toEqual(['ttukcad', 'dxf', 'stl', 'obj'])
+    for (const ext of cad.editorOpen) expect(appForPath(`/x/a.${ext}`), `.${ext}`).toBe('cad')
+    expect(cad.editorSave).toEqual(['ttukcad'])
+    expect(cad.editorExport).toEqual([])
+    // reached through open_documents only (read a summary, save)
+    expect(cad.mcp).toBeUndefined()
+  })
+
   it('reports labels for guided errors', () => {
     expect(familyLabel('docx')).toBe('Word document')
     expect(familyLabel('xlsx')).toBe('spreadsheet')
@@ -148,6 +159,7 @@ describe('capabilityReport', () => {
       'epub',
       'photo',
       'illust',
+      'cad',
     ])
     const docx = report.find((r) => r.family === 'docx')!
     expect(docx.editor.open).toEqual(['docx', 'odt'])
