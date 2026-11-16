@@ -477,6 +477,10 @@ Parallel과 DuckDuckGo로, 업데이트 확인은 GitHub로 갑니다. 편집기
 그대로 두었고, 출처와 "고쳐 만든 버전"이라는 사실은 [NOTICE](NOTICE)에 적어
 두었습니다.
 
+### Code signing policy
+
+Windows 설치 파일의 코드 서명 방침은 [Code signing policy](docs/code-signing-policy.md)에 있습니다. Free code signing provided by SignPath.io, certificate by SignPath Foundation(신청 중, 0.20.2까지는 서명 없음).
+
 슬라이드 디자인 템플릿은
 [frontend-slides](https://github.com/zarazhangrui/frontend-slides)(MIT
 라이선스)의 디자인을 바탕으로 다시 만들었고, 템플릿 글꼴은 SIL Open Font

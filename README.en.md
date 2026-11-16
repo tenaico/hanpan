@@ -483,6 +483,10 @@ Genspark's services and renames the product. The original copyright notices
 are kept, and [NOTICE](NOTICE) records the attribution and the fact that this
 is a modified version.
 
+### Code signing policy
+
+How the Windows installer is signed: [Code signing policy](docs/code-signing-policy.md). Free code signing provided by SignPath.io, certificate by SignPath Foundation (applied for; releases up to v0.20.2 are unsigned).
+
 The slide design templates are re-authored from the designs in
 [frontend-slides](https://github.com/zarazhangrui/frontend-slides) (MIT
 License), and their fonts are all licensed under the SIL Open Font License
