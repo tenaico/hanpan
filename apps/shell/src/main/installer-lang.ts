@@ -46,7 +46,7 @@ export function langFromWindowsLangId(id: number): Lang | null {
  * languages (electron-builder.cjs installerLanguages). Spanish is NSIS's
  * SpanishInternational (3082), Portuguese the Brazilian one.
  */
-const LANG_IDS: Readonly<Record<Lang, number>> = {
+const LANG_IDS: Readonly<Partial<Record<Lang, number>>> = {
   ar: 1025,
   cs: 1029,
   de: 1031,
@@ -59,7 +59,6 @@ const LANG_IDS: Readonly<Record<Lang, number>> = {
   it: 1040,
   ja: 1041,
   ko: 1042,
-  ms: 1086,
   nl: 1043,
   pl: 1045,
   pt: 1046,
@@ -70,8 +69,9 @@ const LANG_IDS: Readonly<Record<Lang, number>> = {
   'zh-TW': 1028,
 }
 
-export function windowsLangIdFor(lang: Lang): number {
-  return LANG_IDS[lang]
+/** null for Malay, which the installer does not have: it opens in English */
+export function windowsLangIdFor(lang: Lang): number | null {
+  return LANG_IDS[lang] ?? null
 }
 
 /**
@@ -79,7 +79,9 @@ export function windowsLangIdFor(lang: Lang): number {
  * (build/installer.nsh, GENOFFICE_LANG_KEY / GENOFFICE_LANG_VALUE): an update's
  * installer window then opens in the language chosen in Settings
  */
-export function installerLanguageRegArgs(lang: Lang): string[] {
+export function installerLanguageRegArgs(lang: Lang): string[] | null {
+  const id = windowsLangIdFor(lang)
+  if (id === null) return null
   return [
     'add',
     'HKCU\\Software\\Hanpan',
@@ -88,7 +90,7 @@ export function installerLanguageRegArgs(lang: Lang): string[] {
     '/t',
     'REG_SZ',
     '/d',
-    String(windowsLangIdFor(lang)),
+    String(id),
     '/f',
   ]
 }

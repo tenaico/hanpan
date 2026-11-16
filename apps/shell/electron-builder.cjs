@@ -907,8 +907,10 @@ const config = {
   nsis: {
     oneClick: false,
     allowToChangeInstallationDirectory: true,
-    // The installer's languages are Hanpan's 21 (decision 0100), English first:
-    // the installer opens in English when Windows' language is none of them.
+    // The installer's languages are Hanpan's 21 but Malay (decision 0100), English
+    // first: the installer opens in English when Windows' language is none of them.
+    // NSIS 3.0.4.1's Malay file lacks the install-mode page strings, a warning
+    // makensis treats as an error.
     // The picker itself is build/installer.nsh's customInit, not
     // displayLanguageSelector, which would also open in an update's window.
     installerLanguages: [
@@ -920,7 +922,6 @@ const config = {
       'vi_VN',
       'th_TH',
       'id_ID',
-      'ms_MY',
       'hi_IN',
       'ar_SA',
       'he_IL',

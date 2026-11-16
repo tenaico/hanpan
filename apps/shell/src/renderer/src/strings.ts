@@ -1516,7 +1516,7 @@ export const strings = {
     hpTemplatesTitle: 'Mẫu Hanpan',
     hpTemplatesHwp: 'Mở dạng HWP',
     hpTemplatesDocx: 'Mở dạng Word',
-    hpTemplatesMap: 'Open as mind map',
+    hpTemplatesMap: 'Mở dưới dạng sơ đồ tư duy',
     hpTemplatesClose: 'Đóng',
     hpTemplatesFailed: 'Không mở được mẫu: {error}',
     hpTemplatesFormsNote:

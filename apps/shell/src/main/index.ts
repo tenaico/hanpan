@@ -1058,7 +1058,9 @@ function persistLang(lang: Lang): void {
  */
 function syncInstallerLanguage(lang: Lang): void {
   if (process.platform !== 'win32' || !app.isPackaged) return
-  execFileRunner('reg.exe', installerLanguageRegArgs(lang)).catch((err) => {
+  const args = installerLanguageRegArgs(lang)
+  if (!args) return
+  execFileRunner('reg.exe', args).catch((err) => {
     console.warn('[installer-lang] could not keep the language for the installer:', err)
   })
 }
