@@ -402,6 +402,7 @@ import {
   setCadSendToDocumentHook,
 } from '../../../cad/src/main/cad-main'
 import type { CadMenuCommand, ExportFormat as CadExportFormat } from '../../../cad/src/shared/ipc'
+import { cadEditMenu } from './cad-menu'
 import {
   EPUB_ASSET_SCHEME_PRIVILEGE,
   configureEpubRuntime,
@@ -9427,9 +9428,8 @@ function buildHtmlMenu(): void {
 function buildCadMenu(): void {
   const isMac = process.platform === 'darwin'
   const labels = appMenuLabels(currentLang())
-  // the drawing has its own history, selection and camera: every Edit and View item goes to
-  // the page, which already takes the keys itself, so the shortcuts are shown but not
-  // registered (one press would act twice)
+  // the drawing has its own history, selection and camera: every Edit (cad-menu.ts) and
+  // View item goes to the page
   const command = (cmd: CadMenuCommand) => () => {
     const tab = activeCadTarget()
     if (tab) sendCadMenuCommand(tab.webContents, cmd)
@@ -9494,36 +9494,7 @@ function buildCadMenu(): void {
         },
       ],
     },
-    {
-      label: labels.edit,
-      submenu: [
-        {
-          label: labels.undo,
-          accelerator: 'CmdOrCtrl+Z',
-          registerAccelerator: false,
-          click: command('undo'),
-        },
-        {
-          label: labels.redo,
-          accelerator: isMac ? 'Shift+Cmd+Z' : 'Ctrl+Y',
-          registerAccelerator: false,
-          click: command('redo'),
-        },
-        { type: 'separator' },
-        {
-          label: labels.selectAll,
-          accelerator: 'CmdOrCtrl+A',
-          registerAccelerator: false,
-          click: command('select-all'),
-        },
-        {
-          label: labels.delete,
-          accelerator: 'Delete',
-          registerAccelerator: false,
-          click: command('delete'),
-        },
-      ],
-    },
+    cadEditMenu(process.platform, labels, command),
     {
       // withViewMenu appends the interface-scale items to this menu
       label: tm('menuView'),

@@ -21,6 +21,7 @@ import {
 import {
   MeasureTool,
   bindMeasure,
+  DRAWING_SNAP_LIMIT,
   measureEntities,
   measureSnaps,
 } from '../src/renderer/measure/measure-tool'
@@ -61,6 +62,27 @@ async function boxTool(): Promise<{ tool: MeasureTool; min: Vec3; max: Vec3 }> {
 }
 
 describe('MeasureTool', () => {
+  it('a DXF with 60,000 lines gives snap points without a stack overflow, within the cap', () => {
+    const lines = (n: number): DrawingEntity[] =>
+      Array.from({ length: n }, (_, i): DrawingEntity => ({
+        kind: 'line',
+        a: [i, 0],
+        b: [i, 10],
+        layer: '0',
+      }))
+    // 60,000 lines = 180,000 snap points
+    const big = drawingDoc(lines(60_000))
+    let snaps: ReturnType<typeof measureSnaps> = []
+    expect(() => (snaps = measureSnaps(big, []))).not.toThrow()
+    expect(snaps.length).toBe(180_000)
+    // past the cap the points are an even sample of the whole drawing
+    const bigger = drawingDoc(lines(100_000))
+    const capped = measureSnaps(bigger, [])
+    expect(capped.length).toBeLessThanOrEqual(DRAWING_SNAP_LIMIT)
+    expect(capped.length).toBeGreaterThan(DRAWING_SNAP_LIMIT * 0.99)
+    expect(Math.max(...capped.slice(-10).map((s) => s.at[0]))).toBeGreaterThan(99_000)
+  }, 30_000)
+
   it('two clicks on box corners read the edge length', async () => {
     const { tool, min, max } = await boxTool()
     // a little off each corner: the clicks stick to the corners

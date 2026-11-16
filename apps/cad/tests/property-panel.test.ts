@@ -151,6 +151,35 @@ describe('the property panel', () => {
     expect(onPatch).toHaveBeenLastCalledWith({ hidden: true })
   })
 
+  it('dragging in the colour picker hands back one patch, when the picker commits', () => {
+    const { doc, a } = twoBoxes()
+    const onPatch = show(doc, [a])
+    const input = field('color')!
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+    // the native picker fires `input` for every step of a drag
+    for (const c of ['#100000', '#200000', '#300000', '#400000', '#500000', '#ff0000']) {
+      act(() => {
+        set.call(input, c)
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+    }
+    expect(onPatch).not.toHaveBeenCalled()
+    // the swatch shows the colour being dragged
+    expect(field('color')!.value).toBe('#ff0000')
+    // closing the picker fires `change` once: that is the one edit
+    act(() => {
+      input.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+    expect(onPatch).toHaveBeenCalledTimes(1)
+    expect(onPatch).toHaveBeenLastCalledWith({ color: '#ff0000' })
+    // leaving the box afterwards does not add a second step
+    act(() => {
+      input.dispatchEvent(new FocusEvent('blur'))
+      input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
+    })
+    expect(onPatch).toHaveBeenCalledTimes(1)
+  })
+
   it('says how to start when nothing is selected', () => {
     const { doc } = twoBoxes()
     show(doc, [])

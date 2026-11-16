@@ -51,7 +51,10 @@ function box(min: [number, number, number], max: [number, number, number]) {
 }
 
 /** A 3MF package with one object per box; each build item may move its object. */
-function make3mf(items: Array<{ size: number; transform?: string }>): Uint8Array {
+function make3mf(
+  items: Array<{ size: number; transform?: string }>,
+  unit = 'millimeter',
+): Uint8Array {
   const objects = items
     .map(({ size }, i) => {
       const { vertices, triangles } = box([0, 0, 0], [size, size, size])
@@ -67,7 +70,7 @@ function make3mf(items: Array<{ size: number; transform?: string }>): Uint8Array
         : `<item objectid="${i + 1}"/>`,
     )
     .join('')
-  const model = `<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><resources>${objects}</resources><build>${build}</build></model>`
+  const model = `<?xml version="1.0" encoding="UTF-8"?><model unit="${unit}" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><resources>${objects}</resources><build>${build}</build></model>`
   return zipSync({
     '[Content_Types].xml': strToU8(
       '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>',
@@ -114,6 +117,22 @@ describe('reading 3MF, GLB and PLY', () => {
     expect(triangleCount(part.mesh)).toBe(24)
     expect(meshVolume(part.mesh)).toBeCloseTo(1000 + 125, 3)
     expect(meshBounds(part.mesh)).toEqual({ min: [0, 0, 0], max: [25, 10, 10] })
+  })
+
+  it.each([
+    ['inch', 25.4],
+    ['centimeter', 10],
+    ['meter', 1000],
+    ['foot', 304.8],
+    ['micron', 0.001],
+    ['millimeter', 1],
+  ] as const)('a 3MF in %s opens in millimetres', async (unit, mm) => {
+    const read = await readThreeMesh(make3mf([{ size: 1 }], unit), '3mf')
+    expect(read.status).toBe('ok')
+    if (read.status !== 'ok') return
+    const b = meshBounds(read.mesh)
+    // the mesh is stored in 32-bit floats: compared relative to the size
+    for (const k of [0, 1, 2]) expect(Math.abs((b.max[k]! - b.min[k]!) / mm - 1)).toBeLessThan(1e-6)
   })
 
   it('a GLB with two meshes becomes one mesh, metres to millimetres and +Y up to +Z up', async () => {

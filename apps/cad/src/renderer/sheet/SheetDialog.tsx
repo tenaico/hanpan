@@ -25,9 +25,9 @@ export interface SheetDialogProps {
   tabTitle: string
   /** the title block as typed: one edit of the drawing */
   onTitle: (title: CadDocument['title']) => void
-  /** copies the sheet picture; the sentence to show */
-  onCopy: () => Promise<StringKey>
-  /** sends the sheet; null when the new tab opened, else the sentence to show */
+  /** copies the sheet picture; the sentence to show, or null for none (another send or copy runs) */
+  onCopy: () => Promise<StringKey | null>
+  /** sends the sheet; the sentence to show, or null for none (sent, or another send or copy runs) */
   onSend: (target: SendTarget) => Promise<StringKey | null>
   onClose: () => void
 }

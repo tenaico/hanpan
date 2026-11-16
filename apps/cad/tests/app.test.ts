@@ -63,6 +63,8 @@ interface Fake {
   exports: ExportFileRequest[]
   sends: SendToDocumentRequest[]
   sendResult: SendToDocumentResult | Error
+  /** when set, a send waits for it before it answers */
+  sendGate?: Promise<void>
   copies: Uint8Array[]
   copyResult: boolean
   emit: {
@@ -146,6 +148,7 @@ function fakeApi(pending: string | null, file: OpenFileResult | null): Fake {
       onExportRequest: on('export'),
       sendToDocument: async (request: SendToDocumentRequest) => {
         fake.sends.push(request)
+        if (fake.sendGate) await fake.sendGate
         if (fake.sendResult instanceof Error) throw fake.sendResult
         return fake.sendResult
       },
@@ -785,6 +788,36 @@ describe('the AI Drawing screen, dimensions and sending (stage 4)', () => {
     await click(pane('dims', 'send'))
     await until(() => fake.sends.length === 1, 'the send')
     expect(fake.sends[0]!.target).toBe('docx')
+  })
+
+  it('a second send while one runs is ignored: no false "sent", no closed dialog', async () => {
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: twoPartBytes() })
+    let release = (): void => {}
+    fake.sendGate = new Promise<void>((resolve) => (release = resolve))
+    await mountWithParts(fake)
+    await click(pane('dims', 'send'))
+    await until(() => fake.sends.length === 1, 'the first send')
+    // a second press while the first is still on its way
+    await click(pane('dims', 'send'))
+    await settle()
+    expect(fake.sends).toHaveLength(1)
+    expect(text('[data-cad-message]')).not.toBe(en.sendDone)
+    // the sheet dialog's send and copy while the first send runs: nothing said, still open
+    await click(pane('dims', 'sheet'))
+    await click('[data-sheet-send]')
+    await settle()
+    expect(container.querySelector('[data-sheet-preview]')).not.toBeNull()
+    expect(text('[data-sheet-status]')).toBe('')
+    await click('[data-sheet-copy]')
+    await settle()
+    expect(fake.copies).toHaveLength(0)
+    expect(text('[data-sheet-status]')).toBe('')
+    expect(fake.sends).toHaveLength(1)
+    expect(text('[data-cad-message]')).not.toBe(en.sendDone)
+    // the first send lands: now it says sent, once
+    release()
+    await until(() => text('[data-cad-message]') === en.sendDone, 'the sent note')
+    expect(fake.sends).toHaveLength(1)
   })
 
   it('a failed send says so in the UI language, never with the main process words', async () => {

@@ -15,7 +15,7 @@
  * top-level part (the plan's rule: parts inside a group are edited after
  * ungrouping).
  */
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   SHAPE_DIMS,
   formatMm,
@@ -224,14 +224,11 @@ export function PropertyPanel({ doc, ids, disabled = false, onPatch }: PropertyP
           </div>
         ))}
         <Row label={t('propColor')}>
-          <input
-            type="color"
-            className="cad-color"
-            data-prop="color"
-            data-mixed={v.color === null ? '' : undefined}
-            aria-label={t('propColor')}
-            value={v.color ?? parts[0]!.color}
-            onChange={(e) => onPatch({ color: e.target.value })}
+          <ColorBox
+            value={v.color}
+            fallback={parts[0]!.color}
+            label={t('propColor')}
+            onCommit={(color) => onPatch({ color })}
           />
         </Row>
         <div className="cad-props-flags">
@@ -250,6 +247,64 @@ export function PropertyPanel({ doc, ids, disabled = false, onPatch }: PropertyP
         </div>
       </fieldset>
     </section>
+  )
+}
+
+/**
+ * The colour swatch. The native picker fires `input` for every step of a
+ * drag; those only move the swatch. The picker's `change` (it closed or the
+ * choice was made) or leaving the box hands back one patch, so a drag is one
+ * undo step. React's `onChange` on a colour input follows `input`, so the
+ * native `change` is listened to directly.
+ */
+function ColorBox({
+  value,
+  fallback,
+  label,
+  onCommit,
+}: {
+  value: Shared<string>
+  fallback: string
+  label: string
+  onCommit: (color: string) => void
+}) {
+  const shown = value ?? fallback
+  const [draft, setDraft] = useState(shown)
+  const ref = useRef<HTMLInputElement>(null)
+  // the latest props, read by the native listener without re-binding it
+  const latest = useRef({ value, onCommit })
+  latest.current = { value, onCommit }
+  // the colour last handed back, so `change` then blur is still one patch
+  const committed = useRef<string | null>(null)
+  useEffect(() => {
+    setDraft(shown)
+    committed.current = null
+  }, [shown])
+  const commit = (): void => {
+    const next = ref.current?.value
+    if (!next || next === latest.current.value || next === committed.current) return
+    committed.current = next
+    latest.current.onCommit(next)
+  }
+  useEffect(() => {
+    const input = ref.current
+    if (!input) return
+    const onChange = (): void => commit()
+    input.addEventListener('change', onChange)
+    return () => input.removeEventListener('change', onChange)
+  }, [])
+  return (
+    <input
+      ref={ref}
+      type="color"
+      className="cad-color"
+      data-prop="color"
+      data-mixed={value === null ? '' : undefined}
+      aria-label={label}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+    />
   )
 }
 

@@ -75,6 +75,30 @@ describe('export', () => {
     expect(read.status === 'ok' && meshVolume(read.mesh)).toBeCloseTo(1000 + 8, 3)
   })
 
+  it('a hole on its own (not in a group) is not exported as a solid', async () => {
+    const a = addShape(createDocument(), 'box', { dims: { width: 10, depth: 10, height: 10 } })
+    const b = addShape(a.doc, 'cylinder', {
+      role: 'hole',
+      dims: { diameter: 4, height: 12 },
+      position: [30, 0, 0],
+    })
+    const evaluated = evaluateDocument(b.doc, await sharedKernel())
+    const stl = exportStl(b.doc, evaluated)
+    const obj = exportObj(b.doc, evaluated)
+    expect(stl.ok && obj.ok).toBe(true)
+    if (!stl.ok || !obj.ok) return
+    const fromStl = readStl(stl.bytes)
+    const fromObj = readObj(obj.bytes)
+    expect(fromStl.status === 'ok' && meshVolume(fromStl.mesh)).toBeCloseTo(1000, 3)
+    expect(fromObj.status === 'ok' && meshVolume(fromObj.mesh)).toBeCloseTo(1000, 3)
+    // a drawing of holes only has nothing to export
+    const holes = addShape(createDocument(), 'cylinder', { role: 'hole' })
+    expect(exportStl(holes.doc, evaluateDocument(holes.doc, await sharedKernel()))).toEqual({
+      ok: false,
+      notice: 'exportEmpty',
+    })
+  })
+
   it('results that do not belong to a visible top-level part are not exported', async () => {
     const a = addShape(createDocument(), 'box', { dims: { width: 10, depth: 10, height: 10 } })
     const doc = updatePart(a.doc, a.id, { hidden: true })

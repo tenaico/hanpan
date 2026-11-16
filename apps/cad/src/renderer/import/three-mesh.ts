@@ -5,13 +5,14 @@
  *
  * Every mesh in the file is joined into one triangle soup in world space,
  * then welded like an STL. Colours, materials, textures, points and lines are
- * dropped. Units: 3MF is taken as millimetres (its default unit), GLB as
- * metres with +Y up (the glTF rule) and turned into millimetres with +Z up,
- * PLY as it is.
+ * dropped. Units: 3MF follows its model's `unit` (millimetre when absent;
+ * three reads it but does not apply it), GLB is metres with +Y up (the glTF
+ * rule), both turned into millimetres with +Z up; PLY is taken as it is.
  */
 import { Group, Mesh as ThreeMesh, Vector3 } from 'three'
 import type { BufferGeometry, Matrix4, Object3D } from 'three'
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js'
+import { strFromU8, unzipSync } from 'three/examples/jsm/libs/fflate.module.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js'
 import {
@@ -33,6 +34,38 @@ export function isThreeExt(ext: string): ext is ThreeExt {
 
 /** glTF lengths are metres. */
 const GLB_TO_MM = 1000
+
+/** Millimetres per 3MF unit (3MF core spec, the model element's `unit`). */
+const THREE_MF_UNIT_MM: Readonly<Record<string, number>> = {
+  micron: 0.001,
+  millimeter: 1,
+  centimeter: 10,
+  inch: 25.4,
+  foot: 304.8,
+  meter: 1000,
+}
+
+/** How much of the model part is searched for the root element's `unit`. */
+const MODEL_HEAD_BYTES = 64 * 1024
+
+/**
+ * Millimetres per unit of a 3MF package: the `unit` of the root model's
+ * `<model>` element. The root model is the one `_rels/.rels` points at
+ * (normally `3D/3dmodel.model`); only that part is unzipped, and only its
+ * head is decoded. An absent or unknown unit is a millimetre.
+ */
+export function threeMfScale(bytes: Uint8Array): number {
+  const rels = unzipSync(bytes, { filter: (f) => f.name === '_rels/.rels' })['_rels/.rels']
+  const target = rels
+    ? /Target\s*=\s*["']\/?([^"']+\.model)["']/i.exec(strFromU8(rels))?.[1]
+    : undefined
+  const name = target ?? '3D/3dmodel.model'
+  const model = unzipSync(bytes, { filter: (f) => f.name === name })[name]
+  if (!model) return 1
+  const head = strFromU8(model.subarray(0, MODEL_HEAD_BYTES))
+  const unit = /<(?:[\w-]+:)?model\b[^>]*?\sunit\s*=\s*["']([^"']*)["']/.exec(head)?.[1]
+  return (unit && THREE_MF_UNIT_MM[unit.trim().toLowerCase()]) || 1
+}
 
 function isMesh(node: Object3D): node is ThreeMesh {
   return (node as ThreeMesh).isMesh === true
@@ -101,8 +134,15 @@ function arrayBufferOf(bytes: Uint8Array): ArrayBuffer {
 /** The file as three objects, in the file's own units and axes; throws when it does not parse. */
 async function parse(bytes: Uint8Array, ext: ThreeExt): Promise<Object3D | null> {
   switch (ext) {
-    case '3mf':
-      return new ThreeMFLoader().parse(arrayBufferOf(bytes))
+    case '3mf': {
+      const group = new ThreeMFLoader().parse(arrayBufferOf(bytes))
+      const scale = threeMfScale(bytes)
+      if (scale === 1) return group
+      const root = new Group()
+      root.scale.setScalar(scale)
+      root.add(group)
+      return root
+    }
     case 'ply': {
       const geometry = new PLYLoader().parse(arrayBufferOf(bytes))
       // a PLY without faces is a point cloud: nothing to build a solid from

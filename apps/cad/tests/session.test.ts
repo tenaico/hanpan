@@ -5,7 +5,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { addShape, createDocument, openCadFile } from '@genoffice/cad-engine'
 import { CadSession } from '../src/renderer/document/session'
-import { AUTO_SAVE_INTERVAL_MS, startAutoSave } from '../src/renderer/document/autosave'
+import {
+  AUTO_SAVE_IDLE_MS,
+  AUTO_SAVE_INTERVAL_MS,
+  startAutoSave,
+} from '../src/renderer/document/autosave'
 
 function withBoxes(count: number) {
   let doc = createDocument()
@@ -138,5 +142,53 @@ describe('auto-save', () => {
     vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS)
     document.dispatchEvent(new Event('visibilitychange'))
     expect(state.saves).toBe(2)
+  })
+
+  it('saves a big drawing only after 2 s without input, and never while a pointer is held', () => {
+    vi.useFakeTimers()
+    const state = { dirty: true, saves: 0 }
+    const stop = startAutoSave({
+      dirty: () => state.dirty,
+      saving: () => false,
+      save: () => void state.saves++,
+      big: () => true,
+    })
+    // the user is working when the tick comes: no save yet
+    vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS - 500)
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }))
+    vi.advanceTimersByTime(500)
+    expect(state.saves).toBe(0)
+    // 2 s after the last key it saves, once
+    vi.advanceTimersByTime(AUTO_SAVE_IDLE_MS)
+    expect(state.saves).toBe(1)
+    // a handle drag: the pointer is held across several ticks, nothing is saved
+    window.dispatchEvent(new Event('pointerdown'))
+    vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS * 3)
+    expect(state.saves).toBe(1)
+    // let go: one save once the user has been quiet for 2 s
+    window.dispatchEvent(new Event('pointerup'))
+    vi.advanceTimersByTime(AUTO_SAVE_IDLE_MS - 1)
+    expect(state.saves).toBe(1)
+    vi.advanceTimersByTime(1)
+    expect(state.saves).toBe(2)
+    stop()
+    vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS * 2)
+    expect(state.saves).toBe(2)
+  })
+
+  it('a small drawing still saves on the tick while the user works', () => {
+    vi.useFakeTimers()
+    const state = { saves: 0 }
+    const stop = startAutoSave({
+      dirty: () => true,
+      saving: () => false,
+      save: () => void state.saves++,
+      big: () => false,
+    })
+    vi.advanceTimersByTime(AUTO_SAVE_INTERVAL_MS - 10)
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }))
+    vi.advanceTimersByTime(10)
+    expect(state.saves).toBe(1)
+    stop()
   })
 })

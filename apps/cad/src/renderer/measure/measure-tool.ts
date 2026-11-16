@@ -63,8 +63,10 @@ function placeEntities(part: DrawingPart): DrawingEntity[] {
         return { ...e, a: at(e.a), b: at(e.b) }
       case 'polyline': {
         const points: number[] = []
-        for (let i = 0; i + 1 < e.points.length; i += 2)
-          points.push(...at([e.points[i]!, e.points[i + 1]!]))
+        for (let i = 0; i + 1 < e.points.length; i += 2) {
+          const q = at([e.points[i]!, e.points[i + 1]!])
+          points.push(q[0], q[1])
+        }
         return { ...e, points }
       }
       case 'circle':
@@ -78,9 +80,19 @@ function placeEntities(part: DrawingPart): DrawingEntity[] {
 }
 
 /**
+ * The most snap points all visible drawings give together. A large DXF (tens
+ * of thousands of lines, three points each) is sampled evenly down to this,
+ * like a mesh is sampled down to 5000 corners, so a click never searches
+ * millions of points and the list stays a few megabytes.
+ */
+export const DRAWING_SNAP_LIMIT = 200_000
+
+/**
  * The points a click sticks to: the corners of every visible top-level
  * result (at most 5000 per part) and the ends, corners and centres of the
- * visible top-level drawings.
+ * visible top-level drawings (at most `DRAWING_SNAP_LIMIT` together, an even
+ * sample above that). Points are appended one by one: spreading a list of
+ * 100,000+ points into `push` overflows the call stack.
  */
 export function measureSnaps(
   doc: CadDocument,
@@ -89,11 +101,17 @@ export function measureSnaps(
   const visible = new Set(doc.parts.filter((p) => !p.hidden).map((p) => p.id))
   const out: SnapPoint[] = []
   for (const result of evaluated) {
-    if (visible.has(result.id) && result.mesh) out.push(...snapPointsOfMesh(result.mesh))
+    if (!visible.has(result.id) || !result.mesh) continue
+    for (const s of snapPointsOfMesh(result.mesh)) out.push(s)
   }
+  const drawing: SnapPoint[] = []
   for (const part of doc.parts) {
-    if (part.type === 'drawing' && !part.hidden) out.push(...snapPointsOfDrawing(part))
+    if (part.type !== 'drawing' || part.hidden) continue
+    for (const s of snapPointsOfDrawing(part)) drawing.push(s)
   }
+  const step = drawing.length > DRAWING_SNAP_LIMIT ? drawing.length / DRAWING_SNAP_LIMIT : 1
+  const keep = Math.min(DRAWING_SNAP_LIMIT, drawing.length)
+  for (let k = 0; k < keep; k++) out.push(drawing[Math.floor(k * step)]!)
   return out
 }
 

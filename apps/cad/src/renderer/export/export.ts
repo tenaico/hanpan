@@ -1,6 +1,7 @@
 /**
  * The bytes of an export: STL and OBJ hold the results of the visible
- * top-level parts merged into one mesh (holes already cut by the evaluation),
+ * top-level solids merged into one mesh (holes already cut by the evaluation;
+ * a hole on its own only cuts inside a group, so it is not exported),
  * PNG is a picture of the 3D view. The main process asks where to write them
  * (`cad:export-file`).
  */
@@ -18,16 +19,18 @@ export interface PngSource {
 }
 
 /**
- * The results of the parts that are at the top level and not hidden in `doc`,
- * as one mesh; null when none has a triangle. A result whose part is no longer
- * at the top level or is hidden now is left out, so results evaluated a
- * moment earlier never bring back a part the user hid.
+ * The results of the parts that are at the top level, not hidden and not
+ * holes in `doc`, as one mesh; null when none has a triangle. A result whose
+ * part is no longer at the top level or is hidden now is left out, so results
+ * evaluated a moment earlier never bring back a part the user hid. A
+ * top-level hole only cuts inside a group; in a file it would be a solid, so
+ * it is left out too.
  */
 export function mergeVisibleMeshes(
   doc: CadDocument,
   evaluated: readonly EvaluatedPart[],
 ): Mesh | null {
-  const visible = new Set(doc.parts.filter((p) => !p.hidden).map((p) => p.id))
+  const visible = new Set(doc.parts.filter((p) => !p.hidden && p.role !== 'hole').map((p) => p.id))
   const meshes: Mesh[] = []
   for (const result of evaluated) {
     if (!visible.has(result.id) || !result.mesh || result.mesh.indices.length < 3) continue

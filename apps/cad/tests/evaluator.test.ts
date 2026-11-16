@@ -5,12 +5,17 @@
  */
 import { describe, expect, it, vi } from 'vitest'
 import {
+  addPart,
   addShape,
+  makeMesh,
+  newId,
   createDocument,
   createKernel,
   groupParts,
   updatePart,
   type Kernel,
+  type MeshPart,
+  type Part,
 } from '@genoffice/cad-engine'
 import { DocEvaluator } from '../src/renderer/scene/evaluator'
 
@@ -66,6 +71,42 @@ describe('DocEvaluator', () => {
     const third = evaluator.update(moved)
     expect(calls()).toBe(booleans)
     expect(third[0]!.mesh).toBe(second[0]!.mesh)
+    evaluator.dispose()
+  })
+
+  it('the cache keeps results only for the parts of the current document', async () => {
+    const { kernel } = await countingKernel()
+    const mesh: MeshPart = {
+      id: newId(),
+      type: 'mesh',
+      name: 'scan',
+      role: 'solid',
+      color: '#888888',
+      position: [0, 0, 0],
+      rotation: [0, 0, 0],
+      hidden: false,
+      locked: false,
+      mesh: makeMesh([0, 0, 0, 10, 0, 0, 0, 10, 0], [0, 1, 2]),
+      closed: false,
+    }
+    const box = addShape(addPart(createDocument(), mesh), 'box', { name: 'B' })
+    const hole = addShape(box.doc, 'cylinder', { name: 'H', role: 'hole' })
+    const grouped = groupParts(hole.doc, [box.id, hole.id])
+    let doc = grouped.doc
+    const evaluator = new DocEvaluator(kernel)
+    evaluator.update(doc)
+    // the undo stack keeps every older document, and with it every moved copy's part object
+    const older: Part[] = []
+    for (let i = 1; i <= 5; i++) {
+      older.push(doc.parts.find((p) => p.id === mesh.id)!)
+      doc = updatePart(doc, mesh.id, { position: [i * 10, 0, 0] })
+      evaluator.update(doc)
+    }
+    for (const old of older) expect(evaluator.holds(old)).toBe(false)
+    for (const part of doc.parts) expect(evaluator.holds(part)).toBe(true)
+    // the group's children are kept too, so the group's boolean is not redone
+    const group = doc.parts.find((p) => p.id === grouped.id)!
+    expect(group.type === 'group' && group.children.every((c) => evaluator.holds(c))).toBe(true)
     evaluator.dispose()
   })
 

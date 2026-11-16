@@ -68,7 +68,7 @@ import { SketchBar } from './components/SketchBar'
 import { StatusBar, type PartSize, type StatusMessage } from './components/StatusBar'
 import { useAutoSave } from './document/autosave'
 import { openResult, type OpenedDrawing, type OpenNotice } from './document/open'
-import { useRecoveryCopies } from './document/recovery-copies'
+import { RECOVERY_COPY_TIMING, useRecoveryCopies } from './document/recovery-copies'
 import { CadSession } from './document/session'
 import {
   alignSelected,
@@ -125,6 +125,9 @@ function pageTheme(): CanvasTheme {
 }
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
+/** What a send or copy answers when another one is still running. */
+const BUSY = Symbol('busy')
 
 /** The status-line text for a handle edit that was refused. */
 function refusalText(err: unknown): StringKey {
@@ -526,9 +529,12 @@ export default function App({
     }
   }, [])
 
-  /** One send or copy at a time; a second press while one runs is ignored. */
-  const once = useCallback(async <T,>(job: () => Promise<T>): Promise<T | null> => {
-    if (busyRef.current) return null
+  /**
+   * One send or copy at a time; a second press while one runs is ignored and
+   * answers `BUSY`, which is not any job's answer (a send's success is null).
+   */
+  const once = useCallback(async <T,>(job: () => Promise<T>): Promise<T | typeof BUSY> => {
+    if (busyRef.current) return BUSY
     busyRef.current = true
     try {
       return await job()
@@ -537,12 +543,16 @@ export default function App({
     }
   }, [])
 
-  /** Sends the sheet; null when the new tab opened, else what to say. */
+  /**
+   * Sends the sheet; null when the new tab opened, `BUSY` when another send or
+   * copy is running (nothing is said), else what to say.
+   */
   const sendSheet = useCallback(
-    async (target: SendTarget = sendTargetRef.current): Promise<StringKey | null> => {
+    async (target: SendTarget = sendTargetRef.current): Promise<StringKey | null | typeof BUSY> => {
       const source = sheetSource()
       if (!source || statusRef.current !== 'ready' || guideRef.current) return null
       const outcome = await once(() => runSend(source, target, window.cadApi, rasterize))
+      if (outcome === BUSY) return BUSY
       if (outcome === null) {
         setMessage({ key: 'sendDone', error: false })
         return null
@@ -572,10 +582,12 @@ export default function App({
     })
   }, [once])
 
-  const copySheetPicture = useCallback(async (): Promise<StringKey> => {
+  /** Copies the sheet picture; null (nothing to say) while another send or copy runs. */
+  const copySheetPicture = useCallback(async (): Promise<StringKey | null> => {
     const source = sheetSource()
     if (!source) return 'copyFailed'
-    return (await once(() => copySheet(source, window.cadApi, rasterize))) ?? 'copyFailed'
+    const key = await once(() => copySheet(source, window.cadApi, rasterize))
+    return key === BUSY ? null : key
   }, [sheetSource, once, rasterize])
 
   // ---- crash-recovery copies ----
@@ -638,11 +650,13 @@ export default function App({
     [recovery],
   )
 
-  // AutoSave: a drawing with a path, every 30 s and when the window goes to the background
+  // AutoSave: a drawing with a path, every 30 s and when the window goes to the background;
+  // a big drawing waits for a 2 s pause with no pointer held
   useAutoSave(autoSave && !!path && status === 'ready', {
     dirty: () => sessionRef.current?.dirty() ?? false,
     saving: () => savingRef.current,
     save: () => void doSave('save', true),
+    big: () => (sessionRef.current?.triangles() ?? 0) > RECOVERY_COPY_TIMING.bigTriangles,
   })
 
   // ---- export (File › Export in the menu and on the ribbon) ----
@@ -945,6 +959,8 @@ export default function App({
           onCopy={copySheetPicture}
           onSend={async (target) => {
             const outcome = await sendSheet(target)
+            // busy: the send under way will speak; the dialog stays open and says nothing
+            if (outcome === BUSY) return null
             if (outcome === null) setSheetOpen(false)
             return outcome
           }}
