@@ -38,11 +38,11 @@ export const ja = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: '図面を読む',
   aiToolAddShapes: '図形を置く · {n}個',
-  aiToolUpdateShapes: 'パーツを変更 · {n}個',
-  aiToolDeleteShapes: 'パーツを削除 · {n}個',
-  aiToolGroupShapes: 'パーツをグループ化',
+  aiToolUpdateShapes: '図形を変更 · {n}個',
+  aiToolDeleteShapes: '図形を削除 · {n}個',
+  aiToolGroupShapes: '図形をグループ化',
   aiToolUngroupShapes: 'グループ解除',
-  aiToolAlignShapes: 'パーツを整列 · {n}個',
+  aiToolAlignShapes: '図形を整列 · {n}個',
   aiToolSetWorkplane: '作業面のサイズを変更',
   aiToolRefused: '{action} · 拒否されました',
 } satisfies Record<keyof typeof zh, string>

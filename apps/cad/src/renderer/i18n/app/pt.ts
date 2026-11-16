@@ -36,7 +36,7 @@ export const pt = {
   editNotScalable:
     'Esta peça não pode ser redimensionada com a alça. Malhas importadas, desenhos, grupos e texto só podem ser movidos e girados.',
   editRefused: 'Não foi possível fazer essa alteração. O desenho não mudou.',
-  sketchTitle: 'Esboço',
+  sketchTitle: 'Desenhar à mão',
   sketchHint: 'Clique no plano de trabalho para colocar pontos',
   sketchPoints: 'Pontos',
   sketchHeight: 'Altura (mm)',
@@ -159,7 +159,7 @@ export const pt = {
   measureFirst: 'Agora clique no segundo ponto',
   measureDone: 'Concluir',
   sheet: 'Folha de cotas',
-  sheetEmpty: 'Nenhuma peça foi colocada',
+  sheetEmpty: 'Nenhuma forma foi colocada',
   sheetFieldTitle: 'Título',
   sheetFieldDate: 'Data',
   sheetFieldScale: 'Escala',

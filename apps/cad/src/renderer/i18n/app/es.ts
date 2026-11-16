@@ -37,7 +37,7 @@ export const es = {
   editNotScalable:
     'Esta pieza no se puede redimensionar con el control. Las mallas importadas, los dibujos, los grupos y el texto solo se pueden mover y girar.',
   editRefused: 'No se pudo hacer ese cambio. El dibujo no ha cambiado.',
-  sketchTitle: 'Boceto',
+  sketchTitle: 'Dibujar a mano',
   sketchHint: 'Haga clic en el plano de trabajo para colocar puntos',
   sketchPoints: 'Puntos',
   sketchHeight: 'Altura (mm)',
@@ -160,7 +160,7 @@ export const es = {
   measureFirst: 'Ahora haga clic en el segundo punto',
   measureDone: 'Terminar',
   sheet: 'Plano acotado',
-  sheetEmpty: 'No se ha colocado ninguna pieza',
+  sheetEmpty: 'No se ha colocado ninguna forma',
   sheetFieldTitle: 'Título',
   sheetFieldDate: 'Fecha',
   sheetFieldScale: 'Escala',

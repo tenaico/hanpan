@@ -1,7 +1,7 @@
 import type { zh } from './zh'
 
 export const ar = {
-  untitled: 'رسم بلا عنوان',
+  untitled: 'رسم بدون عنوان',
   saved: 'تم الحفظ',
   unsaved: 'غير محفوظ',
   noWebGlTitle: 'تعذّر عرض العرض ثلاثي الأبعاد',
@@ -33,8 +33,8 @@ export const ar = {
   editNotScalable:
     'لا يمكن تغيير حجم هذا الجزء بالمقبض. يمكن فقط تحريك الشبكات المستوردة والرسومات والمجموعات والنصوص وتدويرها.',
   editRefused: 'تعذّر إجراء هذا التغيير. لم يتغير الرسم.',
-  sketchTitle: 'رسم تخطيطي',
-  sketchHint: 'انقر على مستوى العمل لوضع النقاط',
+  sketchTitle: 'رسم حر',
+  sketchHint: 'انقر على لوح العمل لوضع النقاط',
   sketchPoints: 'النقاط',
   sketchHeight: 'الارتفاع (مم)',
   sketchClose: 'إغلاق الشكل',
@@ -137,7 +137,7 @@ export const ar = {
   dimRadius: 'نصف قطر الزاوية',
   dimPoints: 'عدد الرؤوس',
   dimSize: 'حجم الحرف',
-  statusWorkplane: 'لوح العمل {width} × {depth} مم · الالتقاط {snap}mm · الشبكة {grid}mm',
+  statusWorkplane: 'لوح العمل {width} × {depth} مم · الالتقاط {snap} مم · الشبكة {grid} مم',
   statusPartSize: '{name} · العرض × العمق × الارتفاع: {width} × {depth} × {height} مم',
   statusSelected: 'تم تحديد {n} أشكال',
   selectFirst: 'حدد شكلًا أولًا.',
@@ -154,7 +154,7 @@ export const ar = {
   measureFirst: 'انقر الآن النقطة الثانية',
   measureDone: 'إنهاء',
   sheet: 'لوحة الأبعاد',
-  sheetEmpty: 'لم توضع أي قطعة بعد',
+  sheetEmpty: 'لم يوضع أي شكل بعد',
   sheetFieldTitle: 'العنوان',
   sheetFieldDate: 'التاريخ',
   sheetFieldScale: 'مقياس الرسم',

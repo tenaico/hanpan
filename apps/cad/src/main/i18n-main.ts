@@ -39,7 +39,7 @@ export const CAD_MAIN_TEXTS = defineStrings({
   vi: {
     dlgSaveTitle: 'Lưu bản vẽ AI',
     filterCad: 'Bản vẽ AI',
-    untitledFile: 'Bản vẽ không có tiêu đề',
+    untitledFile: 'Bản vẽ chưa có tiêu đề',
     closeUnsavedTitle: 'Thay đổi chưa lưu',
     closeUnsavedMessage: '“{name}” có những thay đổi chưa được lưu.',
     closeUnsavedDetail: 'Bạn có muốn lưu các thay đổi trước khi đóng không?',
@@ -129,9 +129,9 @@ export const CAD_MAIN_TEXTS = defineStrings({
     filterImage: 'Imagen',
   },
   th: {
-    dlgSaveTitle: 'บันทึกแบบวาด AI',
-    filterCad: 'แบบวาด AI',
-    untitledFile: 'แบบวาดไม่มีชื่อ',
+    dlgSaveTitle: 'บันทึกแบบร่าง AI',
+    filterCad: 'แบบร่าง AI',
+    untitledFile: 'แบบร่างไม่มีชื่อ',
     closeUnsavedTitle: 'การเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
     closeUnsavedMessage: '“{name}” มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
     closeUnsavedDetail: 'ต้องการบันทึกก่อนปิดหรือไม่?',
@@ -174,8 +174,8 @@ export const CAD_MAIN_TEXTS = defineStrings({
     filterImage: 'Изображение',
   },
   ar: {
-    dlgSaveTitle: 'حفظ رسم الذكاء الاصطناعي',
-    filterCad: 'رسم الذكاء الاصطناعي',
+    dlgSaveTitle: 'حفظ رسم هندسي بالذكاء الاصطناعي',
+    filterCad: 'رسم هندسي بالذكاء الاصطناعي',
     untitledFile: 'رسم بدون عنوان',
     closeUnsavedTitle: 'تغييرات غير محفوظة',
     closeUnsavedMessage: 'يحتوي ”{name}“ على تغييرات غير محفوظة.',
@@ -297,7 +297,7 @@ export const CAD_MAIN_TEXTS = defineStrings({
   hi: {
     dlgSaveTitle: 'AI ड्रॉइंग सहेजें',
     filterCad: 'AI ड्रॉइंग',
-    untitledFile: 'शीर्षकहीन ड्रॉइंग',
+    untitledFile: 'बिना शीर्षक की ड्रॉइंग',
     closeUnsavedTitle: 'सहेजे नहीं गए परिवर्तन',
     closeUnsavedMessage: '“{name}” में सहेजे नहीं गए परिवर्तन हैं।',
     closeUnsavedDetail: 'क्या बंद करने से पहले उन्हें सहेजना चाहते हैं?',

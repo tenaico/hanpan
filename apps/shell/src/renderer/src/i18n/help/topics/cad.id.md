@@ -13,17 +13,17 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 ## Menaruh bentuk
 
 - **Beranda › Taruh bentuk** berisi empat bentuk yang paling sering dipakai; **Lainnya** membuka galeri ke-15 bentuk: kotak, silinder, bola, kerucut, limas, baji, setengah bola, pipa, donat, prisma segitiga, prisma segi enam, kotak bersudut bulat, prisma bintang, atap, dan teks.
-- Bentuk baru muncul di tengah bidang kerja, yaitu pelat alas tempat model berdiri. Klik sebuah bagian untuk memilihnya; klik sambil menahan Shift atau Ctrl menambah bagian lain ke pilihan.
-- **Tampilan › Pegangan** menentukan fungsi pegangan pada bagian yang dipilih: **Pindah**, **Putar**, atau **Ukuran**. Saat diseret, bagian menempel per 1 mm dan 15°; tahan Alt sambil menyeret untuk mematikan tempelan.
-- Panel **Properti** di kanan menampilkan bagian yang dipilih: nama, jenis (padat atau lubang), ukuran, posisi (mm), putaran (°), dan warna. Ketik angka untuk mengubahnya. **Sembunyikan** dan **Kunci** menyingkirkan bagian agar tidak mengganggu.
+- Bentuk baru muncul di tengah bidang kerja, yaitu pelat alas tempat model berdiri. Klik sebuah bentuk untuk memilihnya; klik sambil menahan Shift atau Ctrl menambah bentuk lain ke pilihan.
+- **Tampilan › Pegangan** menentukan fungsi pegangan pada bentuk yang dipilih: **Pindah**, **Putar**, atau **Ukuran**. Saat diseret, bentuk menempel per 1 mm dan 15°; tahan Alt sambil menyeret untuk mematikan tempelan.
+- Panel **Properti** di kanan menampilkan bentuk yang dipilih: nama, jenis (padat atau lubang), ukuran, posisi (mm), putaran (°), dan warna. Ketik angka untuk mengubahnya. **Sembunyikan** dan **Kunci** menyingkirkan bentuk agar tidak mengganggu.
 - **Tampilan › Arah pandang** memutar kamera ke **Atas**, **Depan**, atau **Samping**, dan **Tampilkan semua** memuat seluruh model di layar. Seret di area tampilan untuk memutarnya, dan gunakan roda mouse untuk memperbesar atau memperkecil.
-- Baris status di bawah menampilkan ukuran bidang kerja, jarak tempel dan kisi, serta lebar × kedalaman × tinggi bagian yang dipilih.
+- Baris status di bawah menampilkan ukuran bidang kerja, jarak tempel dan kisi, serta lebar × kedalaman × tinggi bentuk yang dipilih.
 
 ## Lubang, kelompok, dan perataan
 
 - Lubang adalah bentuk yang memotong. Pilih sebuah bentuk lalu tekan **Lubang** (atau H) untuk menjadikannya lubang; tekan lagi untuk menjadikannya padat kembali.
 - Lubang hanya memotong di dalam kelompok. Pilih lubang dan bentuk padat yang harus dipotongnya, lalu tekan **Kelompokkan** (Ctrl+G): kelompok itu adalah bentuk padat dikurangi lubang. **Pisahkan** (Ctrl+Shift+G) membongkarnya lagi.
-- **Ratakan** menyejajarkan bagian yang dipilih dengan bagian yang Anda pilih pertama: kiri, tengah, atau kanan; depan, tengah, atau belakang; bawah, tengah, atau atas.
+- **Ratakan** menyejajarkan bentuk yang dipilih dengan bentuk yang Anda pilih pertama: kiri, tengah, atau kanan; depan, tengah, atau belakang; bawah, tengah, atau atas.
 - Contohnya, silinder berdiameter 80 mm dan silinder lubang berdiameter 68 mm yang dinaikkan 5 mm, keduanya dipilih lalu dikelompokkan, menjadi cangkir dengan alas setebal 5 mm.
 
 ## Gambar sendiri dan teks
@@ -38,16 +38,16 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 - **Ukur** menampilkan jarak antara dua titik yang Anda klik, panjang sebuah garis, atau diameter sebuah lingkaran. Titik menempel ke sudut, ujung garis, dan pusat lingkaran. Esc menghapus hasil ukur.
 - **Lembar dimensi** menggambar model dari depan, atas, dan samping di kertas A4, lengkap dengan lebar, kedalaman, dan tinggi keseluruhan, skala yang pas (1:1, 1:2, 1:5, 1:10 …), dan kotak judul berisi nama, tanggal, dan skala. Gambar yang berasal dari file DXF hanya menampilkan pandangan dari atas.
 - Di lembar itu, **Salin gambar** menaruhnya di papan klip. Tempelkan ke tab Hangul, Word, atau PowerPoint.
-- **Kirim ke Hangul** membuka dokumen Hangul baru berisi lembar itu dan tabel bagian beserta ukurannya. Jika **Fitur dokumen Korea** dimatikan di Pengaturan, tombolnya bertuliskan **Kirim ke Word** dan membuat dokumen Word.
+- **Kirim ke Hangul** membuka dokumen Hangul baru berisi lembar itu dan tabel bentuk beserta ukurannya. Jika **Fitur dokumen Korea** dimatikan di Pengaturan, tombolnya bertuliskan **Kirim ke Word** dan membuat dokumen Word.
 
 ## Asisten AI
 
 - Panel AI di samping gambar menaruh bentuk, mengubah ukuran dan posisi, membuat lubang, mengelompokkan, meratakan, mengatur ukuran bidang kerja, dan merangkum model. Beberapa permintaan untuk dicoba:
   - "Buat tempat pensil lebar 80 mm dan tinggi 100 mm, bagian dalamnya berlubang dengan diameter 68 mm"
   - "Jadikan bidang kerja sebuah ruangan 5 × 4 m dan taruh empat meja kerja"
-  - "Ratakan bagian yang dipilih ke kiri"
-- Semua yang diubah oleh satu permintaan kembali dengan satu kali **Urungkan** (Ctrl+Z), berapa pun banyak bagian yang tersentuh.
-- AI menerima permintaan Anda dan ringkasan model (nama, jenis, ukuran, dan posisi tiap bagian). AI tidak bisa menyimpan, membuka, mengekspor, atau mengirim; semua itu tetap di tangan Anda.
+  - "Ratakan bentuk yang dipilih ke kiri"
+- Semua yang diubah oleh satu permintaan kembali dengan satu kali **Urungkan** (Ctrl+Z), berapa pun banyak bentuk yang tersentuh.
+- AI menerima permintaan Anda dan ringkasan model (nama, jenis, ukuran, dan posisi tiap bentuk). AI tidak bisa menyimpan, membuka, mengekspor, atau mengirim; semua itu tetap di tangan Anda.
 
 ## Menyimpan dan memulihkan
 
@@ -81,5 +81,5 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 ## Yang tidak bisa dilakukan
 
 - Membuka file DWG, STEP, IGES, atau BREP secara langsung. Mintalah DXF atau STL sebagai gantinya.
-- Batasan, riwayat desain, atau rakitan seperti di program CAD profesional. Setiap bagian diatur dengan angkanya sendiri.
+- Batasan, riwayat desain, atau rakitan seperti di program CAD profesional. Setiap bentuk diatur dengan angkanya sendiri.
 - Mencetak. Kirim lembar dimensi ke dokumen Hangul atau Word lalu cetak dari sana.

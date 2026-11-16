@@ -15,7 +15,7 @@ export const es = {
   aiThinking: 'Pensando',
   aiWorking: 'Trabajando',
   aiGroupWorking: 'En curso…',
-  aiWorkedSteps: 'Completado · {n} pasos',
+  aiWorkedSteps: 'Completado · pasos: {n}',
   aiStopped: 'Detenido',
   aiNoReply: '(sin respuesta)',
   aiTurnLimit:
@@ -41,11 +41,11 @@ export const es = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: 'Leer el dibujo',
   aiToolAddShapes: 'Colocar formas · {n}',
-  aiToolUpdateShapes: 'Cambiar piezas · {n}',
-  aiToolDeleteShapes: 'Eliminar piezas · {n}',
-  aiToolGroupShapes: 'Agrupar piezas',
+  aiToolUpdateShapes: 'Cambiar formas · {n}',
+  aiToolDeleteShapes: 'Eliminar formas · {n}',
+  aiToolGroupShapes: 'Agrupar formas',
   aiToolUngroupShapes: 'Desagrupar',
-  aiToolAlignShapes: 'Alinear piezas · {n}',
+  aiToolAlignShapes: 'Alinear formas · {n}',
   aiToolSetWorkplane: 'Cambiar el tamaño del plano de trabajo',
   aiToolRefused: '{action} · rechazado',
 } satisfies Record<keyof typeof zh, string>

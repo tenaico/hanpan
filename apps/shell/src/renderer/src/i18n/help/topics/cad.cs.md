@@ -13,17 +13,17 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 ## Vkládání tvarů
 
 - Skupina **Domů › Vložit tvary** obsahuje čtyři nejpoužívanější tvary; **Další** otevře galerii všech 15: kvádr, válec, koule, kužel, jehlan, klín, polokoule, trubka, anuloid, trojboký hranol, šestiboký hranol, zaoblený kvádr, hvězdicový hranol, střecha a text.
-- Nový tvar se objeví uprostřed pracovní desky, tedy podložky, na které model stojí. Klepnutím na díl ho vyberete; klepnutí se Shift nebo s Ctrl přidá do výběru další díly.
-- **Zobrazení › Úchyty** určuje, co dělají úchyty na vybraném dílu: **Posunout**, **Otočit** nebo **Velikost**. Při tažení se díl přichytává po 1 mm a 15°; přichytávání vypnete tak, že při tažení držíte Alt.
-- Panel **Vlastnosti** vpravo ukazuje vybraný díl: název, druh (těleso nebo otvor), velikost, polohu (mm), otočení (°) a barvu. Hodnotu změníte zapsáním čísla. **Skrýt** a **Zamknout** díl odklidí, aby nepřekážel.
+- Nový tvar se objeví uprostřed pracovní desky, tedy podložky, na které model stojí. Klepnutím na tvar ho vyberete; klepnutí se Shift nebo s Ctrl přidá do výběru další tvary.
+- **Zobrazení › Úchyty** určuje, co dělají úchyty na vybraném tvaru: **Posunout**, **Otočit** nebo **Velikost**. Při tažení se tvar přichytává po 1 mm a 15°; přichytávání vypnete tak, že při tažení držíte Alt.
+- Panel **Vlastnosti** vpravo ukazuje vybraný tvar: název, druh (těleso nebo otvor), velikost, polohu (mm), otočení (°) a barvu. Hodnotu změníte zapsáním čísla. **Skrýt** a **Zamknout** tvar odklidí, aby nepřekážel.
 - **Zobrazení › Pohledy** natočí kameru **Shora**, **Zepředu** nebo **Zboku** a **Zobrazit vše** vejde do okna celý model. Tažením v okně pohled otáčíte, kolečkem myši přibližujete a oddalujete.
-- Stavový řádek dole ukazuje velikost pracovní desky, přichytávání a mřížku a také šířku × hloubku × výšku vybraného dílu.
+- Stavový řádek dole ukazuje velikost pracovní desky, přichytávání a mřížku a také šířku × hloubku × výšku vybraného tvaru.
 
 ## Otvory, skupiny a zarovnání
 
 - Otvor je tvar, který vyřezává. Vyberte tvar a stiskněte **Otvor** (nebo H), aby se z něj stal otvor; dalším stisknutím z něj bude zase těleso.
 - Otvor vyřezává jen uvnitř skupiny. Vyberte otvor a tělesa, která má proříznout, a stiskněte **Seskupit** (Ctrl+G): skupina jsou tělesa bez otvorů. **Oddělit** (Ctrl+Shift+G) ji zase rozloží.
-- **Zarovnat** srovná vybrané díly podle dílu, který jste vybrali jako první: vlevo, na střed nebo vpravo; dopředu, na střed nebo dozadu; dolů, na střed nebo nahoru.
+- **Zarovnat** srovná vybrané tvary podle tvaru, který jste vybrali jako první: vlevo, na střed nebo vpravo; dopředu, na střed nebo dozadu; dolů, na střed nebo nahoru.
 - Například válec o průměru 80 mm a otvor ve tvaru válce o průměru 68 mm zvednutý o 5 mm, oba vybrané a seskupené, dají hrnek s dnem silným 5 mm.
 
 ## Vlastní obrys a text
@@ -38,16 +38,16 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 - **Měřit** ukáže vzdálenost mezi dvěma body, na které klepnete, délku čáry nebo průměr kružnice. Body se přichytávají k rohům, koncům čar a středům kružnic. Esc údaj smaže.
 - **Rozměrový výkres** nakreslí model zepředu, shora a zboku na list A4 s celkovou šířkou, hloubkou a výškou, vhodným měřítkem (1:1, 1:2, 1:5, 1:10 …) a popisovým polem s názvem, datem a měřítkem. Výkres ze souboru DXF ukazuje jen pohled shora.
 - Na výkresu tlačítko **Kopírovat obrázek** vloží výkres do schránky. Vložte ho do karty Hangul, Word nebo PowerPoint.
-- **Odeslat do Hangul** otevře nový dokument Hangul s výkresem a tabulkou dílů a jejich rozměrů. Když je v Nastavení vypnutá volba **Funkce korejských dokumentů**, tlačítko se jmenuje **Odeslat do Wordu** a vytvoří dokument Word.
+- **Odeslat do Hangul** otevře nový dokument Hangul s výkresem a tabulkou tvarů a jejich rozměrů. Když je v Nastavení vypnutá volba **Funkce korejských dokumentů**, tlačítko se jmenuje **Odeslat do Wordu** a vytvoří dokument Word.
 
 ## Asistent AI
 
 - Panel AI vedle výkresu vkládá tvary, mění velikosti a polohy, dělá otvory, seskupuje, zarovnává, nastavuje velikost pracovní desky a shrnuje model. Několik požadavků na vyzkoušení:
   - „Udělej stojánek na tužky široký 80 mm a vysoký 100 mm, uvnitř dutý, s otvorem o průměru 68 mm“
   - „Udělej z pracovní desky místnost 5 × 4 m a postav do ní čtyři stoly“
-  - „Zarovnej vybrané díly vlevo“
-- Všechno, co změnil jeden požadavek, vrátíte jedním **Zpět** (Ctrl+Z), bez ohledu na to, kolika dílů se týkal.
-- AI dostane váš požadavek a shrnutí modelu (název, druh, velikost a polohu každého dílu). Nemůže ukládat, otevírat, exportovat ani odesílat; to zůstává na vás.
+  - „Zarovnej vybrané tvary vlevo“
+- Všechno, co změnil jeden požadavek, vrátíte jedním **Zpět** (Ctrl+Z), bez ohledu na to, kolika tvarů se týkal.
+- AI dostane váš požadavek a shrnutí modelu (název, druh, velikost a polohu každého tvaru). Nemůže ukládat, otevírat, exportovat ani odesílat; to zůstává na vás.
 
 ## Ukládání a obnovení
 
@@ -81,5 +81,5 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 ## Co neumí
 
 - Přímo otevírat soubory DWG, STEP, IGES ani BREP. Požádejte místo nich o DXF nebo STL.
-- Vazby, historii návrhu ani sestavy jako profesionální programy CAD. Každý díl se nastavuje vlastními čísly.
+- Vazby, historii návrhu ani sestavy jako profesionální programy CAD. Každý tvar se nastavuje vlastními čísly.
 - Tisknout. Pošlete rozměrový výkres do dokumentu Hangul nebo Word a tiskněte odtud.

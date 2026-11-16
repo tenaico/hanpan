@@ -13,17 +13,17 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 ## Colocar formas
 
 - **Inicio › Colocar formas** reúne las cuatro formas más usadas; **Más** abre la galería con las 15: caja, cilindro, esfera, cono, pirámide, cuña, semiesfera, tubo, toro, prisma triangular, prisma hexagonal, caja redondeada, prisma de estrella, tejado y texto.
-- Cada forma nueva aparece en el centro del plano de trabajo, la base sobre la que se apoya el modelo. Haga clic en una pieza para seleccionarla; Shift+clic o Ctrl+clic añade más piezas a la selección.
-- **Vista › Controles** elige qué hacen los controles de la pieza seleccionada: **Mover**, **Girar** o **Tamaño**. Al arrastrar, la pieza avanza en saltos de 1 mm y 15°; mantenga pulsado Alt mientras arrastra para quitar el ajuste.
-- El panel **Propiedades** de la derecha muestra la pieza seleccionada: nombre, tipo (sólido o agujero), tamaño, posición (mm), giro (°) y color. Escriba un número para cambiarlo. **Ocultar** y **Bloquear** apartan una pieza para que no estorbe.
+- Cada forma nueva aparece en el centro del plano de trabajo, la base sobre la que se apoya el modelo. Haga clic en una forma para seleccionarla; Shift+clic o Ctrl+clic añade más formas a la selección.
+- **Vista › Controles** elige qué hacen los controles de la forma seleccionada: **Mover**, **Girar** o **Tamaño**. Al arrastrar, la forma avanza en saltos de 1 mm y 15°; mantenga pulsado Alt mientras arrastra para quitar el ajuste.
+- El panel **Propiedades** de la derecha muestra la forma seleccionada: nombre, tipo (sólido o agujero), tamaño, posición (mm), giro (°) y color. Escriba un número para cambiarlo. **Ocultar** y **Bloquear** apartan una forma para que no estorbe.
 - **Vista › Vistas** gira la cámara a **Arriba**, **Frente** o **Lado**, y **Ver todo** encuadra el modelo completo. Arrastre en la vista para girarla y use la rueda del ratón para acercar o alejar.
-- La barra de estado de abajo muestra el tamaño del plano de trabajo, el ajuste y la cuadrícula, y el ancho × fondo × alto de la pieza seleccionada.
+- La barra de estado de abajo muestra el tamaño del plano de trabajo, el ajuste y la cuadrícula, y el ancho × fondo × alto de la forma seleccionada.
 
 ## Agujeros, grupos y alineación
 
 - Un agujero es una forma que recorta. Seleccione una forma y pulse **Agujero** (o H) para convertirla en agujero; vuelva a pulsar para que sea sólida otra vez.
 - Un agujero solo recorta dentro de un grupo. Seleccione el agujero y los sólidos que debe recortar y pulse **Agrupar** (Ctrl+G): el grupo son los sólidos menos los agujeros. **Desagrupar** (Ctrl+Shift+G) lo separa de nuevo.
-- **Alinear** coloca las piezas seleccionadas en línea con la primera pieza que seleccionó: izquierda, centro o derecha; delante, centro o detrás; abajo, centro o arriba.
+- **Alinear** coloca las formas seleccionadas en línea con la primera forma que seleccionó: izquierda, centro o derecha; delante, centro o detrás; abajo, centro o arriba.
 - Por ejemplo, un cilindro de 80 mm de diámetro y un cilindro agujero de 68 mm de diámetro elevado 5 mm, seleccionados juntos y agrupados, forman un vaso con un fondo de 5 mm.
 
 ## Dibujar a mano y texto
@@ -38,16 +38,16 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 - **Medir** muestra la distancia entre dos puntos en los que hace clic, la longitud de una línea o el diámetro de un círculo. Los puntos se ajustan a esquinas, extremos de líneas y centros de círculos. Esc borra la medida.
 - **Plano acotado** dibuja el modelo de frente, desde arriba y de lado en una hoja A4, con el ancho, el fondo y el alto totales, una escala que encaje (1:1, 1:2, 1:5, 1:10 …) y un cajetín con el nombre, la fecha y la escala. Un dibujo que viene de un archivo DXF muestra solo la vista desde arriba.
 - En el plano acotado, **Copiar imagen** lo pone en el portapapeles. Péguelo en una pestaña de Hangul, Word o PowerPoint.
-- **Enviar a Hangul** abre un documento nuevo de Hangul con el plano y una tabla de las piezas y sus medidas. Si **Funciones de documentos coreanos** está desactivado en la configuración, el botón dice **Enviar a Word** y crea un documento de Word.
+- **Enviar a Hangul** abre un documento nuevo de Hangul con el plano y una tabla de las formas y sus medidas. Si **Funciones de documentos coreanos** está desactivado en la configuración, el botón dice **Enviar a Word** y crea un documento de Word.
 
 ## El asistente de IA
 
 - El panel de IA junto al dibujo coloca formas, cambia tamaños y posiciones, hace agujeros, agrupa, alinea, fija el tamaño del plano de trabajo y resume el modelo. Algunas peticiones para probar:
   - «Haz un portalápices de 80 mm de ancho y 100 mm de alto, hueco por dentro con 68 mm de diámetro»
   - «Convierte el plano de trabajo en una sala de 5 × 4 m y coloca cuatro escritorios»
-  - «Alinea a la izquierda las piezas seleccionadas»
-- Todo lo que cambió una petición se revierte con un solo **Deshacer** (Ctrl+Z), aunque haya tocado muchas piezas.
-- La IA recibe su petición y un resumen del modelo (nombre, tipo, tamaño y posición de cada pieza). No puede guardar, abrir, exportar ni enviar; eso queda en sus manos.
+  - «Alinea a la izquierda las formas seleccionadas»
+- Todo lo que cambió una petición se revierte con un solo **Deshacer** (Ctrl+Z), aunque haya tocado muchas formas.
+- La IA recibe su petición y un resumen del modelo (nombre, tipo, tamaño y posición de cada forma). No puede guardar, abrir, exportar ni enviar; eso queda en sus manos.
 
 ## Guardar y recuperar
 
@@ -81,5 +81,5 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 ## Lo que no puede hacer
 
 - Abrir directamente archivos DWG, STEP, IGES o BREP. Pida un DXF o un STL en su lugar.
-- Restricciones, historial de diseño o ensamblajes como en los programas de CAD profesionales. Cada pieza se define con sus propios números.
+- Restricciones, historial de diseño o ensamblajes como en los programas de CAD profesionales. Cada forma se define con sus propios números.
 - Imprimir. Envíe el plano acotado a un documento de Hangul o de Word e imprima desde allí.

@@ -1,7 +1,7 @@
 import type { zh } from './zh'
 
 export const vi = {
-  untitled: 'Bản vẽ không tên',
+  untitled: 'Bản vẽ chưa có tiêu đề',
   saved: 'Đã lưu',
   unsaved: 'Chưa lưu',
   noWebGlTitle: 'Không thể hiển thị chế độ xem 3D',
@@ -34,8 +34,8 @@ export const vi = {
   editNotScalable:
     'Không thể đổi kích thước phần này bằng tay cầm. Lưới đã nhập, bản vẽ, nhóm và chữ chỉ có thể di chuyển và xoay.',
   editRefused: 'Không thể thực hiện thay đổi đó. Bản vẽ không thay đổi.',
-  sketchTitle: 'Phác thảo',
-  sketchHint: 'Nhấp vào mặt phẳng làm việc để đặt điểm',
+  sketchTitle: 'Tự vẽ',
+  sketchHint: 'Nhấp vào mặt làm việc để đặt điểm',
   sketchPoints: 'Điểm',
   sketchHeight: 'Chiều cao (mm)',
   sketchClose: 'Đóng hình',
@@ -156,7 +156,7 @@ export const vi = {
   measureFirst: 'Giờ hãy nhấp điểm thứ hai',
   measureDone: 'Xong',
   sheet: 'Bản vẽ kích thước',
-  sheetEmpty: 'Chưa đặt chi tiết nào',
+  sheetEmpty: 'Chưa đặt hình nào',
   sheetFieldTitle: 'Tiêu đề',
   sheetFieldDate: 'Ngày',
   sheetFieldScale: 'Tỷ lệ',

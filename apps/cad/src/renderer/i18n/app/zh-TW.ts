@@ -1,23 +1,23 @@
 import type { zh } from './zh'
 
 export const zhTW = {
-  untitled: '未命名圖紙',
+  untitled: '未命名圖面',
   saved: '已儲存',
   unsaved: '未儲存',
   noWebGlTitle: '無法顯示 3D 檢視',
   noWebGlBody:
-    '這台電腦無法啟動 3D 檢視所需的 WebGL。圖紙仍可開啟和儲存，但無法顯示。請嘗試以下其中一項，然後重新開啟分頁：',
+    '這台電腦無法啟動 3D 檢視所需的 WebGL。圖面仍可開啟和儲存，但無法顯示。請嘗試以下其中一項，然後重新開啟分頁：',
   noWebGlDriver: '更新顯示卡驅動程式。',
   noWebGlAccel: '在圖形設定中開啟硬體加速。',
   noticeNotOk:
-    '無法將此檔案開啟為圖紙，檔案可能已損毀或由較新版本建立。已開啟空白圖紙，儲存時會詢問新的檔案名稱。',
-  noticeTooLarge: '檔案太大，無法開啟（上限 100 MB）。已開啟空白圖紙。',
-  noticeUnreadable: '無法讀取此檔案。已開啟空白圖紙。',
+    '無法將此檔案開啟為圖面，檔案可能已損毀或由較新版本建立。已開啟空白圖面，儲存時會詢問新的檔案名稱。',
+  noticeTooLarge: '檔案太大，無法開啟（上限 100 MB）。已開啟空白圖面。',
+  noticeUnreadable: '無法讀取此檔案。已開啟空白圖面。',
   noticeUnsupported:
     '無法開啟此類檔案。可開啟的檔案為 .ttukcad、.dxf、.stl、.obj、.3mf、.glb 和 .ply。',
-  noticeImportFailed: '無法讀取此檔案中的圖形。已開啟空白圖紙。',
-  saveRefused: '無法儲存圖紙。變更仍保留在畫面上，請再試一次或另存新檔。',
-  saveFailed: '儲存圖紙時發生錯誤。變更仍保留在畫面上，請再試一次或另存新檔。',
+  noticeImportFailed: '無法讀取此檔案中的圖形。已開啟空白圖面。',
+  saveRefused: '無法儲存圖面。變更仍保留在畫面上，請再試一次或另存新檔。',
+  saveFailed: '儲存圖面時發生錯誤。變更仍保留在畫面上，請再試一次或另存新檔。',
   guideTitle: '如何開啟此檔案',
   guideBody: '{ext} 檔案由專業 CAD 程式製作，AI 圖面無法讀取。',
   guideAsk:
@@ -28,10 +28,10 @@ export const zhTW = {
   issueOpenMesh: '含有未封閉的網格，無法計算此群組',
   issueTooLarge: '三角形過多，無法顯示（上限 200 萬個）',
   editLocked: '此圖形已鎖定。請先解鎖再修改。',
-  editNotScalable: '此圖形無法用控制點調整大小。匯入的網格、圖紙、群組和文字只能移動和旋轉。',
-  editRefused: '無法進行此變更。圖紙保持不變。',
-  sketchTitle: '草圖',
-  sketchHint: '在工作平面上按一下以放置點',
+  editNotScalable: '此圖形無法用控制點調整大小。匯入的網格、圖面、群組和文字只能移動和旋轉。',
+  editRefused: '無法進行此變更。圖面保持不變。',
+  sketchTitle: '自由繪製',
+  sketchHint: '在工作板上按一下以放置點',
   sketchPoints: '點數',
   sketchHeight: '高度（公釐）',
   sketchClose: '封閉形狀',
@@ -143,7 +143,7 @@ export const zhTW = {
   editBadNumber: '無法使用這個值。圖面維持不變。',
   kernelFailed: '無法啟動 3D 計算，形狀不會顯示。請重新開啟分頁。',
   // stage 4: measuring, the dimension sheet and sending it
-  tabDims: '尺寸·圖紙',
+  tabDims: '尺寸·圖面',
   groupDims: '尺寸',
   groupSend: '傳送到文件',
   measure: '測量',

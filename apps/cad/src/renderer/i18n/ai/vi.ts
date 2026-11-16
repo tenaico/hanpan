@@ -38,11 +38,11 @@ export const vi = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: 'Đọc bản vẽ',
   aiToolAddShapes: 'Đặt hình · {n}',
-  aiToolUpdateShapes: 'Sửa chi tiết · {n}',
-  aiToolDeleteShapes: 'Xóa chi tiết · {n}',
-  aiToolGroupShapes: 'Nhóm chi tiết',
+  aiToolUpdateShapes: 'Sửa hình · {n}',
+  aiToolDeleteShapes: 'Xóa hình · {n}',
+  aiToolGroupShapes: 'Nhóm hình',
   aiToolUngroupShapes: 'Bỏ nhóm',
-  aiToolAlignShapes: 'Căn chỉnh chi tiết · {n}',
+  aiToolAlignShapes: 'Căn chỉnh hình · {n}',
   aiToolSetWorkplane: 'Đổi kích thước mặt làm việc',
   aiToolRefused: '{action} · bị từ chối',
 } satisfies Record<keyof typeof zh, string>

@@ -15,7 +15,7 @@ export const en = {
   aiThinking: 'Thinking',
   aiWorking: 'Working',
   aiGroupWorking: 'Working…',
-  aiWorkedSteps: 'Worked · {n} steps',
+  aiWorkedSteps: 'Worked · steps: {n}',
   aiStopped: 'Stopped',
   aiNoReply: '(no reply)',
   aiTurnLimit: 'Reached the per-run step limit — send another instruction to continue.',

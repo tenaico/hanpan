@@ -14,11 +14,11 @@ AI 도면 편집기다. 간단한 3D 모형과 DXF 도면을 `.ttukcad` 파일�
   - `sheet/`: 치수 도면 대화 상자(`SheetDialog.tsx`), 도면 PNG(`sheet-png.ts`), 그림 복사와 한글·워드로 보내기(`send.ts`), 보낼 곳 고르기(`use-send-target.ts`, 결정 0091의 한국 문서 기능 스위치를 따른다).
   - `import/three-mesh.ts`: 3MF·GLB·PLY를 three의 읽기 코드로 읽어 엔진 그물 하나로 바꾼다(색·재질 버림, GLB는 m→mm·+Y 위→+Z 위).
   - `export/`: STL·OBJ·PNG 내보내기 바이트(`export.ts`)와 메뉴 요청을 받는 훅(`use-export.ts`).
-  - `ai/`: AI 도우미의 skill(`cad-skill.ts`: 영어 지시문, 도구 8개의 설명)과 도구가 문서를 고치는 일(`cad-tools.ts`, 고치는 도구 호출 하나는 `edit` 한 번).
-  - `i18n/`: 21개 언어 문구(`app/<언어>.ts`를 `strings-app.ts`·`strings.ts`가 합친다), 현재 언어(`locale.tsx`).
+  - `ai/`: AI 도우미. 창(`AiPanel.tsx`: 대화, 입력 칸, 답의 단계 표시, 요청 하나를 `openGroup`·`closeGroup`으로 묶기), 속성 창 아래 자리와 접힌 막대·열림 기억(`AiDock.tsx`, 리본의 **AI 도우미** 단추와 같이 연다), 입력 칸 위 빠른 실행 셋(`QuickActions.tsx`: 치수 도면 만들기, 방 배치 시작, 한글·워드로 보내기), 공용 `ai:*` 창구로 보내고 받기(`transport.ts`), 실패한 실행의 연결 상태와 사용량 보고(`connection.ts`), 구독 연결 상태와 연결 카드(`subscription-client.ts`), 답할 언어 지시(`lang-directive.ts`), skill(`cad-skill.ts`: 영어 지시문, 도구 8개의 설명), 도구가 문서를 고치는 일(`cad-tools.ts`, 고치는 도구 호출 하나는 `edit` 한 번). 화면 모양은 `ai-panel.css`.
+  - `i18n/`: 21개 언어 문구(`app/<언어>.ts`를 `strings-app.ts`가, `ai/<언어>.ts`를 `strings-ai.ts`가 모으고 `strings.ts`가 합친다), 현재 언어(`locale.tsx`). 낱말은 아래 용어집을 따른다.
 - 메인 프로세스(`src/main/`): `cad-main.ts`(뷰 만들기, 뷰마다 허용된 경로, 열기·저장, 닫기 전 저장 확인, 이름 바뀜 따라가기, 단독 실행), `recovery-main.ts`(복구 사본 저장소), `i18n-main.ts`(메인 문구), `mcp-queries.ts`(앱 안 MCP 서버의 질문: 모형 요약, 저장할 바이트), `atomic-write.ts`(파일을 끊김 없이 쓰기), `index.ts`(셸에 내보내는 함수 목록).
 - preload `src/preload/index.ts`: 화면에 `window.cadApi`를 건넨다.
-- IPC 계약 `src/shared/ipc.ts`(`CAD_CHANNELS`). 이 편집기의 창구 이름과 주고받는 자료의 모양이 전부 여기 있다.
+- IPC 계약 `src/shared/ipc.ts`(`CAD_CHANNELS`). 이 편집기의 창구 이름과 주고받는 자료의 모양이 전부 여기 있다. AI 구독 연결(Claude·Codex)의 요청과 답의 모양은 `src/shared/subscription-api.ts`에 있다. 처리기는 docs 메인이 앱 전체에 한 번 등록하고, 이 편집기는 부르기만 한다.
 - 시험 `tests/`(jsdom). three의 그리기 부분은 가짜로 바꾸고 문서·저장·복구·편집·AI 도구를 본다. e2e는 루트 `e2e/cad-tab.spec.ts`.
 
 ## 맡지 않는 것 (경계)
@@ -45,16 +45,24 @@ AI 도면 편집기다. 간단한 3D 모형과 DXF 도면을 `.ttukcad` 파일�
 
 ## 용어집
 
-번역은 이 표를 따른다(6단계에서 21개 언어 열을 채운다).
+번역은 이 표를 따른다. 리본·속성 창·상태 줄·AI 창·메인 프로세스 대화 상자·셸(홈 카드, 메뉴, 파일 형식 이름)·도움말 주제 `cad`가 모두 같은 낱말을 쓴다. `tests/glossary.test.ts`가 언어별 용어 표를 읽어 문구와 맞는지 본다.
 
-| 한국어      | 영어            | 뜻                                   |
-| ----------- | --------------- | ------------------------------------ |
-| AI 도면     | AI Drawing      | 이 편집기의 이름                     |
-| 도형        | shape           | 상자·원기둥 같은 기본 입체           |
-| 구멍        | hole            | 다른 도형에서 빼는 도형              |
-| 묶기 / 풀기 | group / ungroup | 여러 도형을 하나로 다루기            |
-| 줄 맞추기   | align           | 도형을 한 축의 기준에 맞추기         |
-| 작업판      | workplane       | 도형을 놓는 바닥 판                  |
-| 치수 도면   | dimension sheet | 세 방향 그림과 치수를 넣은 A4 도면   |
-| 표제란      | title block     | 도면 오른쪽 아래의 제목·날짜·축척 칸 |
-| 축척        | scale           | 도면 길이와 실제 길이의 비           |
+| 한국어        | 영어               | 뜻                                       |
+| ------------- | ------------------ | ---------------------------------------- |
+| AI 도면       | AI Drawing         | 이 편집기의 이름                         |
+| 도형          | shape              | 상자·원기둥 같은 기본 입체, 놓인 것 하나 |
+| 구멍          | hole               | 다른 도형에서 빼는 도형                  |
+| 묶기          | group              | 여러 도형을 하나로 다루기                |
+| 풀기          | ungroup            | 묶음을 다시 도형 여럿으로 나누기         |
+| 줄 맞추기     | align              | 도형을 한 축의 기준에 맞추기             |
+| 작업판        | workplane          | 도형을 놓는 바닥 판                      |
+| 치수 도면     | dimension sheet    | 세 방향 그림과 치수를 넣은 A4 도면       |
+| 표제란        | title block        | 도면 오른쪽 아래의 제목·날짜·축척 칸     |
+| 축척          | scale              | 도면 길이와 실제 길이의 비               |
+| 치수 재기     | measure            | 두 점 거리, 선 길이, 원 지름을 재는 도구 |
+| 직접 그리기   | sketch             | 점을 찍어 윤곽을 그리고 세우는 도구      |
+| 문서로 보내기 | send to a document | 치수 도면을 한글·워드 문서로 보내기      |
+
+### 언어별 용어
+
+21개 언어 열은 `src/renderer/i18n/glossary.md`에 있다(한자가 들어 있어 영어 전용 검사가 보지 않는 `i18n/` 아래에 둔다). 새 문구를 넣거나 고칠 때 그 표의 낱말을 쓰고, 표를 바꾸면 `tests/glossary.test.ts`를 돌린다.

@@ -6,7 +6,7 @@ export const de = {
   aiNewChat: 'Neuer Chat',
   aiEmptyTitle: 'Mit KI zeichnen',
   aiEmptyBody:
-    'Beschreiben Sie, was entstehen soll, zum Beispiel „einen Stiftehalter, 80 breit und 100 hoch, innen mit einem 68er-Loch ausgehöhlt“. Eine Anfrage ist ein Schritt: Ctrl+Z macht sie ganz rückgängig.',
+    'Beschreiben Sie, was entstehen soll, zum Beispiel „einen Stiftehalter, 80 breit und 100 hoch, innen mit einem 68er-Loch ausgehöhlt“. Eine Anfrage ist ein Schritt: Strg+Z macht sie ganz rückgängig.',
   aiComposerPlaceholder: 'Sagen Sie der KI, was sie erstellen oder ändern soll…',
   aiHintIdle: 'Enter zum Senden, Umschalt+Enter für neue Zeile',
   aiHintBusy: 'Antwortet…',
@@ -15,7 +15,7 @@ export const de = {
   aiThinking: 'Denkt nach',
   aiWorking: 'Arbeitet',
   aiGroupWorking: 'In Arbeit…',
-  aiWorkedSteps: 'Erledigt · {n} Schritte',
+  aiWorkedSteps: 'Erledigt · Schritte: {n}',
   aiStopped: 'Gestoppt',
   aiNoReply: '(keine Antwort)',
   aiTurnLimit: 'Schrittlimit pro Lauf erreicht — senden Sie eine weitere Anweisung.',
@@ -40,11 +40,11 @@ export const de = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: 'Zeichnung lesen',
   aiToolAddShapes: 'Formen platzieren · {n}',
-  aiToolUpdateShapes: 'Teile ändern · {n}',
-  aiToolDeleteShapes: 'Teile löschen · {n}',
-  aiToolGroupShapes: 'Teile gruppieren',
+  aiToolUpdateShapes: 'Formen ändern · {n}',
+  aiToolDeleteShapes: 'Formen löschen · {n}',
+  aiToolGroupShapes: 'Formen gruppieren',
   aiToolUngroupShapes: 'Gruppierung aufheben',
-  aiToolAlignShapes: 'Teile ausrichten · {n}',
+  aiToolAlignShapes: 'Formen ausrichten · {n}',
   aiToolSetWorkplane: 'Arbeitsfläche anpassen',
   aiToolRefused: '{action} · abgelehnt',
 } satisfies Record<keyof typeof zh, string>

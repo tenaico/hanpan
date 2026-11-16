@@ -34,7 +34,7 @@ export const id = {
   editNotScalable:
     'Bagian ini tidak dapat diubah ukurannya dengan pegangan. Mesh impor, gambar, grup, dan teks hanya dapat dipindahkan dan diputar.',
   editRefused: 'Perubahan itu tidak dapat dilakukan. Gambar tidak berubah.',
-  sketchTitle: 'Sketsa',
+  sketchTitle: 'Gambar sendiri',
   sketchHint: 'Klik pada bidang kerja untuk menaruh titik',
   sketchPoints: 'Titik',
   sketchHeight: 'Tinggi (mm)',
@@ -158,7 +158,7 @@ export const id = {
   measureFirst: 'Sekarang klik titik kedua',
   measureDone: 'Selesai',
   sheet: 'Lembar dimensi',
-  sheetEmpty: 'Belum ada bagian yang ditempatkan',
+  sheetEmpty: 'Belum ada bentuk yang ditaruh',
   sheetFieldTitle: 'Judul',
   sheetFieldDate: 'Tanggal',
   sheetFieldScale: 'Skala',

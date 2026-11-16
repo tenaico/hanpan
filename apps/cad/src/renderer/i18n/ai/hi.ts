@@ -38,11 +38,11 @@ export const hi = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: 'ड्रॉइंग पढ़ना',
   aiToolAddShapes: 'आकार रखना · {n}',
-  aiToolUpdateShapes: 'भाग बदलना · {n}',
-  aiToolDeleteShapes: 'भाग हटाना · {n}',
-  aiToolGroupShapes: 'भागों का समूह बनाना',
-  aiToolUngroupShapes: 'समूह हटाना',
-  aiToolAlignShapes: 'भाग संरेखित करना · {n}',
+  aiToolUpdateShapes: 'आकार बदलना · {n}',
+  aiToolDeleteShapes: 'आकार हटाना · {n}',
+  aiToolGroupShapes: 'आकारों का समूह बनाना',
+  aiToolUngroupShapes: 'समूह तोड़ना',
+  aiToolAlignShapes: 'आकार संरेखित करना · {n}',
   aiToolSetWorkplane: 'कार्य पटल का आकार बदलना',
   aiToolRefused: '{action} · अस्वीकृत',
 } satisfies Record<keyof typeof zh, string>

@@ -36,7 +36,7 @@ export const fr = {
   editNotScalable:
     'Cette pièce ne peut pas être redimensionnée avec la poignée. Les maillages importés, les dessins, les groupes et le texte peuvent seulement être déplacés et tournés.',
   editRefused: 'Cette modification est impossible. Le dessin n’a pas changé.',
-  sketchTitle: 'Croquis',
+  sketchTitle: 'Dessin libre',
   sketchHint: 'Cliquez sur le plan de travail pour placer des points',
   sketchPoints: 'Points',
   sketchHeight: 'Hauteur (mm)',
@@ -160,7 +160,7 @@ export const fr = {
   measureFirst: 'Cliquez maintenant le second point',
   measureDone: 'Terminer',
   sheet: 'Plan coté',
-  sheetEmpty: "Aucune pièce n'a été placée",
+  sheetEmpty: "Aucune forme n'a été placée",
   sheetFieldTitle: 'Titre',
   sheetFieldDate: 'Date',
   sheetFieldScale: 'Échelle',

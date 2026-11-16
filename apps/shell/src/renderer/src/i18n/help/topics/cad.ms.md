@@ -13,17 +13,17 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 ## Meletakkan bentuk
 
 - **Utama › Letak bentuk** memuatkan empat bentuk yang paling kerap digunakan; **Lagi** membuka galeri kesemua 15 bentuk: kotak, silinder, sfera, kon, piramid, baji, hemisfera, tiub, donat, prisma segi tiga, prisma heksagon, kotak bucu bulat, prisma bintang, bumbung dan teks.
-- Bentuk baharu muncul di tengah papan kerja, iaitu lantai tempat model berdiri. Klik sesuatu bahagian untuk memilihnya; Shift-klik atau Ctrl-klik menambah bahagian lain ke dalam pilihan.
-- **Paparan › Pemegang** menentukan fungsi pemegang pada bahagian yang dipilih: **Alih**, **Putar** atau **Saiz**. Seretan melekap pada 1 mm dan 15°; tahan Alt semasa menyeret untuk mematikan lekapan.
-- Panel **Sifat** di sebelah kanan menunjukkan bahagian yang dipilih: nama, jenis (pepejal atau lubang), saiz, kedudukan (mm), putaran (°) dan warna. Taip nombor untuk mengubahnya. **Sembunyi** dan **Kunci** mengelakkan bahagian itu daripada mengganggu.
+- Bentuk baharu muncul di tengah papan kerja, iaitu lantai tempat model berdiri. Klik sesuatu bentuk untuk memilihnya; Shift-klik atau Ctrl-klik menambah bentuk lain ke dalam pilihan.
+- **Paparan › Pemegang** menentukan fungsi pemegang pada bentuk yang dipilih: **Alih**, **Putar** atau **Saiz**. Seretan melekap pada 1 mm dan 15°; tahan Alt semasa menyeret untuk mematikan lekapan.
+- Panel **Sifat** di sebelah kanan menunjukkan bentuk yang dipilih: nama, jenis (pepejal atau lubang), saiz, kedudukan (mm), putaran (°) dan warna. Taip nombor untuk mengubahnya. **Sembunyi** dan **Kunci** mengelakkan bentuk itu daripada mengganggu.
 - **Paparan › Pandangan** memusingkan kamera ke **Atas**, **Depan** atau **Sisi**, dan **Tunjuk semua** memuatkan seluruh model dalam paparan. Seret di dalam paparan untuk memusingkannya, dan gunakan roda tetikus untuk zum.
-- Baris status di bawah menunjukkan saiz papan kerja, lekapan dan grid, serta lebar × dalam × tinggi bahagian yang dipilih.
+- Baris status di bawah menunjukkan saiz papan kerja, lekapan dan grid, serta lebar × dalam × tinggi bentuk yang dipilih.
 
 ## Lubang, kumpulan dan penjajaran
 
 - Lubang ialah bentuk yang memotong. Pilih bentuk dan tekan **Lubang** (atau H) untuk menjadikannya lubang; tekan sekali lagi untuk menjadikannya pepejal semula.
 - Lubang hanya memotong di dalam kumpulan. Pilih lubang itu dan bentuk pepejal yang perlu dipotongnya, kemudian tekan **Kumpulkan** (Ctrl+G): kumpulan itu ialah bentuk pepejal tolak lubang. **Leraikan** (Ctrl+Shift+G) memisahkannya semula.
-- **Jajarkan** menyusun bahagian yang dipilih sebaris dengan bahagian yang anda pilih dahulu: kiri, tengah atau kanan; depan, tengah atau belakang; bawah, tengah atau atas.
+- **Jajarkan** menyusun bentuk yang dipilih sebaris dengan bentuk yang anda pilih dahulu: kiri, tengah atau kanan; depan, tengah atau belakang; bawah, tengah atau atas.
 - Contohnya, silinder bergaris pusat 80 mm dan silinder lubang bergaris pusat 68 mm yang dinaikkan 5 mm, kedua-duanya dipilih lalu dikumpulkan, menjadi cawan dengan lantai setebal 5 mm.
 
 ## Lakaran dan teks
@@ -38,16 +38,16 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 - **Ukur** menunjukkan jarak antara dua titik yang anda klik, panjang sesuatu garisan atau garis pusat sesuatu bulatan. Titik melekap pada bucu, hujung garisan dan pusat bulatan. Esc mengosongkan bacaan.
 - **Helaian dimensi** melukis model dari depan, atas dan sisi pada sehelai kertas A4, bersama lebar, dalam dan tinggi keseluruhan, skala yang sesuai (1:1, 1:2, 1:5, 1:10 …) dan blok tajuk dengan nama, tarikh dan skala. Lukisan yang berasal daripada fail DXF hanya menunjukkan pandangan dari atas.
 - Dalam helaian itu, **Salin gambar** meletakkannya pada papan keratan. Tampalkannya ke dalam tab Hangul, Word atau PowerPoint.
-- **Hantar ke Hangul** membuka dokumen Hangul baharu yang mengandungi helaian itu dan jadual bahagian beserta ukurannya. Apabila **Ciri dokumen Korea** dimatikan dalam Tetapan, butang itu tertulis **Hantar ke Word** dan membuat dokumen Word.
+- **Hantar ke Hangul** membuka dokumen Hangul baharu yang mengandungi helaian itu dan jadual bentuk beserta ukurannya. Apabila **Ciri dokumen Korea** dimatikan dalam Tetapan, butang itu tertulis **Hantar ke Word** dan membuat dokumen Word.
 
 ## Pembantu AI
 
 - Panel AI di sebelah lukisan boleh meletakkan bentuk, mengubah saiz dan kedudukan, membuat lubang, mengumpulkan, menjajarkan, menetapkan saiz papan kerja dan meringkaskan model. Beberapa permintaan untuk dicuba:
   - "Buat bekas pensel lebar 80 mm dan tinggi 100 mm, berongga di dalam dengan garis pusat 68 mm"
   - "Jadikan papan kerja sebuah bilik 5 × 4 m dan letakkan empat meja"
-  - "Jajarkan bahagian yang dipilih ke kiri"
-- Semua yang diubah oleh satu permintaan dikembalikan dengan satu **Buat Asal** (Ctrl+Z), tidak kira berapa banyak bahagian yang terlibat.
-- AI menerima permintaan anda dan ringkasan model (nama, jenis, saiz dan kedudukan setiap bahagian). AI tidak boleh menyimpan, membuka, mengeksport atau menghantar; semua itu kekal di tangan anda.
+  - "Jajarkan bentuk yang dipilih ke kiri"
+- Semua yang diubah oleh satu permintaan dikembalikan dengan satu **Buat asal** (Ctrl+Z), tidak kira berapa banyak bentuk yang terlibat.
+- AI menerima permintaan anda dan ringkasan model (nama, jenis, saiz dan kedudukan setiap bentuk). AI tidak boleh menyimpan, membuka, mengeksport atau menghantar; semua itu kekal di tangan anda.
 
 ## Menyimpan dan memulihkan
 
@@ -81,5 +81,5 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 ## Perkara yang tidak boleh dilakukan
 
 - Membuka fail DWG, STEP, IGES atau BREP secara terus. Minta DXF atau STL sebagai gantinya.
-- Kekangan, sejarah reka bentuk atau himpunan seperti dalam program CAD profesional. Setiap bahagian ditetapkan oleh nombornya sendiri.
+- Kekangan, sejarah reka bentuk atau himpunan seperti dalam program CAD profesional. Setiap bentuk ditetapkan oleh nombornya sendiri.
 - Mencetak. Hantar helaian dimensi ke dokumen Hangul atau Word dan cetak dari sana.

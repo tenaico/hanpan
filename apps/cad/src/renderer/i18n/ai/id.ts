@@ -38,11 +38,11 @@ export const id = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: 'Membaca gambar',
   aiToolAddShapes: 'Menaruh bentuk · {n}',
-  aiToolUpdateShapes: 'Mengubah bagian · {n}',
-  aiToolDeleteShapes: 'Menghapus bagian · {n}',
-  aiToolGroupShapes: 'Mengelompokkan bagian',
+  aiToolUpdateShapes: 'Mengubah bentuk · {n}',
+  aiToolDeleteShapes: 'Menghapus bentuk · {n}',
+  aiToolGroupShapes: 'Mengelompokkan bentuk',
   aiToolUngroupShapes: 'Memisahkan kelompok',
-  aiToolAlignShapes: 'Meratakan bagian · {n}',
+  aiToolAlignShapes: 'Meratakan bentuk · {n}',
   aiToolSetWorkplane: 'Mengubah ukuran bidang kerja',
   aiToolRefused: '{action} · ditolak',
 } satisfies Record<keyof typeof zh, string>

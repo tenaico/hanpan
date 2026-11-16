@@ -38,11 +38,11 @@ export const th = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: 'อ่านแบบ',
   aiToolAddShapes: 'วางรูปทรง · {n}',
-  aiToolUpdateShapes: 'แก้ไขชิ้นส่วน · {n}',
-  aiToolDeleteShapes: 'ลบชิ้นส่วน · {n}',
-  aiToolGroupShapes: 'จัดกลุ่มชิ้นส่วน',
-  aiToolUngroupShapes: 'ยกเลิกการจัดกลุ่ม',
-  aiToolAlignShapes: 'จัดแนวชิ้นส่วน · {n}',
+  aiToolUpdateShapes: 'แก้ไขรูปทรง · {n}',
+  aiToolDeleteShapes: 'ลบรูปทรง · {n}',
+  aiToolGroupShapes: 'จัดกลุ่มรูปทรง',
+  aiToolUngroupShapes: 'ยกเลิกกลุ่ม',
+  aiToolAlignShapes: 'จัดแนวรูปทรง · {n}',
   aiToolSetWorkplane: 'ปรับขนาดแผ่นงาน',
   aiToolRefused: '{action} · ถูกปฏิเสธ',
 } satisfies Record<keyof typeof zh, string>

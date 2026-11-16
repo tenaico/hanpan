@@ -13,17 +13,17 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 ## Placer des formes
 
 - **Accueil › Placer des formes** contient les quatre formes les plus utilisées ; **Plus** ouvre la galerie des 15 formes : pavé, cylindre, sphère, cône, pyramide, coin, demi-sphère, tube, tore, prisme triangulaire, prisme hexagonal, pavé arrondi, prisme étoilé, toit et texte.
-- Une nouvelle forme apparaît au centre du plan de travail, la plaque sur laquelle repose le modèle. Cliquez sur une pièce pour la sélectionner ; Shift+clic ou Ctrl+clic ajoute d'autres pièces à la sélection.
-- **Affichage › Poignées** choisit l'effet des poignées de la pièce sélectionnée : **Déplacer**, **Pivoter** ou **Taille**. En glissant, la pièce avance par pas de 1 mm et de 15° ; maintenez Alt pendant le glissement pour couper l'aimantation.
-- Le panneau **Propriétés** à droite montre la pièce sélectionnée : nom, type (plein ou trou), dimensions, emplacement (mm), rotation (°) et couleur. Tapez un nombre pour le modifier. **Masquer** et **Verrouiller** mettent une pièce de côté pour qu'elle ne gêne pas.
+- Une nouvelle forme apparaît au centre du plan de travail, la plaque sur laquelle repose le modèle. Cliquez sur une forme pour la sélectionner ; Shift+clic ou Ctrl+clic ajoute d'autres formes à la sélection.
+- **Affichage › Poignées** choisit l'effet des poignées de la forme sélectionnée : **Déplacer**, **Pivoter** ou **Taille**. En glissant, la forme avance par pas de 1 mm et de 15° ; maintenez Alt pendant le glissement pour couper l'aimantation.
+- Le panneau **Propriétés** à droite montre la forme sélectionnée : nom, type (plein ou trou), dimensions, emplacement (mm), rotation (°) et couleur. Tapez un nombre pour le modifier. **Masquer** et **Verrouiller** mettent une forme de côté pour qu'elle ne gêne pas.
 - **Affichage › Vues** tourne la caméra vers **Dessus**, **Face** ou **Côté**, et **Tout afficher** cadre le modèle entier. Faites glisser dans la vue pour la faire tourner, et utilisez la molette de la souris pour zoomer.
-- La barre d'état en bas indique la taille du plan de travail, le pas d'aimantation et la grille, ainsi que la largeur × profondeur × hauteur de la pièce sélectionnée.
+- La barre d'état en bas indique la taille du plan de travail, le pas d'aimantation et la grille, ainsi que la largeur × profondeur × hauteur de la forme sélectionnée.
 
 ## Trous, groupes et alignement
 
 - Un trou est une forme qui découpe. Sélectionnez une forme et appuyez sur **Trou** (ou H) pour en faire un trou ; appuyez à nouveau pour la rendre pleine.
 - Un trou ne découpe qu'à l'intérieur d'un groupe. Sélectionnez le trou et les formes pleines qu'il doit découper, puis appuyez sur **Grouper** (Ctrl+G) : le groupe correspond aux formes pleines moins les trous. **Dissocier** (Ctrl+Shift+G) le défait.
-- **Aligner** range les pièces sélectionnées sur la pièce sélectionnée en premier : à gauche, au centre ou à droite ; à l'avant, au centre ou à l'arrière ; en bas, au centre ou en haut.
+- **Aligner** range les formes sélectionnées sur la forme sélectionnée en premier : à gauche, au centre ou à droite ; à l'avant, au centre ou à l'arrière ; en bas, au centre ou en haut.
 - Exemple : un cylindre de 80 mm de diamètre et un cylindre-trou de 68 mm de diamètre surélevé de 5 mm, sélectionnés ensemble puis groupés, donnent un gobelet avec un fond de 5 mm.
 
 ## Dessin libre et texte
@@ -38,16 +38,16 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 - **Mesurer** affiche la distance entre deux points sur lesquels vous cliquez, la longueur d'une ligne ou le diamètre d'un cercle. Les points s'accrochent aux coins, aux extrémités des lignes et aux centres des cercles. Esc efface la mesure.
 - **Plan coté** dessine le modèle de face, de dessus et de côté sur une feuille A4, avec la largeur, la profondeur et la hauteur totales, une échelle adaptée (1:1, 1:2, 1:5, 1:10 …) et un cartouche avec le nom, la date et l'échelle. Un dessin issu d'un fichier DXF ne montre que la vue de dessus.
 - Dans le plan coté, **Copier l'image** le place dans le presse-papiers. Collez-le dans un onglet Hangul, Word ou PowerPoint.
-- **Envoyer vers Hangul** ouvre un nouveau document Hangul avec le plan et un tableau des pièces et de leurs dimensions. Si **Fonctions de documents coréens** est désactivé dans les paramètres, le bouton devient **Envoyer vers Word** et crée un document Word à la place.
+- **Envoyer vers Hangul** ouvre un nouveau document Hangul avec le plan et un tableau des formes et de leurs dimensions. Si **Fonctions de documents coréens** est désactivé dans les paramètres, le bouton devient **Envoyer vers Word** et crée un document Word à la place.
 
 ## L'assistant IA
 
 - Le panneau IA à côté du dessin place des formes, change les dimensions et les positions, crée des trous, groupe, aligne, règle la taille du plan de travail et résume le modèle. Quelques demandes à essayer :
   - « Fais un pot à crayons de 80 mm de large et 100 mm de haut, creux à l'intérieur avec un diamètre de 68 mm »
   - « Fais du plan de travail une pièce de 5 × 4 m et places-y quatre bureaux »
-  - « Aligne les pièces sélectionnées à gauche »
-- Tout ce qu'une demande a modifié revient en arrière avec un seul **Annuler** (Ctrl+Z), quel que soit le nombre de pièces touchées.
-- L'IA reçoit votre demande et un résumé du modèle (nom, type, dimensions et emplacement de chaque pièce). Elle ne peut ni enregistrer, ni ouvrir, ni exporter, ni envoyer : ces actions restent entre vos mains.
+  - « Aligne les formes sélectionnées à gauche »
+- Tout ce qu'une demande a modifié revient en arrière avec un seul **Annuler** (Ctrl+Z), quel que soit le nombre de formes touchées.
+- L'IA reçoit votre demande et un résumé du modèle (nom, type, dimensions et emplacement de chaque forme). Elle ne peut ni enregistrer, ni ouvrir, ni exporter, ni envoyer : ces actions restent entre vos mains.
 
 ## Enregistrer et récupérer
 
@@ -81,5 +81,5 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 ## Ce qu'il ne sait pas faire
 
 - Ouvrir directement les fichiers DWG, STEP, IGES ou BREP. Demandez plutôt un DXF ou un STL.
-- Contraintes, historique de conception ou assemblages comme dans les logiciels de CAO professionnels. Chaque pièce est définie par ses propres valeurs.
+- Contraintes, historique de conception ou assemblages comme dans les logiciels de CAO professionnels. Chaque forme est définie par ses propres valeurs.
 - Imprimer. Envoyez le plan coté vers un document Hangul ou Word et imprimez depuis celui-ci.

@@ -42,7 +42,7 @@ export const ko = {
   aiToolDeleteShapes: '도형 지우기 · {n}개',
   aiToolGroupShapes: '도형 묶기',
   aiToolUngroupShapes: '묶음 풀기',
-  aiToolAlignShapes: '줄 맞추기 · {n}개',
+  aiToolAlignShapes: '도형 줄 맞추기 · {n}개',
   aiToolSetWorkplane: '작업판 크기 바꾸기',
   aiToolRefused: '{action} · 거절됨',
 } satisfies Record<keyof typeof zh, string>

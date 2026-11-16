@@ -36,7 +36,7 @@ export const it = {
   editNotScalable:
     'Questa parte non può essere ridimensionata con la maniglia. Mesh importate, disegni, gruppi e testo possono solo essere spostati e ruotati.',
   editRefused: 'Impossibile apportare questa modifica. Il disegno non è cambiato.',
-  sketchTitle: 'Schizzo',
+  sketchTitle: 'Disegno libero',
   sketchHint: 'Fai clic sul piano di lavoro per inserire i punti',
   sketchPoints: 'Punti',
   sketchHeight: 'Altezza (mm)',
@@ -159,7 +159,7 @@ export const it = {
   measureFirst: 'Ora fai clic sul secondo punto',
   measureDone: 'Fine',
   sheet: 'Tavola quotata',
-  sheetEmpty: 'Nessun pezzo è stato posizionato',
+  sheetEmpty: 'Nessuna forma è stata inserita',
   sheetFieldTitle: 'Titolo',
   sheetFieldDate: 'Data',
   sheetFieldScale: 'Scala',

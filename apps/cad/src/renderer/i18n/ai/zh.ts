@@ -36,11 +36,11 @@ export const zh = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: '读取图纸',
   aiToolAddShapes: '放置形状 · {n} 个',
-  aiToolUpdateShapes: '修改部件 · {n} 个',
-  aiToolDeleteShapes: '删除部件 · {n} 个',
-  aiToolGroupShapes: '组合部件',
+  aiToolUpdateShapes: '修改形状 · {n} 个',
+  aiToolDeleteShapes: '删除形状 · {n} 个',
+  aiToolGroupShapes: '组合形状',
   aiToolUngroupShapes: '取消组合',
-  aiToolAlignShapes: '对齐部件 · {n} 个',
+  aiToolAlignShapes: '对齐形状 · {n} 个',
   aiToolSetWorkplane: '调整工作板大小',
   aiToolRefused: '{action} · 被拒绝',
 }

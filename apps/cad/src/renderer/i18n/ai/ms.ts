@@ -38,11 +38,11 @@ export const ms = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: 'Membaca lukisan',
   aiToolAddShapes: 'Meletak bentuk · {n}',
-  aiToolUpdateShapes: 'Mengubah bahagian · {n}',
-  aiToolDeleteShapes: 'Memadam bahagian · {n}',
-  aiToolGroupShapes: 'Mengumpulkan bahagian',
+  aiToolUpdateShapes: 'Mengubah bentuk · {n}',
+  aiToolDeleteShapes: 'Memadam bentuk · {n}',
+  aiToolGroupShapes: 'Mengumpulkan bentuk',
   aiToolUngroupShapes: 'Meleraikan kumpulan',
-  aiToolAlignShapes: 'Menjajarkan bahagian · {n}',
+  aiToolAlignShapes: 'Menjajarkan bentuk · {n}',
   aiToolSetWorkplane: 'Mengubah saiz papan kerja',
   aiToolRefused: '{action} · ditolak',
 } satisfies Record<keyof typeof zh, string>

@@ -13,17 +13,17 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 ## Colocar formas
 
 - **Página inicial › Colocar formas** traz as quatro formas mais usadas; **Mais** abre a galeria com todas as 15: caixa, cilindro, esfera, cone, pirâmide, cunha, hemisfério, tubo, toro, prisma triangular, prisma hexagonal, caixa arredondada, prisma estrela, telhado e texto.
-- Cada forma nova aparece no centro do plano de trabalho, a base onde o modelo fica apoiado. Clique em uma peça para selecioná-la; Shift+clique ou Ctrl+clique acrescenta outras peças à seleção.
-- **Exibir › Alças** define o que as alças da peça selecionada fazem: **Mover**, **Girar** ou **Tamanho**. Ao arrastar, a peça anda em passos de 1 mm e 15°; segure Alt enquanto arrasta para desligar o encaixe.
-- O painel **Propriedades** à direita mostra a peça selecionada: nome, tipo (sólido ou furo), tamanho, posição (mm), rotação (°) e cor. Digite um número para mudar o valor. **Ocultar** e **Bloquear** tiram uma peça do caminho.
+- Cada forma nova aparece no centro do plano de trabalho, a base onde o modelo fica apoiado. Clique em uma forma para selecioná-la; Shift+clique ou Ctrl+clique acrescenta outras formas à seleção.
+- **Exibir › Alças** define o que as alças da forma selecionada fazem: **Mover**, **Girar** ou **Tamanho**. Ao arrastar, a forma anda em passos de 1 mm e 15°; segure Alt enquanto arrasta para desligar o encaixe.
+- O painel **Propriedades** à direita mostra a forma selecionada: nome, tipo (sólido ou furo), tamanho, posição (mm), rotação (°) e cor. Digite um número para mudar o valor. **Ocultar** e **Bloquear** tiram uma forma do caminho.
 - **Exibir › Vistas** vira a câmera para **Topo**, **Frente** ou **Lado**, e **Mostrar tudo** enquadra o modelo inteiro. Arraste na vista para girá-la e use a roda do mouse para aproximar ou afastar.
-- A barra de status embaixo mostra o tamanho do plano de trabalho, o encaixe e a grade, além da largura × profundidade × altura da peça selecionada.
+- A barra de status embaixo mostra o tamanho do plano de trabalho, o encaixe e a grade, além da largura × profundidade × altura da forma selecionada.
 
 ## Furos, grupos e alinhamento
 
 - Um furo é uma forma que recorta. Selecione uma forma e clique em **Furo** (ou H) para transformá-la em furo; clique de novo para voltar a ser sólida.
 - Um furo só recorta dentro de um grupo. Selecione o furo e os sólidos que ele deve recortar e clique em **Agrupar** (Ctrl+G): o grupo é o resultado dos sólidos menos os furos. **Desagrupar** (Ctrl+Shift+G) desfaz o grupo.
-- **Alinhar** põe as peças selecionadas em linha com a primeira peça que você selecionou: esquerda, centro ou direita; frente, centro ou fundo; base, centro ou topo.
+- **Alinhar** põe as formas selecionadas em linha com a primeira forma que você selecionou: esquerda, centro ou direita; frente, centro ou fundo; base, centro ou topo.
 - Por exemplo, um cilindro de 80 mm de diâmetro e um cilindro-furo de 68 mm de diâmetro levantado 5 mm, selecionados juntos e agrupados, formam um copo com fundo de 5 mm.
 
 ## Desenhar à mão e texto
@@ -38,16 +38,16 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 - **Medir** mostra a distância entre dois pontos em que você clica, o comprimento de uma linha ou o diâmetro de um círculo. Os pontos se prendem a cantos, pontas de linhas e centros de círculos. Esc apaga a medida.
 - **Folha de cotas** desenha o modelo de frente, de cima e de lado em uma folha A4, com a largura, a profundidade e a altura totais, uma escala que caiba (1:1, 1:2, 1:5, 1:10 …) e um carimbo com o nome, a data e a escala. Um desenho que veio de um arquivo DXF mostra só a vista de cima.
 - Na folha, **Copiar imagem** coloca a folha na área de transferência. Cole-a em uma aba do Hangul, do Word ou do PowerPoint.
-- **Enviar para o Hangul** abre um novo documento do Hangul com a folha e uma tabela das peças e seus tamanhos. Quando **Recursos de documentos coreanos** está desligado nas configurações, o botão passa a ser **Enviar para o Word** e cria um documento do Word.
+- **Enviar para o Hangul** abre um novo documento do Hangul com a folha e uma tabela das formas e seus tamanhos. Quando **Recursos de documentos coreanos** está desligado nas configurações, o botão passa a ser **Enviar para o Word** e cria um documento do Word.
 
 ## O assistente de IA
 
 - O painel de IA ao lado do desenho coloca formas, muda tamanhos e posições, faz furos, agrupa, alinha, define o tamanho do plano de trabalho e resume o modelo. Alguns pedidos para testar:
   - "Faça um porta-lápis de 80 mm de largura e 100 mm de altura, oco por dentro com 68 mm de diâmetro"
   - "Transforme o plano de trabalho em uma sala de 5 × 4 m e coloque quatro mesas"
-  - "Alinhe à esquerda as peças selecionadas"
-- Tudo o que um pedido mudou volta com um único **Desfazer** (Ctrl+Z), não importa quantas peças ele tenha alterado.
-- A IA recebe o seu pedido e um resumo do modelo (nome, tipo, tamanho e posição de cada peça). Ela não pode salvar, abrir, exportar nem enviar; isso fica com você.
+  - "Alinhe à esquerda as formas selecionadas"
+- Tudo o que um pedido mudou volta com um único **Desfazer** (Ctrl+Z), não importa quantas formas ele tenha alterado.
+- A IA recebe o seu pedido e um resumo do modelo (nome, tipo, tamanho e posição de cada forma). Ela não pode salvar, abrir, exportar nem enviar; isso fica com você.
 
 ## Salvar e recuperar
 
@@ -81,5 +81,5 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 ## O que ele não faz
 
 - Abrir diretamente arquivos DWG, STEP, IGES ou BREP. Peça um DXF ou um STL no lugar.
-- Restrições, histórico de projeto ou montagens como nos programas de CAD profissionais. Cada peça é definida pelos próprios números.
+- Restrições, histórico de projeto ou montagens como nos programas de CAD profissionais. Cada forma é definida pelos próprios números.
 - Imprimir. Envie a folha de cotas para um documento do Hangul ou do Word e imprima de lá.

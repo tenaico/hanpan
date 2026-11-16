@@ -37,11 +37,11 @@ export const zhTW = {
   // the steps of a reply: what each drawing tool did
   aiToolReadModel: '讀取圖面',
   aiToolAddShapes: '放置形狀 · {n} 個',
-  aiToolUpdateShapes: '修改零件 · {n} 個',
-  aiToolDeleteShapes: '刪除零件 · {n} 個',
-  aiToolGroupShapes: '群組零件',
+  aiToolUpdateShapes: '修改形狀 · {n} 個',
+  aiToolDeleteShapes: '刪除形狀 · {n} 個',
+  aiToolGroupShapes: '群組形狀',
   aiToolUngroupShapes: '取消群組',
-  aiToolAlignShapes: '對齊零件 · {n} 個',
+  aiToolAlignShapes: '對齊形狀 · {n} 個',
   aiToolSetWorkplane: '調整工作板大小',
   aiToolRefused: '{action} · 已拒絕',
 } satisfies Record<keyof typeof zh, string>

@@ -36,8 +36,8 @@ export const ja = {
   editNotScalable:
     'この図形はハンドルでサイズを変更できません。読み込んだメッシュ、図面、グループ、文字は移動と回転のみできます。',
   editRefused: 'その変更はできませんでした。図面は変わっていません。',
-  sketchTitle: 'スケッチ',
-  sketchHint: '作業平面をクリックして点を置きます',
+  sketchTitle: '手描き',
+  sketchHint: '作業面をクリックして点を置きます',
   sketchPoints: '点の数',
   sketchHeight: '高さ (mm)',
   sketchClose: '図形を閉じる',

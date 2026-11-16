@@ -13,17 +13,17 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 ## Vormen plaatsen
 
 - **Start › Vormen plaatsen** bevat de vier meest gebruikte vormen; **Meer** opent de galerij met alle 15: blok, cilinder, bol, kegel, piramide, wig, halve bol, buis, torus, driehoekig prisma, zeshoekig prisma, afgerond blok, sterprisma, dak en tekst.
-- Een nieuwe vorm verschijnt in het midden van het werkvlak, de grondplaat waarop het model staat. Klik op een onderdeel om het te selecteren; met Shift-klik of Ctrl-klik voegt u meer onderdelen aan de selectie toe.
-- **Beeld › Grepen** bepaalt wat de grepen op het geselecteerde onderdeel doen: **Verplaatsen**, **Draaien** of **Grootte**. Slepen springt per 1 mm en 15°; houd Alt ingedrukt tijdens het slepen om dat uit te zetten.
-- Het paneel **Eigenschappen** rechts toont het geselecteerde onderdeel: naam, soort (massief of gat), grootte, positie (mm), draaiing (°) en kleur. Typ een getal om iets te wijzigen. **Verbergen** en **Vergrendelen** zetten een onderdeel uit de weg.
+- Een nieuwe vorm verschijnt in het midden van het werkvlak, de grondplaat waarop het model staat. Klik op een vorm om hem te selecteren; met Shift-klik of Ctrl-klik voegt u meer vormen aan de selectie toe.
+- **Beeld › Grepen** bepaalt wat de grepen op de geselecteerde vorm doen: **Verplaatsen**, **Draaien** of **Grootte**. Slepen springt per 1 mm en 15°; houd Alt ingedrukt tijdens het slepen om dat uit te zetten.
+- Het paneel **Eigenschappen** rechts toont de geselecteerde vorm: naam, soort (massief of gat), grootte, positie (mm), draaiing (°) en kleur. Typ een getal om iets te wijzigen. **Verbergen** en **Vergrendelen** zetten een vorm uit de weg.
 - **Beeld › Aanzichten** draait de camera naar **Boven**, **Voor** of **Zij**, en **Alles tonen** past het hele model in beeld. Sleep in het beeld om het te draaien en gebruik het muiswiel om in en uit te zoomen.
-- De statusregel onderaan toont de grootte van het werkvlak, de uitlijnstap en het raster, en de breedte × diepte × hoogte van het geselecteerde onderdeel.
+- De statusregel onderaan toont de grootte van het werkvlak, de snapstap en het raster, en de breedte × diepte × hoogte van de geselecteerde vorm.
 
 ## Gaten, groepen en uitlijnen
 
 - Een gat is een vorm die wegsnijdt. Selecteer een vorm en druk op **Gat** (of H) om er een gat van te maken; druk nog eens om hem weer massief te maken.
 - Een gat snijdt alleen binnen een groep. Selecteer het gat en de massieve vormen waar het doorheen moet, en druk op **Groeperen** (Ctrl+G): de groep is de massieve vormen min de gaten. **Groep opheffen** (Ctrl+Shift+G) haalt hem weer uit elkaar.
-- **Uitlijnen** zet de geselecteerde onderdelen op één lijn met het onderdeel dat u als eerste selecteerde: links, midden of rechts; voor, midden of achter; onder, midden of boven.
+- **Uitlijnen** zet de geselecteerde vormen op één lijn met de vorm die u als eerste selecteerde: links, midden of rechts; voor, midden of achter; onder, midden of boven.
 - Een cilinder van 80 mm doorsnede en een gatcilinder van 68 mm doorsnede die 5 mm omhoog staat, samen geselecteerd en gegroepeerd, geven bijvoorbeeld een beker met een bodem van 5 mm.
 
 ## Zelf tekenen en tekst
@@ -38,16 +38,16 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 - **Meten** toont de afstand tussen twee punten waarop u klikt, de lengte van een lijn of de doorsnede van een cirkel. Punten springen naar hoeken, lijneinden en cirkelmiddelpunten. Esc wist de meting.
 - **Maatblad** tekent het model van voren, van boven en van opzij op een A4-blad, met de totale breedte, diepte en hoogte, een passende schaal (1:1, 1:2, 1:5, 1:10 …) en een titelblok met naam, datum en schaal. Een tekening uit een DXF-bestand toont alleen het bovenaanzicht.
 - In het blad zet **Afbeelding kopiëren** het op het klembord. Plak het in een Hangul-, Word- of PowerPoint-tabblad.
-- **Naar Hangul sturen** opent een nieuw Hangul-document met het blad en een tabel van de onderdelen en hun maten. Als **Koreaanse documentfuncties** in Instellingen uit staat, heet de knop **Naar Word sturen** en maakt hij een Word-document.
+- **Naar Hangul sturen** opent een nieuw Hangul-document met het blad en een tabel van de vormen en hun maten. Als **Koreaanse documentfuncties** in Instellingen uit staat, heet de knop **Naar Word sturen** en maakt hij een Word-document.
 
 ## De AI-assistent
 
 - Het AI-paneel naast de tekening plaatst vormen, wijzigt maten en posities, maakt gaten, groepeert, lijnt uit, stelt de grootte van het werkvlak in en vat het model samen. Enkele verzoeken om te proberen:
   - "Maak een pennenbak van 80 mm breed en 100 mm hoog, binnenin hol met een doorsnede van 68 mm"
   - "Maak van het werkvlak een kamer van 5 × 4 m en zet er vier bureaus in"
-  - "Lijn de geselecteerde onderdelen links uit"
-- Alles wat één verzoek veranderde, draait u terug met één keer **Ongedaan maken** (Ctrl+Z), hoeveel onderdelen het ook raakte.
-- De AI krijgt uw verzoek en een samenvatting van het model (naam, soort, grootte en positie van elk onderdeel). Hij kan niet opslaan, openen, exporteren of versturen; dat blijft bij u.
+  - "Lijn de geselecteerde vormen links uit"
+- Alles wat één verzoek veranderde, draait u terug met één keer **Ongedaan maken** (Ctrl+Z), hoeveel vormen het ook raakte.
+- De AI krijgt uw verzoek en een samenvatting van het model (naam, soort, grootte en positie van elke vorm). Hij kan niet opslaan, openen, exporteren of versturen; dat blijft bij u.
 
 ## Opslaan en herstellen
 
@@ -81,5 +81,5 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 ## Wat het niet kan
 
 - DWG-, STEP-, IGES- of BREP-bestanden rechtstreeks openen. Vraag in plaats daarvan om DXF of STL.
-- Beperkingen, ontwerpgeschiedenis of samenstellingen zoals in professionele CAD-programma's. Elk onderdeel wordt bepaald door zijn eigen getallen.
+- Beperkingen, ontwerpgeschiedenis of samenstellingen zoals in professionele CAD-programma's. Elke vorm wordt bepaald door zijn eigen getallen.
 - Afdrukken. Stuur het maatblad naar een Hangul- of Word-document en druk het daar af.
