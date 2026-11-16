@@ -97,17 +97,19 @@ class Svg {
   }
 
   circle(cx: number, cy: number, r: number): void {
-    this.parts.push(`<circle cx="${num(cx)}" cy="${num(cy)}" r="${num(r)}" fill="none"/>`)
+    this.parts.push(
+      `<circle cx="${num(cx)}" cy="${num(cy)}" r="${num(r)}" fill="none" stroke-width="0.25"/>`,
+    )
   }
 
   path(d: string): void {
-    this.parts.push(`<path d="${d}" fill="none"/>`)
+    this.parts.push(`<path d="${d}" fill="none" stroke-width="0.25"/>`)
   }
 
   text(x: number, y: number, value: string, anchor = 'middle', size = FONT, rotate = 0): void {
     const turn = rotate ? ` transform="rotate(${num(rotate)} ${num(x)} ${num(y)})"` : ''
     this.parts.push(
-      `<text x="${num(x)}" y="${num(y)}" font-size="${size}" text-anchor="${anchor}"${turn}>${esc(value)}</text>`,
+      `<text x="${num(x)}" y="${num(y)}" font-size="${size}" text-anchor="${anchor}" stroke="none"${turn}>${esc(value)}</text>`,
     )
   }
 
@@ -354,8 +356,11 @@ export function makeSheet(
   const f = scale.factor
 
   // paper origins: left edge of the front/top column and the bottom of the front view
-  const left = AREA_X + GAP
-  const frontBottom = AREA_Y + AREA_H - GAP / 2
+  // centre the views on the drawing area, keeping room for dimensions and labels
+  const totalW = meshes.length ? W * f + GAP + D * f : W * f
+  const totalH = meshes.length ? D * f + GAP + H * f : D * f
+  const left = AREA_X + Math.max(GAP, (AREA_W - totalW) / 2)
+  const frontBottom = AREA_Y + AREA_H - Math.max(14, (AREA_H - totalH) / 2)
   const topBottom = meshes.length ? frontBottom - H * f - GAP : frontBottom
   const sideLeft = left + W * f + GAP
 
@@ -383,13 +388,13 @@ export function makeSheet(
   dimension(svg, [left - 6, topBottom], [left - 6, topBottom - D * f], D, true)
   if (meshes.length) {
     drawView('front', left, frontBottom)
-    svg.text(left + (W * f) / 2, frontBottom + 7, labels.front)
-    dimension(svg, [left, frontBottom + 3], [left + W * f, frontBottom + 3], W, false)
+    svg.text(left + (W * f) / 2, frontBottom + 11, labels.front)
+    dimension(svg, [left, frontBottom + 5], [left + W * f, frontBottom + 5], W, false)
     dimension(svg, [left - 6, frontBottom], [left - 6, frontBottom - H * f], H, true)
     drawView('side', sideLeft, frontBottom)
-    svg.text(sideLeft + (D * f) / 2, frontBottom + 7, labels.side)
+    svg.text(sideLeft + (D * f) / 2, frontBottom + 11, labels.side)
   } else {
-    dimension(svg, [left, topBottom + 4], [left + W * f, topBottom + 4], W, false)
+    dimension(svg, [left, topBottom + 5], [left + W * f, topBottom + 5], W, false)
   }
 
   titleBlock(svg, doc, labels, scale.label)

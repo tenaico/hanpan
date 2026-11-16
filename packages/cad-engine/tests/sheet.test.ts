@@ -87,6 +87,46 @@ describe('makeSheet', () => {
     expect(sheet.rows).toEqual([{ name: 'Base', width: '40', depth: '20', height: '10' }])
   })
 
+  it('draws text without an outline stroke and gives every shape a line width', () => {
+    const doc: CadDocument = { ...createDocument(), parts: [drawingPart()] }
+    const withCircle: CadDocument = {
+      ...doc,
+      parts: [
+        {
+          ...drawingPart(),
+          entities: [
+            ...drawingPart().entities,
+            { kind: 'circle', center: [50, 25], radius: 10, layer: '0' },
+            { kind: 'polyline', points: [0, 0, 10, 0, 10, 10], closed: true, layer: '0' },
+          ],
+        },
+      ],
+    }
+    const { svg } = makeSheet(withCircle, [{ id: 'dwg', mesh: null }], LABELS)
+    for (const tag of svg.match(/<text [^>]*>/g)!) expect(tag).toContain('stroke="none"')
+    for (const tag of svg.match(/<(?:circle|path) [^>]*>/g)!) expect(tag).toMatch(/stroke-width="/)
+  })
+
+  it('keeps the view label clear of the width dimension under the front view', () => {
+    const { doc, evaluated } = boxDoc()
+    const { svg } = makeSheet(doc, evaluated, LABELS)
+    const y = (value: string) =>
+      Number(new RegExp(`<text [^>]* y="([0-9.]+)"[^>]*>${value}</text>`).exec(svg)![1])
+    // the label top (baseline minus the 3.5 mm font) sits at least 1 mm under the dimension line
+    expect(y('Front') - y('40')).toBeGreaterThanOrEqual(6)
+  })
+
+  it('centres the views on the drawing area', () => {
+    const { doc, evaluated } = boxDoc()
+    const { svg } = makeSheet(doc, evaluated, LABELS)
+    // view and dimension lines: everything above the title block, minus the frame
+    const xs = [...svg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)"/g)]
+      .filter((m) => Number(m[2]) < 170 && Number(m[4]) < 170)
+      .flatMap((m) => [Number(m[1]), Number(m[3])])
+    const mid = (Math.min(...xs) + Math.max(...xs)) / 2
+    expect(Math.abs(mid - 148.5)).toBeLessThan(10)
+  })
+
   it('picks a smaller scale for a big model', () => {
     const added = addShape(createDocument(), 'box', { dims: { width: 4000, depth: 2000 } })
     const sheet = makeSheet(
