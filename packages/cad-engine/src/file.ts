@@ -4,7 +4,7 @@
 // reported as 'broken' rather than half-read.
 
 import { decodeBase64, encodeBase64 } from './base64'
-import { MAX_FILE_BYTES, MAX_TRIANGLES, SHAPE_DIMS } from './model'
+import { CadEditError, MAX_FILE_BYTES, MAX_TRIANGLES, SHAPE_DIMS } from './model'
 import type {
   CadDocument,
   DrawingEntity,
@@ -162,7 +162,14 @@ export function saveCadFile(doc: CadDocument): Uint8Array {
   }
   withExtra(document, doc.extra, new Set(DOC_KEYS))
   const file = { format: CAD_FILE_FORMAT, version: CAD_FILE_VERSION, document }
-  return new TextEncoder().encode(JSON.stringify(file, null, 2) + '\n')
+  const bytes = new TextEncoder().encode(JSON.stringify(file, null, 2) + '\n')
+  // Last line of defence: never hand back bytes this engine would refuse to
+  // open, or the user would lose the whole document at the next open.
+  const check = openCadFile(bytes)
+  if (check.status !== 'ok') {
+    throw new CadEditError('bad-number', `the document would not reopen (${check.reason})`)
+  }
+  return bytes
 }
 
 // ---------------------------------------------------------------- open

@@ -45,8 +45,20 @@ export interface PartPatch {
   text?: TextShape
 }
 
+/**
+ * Sizes and positions stay between a micrometre and a kilometre, so every
+ * coordinate fits a Float32 mesh with room to spare.
+ */
+export const MIN_SIZE_MM = 1e-3
+export const MAX_SIZE_MM = 1e6
+
 function positive(value: unknown, what: string): number {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+  if (
+    typeof value !== 'number' ||
+    !Number.isFinite(value) ||
+    value < MIN_SIZE_MM ||
+    value > MAX_SIZE_MM
+  ) {
     throw new CadEditError('bad-number', what)
   }
   return value
@@ -54,10 +66,56 @@ function positive(value: unknown, what: string): number {
 
 function vec(value: Vec3 | undefined, what: string): Vec3 | undefined {
   if (value === undefined) return undefined
-  if (!Array.isArray(value) || value.length !== 3 || !value.every((v) => Number.isFinite(v))) {
+  if (
+    !Array.isArray(value) ||
+    value.length !== 3 ||
+    !value.every((v) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= MAX_SIZE_MM)
+  ) {
     throw new CadEditError('bad-number', what)
   }
   return [value[0], value[1], value[2]]
+}
+
+function text(value: unknown, what: string): string {
+  if (typeof value !== 'string') throw new CadEditError('bad-number', what)
+  return value
+}
+
+function flag(value: unknown, what: string): boolean {
+  if (typeof value !== 'boolean') throw new CadEditError('bad-number', what)
+  return value
+}
+
+function role(value: unknown): PartRole {
+  if (value !== 'solid' && value !== 'hole') throw new CadEditError('bad-number', 'role')
+  return value
+}
+
+function colour(value: unknown): string {
+  if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value)) {
+    throw new CadEditError('bad-number', 'color')
+  }
+  return value
+}
+
+function textShape(value: TextShape): TextShape {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    typeof value.value !== 'string' ||
+    !Array.isArray(value.outlines) ||
+    !value.outlines.every(
+      (ring) =>
+        Array.isArray(ring) &&
+        ring.length % 2 === 0 &&
+        ring.every(
+          (v) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= MAX_SIZE_MM,
+        ),
+    )
+  ) {
+    throw new CadEditError('bad-number', 'text')
+  }
+  return { value: value.value, outlines: value.outlines.map((ring) => [...ring]) }
 }
 
 /** Checks that every dimension of the shape is usable; returns a clean copy. */
@@ -134,20 +192,20 @@ export function addShape(
   shape: ShapeKind,
   init: ShapeInit = {},
 ): { doc: CadDocument; id: string } {
-  const role = init.role ?? 'solid'
+  const partRole = role(init.role ?? 'solid')
   const part: ShapePart = {
     id: newId(),
     type: 'shape',
     shape,
-    name: init.name ?? shape,
-    role,
-    color: init.color ?? (role === 'hole' ? DEFAULT_HOLE_COLOR : DEFAULT_SOLID_COLOR),
+    name: text(init.name ?? shape, 'name'),
+    role: partRole,
+    color: colour(init.color ?? (partRole === 'hole' ? DEFAULT_HOLE_COLOR : DEFAULT_SOLID_COLOR)),
     position: vec(init.position, 'position') ?? [0, 0, 0],
     rotation: vec(init.rotation, 'rotation') ?? [0, 0, 0],
     hidden: false,
     locked: false,
     dims: checkDims(shape, { ...SHAPE_DEFAULTS[shape], ...init.dims }),
-    ...(shape === 'text' ? { text: init.text ?? { value: '', outlines: [] } } : {}),
+    ...(shape === 'text' ? { text: textShape(init.text ?? { value: '', outlines: [] }) } : {}),
   }
   return { doc: addPart(doc, part), id: part.id }
 }
@@ -161,11 +219,11 @@ export function updatePart(doc: CadDocument, id: string, patch: PartPatch): CadD
       throw new CadEditError('locked', id)
     }
     const next: Part = { ...part }
-    if (patch.name !== undefined) next.name = patch.name
-    if (patch.role !== undefined) next.role = patch.role
-    if (patch.color !== undefined) next.color = patch.color
-    if (patch.hidden !== undefined) next.hidden = patch.hidden
-    if (patch.locked !== undefined) next.locked = patch.locked
+    if (patch.name !== undefined) next.name = text(patch.name, 'name')
+    if (patch.role !== undefined) next.role = role(patch.role)
+    if (patch.color !== undefined) next.color = colour(patch.color)
+    if (patch.hidden !== undefined) next.hidden = flag(patch.hidden, 'hidden')
+    if (patch.locked !== undefined) next.locked = flag(patch.locked, 'locked')
     if (patch.position !== undefined) next.position = vec(patch.position, 'position')!
     if (patch.rotation !== undefined) next.rotation = vec(patch.rotation, 'rotation')!
     if (patch.dims !== undefined) {
@@ -180,7 +238,7 @@ export function updatePart(doc: CadDocument, id: string, patch: PartPatch): CadD
       if (next.type !== 'shape' || next.shape !== 'text') {
         throw new CadEditError('bad-number', 'text on a non-text shape')
       }
-      next.text = patch.text
+      next.text = textShape(patch.text)
     }
     return next
   })

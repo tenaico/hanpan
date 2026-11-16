@@ -79,7 +79,8 @@ export class CadHistory {
   }
 
   undo(): boolean {
-    this.depth = 0
+    // Inside an open group (an AI request still running) the group stays open,
+    // so whatever the request does next is still one step.
     this.openStep = null
     const step = this.undoStack.pop()
     if (!step) return false
@@ -89,7 +90,6 @@ export class CadHistory {
   }
 
   redo(): boolean {
-    this.depth = 0
     this.openStep = null
     const step = this.redoStack.pop()
     if (!step) return false

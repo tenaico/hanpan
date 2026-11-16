@@ -1,5 +1,5 @@
 import { applyTransform, transformOf } from './geometry'
-import { meshBounds } from './mesh'
+import { meshBounds, triangleCount } from './mesh'
 import type { DrawingEntity, DrawingPart, Mesh, Vec3 } from './model'
 
 export function distance(a: Vec3, b: Vec3): number {
@@ -126,7 +126,7 @@ export function entityMeasure(
 export function partSize(evaluated: {
   mesh: Mesh | null
 }): { width: number; depth: number; height: number } | null {
-  if (!evaluated.mesh) return null
+  if (!evaluated.mesh || triangleCount(evaluated.mesh) === 0) return null
   const b = meshBounds(evaluated.mesh)
   return { width: b.max[0] - b.min[0], depth: b.max[1] - b.min[1], height: b.max[2] - b.min[2] }
 }

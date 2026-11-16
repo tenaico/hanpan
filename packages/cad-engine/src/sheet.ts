@@ -1,6 +1,6 @@
 import { applyTransform, transformOf } from './geometry'
 import { formatMm, partSize } from './measure'
-import { meshBounds } from './mesh'
+import { meshBounds, triangleCount } from './mesh'
 import type { CadDocument, DrawingEntity, DrawingPart, Mesh } from './model'
 import { viewOutline } from './silhouette'
 import type { SheetView } from './silhouette'
@@ -74,12 +74,17 @@ const GAP = 20
 const FONT = 3.5
 
 function esc(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
+  return (
+    text
+      // XML 1.0 forbids these; a single one makes the whole sheet unreadable
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '')
+      .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;')
+  )
 }
 
 function num(value: number): string {
@@ -293,7 +298,8 @@ export function makeSheet(
     const part = byId.get(e.id)
     return part !== undefined && !part.hidden
   })
-  const meshes = visible.flatMap((e) => (e.mesh ? [e.mesh] : []))
+  // a part that evaluated to nothing (only holes, text without outlines) has no extent
+  const meshes = visible.flatMap((e) => (e.mesh && triangleCount(e.mesh) > 0 ? [e.mesh] : []))
   const drawings = doc.parts
     .filter((p): p is DrawingPart => p.type === 'drawing' && !p.hidden)
     .flatMap(placedEntities)
