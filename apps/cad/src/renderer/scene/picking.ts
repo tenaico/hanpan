@@ -150,3 +150,17 @@ export function pickPart(
   }
   return bestId
 }
+
+/**
+ * Where a ray meets the workplane (z = 0) in front of the camera, as [x, y],
+ * or null when it runs along the plate or away from it. Sketching places its
+ * points here.
+ */
+export function rayToWorkplane(ray: Ray): [number, number] | null {
+  const [ox, oy, oz] = ray.origin
+  const [dx, dy, dz] = ray.direction
+  if (Math.abs(dz) < EPS) return null
+  const t = -oz / dz
+  if (t < 0) return null
+  return [ox + dx * t, oy + dy * t]
+}

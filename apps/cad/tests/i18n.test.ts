@@ -19,9 +19,10 @@ describe('the AI Drawing dictionaries', () => {
     }
   })
 
-  it('hold the keys of this stage', () => {
-    expect([...keys].sort()).toEqual(
-      [
+  it('hold the keys of the stages so far', () => {
+    // other parts of the editor add their own keys beside these (the sketch bar)
+    expect(keys).toEqual(
+      expect.arrayContaining([
         'untitled',
         'saved',
         'unsaved',
@@ -47,7 +48,42 @@ describe('the AI Drawing dictionaries', () => {
         'editLocked',
         'editNotScalable',
         'editRefused',
-      ].sort(),
+        // stage 3: the ribbon, the property panel, the status line
+        'shapeBox',
+        'shapeCylinder',
+        'shapeSphere',
+        'shapeCone',
+        'shapePyramid',
+        'shapeWedge',
+        'shapeHemisphere',
+        'shapeTube',
+        'shapeTorus',
+        'shapeTriPrism',
+        'shapeHexPrism',
+        'shapeRoundedBox',
+        'shapeStarPrism',
+        'shapeRoof',
+        'shapeText',
+        'kernelFailed',
+        'statusWorkplane',
+        'statusPartSize',
+        'statusSelected',
+        'selectFirst',
+        'editTooFew',
+        'editNotGroup',
+        'editBadNumber',
+        // stage 3: sketching (the sketch bar)
+        'sketchTitle',
+        'sketchHint',
+        'sketchPoints',
+        'sketchHeight',
+        'sketchClose',
+        'sketchUndoPoint',
+        'sketchCancel',
+        'sketchTooFew',
+        'sketchSelfCrossing',
+        'sketchBadHeight',
+      ]),
     )
   })
 

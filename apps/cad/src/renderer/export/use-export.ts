@@ -4,7 +4,7 @@
  * process asks where to write them (`cad:export-file`). What went wrong comes
  * back as the key of a notice for the screen.
  */
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { CadDocument, EvaluatedPart } from '@genoffice/cad-engine'
 import type { CadExportApi, ExportFormat } from '../../shared/ipc'
 import { exportObj, exportPng, exportStl, type PngSource } from './export'
@@ -62,34 +62,38 @@ export async function runExport(
 }
 
 /**
- * Answers the menu's export requests for the drawing on screen. `source` is
- * null while nothing is open; a request then, or one that comes while an
- * export is still running, is ignored.
+ * Answers the menu's export requests for the drawing on screen, and returns
+ * the same export for the ribbon's File tab. `source` is null while nothing is
+ * open; a request then, or one that comes while an export is still running,
+ * is ignored.
  */
 export function useCadExport(
   source: CadExportSource | null,
   onNotice: (key: ExportNoticeKey) => void,
-): void {
+): (format: ExportFormat) => void {
   const sourceRef = useRef(source)
   sourceRef.current = source
   const noticeRef = useRef(onNotice)
   noticeRef.current = onNotice
+  const busyRef = useRef(false)
+  const start = useCallback((format: ExportFormat): void => {
+    const current = sourceRef.current
+    const api = window.cadApi
+    if (!current || busyRef.current || typeof api.exportFile !== 'function') return
+    busyRef.current = true
+    void runExport(format, current, api)
+      .then((notice) => {
+        if (notice) noticeRef.current(notice)
+      })
+      .finally(() => {
+        busyRef.current = false
+      })
+  }, [])
   useEffect(() => {
     const api = window.cadApi
     // a stand-in api without export (a test double) leaves the menu unanswered
     if (typeof api.onExportRequest !== 'function') return
-    let busy = false
-    return api.onExportRequest((format) => {
-      const current = sourceRef.current
-      if (!current || busy) return
-      busy = true
-      void runExport(format, current, api)
-        .then((notice) => {
-          if (notice) noticeRef.current(notice)
-        })
-        .finally(() => {
-          busy = false
-        })
-    })
-  }, [])
+    return api.onExportRequest(start)
+  }, [start])
+  return start
 }

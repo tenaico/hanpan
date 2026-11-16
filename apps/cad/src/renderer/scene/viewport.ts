@@ -13,6 +13,11 @@
  * release, which hands exactly one change to `onEdit` (handles.ts). Esc, a
  * cancelled pointer or a window switch put everything back without a change.
  *
+ * While an outline is sketched (`setSketch`), the handles are hidden and a
+ * click on the plate hands its point to `onWorkplanePoint` instead of picking.
+ * `snapshot` draws one frame on the light colours without the selection and
+ * the handles and reads it as PNG (scene/snapshot.ts).
+ *
  * The view draws on demand (after a camera move, a resize or a change), not in
  * a loop. A PC that cannot make a WebGL context gets `null`, and the screen
  * explains what to do instead of staying blank. When the context is lost while
@@ -28,10 +33,13 @@ import {
   Euler,
   Float32BufferAttribute,
   Group,
+  Line,
   LineBasicMaterial,
   LineSegments,
   Mesh,
   MeshBasicMaterial,
+  Points,
+  PointsMaterial,
   MeshLambertMaterial,
   Object3D,
   PerspectiveCamera,
@@ -50,8 +58,9 @@ import { fitTo, viewDirection, type ViewName } from './camera'
 import { CANVAS_COLORS, type CanvasColors, type CanvasTheme } from './canvas-colors'
 import { lineColor } from './drawing-lines'
 import { HandleSession, type DocChange, type HandleMode } from './handles'
-import { pickPart } from './picking'
+import { pickPart, rayToWorkplane, type Ray } from './picking'
 import { sceneBounds, type SceneItem } from './scene-model'
+import { snapshotPng } from './snapshot'
 
 export type ViewCommand = Exclude<ViewName, 'iso'> | 'fit'
 
@@ -64,6 +73,13 @@ export interface Viewport {
   setHandleMode(mode: HandleMode): void
   /** The view buttons: look from the top, front or side, or frame the whole model. */
   view(command: ViewCommand): void
+  /**
+   * The outline being sketched, drawn on the workplane; an empty list starts
+   * sketching (clicks go to `onWorkplanePoint`), null ends it.
+   */
+  setSketch(points: readonly (readonly [number, number])[] | null): void
+  /** One frame on the light colours, without selection and handles, as PNG bytes. */
+  snapshot(): Promise<Uint8Array>
   dispose(): void
 }
 
@@ -78,6 +94,8 @@ export interface ViewportOptions {
   onRefused?: (error: unknown) => void
   /** the one-line reason shown beside a part that could not be computed */
   issueText?: (issue: Exclude<EvalIssue, 'empty' | null>) => string
+  /** a click on the workplane while sketching, in millimetres (instead of `onPick`) */
+  onWorkplanePoint?: (point: [number, number]) => void
 }
 
 export type ViewportFactory = (
@@ -98,6 +116,10 @@ const CLICK_SLOP_PX = 4
 const LINE_PICK_PX = 5
 /** Drawing lines float this far above the plate so the plate does not hide them. */
 const LINE_LIFT_MM = 0.05
+/** The sketch floats this far above the plate, over the drawing lines. */
+const SKETCH_LIFT_MM = 0.1
+/** The size of a sketched point, in pixels. */
+const SKETCH_POINT_PX = 6
 /** How strongly the outline of a part that could not be computed shows. */
 const ISSUE_OPACITY = 0.7
 const FOV_DEG = 45
@@ -241,6 +263,22 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
     transparent: true,
     opacity: ISSUE_OPACITY,
   })
+  // the outline being sketched: its lines and its points, in the selection colour
+  const sketchLineMaterial = new LineBasicMaterial({ color: colors.selection, depthTest: false })
+  const sketchPointMaterial = new PointsMaterial({
+    color: colors.selection,
+    size: SKETCH_POINT_PX,
+    sizeAttenuation: false,
+    depthTest: false,
+  })
+  const sketchLine = new Line(new BufferGeometry(), sketchLineMaterial)
+  const sketchPoints = new Points(new BufferGeometry(), sketchPointMaterial)
+  sketchLine.renderOrder = 3
+  sketchPoints.renderOrder = 3
+  sketchLine.visible = false
+  sketchPoints.visible = false
+  scene.add(sketchLine, sketchPoints)
+  let sketching = false
   /** GPU buffers by engine mesh: an unchanged part keeps its buffers */
   let geometries = new Map<CadMesh, BufferGeometry>()
   /** what is drawn per item id: its mesh, lines and outlines (carried by the handles) */
@@ -398,6 +436,10 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
   /** Puts the pivot where the selection is and shows the handles on it, or hides them. */
   function placeHandles(): void {
     if (!handles) return
+    if (sketching) {
+      handles.detach()
+      return
+    }
     const part = selected.length === 1 ? doc?.parts.find((p) => p.id === selected[0]) : undefined
     const shown = items.filter((i) => selected.includes(i.id))
     // the size handle works on one part at a time
@@ -538,6 +580,15 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
     const caster = new Raycaster()
     caster.setFromCamera(ndc, camera)
     const { origin, direction } = caster.ray
+    if (sketching) {
+      const ray: Ray = {
+        origin: [origin.x, origin.y, origin.z],
+        direction: [direction.x, direction.y, direction.z],
+      }
+      const point = rayToWorkplane(ray)
+      if (point) options.onWorkplanePoint?.(point)
+      return
+    }
     // how many millimetres one pixel covers at the orbit target
     const reach = camera.position.distanceTo(controls.target)
     const perPixel = (2 * reach * Math.tan((FOV_DEG * DEG) / 2)) / rect.height
@@ -694,17 +745,24 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
   window.addEventListener('blur', cancelDrag)
   attach(renderer)
 
+  /** Paints the plate, the grid, the outlines and the drawing lines with `next`. */
+  const paint = (next: CanvasColors): void => {
+    colors = next
+    scene.background = new Color(colors.background)
+    planeMaterial.color.set(colors.plane)
+    minorMaterial.color.set(colors.grid)
+    majorMaterial.color.set(colors.gridMajor)
+    selectionMaterial.color.set(colors.selection)
+    issueMaterial.color.set(colors.issue)
+    sketchLineMaterial.color.set(colors.selection)
+    sketchPointMaterial.color.set(colors.selection)
+    // drawing lines take the new ink
+    if (!session.active) drawItems()
+  }
+
   return {
     setTheme(next) {
-      colors = CANVAS_COLORS[next]
-      scene.background = new Color(colors.background)
-      planeMaterial.color.set(colors.plane)
-      minorMaterial.color.set(colors.grid)
-      majorMaterial.color.set(colors.gridMajor)
-      selectionMaterial.color.set(colors.selection)
-      issueMaterial.color.set(colors.issue)
-      // drawing lines take the new ink
-      if (!session.active) drawItems()
+      paint(CANVAS_COLORS[next])
       render()
     },
     showDocument(nextDoc, nextItems = []) {
@@ -739,6 +797,37 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
         lookFrom(viewDirection(command).direction, frameBox())
       }
     },
+    setSketch(points) {
+      sketching = points !== null
+      // the handles stay out of the way while an outline is drawn
+      if (sketching) cancelDrag()
+      placeHandles()
+      const flat = (points ?? []).flatMap(([x, y]) => [x, y, SKETCH_LIFT_MM])
+      for (const object of [sketchLine, sketchPoints]) {
+        object.geometry.dispose()
+        object.geometry = new BufferGeometry()
+        object.geometry.setAttribute('position', new Float32BufferAttribute(flat, 3))
+        object.visible = flat.length > 0
+      }
+      render()
+    },
+    snapshot() {
+      if (!renderer) return Promise.reject(new Error('the 3D view has no renderer'))
+      const current = renderer
+      const helper = handles.getHelper()
+      return snapshotPng({
+        canvas: current.domElement,
+        colors: () => colors,
+        paint,
+        draw: () => {
+          current.render(scene, camera)
+        },
+        overlays: (visible) => {
+          selectionMaterial.visible = visible
+          helper.visible = visible
+        },
+      })
+    },
     dispose() {
       if (disposed) return
       cancelDrag()
@@ -762,6 +851,10 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
       majorMaterial.dispose()
       selectionMaterial.dispose()
       issueMaterial.dispose()
+      sketchLine.geometry.dispose()
+      sketchPoints.geometry.dispose()
+      sketchLineMaterial.dispose()
+      sketchPointMaterial.dispose()
     },
   }
 }

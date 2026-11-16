@@ -13,8 +13,11 @@ import {
   createDocument,
   openCadFile,
   saveCadFile,
+  type CadDocument,
+  type Kernel,
 } from '@genoffice/cad-engine'
 import App from '../src/renderer/App'
+import { selection } from '../src/renderer/editing/selection'
 import { LocaleProvider } from '../src/renderer/i18n/locale'
 import { strings } from '../src/renderer/i18n/strings'
 import { HandleRefusedError } from '../src/renderer/scene/handles'
@@ -23,6 +26,8 @@ import type {
   BytesReply,
   CadApi,
   CadMenuCommand,
+  ExportFileRequest,
+  ExportFormat,
   OpenFileResult,
   SaveCadRequest,
   SaveCadResult,
@@ -31,6 +36,13 @@ import type {
 } from '../src/shared/ipc'
 
 const en = strings.en
+
+// the text font is read in the app from the template font URL; here the outlines are made up
+vi.mock('../src/renderer/editing/text-outlines', () => ({
+  loadTextFont: async () => ({}),
+  textOutlines: (_font: unknown, value: string) =>
+    value === '?' ? [] : [[-5, -5, 5, -5, 5, 5, -5, 5]],
+}))
 
 interface Fake {
   api: CadApi
@@ -41,7 +53,9 @@ interface Fake {
   summaries: SummaryReply[]
   bytes: BytesReply[]
   saveResult: SaveCadResult
+  exports: ExportFileRequest[]
   emit: {
+    exportRequest(format: ExportFormat): void
     saveRequest(mode: SaveMode): void
     closeSave(): void
     menu(command: CadMenuCommand): void
@@ -71,7 +85,9 @@ function fakeApi(pending: string | null, file: OpenFileResult | null): Fake {
     summaries: [],
     bytes: [],
     saveResult: { ok: true, path: 'C:/models/new.ttukcad' },
+    exports: [],
     emit: {
+      exportRequest: (format) => call('export', format),
       saveRequest: (mode) => call('save', mode),
       closeSave: () => call('close'),
       menu: (command) => call('menu', command),
@@ -108,6 +124,14 @@ function fakeApi(pending: string | null, file: OpenFileResult | null): Fake {
       onRecoveryCopyNow: on('copyNow'),
       sendRecoveryCopyNowDone: () => {},
       onRecoveryReset: on('reset'),
+      exportFile: async (request: ExportFileRequest) => {
+        fake.exports.push(request)
+        return { ok: true, path: 'C:/out/x.' + request.format }
+      },
+      onExportRequest: on('export'),
+      // stage 4: not used by these screens
+      sendToDocument: async () => ({ ok: false as const, error: 'not used' }),
+      copyImage: async () => false,
     },
   }
   return fake
@@ -122,6 +146,8 @@ function fakeViewport() {
     setSelection: () => {},
     setHandleMode: () => {},
     view: () => {},
+    setSketch: () => {},
+    snapshot: async () => new Uint8Array([0x89, 0x50]),
     dispose: () => {},
   })
   return { factory, shown }
@@ -162,7 +188,11 @@ async function until(done: () => boolean, what: string): Promise<void> {
 
 const pendingKernel = (): Promise<never> => new Promise(() => {})
 
-async function mountApp(fake: Fake, viewportFactory: ViewportFactory): Promise<void> {
+async function mountApp(
+  fake: Fake,
+  viewportFactory: ViewportFactory,
+  kernelFactory: () => Promise<Kernel> = pendingKernel,
+): Promise<void> {
   ;(window as unknown as { cadApi: CadApi }).cadApi = fake.api
   container = document.createElement('div')
   document.body.appendChild(container)
@@ -172,7 +202,7 @@ async function mountApp(fake: Fake, viewportFactory: ViewportFactory): Promise<v
       createElement(LocaleProvider, {
         initial: 'en',
         // the boolean kernel never starts here: the screen tests need no wasm
-        children: createElement(App, { viewportFactory, kernelFactory: pendingKernel }),
+        children: createElement(App, { viewportFactory, kernelFactory }),
       }),
     )
   })
@@ -362,6 +392,8 @@ describe('the AI Drawing screen', () => {
         setSelection: () => {},
         setHandleMode: () => {},
         view: (command) => void views.push(command),
+        setSketch: () => {},
+        snapshot: async () => new Uint8Array(),
         dispose: () => {},
       }
     }
@@ -372,19 +404,254 @@ describe('the AI Drawing screen', () => {
     expect(views).toEqual(['top', 'front', 'side', 'fit'])
 
     // a release on a locked part: the engine refuses, the drawing stays as it was
-    expect(text('[data-cad-status]')).toBe('')
+    expect(text('[data-cad-message]')).toBe('')
     await act(async () =>
       options!.onEdit!('move', () => {
         throw new CadEditError('locked', 'x')
       }),
     )
-    expect(text('[data-cad-status]')).toBe(en.editLocked)
+    expect(text('[data-cad-message]')).toBe(en.editLocked)
     expect(text('.cad-state')).toBe(en.saved)
     await act(async () => options!.onRefused!(new HandleRefusedError('x')))
-    expect(text('[data-cad-status]')).toBe(en.editNotScalable)
+    expect(text('[data-cad-message]')).toBe(en.editNotScalable)
     // a change that lands clears the line and makes one undo step
     await act(async () => options!.onEdit!('move', (doc) => ({ ...doc, parts: [] })))
-    expect(text('[data-cad-status]')).toBe('')
+    expect(text('[data-cad-message]')).toBe('')
     expect(text('.cad-state')).toBe(en.unsaved)
+  })
+})
+
+/** A 3D view that hands its options to the test and records what it was asked. */
+function probeViewport() {
+  const probe = {
+    options: undefined as ViewportOptions | undefined,
+    docs: [] as CadDocument[],
+    sketches: [] as (readonly [number, number][] | null)[],
+  }
+  const factory: ViewportFactory = (_host, _theme, opts) => {
+    probe.options = opts
+    return {
+      setTheme: () => {},
+      showDocument: (doc) => void probe.docs.push(doc),
+      setSelection: () => {},
+      setHandleMode: () => {},
+      view: () => {},
+      setSketch: (points) => void probe.sketches.push(points ? [...points] : null),
+      snapshot: async () => new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+      dispose: () => {},
+    }
+  }
+  return { factory, probe, doc: () => probe.docs.at(-1)! }
+}
+
+const click = async (selector: string): Promise<void> => {
+  const el = container.querySelector<HTMLElement>(selector)
+  if (!el) throw new Error(`no ${selector}`)
+  await act(async () => el.click())
+}
+
+const press = async (key: string, init: KeyboardEventInit = {}): Promise<void> => {
+  await act(async () => {
+    document.body.dispatchEvent(
+      new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }),
+    )
+  })
+}
+
+describe('the AI Drawing screen, editing (stage 3)', () => {
+  afterEach(() => selection.clear())
+
+  it('has the ribbon, the property panel, the AI slot and the status line', async () => {
+    const fake = fakeApi(null, null)
+    await mountApp(fake, probeViewport().factory)
+    expect(container.querySelector('[data-ribbon-pane="home"]')).not.toBeNull()
+    expect(container.querySelector('[data-cad-properties]')).not.toBeNull()
+    expect(container.querySelector('[data-cad-ai-slot]')).not.toBeNull()
+    expect(text('[data-cad-status-info]')).toBe(
+      en.statusWorkplane
+        .replace('{width}', '200')
+        .replace('{depth}', '200')
+        .replace('{snap}', '1')
+        .replace('{grid}', '10'),
+    )
+  })
+
+  it('a shape from the ribbon is one undo step and shows its size on the status line', async () => {
+    const fake = fakeApi(null, null)
+    const view = probeViewport()
+    await mountApp(fake, view.factory)
+    await click('[data-action="shape-box"]')
+    expect(view.doc().parts).toHaveLength(1)
+    expect(text('.cad-state')).toBe(en.unsaved)
+    // the new part is selected: its size shows (no kernel runs here: the part box)
+    expect(text('[data-cad-status-info]')).toContain('20 × 20 × 20 mm')
+    await press('z', { ctrlKey: true })
+    expect(view.doc().parts).toHaveLength(0)
+  })
+
+  it('menu Select All and Delete work on the drawing', async () => {
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: bracketBytes() })
+    const view = probeViewport()
+    await mountApp(fake, view.factory)
+    await act(async () => fake.emit.menu('select-all'))
+    expect(selection.ids()).toEqual([view.doc().parts[0]!.id])
+    await act(async () => fake.emit.menu('delete'))
+    expect(view.doc().parts).toHaveLength(0)
+    expect(text('.cad-state')).toBe(en.unsaved)
+  })
+
+  it('an arrow key on a locked part says it is locked and moves nothing', async () => {
+    const locked = addShape(createDocument(), 'box', { name: 'Base' })
+    const doc = { ...locked.doc, parts: locked.doc.parts.map((p) => ({ ...p, locked: true })) }
+    const fake = fakeApi('C:/models/l.ttukcad', { status: 'ok', bytes: saveCadFile(doc) })
+    const view = probeViewport()
+    await mountApp(fake, view.factory)
+    await act(async () => view.probe.options!.onPick!(locked.id, false))
+    await press('ArrowRight')
+    expect(text('[data-cad-message]')).toBe(en.editLocked)
+    expect(view.doc().parts[0]!.position).toEqual([0, 0, 0])
+    expect(text('.cad-state')).toBe(en.saved)
+  })
+
+  it('a kernel that does not start says so on the status line', async () => {
+    const fake = fakeApi(null, null)
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await mountApp(fake, probeViewport().factory, () => Promise.reject(new Error('no wasm')))
+    await settle()
+    expect(text('[data-cad-message]')).toBe(en.kernelFailed)
+    error.mockRestore()
+  })
+
+  it('a CAD program file shows the guide instead of the 3D view', async () => {
+    const fake = fakeApi('C:/models/plan.dwg', { status: 'guide', ext: 'dwg', name: 'plan' })
+    await mountApp(fake, probeViewport().factory)
+    expect(container.querySelector('.cad-guide')).not.toBeNull()
+    expect(text('.cad-guide-file')).toBe('plan.dwg')
+    expect(container.querySelector('.cad-viewport')).toBeNull()
+    expect(text('.cad-title')).toBe(en.untitled)
+  })
+
+  it('a 3MF that cannot be read opens an empty drawing with the reason', async () => {
+    const fake = fakeApi('C:/models/x.3mf', {
+      status: 'import',
+      ext: '3mf',
+      name: 'x',
+      bytes: new Uint8Array([1, 2, 3]),
+    })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await mountApp(fake, probeViewport().factory)
+    expect(text('[data-cad-notice]')).toBe(en.noticeImportFailed)
+    warn.mockRestore()
+    error.mockRestore()
+  })
+
+  it('the menu export of a PNG hands the view picture to the main process', async () => {
+    const fake = fakeApi(null, null)
+    await mountApp(fake, probeViewport().factory)
+    await act(async () => fake.emit.exportRequest('png'))
+    await until(() => fake.exports.length === 1, 'the export')
+    expect(fake.exports[0]!.format).toBe('png')
+    expect([...fake.exports[0]!.bytes]).toEqual([0x89, 0x50, 0x4e, 0x47])
+    expect(fake.exports[0]!.suggestedName).toBe(en.untitled)
+    // nothing to export as STL: the status line says so
+    await act(async () => fake.emit.exportRequest('stl'))
+    await until(() => text('[data-cad-message]') !== '', 'the notice')
+    expect(text('[data-cad-message]')).toBe(en.exportEmpty)
+  })
+
+  it('the property panel edits the selected part in one step', async () => {
+    const fake = fakeApi('C:/models/bracket.ttukcad', { status: 'ok', bytes: bracketBytes() })
+    const view = probeViewport()
+    await mountApp(fake, view.factory)
+    const id = view.doc().parts[0]!.id
+    await act(async () => view.probe.options!.onPick!(id, false))
+    const width = container.querySelector<HTMLInputElement>('[data-prop="dims.width"]')!
+    await act(async () => {
+      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      set.call(width, '44')
+      width.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await act(async () => {
+      width.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    })
+    const part = view.doc().parts[0]!
+    expect(part.type === 'shape' && part.dims.width).toBe(44)
+    expect(text('[data-cad-status-info]')).toContain('44 × 20 × 20 mm')
+  })
+
+  it('sketch mode sends workplane clicks to the outline and shows the sketch bar', async () => {
+    const fake = fakeApi(null, null)
+    const view = probeViewport()
+    await mountApp(fake, view.factory)
+    await click('[data-action="sketch"]')
+    expect(view.probe.sketches.at(-1)).toEqual([])
+    expect(container.querySelector('[data-cad-sketch]')).not.toBeNull()
+    await act(async () => view.probe.options!.onWorkplanePoint!([0.4, 0.2]))
+    await act(async () => view.probe.options!.onWorkplanePoint!([20, 0]))
+    expect(view.probe.sketches.at(-1)).toEqual([
+      [0, 0],
+      [20, 0],
+    ])
+    // shortcuts do not edit the drawing while sketching
+    await press('Delete')
+    expect(text('[data-cad-message]')).toBe('')
+    // the sketch button again leaves the mode
+    await click('[data-action="sketch"]')
+    expect(view.probe.sketches.at(-1)).toBeNull()
+    expect(container.querySelector('[data-cad-sketch]')).toBeNull()
+  })
+
+  it('Text asks for the words and places a text shape standing on the plate', async () => {
+    const fake = fakeApi(null, null)
+    const view = probeViewport()
+    await mountApp(fake, view.factory)
+    const typeText = async (value: string): Promise<void> => {
+      await click('[data-action="text"]')
+      const input = container.querySelector<HTMLInputElement>('[data-text-input]')!
+      await act(async () => {
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+        set.call(input, value)
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+      await click('[data-text-place]')
+      await settle()
+    }
+    await typeText('Hi')
+    const part = view.doc().parts[0]!
+    expect(part.type === 'shape' && part.shape).toBe('text')
+    expect(part.name).toBe('Hi')
+    expect(part.type === 'shape' && part.text?.value).toBe('Hi')
+    expect(selection.ids()).toEqual([part.id])
+    // words the font has no letters for make nothing and say so
+    await typeText('?')
+    expect(view.doc().parts).toHaveLength(1)
+    expect(text('[data-cad-message]')).toBe(en.editRefused)
+  })
+
+  it('a closed sketch becomes one sketched solid, selected, in one undo step', async () => {
+    const fake = fakeApi(null, null)
+    const view = probeViewport()
+    await mountApp(fake, view.factory)
+    await click('[data-action="sketch"]')
+    for (const p of [
+      [0, 0],
+      [20, 0],
+      [20, 20],
+    ] as [number, number][]) {
+      await act(async () => view.probe.options!.onWorkplanePoint!(p))
+    }
+    const close = [
+      ...container.querySelectorAll<HTMLButtonElement>('[data-cad-sketch] button'),
+    ].find((b) => b.textContent === en.sketchClose)!
+    await act(async () => close.click())
+    const part = view.doc().parts[0]!
+    expect(part.type).toBe('extrude')
+    expect(part.name).toBe(en.partExtrude)
+    expect(selection.ids()).toEqual([part.id])
+    expect(container.querySelector('[data-cad-sketch]')).toBeNull()
+    expect(view.probe.sketches.at(-1)).toBeNull()
+    await press('z', { ctrlKey: true })
+    expect(view.doc().parts).toHaveLength(0)
   })
 })

@@ -16,7 +16,7 @@ import {
   type Vec3,
 } from '@genoffice/cad-engine'
 import { DocEvaluator } from '../src/renderer/scene/evaluator'
-import { pickPart } from '../src/renderer/scene/picking'
+import { pickPart, rayToWorkplane } from '../src/renderer/scene/picking'
 import { sceneModel } from '../src/renderer/scene/scene-model'
 
 async function itemsOf(doc: CadDocument) {
@@ -67,5 +67,19 @@ describe('pickPart', () => {
     const items = await itemsOf(addPart(createDocument(), plan))
     expect(pickPart(items, down(25, 0.2))).toBe(plan.id)
     expect(pickPart(items, down(25, 20))).toBeNull()
+  })
+})
+
+describe('rayToWorkplane', () => {
+  it('meets the plate at z = 0 in front of the camera', () => {
+    expect(rayToWorkplane({ origin: [10, 20, 100], direction: [0, 0, -2] })).toEqual([10, 20])
+    const p = rayToWorkplane({ origin: [0, -100, 100], direction: [0, 1, -1] })!
+    expect(p[0]).toBeCloseTo(0, 9)
+    expect(p[1]).toBeCloseTo(0, 9)
+  })
+
+  it('misses when the ray runs along the plate or away from it', () => {
+    expect(rayToWorkplane({ origin: [0, 0, 10], direction: [1, 0, 0] })).toBeNull()
+    expect(rayToWorkplane({ origin: [0, 0, 10], direction: [0, 0, 1] })).toBeNull()
   })
 })
