@@ -19,6 +19,7 @@ import {
   launchShell,
   openFromAllApps,
   screenshotPath,
+  stubAiReady,
   waitForPageWithUrl,
   type LaunchedApp,
 } from './helpers'
@@ -727,6 +728,66 @@ test.describe('AI Drawing tab (stage 4: measure, sheet, send)', () => {
       await docs.screenshot({ path: screenshotPath('cad-sent-docx-tab') })
     } finally {
       await closeAndSaveVideo(launched, 'cad-send-docx')
+    }
+  })
+})
+
+test.describe('AI Drawing tab, the AI assistant (stage 5)', () => {
+  test('an AI request adds shapes and one undo removes them all', async () => {
+    test.setTimeout(240_000)
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-ai' })
+    const { app } = launched
+    try {
+      const cad = await newDrawing(launched)
+      // the model is scripted: three boxes in one call, then a short answer (no provider is reached)
+      const box = (name: string, x: number) => ({
+        kind: 'box',
+        name,
+        dims: { width: 40, depth: 40, height: 40 },
+        position: [x, 0, 0],
+      })
+      await stubAiReady(app, [
+        [
+          {
+            type: 'tool-call',
+            toolCall: {
+              id: 'c1',
+              name: 'add_shapes',
+              input: { shapes: [box('Box A', -60), box('Box B', 0), box('Box C', 60)] },
+            },
+          },
+          { type: 'done' },
+        ],
+        [{ type: 'delta', text: 'Placed three boxes in a row.' }, { type: 'done' }],
+      ])
+      const pane = cad.locator('.cad-side .copilot')
+      await expect(pane).toBeVisible()
+      await expect(cad.locator('[data-ai-quick="sheet"]')).toBeDisabled()
+
+      await pane.locator('.ai-input-box textarea').fill('Three 40 mm boxes in a row')
+      await pane.locator('.ai-send-btn').click()
+      await expect(pane.locator('.ai-msg-assistant').last()).toContainText(
+        'Placed three boxes in a row.',
+      )
+      await expect(pane.locator('.ai-stop-btn')).toHaveCount(0)
+      await expect(cad.locator('[data-ai-quick="sheet"]')).toBeEnabled()
+      await pane.locator('.ai-work-group-summary').click()
+      await expect(pane.locator('.ai-step-title')).toHaveText(['Place shapes · 3'])
+      await cad.screenshot({ path: screenshotPath('cad-ai-pane') })
+
+      // the three parts are there: select them all from the 3D view
+      await cad.locator('.cad-viewport canvas').click({ position: { x: 10, y: 10 } })
+      await cad.keyboard.press('ControlOrMeta+a')
+      await expect(cad.locator('[data-cad-status-info]')).toContainText('3 parts selected')
+
+      // one undo takes the whole request back, and it was the only step
+      const undo = cad.locator('.ribbon-tabs [data-action="undo"]')
+      await undo.click()
+      await expect(cad.locator('[data-ai-quick="sheet"]')).toBeDisabled()
+      await expect(undo).toBeDisabled()
+      await expect(cad.locator('.cad-state')).toHaveAttribute('data-dirty', '')
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-ai')
     }
   })
 })

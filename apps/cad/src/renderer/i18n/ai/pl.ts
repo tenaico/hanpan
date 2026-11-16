@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const pl = {
+  aiOpenAssistant: 'Otwórz asystenta AI',
+  aiCollapsePanel: 'Zwiń panel',
+  aiNewChat: 'Nowy czat',
+  aiEmptyTitle: 'Rysuj z AI',
+  aiEmptyBody:
+    'Opisz, co ma powstać, na przykład „przybornik na ołówki o szerokości 80 i wysokości 100, pusty w środku z otworem 68”. Jedna prośba to jeden krok: Ctrl+Z cofa ją w całości.',
+  aiComposerPlaceholder: 'Powiedz AI, co utworzyć lub zmienić…',
+  aiHintIdle: 'Enter wysyła, Shift+Enter nowa linia',
+  aiHintBusy: 'Odpowiada…',
+  aiSend: 'Wyślij',
+  aiStop: 'Zatrzymaj',
+  aiThinking: 'Myśli',
+  aiWorking: 'Pracuje',
+  aiGroupWorking: 'W toku…',
+  aiWorkedSteps: 'Ukończono · {n} kroków',
+  aiStopped: 'Zatrzymano',
+  aiNoReply: '(brak odpowiedzi)',
+  aiTurnLimit: 'Osiągnięto limit kroków — wyślij kolejną instrukcję, aby kontynuować.',
+  aiTruncatedNote: '(Odpowiedź została ucięta przez limit długości i może być niepełna.)',
+  aiUndelivered: 'Nie wysłano',
+  aiRetry: 'Ponów',
+  aiCopyReplyTitle: 'Kopiuj odpowiedź',
+  aiRegenerateTitle: 'Wygeneruj ponownie',
+  aiUnknownError: 'Żądanie AI nie powiodło się, spróbuj ponownie',
+  aiTimeoutError: 'Przekroczono czas odpowiedzi AI',
+  aiCreditsExhausted: 'Brak kredytów — doładuj u swojego dostawcy AI',
+  aiNetworkError:
+    'Problem z siecią: nie można połączyć się z usługą AI. Sprawdź połączenie i spróbuj ponownie',
+  aiOverloadedError: 'Usługa AI jest obecnie przeciążona — spróbuj ponownie za chwilę',
+  // the quick actions above the input
+  aiQuickActions: 'Szybkie akcje',
+  aiQuickSheet: 'Utwórz arkusz wymiarowy',
+  aiQuickRoom: 'Rozpocznij układ pokoju',
+  aiQuickRoomPrompt: 'Zrób z płyty roboczej pokój 5 × 4 m i postaw 4 biurka',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'Odczyt rysunku',
+  aiToolAddShapes: 'Wstawianie kształtów · {n}',
+  aiToolUpdateShapes: 'Zmiana części · {n}',
+  aiToolDeleteShapes: 'Usuwanie części · {n}',
+  aiToolGroupShapes: 'Grupowanie części',
+  aiToolUngroupShapes: 'Rozgrupowanie',
+  aiToolAlignShapes: 'Wyrównanie części · {n}',
+  aiToolSetWorkplane: 'Zmiana rozmiaru płyty roboczej',
+  aiToolRefused: '{action} · odrzucono',
+} satisfies Record<keyof typeof zh, string>

@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const id = {
+  aiOpenAssistant: 'Buka asisten AI',
+  aiCollapsePanel: 'Ciutkan panel',
+  aiNewChat: 'Obrolan baru',
+  aiEmptyTitle: 'Menggambar dengan AI',
+  aiEmptyBody:
+    'Tuliskan apa yang ingin dibuat, misalnya "tempat pensil lebar 80 dan tinggi 100, berlubang di dalam dengan diameter 68". Satu permintaan adalah satu langkah: Ctrl+Z membatalkan semuanya sekaligus.',
+  aiComposerPlaceholder: 'Beri tahu AI apa yang ingin dibuat atau diubah…',
+  aiHintIdle: 'Enter untuk kirim, Shift+Enter baris baru',
+  aiHintBusy: 'Membalas…',
+  aiSend: 'Kirim',
+  aiStop: 'Berhenti',
+  aiThinking: 'Berpikir',
+  aiWorking: 'Bekerja',
+  aiGroupWorking: 'Sedang bekerja…',
+  aiWorkedSteps: 'Selesai · {n} langkah',
+  aiStopped: 'Dihentikan',
+  aiNoReply: '(tidak ada balasan)',
+  aiTurnLimit: 'Batas langkah per eksekusi tercapai — kirim instruksi lagi untuk melanjutkan.',
+  aiTruncatedNote: '(Balasan terpotong karena batas panjang dan mungkin tidak lengkap.)',
+  aiUndelivered: 'Tidak terkirim',
+  aiRetry: 'Coba lagi',
+  aiCopyReplyTitle: 'Salin balasan',
+  aiRegenerateTitle: 'Buat ulang',
+  aiUnknownError: 'Permintaan AI gagal, coba lagi',
+  aiTimeoutError: 'Respons AI kehabisan waktu',
+  aiCreditsExhausted: 'Kredit habis — isi ulang di penyedia AI Anda',
+  aiNetworkError:
+    'Masalah jaringan: tidak dapat terhubung ke layanan AI. Periksa koneksi Anda lalu coba lagi',
+  aiOverloadedError: 'Layanan AI sedang sibuk — silakan coba lagi sebentar lagi',
+  // the quick actions above the input
+  aiQuickActions: 'Tindakan cepat',
+  aiQuickSheet: 'Buat lembar dimensi',
+  aiQuickRoom: 'Mulai tata letak ruangan',
+  aiQuickRoomPrompt: 'Jadikan bidang kerja ruangan 5 × 4 m dan taruh 4 meja',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'Membaca gambar',
+  aiToolAddShapes: 'Menaruh bentuk · {n}',
+  aiToolUpdateShapes: 'Mengubah bagian · {n}',
+  aiToolDeleteShapes: 'Menghapus bagian · {n}',
+  aiToolGroupShapes: 'Mengelompokkan bagian',
+  aiToolUngroupShapes: 'Memisahkan kelompok',
+  aiToolAlignShapes: 'Meratakan bagian · {n}',
+  aiToolSetWorkplane: 'Mengubah ukuran bidang kerja',
+  aiToolRefused: '{action} · ditolak',
+} satisfies Record<keyof typeof zh, string>

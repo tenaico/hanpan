@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const ko = {
+  aiOpenAssistant: 'AI 도우미 열기',
+  aiCollapsePanel: '패널 접기',
+  aiNewChat: '새 대화',
+  aiEmptyTitle: 'AI와 함께 도면 그리기',
+  aiEmptyBody:
+    '만들 것을 말로 적어 보세요. 예: "가로 80 높이 100 연필꽂이 만들어 줘, 안은 지름 68로 비우고". 요청 하나는 한 단계라서 Ctrl+Z 한 번으로 모두 되돌립니다.',
+  aiComposerPlaceholder: '무엇을 만들거나 고칠지 AI에게 말해 보세요…',
+  aiHintIdle: 'Enter 전송, Shift+Enter 줄바꿈',
+  aiHintBusy: '답변 중…',
+  aiSend: '전송',
+  aiStop: '중지',
+  aiThinking: '생각 중',
+  aiWorking: '작업 중',
+  aiGroupWorking: '작업 중…',
+  aiWorkedSteps: '완료 · {n}단계',
+  aiStopped: '중지됨',
+  aiNoReply: '(응답 없음)',
+  aiTurnLimit: '실행당 단계 한도에 도달했습니다. 계속하려면 지시를 다시 보내세요.',
+  aiTruncatedNote: '(응답이 길이 제한으로 잘려 내용이 불완전할 수 있습니다.)',
+  aiUndelivered: '전송되지 않았습니다',
+  aiRetry: '다시 시도',
+  aiCopyReplyTitle: '답변 복사',
+  aiRegenerateTitle: '다시 생성',
+  aiUnknownError: 'AI 요청이 실패했습니다. 다시 시도하세요',
+  aiTimeoutError: 'AI 응답 시간 초과',
+  aiCreditsExhausted: '크레딧이 부족합니다. 사용 중인 AI 제공업체에서 충전하세요',
+  aiNetworkError:
+    '네트워크에 문제가 있어 AI 서비스에 연결할 수 없습니다. 연결을 확인한 후 다시 시도해 주세요',
+  aiOverloadedError: 'AI 서비스가 혼잡합니다. 잠시 후 다시 시도해 주세요',
+  // the quick actions above the input
+  aiQuickActions: '빠른 실행',
+  aiQuickSheet: '치수 도면 만들기',
+  aiQuickRoom: '방 배치 시작',
+  aiQuickRoomPrompt: '방 5×4m 작업판을 만들고 책상 4개를 놓아 줘',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: '도면 읽기',
+  aiToolAddShapes: '도형 놓기 · {n}개',
+  aiToolUpdateShapes: '도형 고치기 · {n}개',
+  aiToolDeleteShapes: '도형 지우기 · {n}개',
+  aiToolGroupShapes: '도형 묶기',
+  aiToolUngroupShapes: '묶음 풀기',
+  aiToolAlignShapes: '줄 맞추기 · {n}개',
+  aiToolSetWorkplane: '작업판 크기 바꾸기',
+  aiToolRefused: '{action} · 거절됨',
+} satisfies Record<keyof typeof zh, string>

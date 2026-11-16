@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const cs = {
+  aiOpenAssistant: 'Otevřít asistenta AI',
+  aiCollapsePanel: 'Sbalit panel',
+  aiNewChat: 'Nový chat',
+  aiEmptyTitle: 'Kreslit s AI',
+  aiEmptyBody:
+    'Popište, co se má vytvořit, například „stojánek na tužky 80 široký a 100 vysoký, uvnitř dutý s otvorem 68“. Jeden požadavek je jeden krok: Ctrl+Z ho vrátí celý.',
+  aiComposerPlaceholder: 'Řekněte AI, co vytvořit nebo změnit…',
+  aiHintIdle: 'Enter odešle, Shift+Enter vloží nový řádek',
+  aiHintBusy: 'Odpovídám…',
+  aiSend: 'Odeslat',
+  aiStop: 'Zastavit',
+  aiThinking: 'Přemýšlím',
+  aiWorking: 'Pracuji',
+  aiGroupWorking: 'Pracuji…',
+  aiWorkedSteps: 'Hotovo · {n} kroků',
+  aiStopped: 'Zastaveno',
+  aiNoReply: '(bez odpovědi)',
+  aiTurnLimit: 'Dosažen limit kroků na jeden běh — pokračujte odesláním další instrukce.',
+  aiTruncatedNote: '(Odpověď byla zkrácena limitem délky a může být neúplná.)',
+  aiUndelivered: 'Neodesláno',
+  aiRetry: 'Zkusit znovu',
+  aiCopyReplyTitle: 'Kopírovat odpověď',
+  aiRegenerateTitle: 'Vygenerovat znovu',
+  aiUnknownError: 'Požadavek na AI se nezdařil, zkuste to znovu',
+  aiTimeoutError: 'Odpověď AI vypršela',
+  aiCreditsExhausted: 'Došly kredity — dobijte je u svého poskytovatele AI',
+  aiNetworkError:
+    'Problém se sítí: službu AI se nepodařilo kontaktovat. Zkontrolujte připojení a zkuste to znovu',
+  aiOverloadedError: 'Služba AI je právě zaneprázdněná — zkuste to prosím za chvíli',
+  // the quick actions above the input
+  aiQuickActions: 'Rychlé akce',
+  aiQuickSheet: 'Vytvořit rozměrový výkres',
+  aiQuickRoom: 'Začít rozvržení místnosti',
+  aiQuickRoomPrompt: 'Udělej z pracovní desky místnost 5 × 4 m a postav do ní 4 stoly',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'Čtení výkresu',
+  aiToolAddShapes: 'Vložení tvarů · {n}',
+  aiToolUpdateShapes: 'Změna dílů · {n}',
+  aiToolDeleteShapes: 'Smazání dílů · {n}',
+  aiToolGroupShapes: 'Seskupení dílů',
+  aiToolUngroupShapes: 'Zrušení seskupení',
+  aiToolAlignShapes: 'Zarovnání dílů · {n}',
+  aiToolSetWorkplane: 'Změna velikosti pracovní desky',
+  aiToolRefused: '{action} · odmítnuto',
+} satisfies Record<keyof typeof zh, string>

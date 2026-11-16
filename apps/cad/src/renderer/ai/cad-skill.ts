@@ -13,6 +13,7 @@ import type { AgentSkill, AgentToolDef } from '@genoffice/agent-core'
 import { SHAPE_DEFAULTS, SHAPE_DIMS } from '@genoffice/cad-engine'
 import { brandText } from '@genoffice/i18n'
 import type { CadSession } from '../document/session'
+import { t } from '../i18n/locale'
 import {
   AI_BATCH_LIMIT,
   AI_UNSUPPORTED_KINDS,
@@ -237,9 +238,37 @@ function outputOf(name: string, result: CadToolResult): string {
   return JSON.stringify(result.data)
 }
 
-/** A short English label for the activity line (the panel may show its own). */
-function summaryOf(name: string, result: CadToolResult): string {
-  return result.ok ? name : `${name} (refused)`
+/** How many entries a list in the input has (what the step line counts). */
+function countOf(input: unknown, key: string): number {
+  const list = (input as Record<string, unknown> | null)?.[key]
+  return Array.isArray(list) ? list.length : 0
+}
+
+/** The step line the pane shows for a call, in the UI language. */
+function summaryOf(name: string, input: unknown, result: CadToolResult): string {
+  const action = (() => {
+    switch (name) {
+      case CAD_TOOL_NAMES.readModel:
+        return t('aiToolReadModel')
+      case CAD_TOOL_NAMES.addShapes:
+        return t('aiToolAddShapes', { n: countOf(input, 'shapes') })
+      case CAD_TOOL_NAMES.updateShapes:
+        return t('aiToolUpdateShapes', { n: countOf(input, 'updates') })
+      case CAD_TOOL_NAMES.deleteShapes:
+        return t('aiToolDeleteShapes', { n: countOf(input, 'ids') })
+      case CAD_TOOL_NAMES.groupShapes:
+        return t('aiToolGroupShapes')
+      case CAD_TOOL_NAMES.ungroupShapes:
+        return t('aiToolUngroupShapes')
+      case CAD_TOOL_NAMES.alignShapes:
+        return t('aiToolAlignShapes', { n: countOf(input, 'ids') })
+      case CAD_TOOL_NAMES.setWorkplane:
+        return t('aiToolSetWorkplane')
+      default:
+        return name
+    }
+  })()
+  return result.ok ? action : t('aiToolRefused', { action })
 }
 
 export function createCadSkill(deps: CadSkillDeps): AgentSkill {
@@ -256,7 +285,7 @@ export function createCadSkill(deps: CadSkillDeps): AgentSkill {
         output: outputOf(call.name, result),
         isError: !result.ok,
         mutated: result.ok && call.name !== CAD_TOOL_NAMES.readModel,
-        summary: summaryOf(call.name, result),
+        summary: summaryOf(call.name, call.input, result),
       }
     },
   }

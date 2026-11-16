@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const vi = {
+  aiOpenAssistant: 'Mở trợ lý AI',
+  aiCollapsePanel: 'Thu gọn bảng điều khiển',
+  aiNewChat: 'Cuộc trò chuyện mới',
+  aiEmptyTitle: 'Vẽ cùng AI',
+  aiEmptyBody:
+    'Hãy mô tả thứ cần làm, ví dụ "một ống cắm bút rộng 80, cao 100, khoét rỗng bên trong đường kính 68". Mỗi yêu cầu là một bước: nhấn Ctrl+Z một lần là hoàn tác toàn bộ.',
+  aiComposerPlaceholder: 'Hãy nói với AI cần tạo hoặc sửa gì…',
+  aiHintIdle: 'Nhấn Enter để gửi, Shift+Enter để xuống dòng',
+  aiHintBusy: 'Đang trả lời…',
+  aiSend: 'Gửi',
+  aiStop: 'Dừng',
+  aiThinking: 'Đang suy nghĩ',
+  aiWorking: 'Đang xử lý',
+  aiGroupWorking: 'Đang xử lý…',
+  aiWorkedSteps: 'Đã xử lý · {n} bước',
+  aiStopped: 'Đã dừng',
+  aiNoReply: '(không có phản hồi)',
+  aiTurnLimit: 'Đã đạt giới hạn số bước cho mỗi lần chạy — hãy gửi hướng dẫn khác để tiếp tục.',
+  aiTruncatedNote: '(Câu trả lời bị cắt ngắn do giới hạn độ dài và có thể chưa hoàn chỉnh.)',
+  aiUndelivered: 'Chưa được gửi',
+  aiRetry: 'Thử lại',
+  aiCopyReplyTitle: 'Sao chép câu trả lời',
+  aiRegenerateTitle: 'Tạo lại',
+  aiUnknownError: 'Yêu cầu AI thất bại, vui lòng thử lại',
+  aiTimeoutError: 'Phản hồi từ AI đã hết thời gian chờ',
+  aiCreditsExhausted: 'Đã hết điểm tín dụng — nạp thêm tại nhà cung cấp AI của bạn',
+  aiNetworkError:
+    'Lỗi mạng: không thể kết nối với dịch vụ AI. Vui lòng kiểm tra kết nối và thử lại',
+  aiOverloadedError: 'Dịch vụ AI hiện đang bận — vui lòng thử lại sau giây lát',
+  // the quick actions above the input
+  aiQuickActions: 'Thao tác nhanh',
+  aiQuickSheet: 'Tạo bản vẽ kích thước',
+  aiQuickRoom: 'Bắt đầu bố trí phòng',
+  aiQuickRoomPrompt: 'Biến mặt làm việc thành một căn phòng 5 × 4 m và đặt 4 cái bàn',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'Đọc bản vẽ',
+  aiToolAddShapes: 'Đặt hình · {n}',
+  aiToolUpdateShapes: 'Sửa chi tiết · {n}',
+  aiToolDeleteShapes: 'Xóa chi tiết · {n}',
+  aiToolGroupShapes: 'Nhóm chi tiết',
+  aiToolUngroupShapes: 'Bỏ nhóm',
+  aiToolAlignShapes: 'Căn chỉnh chi tiết · {n}',
+  aiToolSetWorkplane: 'Đổi kích thước mặt làm việc',
+  aiToolRefused: '{action} · bị từ chối',
+} satisfies Record<keyof typeof zh, string>

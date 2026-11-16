@@ -209,6 +209,33 @@ html.genoffice-popover-open .ribbon-tabs {
   color: var(--accent);
 }
 
+/* the AI button at the far end of the tab row */
+.cad-ai-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin-inline-start: auto;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cad-ai-entry:hover {
+  background: var(--hover);
+}
+
+.cad-ai-entry.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
 /* the band under the tabs: big buttons with the group name below. The height is
    fixed so switching tabs never moves the 3D view. */
 .ribbon-body {
@@ -454,7 +481,8 @@ html.genoffice-popover-open .ribbon-tabs {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
+  /* the right column is as wide as the AI pane's resizer makes it */
+  grid-template-columns: minmax(0, 1fr) var(--cad-side-width, 320px);
 }
 
 .cad-stage {
@@ -683,11 +711,18 @@ html.genoffice-popover-open .ribbon-tabs {
   opacity: 0.6;
 }
 
-/* the AI assistant's place under the property panel (stage 5 fills it) */
+/* the AI assistant under the property panel; folded, it is a bar at the bottom */
 .cad-ai-slot {
-  flex: 1;
-  min-height: 0;
+  display: flex;
+  flex: 1 1 0;
+  min-height: 280px;
   border-top: 1px solid var(--border);
+}
+
+.cad-ai-slot:has(> .ai-dock.collapsed) {
+  flex: 0 0 auto;
+  min-height: 0;
+  margin-top: auto;
 }
 
 /* ---- the no-3D screen ---- */

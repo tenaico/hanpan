@@ -9,6 +9,9 @@
  * separately below; this editor never registers those, it only calls them.
  */
 import type { Lang } from '@genoffice/i18n'
+import type { AiPanelPrefs } from '@genoffice/ui'
+import type { AiSettings, AiStreamChunk, AiStreamRequest } from '@genoffice/ai-provider'
+import type { CadSubscriptionApi } from './subscription-api'
 
 export const CAD_CHANNELS = {
   // ---- open and save (stage 2) ----
@@ -298,5 +301,30 @@ export interface CadSendApi {
   copyImage(png: Uint8Array): Promise<boolean>
 }
 
-/** API exposed by preload to the renderer (window.cadApi). Stage 5 extends it. */
-export type CadApi = CadCoreApi & CadQueryApi & CadRecoveryApi & CadExportApi & CadSendApi
+/**
+ * The AI pane's bridge (stage 5): the mind map's AI bridge without its
+ * attachments, pictures, web search and hand-over. Every call goes to a shared
+ * `ai:*` or `app:*` channel; this editor registers none of them.
+ */
+export interface CadAiApi {
+  getAiPanelPrefs(): Promise<AiPanelPrefs>
+  setAiPanelPrefs(patch: Partial<AiPanelPrefs>): Promise<AiPanelPrefs>
+  onAiPanelPrefsChanged(handler: (prefs: AiPanelPrefs) => void): () => void
+  getAiSettings(): Promise<AiSettings>
+  setAiSettings(settings: AiSettings): Promise<void>
+  onAiSettingsChanged(handler: () => void): () => void
+  /** shell only: switch to Home and open Settings › AI Model (rejects in standalone) */
+  openAiModelSettings(): Promise<void>
+  subscription: CadSubscriptionApi
+  aiStream(request: AiStreamRequest): Promise<void>
+  aiStreamCancel(requestId: string): Promise<void>
+  onAiStream(handler: (chunk: AiStreamChunk) => void): () => void
+}
+
+/** API exposed by preload to the renderer (window.cadApi). */
+export type CadApi = CadCoreApi &
+  CadQueryApi &
+  CadRecoveryApi &
+  CadExportApi &
+  CadSendApi &
+  CadAiApi

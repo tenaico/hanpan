@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const th = {
+  aiOpenAssistant: 'เปิดผู้ช่วย AI',
+  aiCollapsePanel: 'ยุบแผง',
+  aiNewChat: 'แชทใหม่',
+  aiEmptyTitle: 'วาดด้วย AI',
+  aiEmptyBody:
+    'บอกสิ่งที่ต้องการสร้าง เช่น "ทำที่ใส่ดินสอกว้าง 80 สูง 100 เจาะด้านในเป็นรูเส้นผ่านศูนย์กลาง 68" หนึ่งคำขอคือหนึ่งขั้นตอน กด Ctrl+Z ครั้งเดียวก็ย้อนกลับได้ทั้งหมด',
+  aiComposerPlaceholder: 'บอก AI ว่าจะสร้างหรือแก้ไขอะไร…',
+  aiHintIdle: 'Enter เพื่อส่ง, Shift+Enter ขึ้นบรรทัดใหม่',
+  aiHintBusy: 'กำลังตอบ…',
+  aiSend: 'ส่ง',
+  aiStop: 'หยุด',
+  aiThinking: 'กำลังคิด',
+  aiWorking: 'กำลังทำงาน',
+  aiGroupWorking: 'กำลังทำงาน…',
+  aiWorkedSteps: 'เสร็จแล้ว · {n} ขั้นตอน',
+  aiStopped: 'หยุดแล้ว',
+  aiNoReply: '(ไม่มีการตอบกลับ)',
+  aiTurnLimit: 'ถึงขีดจำกัดขั้นตอนต่อรอบแล้ว ส่งคำสั่งอีกครั้งเพื่อดำเนินการต่อ',
+  aiTruncatedNote: '(คำตอบถูกตัดเนื่องจากถึงขีดจำกัดความยาว เนื้อหาอาจไม่สมบูรณ์)',
+  aiUndelivered: 'ส่งไม่สำเร็จ',
+  aiRetry: 'ลองใหม่',
+  aiCopyReplyTitle: 'คัดลอกคำตอบ',
+  aiRegenerateTitle: 'สร้างใหม่',
+  aiUnknownError: 'คำขอ AI ล้มเหลว โปรดลองอีกครั้ง',
+  aiTimeoutError: 'การตอบกลับของ AI หมดเวลา',
+  aiCreditsExhausted: 'เครดิตหมด — เติมได้ที่ผู้ให้บริการ AI ของคุณ',
+  aiNetworkError:
+    'เครือข่ายมีปัญหา ไม่สามารถเชื่อมต่อบริการ AI ได้ โปรดตรวจสอบการเชื่อมต่อแล้วลองใหม่',
+  aiOverloadedError: 'บริการ AI มีผู้ใช้งานจำนวนมากในขณะนี้ โปรดลองอีกครั้งในอีกสักครู่',
+  // the quick actions above the input
+  aiQuickActions: 'การทำงานด่วน',
+  aiQuickSheet: 'สร้างแบบแสดงขนาด',
+  aiQuickRoom: 'เริ่มจัดผังห้อง',
+  aiQuickRoomPrompt: 'ทำแผ่นงานให้เป็นห้องขนาด 5 × 4 ม. แล้ววางโต๊ะ 4 ตัว',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'อ่านแบบ',
+  aiToolAddShapes: 'วางรูปทรง · {n}',
+  aiToolUpdateShapes: 'แก้ไขชิ้นส่วน · {n}',
+  aiToolDeleteShapes: 'ลบชิ้นส่วน · {n}',
+  aiToolGroupShapes: 'จัดกลุ่มชิ้นส่วน',
+  aiToolUngroupShapes: 'ยกเลิกการจัดกลุ่ม',
+  aiToolAlignShapes: 'จัดแนวชิ้นส่วน · {n}',
+  aiToolSetWorkplane: 'ปรับขนาดแผ่นงาน',
+  aiToolRefused: '{action} · ถูกปฏิเสธ',
+} satisfies Record<keyof typeof zh, string>

@@ -13,6 +13,10 @@
  * the engine refuses (a locked part) leaves the document as it is and says
  * why on the status line.
  *
+ * The AI pane (ai/) sits under the property panel. One request of it is one
+ * undo step: it edits through the same history, inside one history group.
+ * Its quick actions open the sheet dialog and run the send below.
+ *
  * Measuring (measure/), the dimension sheet dialog, "Copy picture" and
  * "Send to Hangul / Word" (sheet/) read the drawing as it is when they run;
  * the only edit among them is the title block, one `history.edit`. A
@@ -37,6 +41,7 @@ import {
 } from '@genoffice/cad-engine'
 import { useAutoSavePref } from '@genoffice/ui'
 import type { CadMenuCommand, SaveMode } from '../shared/ipc'
+import { CadAiDock, useCadAi } from './ai/AiDock'
 import { MeasureOverlay } from './measure/MeasureOverlay'
 import { MeasureTool, bindMeasure, measureEntities, measureSnaps } from './measure/measure-tool'
 import { SheetDialog } from './sheet/SheetDialog'
@@ -168,6 +173,7 @@ export default function App({
   const [measure, setMeasure] = useState<MeasureTool | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const send = useSendTarget()
+  const ai = useCadAi()
   const [autoSave, setAutoSave] = useAutoSavePref('cadapp.autoSave', window.cadApi)
   const selected = useSelection().ids
 
@@ -858,6 +864,8 @@ export default function App({
         onSheet={() => setSheetOpen(true)}
         onCopyPicture={copyView}
         onSend={() => void sendSheet()}
+        aiOpen={ai.open}
+        onToggleAi={() => ai.setOpen(!ai.open)}
       />
       {notice && (
         <div className="cad-notice" role="status" data-cad-notice="">
@@ -900,8 +908,21 @@ export default function App({
               }
             />
           )}
-          {/* the AI assistant's place, filled in stage 5 */}
-          <section className="cad-ai-slot" data-cad-ai-slot="" aria-hidden="true" />
+          <section className="cad-ai-slot" data-cad-ai-slot="" data-ai-open={ai.open}>
+            <CadAiDock
+              ai={ai}
+              // a guide or a loading tab has nothing the AI may change
+              session={locked ? null : session}
+              filePath={path ?? null}
+              quick={{
+                sheetBlocked: doc ? sheetBlocked(doc) : 'sheetEmpty',
+                disabled: locked || !!sketch,
+                sendLabel: send.label,
+                onSheet: () => setSheetOpen(true),
+                onSend: () => void sendSheet(),
+              }}
+            />
+          </section>
         </aside>
       </div>
       <StatusBar

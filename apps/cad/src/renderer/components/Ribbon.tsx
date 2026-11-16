@@ -15,10 +15,14 @@
  * document features are on, "Send to Word" when off (decision 0091). With no
  * part placed, the sheet and the send are off and their tip says why.
  *
+ * The AI button at the far end of the tab row shows and hides the AI pane
+ * under the property panel, like the other editors' AI entry.
+ *
  * Every pane is drawn and the ones not picked are hidden; the tab picked last
  * is remembered in `cadapp.ribbonTab`.
  */
 import { useEffect, useState, type ReactNode } from 'react'
+import { AiMark, aiSubscriptionText } from '@genoffice/ui'
 import type { ShapeKind } from '@genoffice/cad-engine'
 import type { ExportFormat } from '../../shared/ipc'
 import { SHAPE_LABEL } from '../editing/commands'
@@ -133,10 +137,13 @@ export interface RibbonProps {
   /** the 3D view as a picture on the clipboard */
   onCopyPicture(): void
   onSend(): void
+  /** the AI pane is showing */
+  aiOpen: boolean
+  onToggleAi(): void
 }
 
 export function Ribbon(p: RibbonProps) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const [tab, setTab] = useState<RibbonTab>(rememberedTab)
   const [textOpen, setTextOpen] = useState(false)
   useEffect(() => {
@@ -258,6 +265,18 @@ export function Ribbon(p: RibbonProps) {
         <span className="cad-state" data-dirty={p.dirty ? '' : undefined} aria-live="polite">
           {p.stateText}
         </span>
+        <button
+          type="button"
+          className={`cad-ai-entry ai-entry${p.aiOpen ? ' active' : ''}`}
+          data-tip={t('aiOpenAssistant')}
+          data-action="ai"
+          aria-pressed={p.aiOpen}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={p.onToggleAi}
+        >
+          <AiMark size={16} />
+          <span>{aiSubscriptionText(lang, 'aiAssistant')}</span>
+        </button>
       </div>
 
       <div className="ribbon-body" role="toolbar">

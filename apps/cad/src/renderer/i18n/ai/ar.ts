@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const ar = {
+  aiOpenAssistant: 'فتح مساعد الذكاء الاصطناعي',
+  aiCollapsePanel: 'طي اللوحة',
+  aiNewChat: 'محادثة جديدة',
+  aiEmptyTitle: 'الرسم بالذكاء الاصطناعي',
+  aiEmptyBody:
+    'صِف ما تريد صنعه، مثلًا «حامل أقلام بعرض 80 وارتفاع 100، مجوَّف من الداخل بثقب قطره 68». كل طلب خطوة واحدة: يتراجع Ctrl+Z عنه كله دفعة واحدة.',
+  aiComposerPlaceholder: 'أخبر الذكاء الاصطناعي بما يصنعه أو يغيّره…',
+  aiHintIdle: 'Enter للإرسال، Shift+Enter لسطر جديد',
+  aiHintBusy: 'يرد…',
+  aiSend: 'إرسال',
+  aiStop: 'إيقاف',
+  aiThinking: 'يفكر',
+  aiWorking: 'يعمل',
+  aiGroupWorking: 'جارٍ العمل…',
+  aiWorkedSteps: 'اكتمل · {n} خطوات',
+  aiStopped: 'تم الإيقاف',
+  aiNoReply: '(لا يوجد رد)',
+  aiTurnLimit: 'تم بلوغ حد الخطوات لكل تشغيل — أرسل تعليمات أخرى للمتابعة.',
+  aiTruncatedNote: '(تم اقتطاع الرد بسبب حد الطول وقد يكون غير مكتمل.)',
+  aiUndelivered: 'لم يتم الإرسال',
+  aiRetry: 'إعادة المحاولة',
+  aiCopyReplyTitle: 'نسخ الرد',
+  aiRegenerateTitle: 'إعادة الإنشاء',
+  aiUnknownError: 'فشل طلب الذكاء الاصطناعي، أعد المحاولة',
+  aiTimeoutError: 'انتهت مهلة استجابة الذكاء الاصطناعي',
+  aiCreditsExhausted: 'نفدت الأرصدة — أعد الشحن لدى مزوّد الذكاء الاصطناعي',
+  aiNetworkError:
+    'مشكلة في الشبكة: تعذّر الوصول إلى خدمة الذكاء الاصطناعي. تحقق من الاتصال وحاول مجددًا',
+  aiOverloadedError: 'خدمة الذكاء الاصطناعي مشغولة حاليًا — يرجى المحاولة مرة أخرى بعد قليل',
+  // the quick actions above the input
+  aiQuickActions: 'إجراءات سريعة',
+  aiQuickSheet: 'إنشاء لوحة الأبعاد',
+  aiQuickRoom: 'بدء تخطيط غرفة',
+  aiQuickRoomPrompt: 'اجعل لوح العمل غرفة بمقاس 5 × 4 م وضع فيها 4 مكاتب',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'قراءة الرسم',
+  aiToolAddShapes: 'وضع الأشكال · {n}',
+  aiToolUpdateShapes: 'تغيير الأجزاء · {n}',
+  aiToolDeleteShapes: 'حذف الأجزاء · {n}',
+  aiToolGroupShapes: 'تجميع الأجزاء',
+  aiToolUngroupShapes: 'فك التجميع',
+  aiToolAlignShapes: 'محاذاة الأجزاء · {n}',
+  aiToolSetWorkplane: 'تغيير حجم لوح العمل',
+  aiToolRefused: '{action} · مرفوض',
+} satisfies Record<keyof typeof zh, string>

@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const en = {
+  aiOpenAssistant: 'Open AI assistant',
+  aiCollapsePanel: 'Collapse panel',
+  aiNewChat: 'New chat',
+  aiEmptyTitle: 'Draw with AI',
+  aiEmptyBody:
+    'Describe what to make, for example "a pencil cup 80 wide and 100 high, hollow inside with a 68 hole". One request is one step: Ctrl+Z takes all of it back.',
+  aiComposerPlaceholder: 'Tell the AI what to make or change…',
+  aiHintIdle: 'Enter to send, Shift+Enter for a new line',
+  aiHintBusy: 'Replying…',
+  aiSend: 'Send',
+  aiStop: 'Stop',
+  aiThinking: 'Thinking',
+  aiWorking: 'Working',
+  aiGroupWorking: 'Working…',
+  aiWorkedSteps: 'Worked · {n} steps',
+  aiStopped: 'Stopped',
+  aiNoReply: '(no reply)',
+  aiTurnLimit: 'Reached the per-run step limit — send another instruction to continue.',
+  aiTruncatedNote: '(The reply was cut off by the length limit and may be incomplete.)',
+  aiUndelivered: 'Not sent',
+  aiRetry: 'Retry',
+  aiCopyReplyTitle: 'Copy reply',
+  aiRegenerateTitle: 'Regenerate',
+  aiUnknownError: 'AI request failed, please retry',
+  aiTimeoutError: 'AI response timed out',
+  aiCreditsExhausted: 'Out of credits — top up with your AI provider',
+  aiNetworkError:
+    'Network problem: could not reach the AI service. Check your connection and try again',
+  aiOverloadedError: 'The AI service is busy right now — please try again in a moment',
+  // the quick actions above the input
+  aiQuickActions: 'Quick actions',
+  aiQuickSheet: 'Make a dimension sheet',
+  aiQuickRoom: 'Start a room layout',
+  aiQuickRoomPrompt: 'Make the workplane a 5 × 4 m room and place 4 desks',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'Read the drawing',
+  aiToolAddShapes: 'Place shapes · {n}',
+  aiToolUpdateShapes: 'Change parts · {n}',
+  aiToolDeleteShapes: 'Delete parts · {n}',
+  aiToolGroupShapes: 'Group parts',
+  aiToolUngroupShapes: 'Ungroup',
+  aiToolAlignShapes: 'Align parts · {n}',
+  aiToolSetWorkplane: 'Resize the workplane',
+  aiToolRefused: '{action} · refused',
+} satisfies Record<keyof typeof zh, string>
