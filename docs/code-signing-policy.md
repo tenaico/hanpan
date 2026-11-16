@@ -14,10 +14,10 @@ Every signing request is approved by hand, by one of the approvers below, for on
 
 ## Team roles
 
-| Role                     | Who                                           | What they may do                                                                                                     |
-| ------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Committers and reviewers | [grapevine26](https://github.com/grapevine26) | Change the source code. Changes from anyone else (pull requests) are reviewed by a committer before they are merged. |
-| Approvers                | [grapevine26](https://github.com/grapevine26) | Approve each signing request.                                                                                        |
+| Role                     | Who                                                                                                  | What they may do                                                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Committers and reviewers | [grapevine26](https://github.com/grapevine26), [leehun0720-hash](https://github.com/leehun0720-hash) | Change the source code. Changes from anyone else (pull requests) are reviewed by a committer before they are merged. |
+| Approvers                | [grapevine26](https://github.com/grapevine26)                                                        | Approve each signing request.                                                                                        |
 
 All team members use multi-factor authentication for GitHub and SignPath.
 
