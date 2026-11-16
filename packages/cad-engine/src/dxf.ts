@@ -377,14 +377,94 @@ function mapPoints(m: Matrix, points: number[]): number[] {
   return out
 }
 
+const ACI_BASE: Record<number, string> = {
+  1: '#ff0000',
+  2: '#ffff00',
+  3: '#00ff00',
+  4: '#00ffff',
+  5: '#0000ff',
+  6: '#ff00ff',
+  7: '#ffffff',
+  8: '#808080',
+  9: '#c0c0c0',
+}
+
+const hex2 = (v: number): string =>
+  Math.round(Math.max(0, Math.min(255, v)))
+    .toString(16)
+    .padStart(2, '0')
+
+/**
+ * The AutoCAD colour index (1-255) as #rrggbb; null for 0 (by block), 256 (by layer) and others.
+ * 1-9 are the standard colours. 10-249 follow the index's pattern of 24 hues, each in five
+ * brightness steps, full and half saturation, so the result is close to, not exactly, the
+ * program's own palette. 250-255 are greys.
+ */
+export function aciToHex(index: number): string | null {
+  if (!Number.isInteger(index) || index < 1 || index > 255) return null
+  const base = ACI_BASE[index]
+  if (base) return base
+  if (index >= 250) {
+    const g = 51 + (index - 250) * 40.8
+    return `#${hex2(g)}${hex2(g)}${hex2(g)}`
+  }
+  const hue = Math.floor((index - 10) / 10) * 15
+  const step = (index - 10) % 10
+  const value = [1, 0.8, 0.6, 0.5, 0.3][Math.floor(step / 2)]!
+  const saturation = step % 2 === 0 ? 1 : 0.5
+  const c = value * saturation
+  const x = c * (1 - Math.abs(((hue / 60) % 2) - 1))
+  const m = value - c
+  const [r, g, b] =
+    hue < 60
+      ? [c, x, 0]
+      : hue < 120
+        ? [x, c, 0]
+        : hue < 180
+          ? [0, c, x]
+          : hue < 240
+            ? [0, x, c]
+            : hue < 300
+              ? [x, 0, c]
+              : [c, 0, x]
+  return `#${hex2((r + m) * 255)}${hex2((g + m) * 255)}${hex2((b + m) * 255)}`
+}
+
+/** Layer name (upper case) to its colour index, from the LAYER table. A switched-off layer has a negative index. */
+function readLayerColours(tables: DxfGroup[] | undefined): Map<string, number> {
+  const colours = new Map<string, number>()
+  if (!tables) return colours
+  let name: string | null = null
+  let colour: number | null = null
+  let inLayer = false
+  const flush = (): void => {
+    if (inLayer && name !== null && colour !== null)
+      colours.set(name.toUpperCase(), Math.abs(colour))
+    name = null
+    colour = null
+  }
+  for (const g of tables) {
+    if (g.code === 0) {
+      flush()
+      inLayer = g.value.toUpperCase() === 'LAYER'
+    } else if (inLayer && g.code === 2) name = g.value
+    else if (inLayer && g.code === 62) colour = parseNumber(g.value, 7)
+  }
+  flush()
+  return colours
+}
+
 class Reader {
   readonly entities: DrawingEntity[] = []
   readonly skipped: Record<string, number> = {}
   private budget: number
+  /** colour of the entity being read; children of a block insert inherit it when "by block" */
+  private colour: string | null = null
 
   constructor(
     private readonly blocks: Map<string, Block>,
     private readonly maxEntities: number,
+    private readonly layerColours: Map<string, number> = new Map(),
   ) {
     // Blocks that only insert other blocks emit nothing, so visits are capped as well.
     this.budget = maxEntities * 10 + 1000
@@ -400,7 +480,7 @@ class Reader {
       this.skip(type)
       return
     }
-    this.entities.push(entity)
+    this.entities.push(this.colour === null ? entity : { ...entity, color: this.colour })
     if (this.entities.length > this.maxEntities) throw new TooLarge()
   }
 
@@ -455,6 +535,28 @@ class Reader {
     if (--this.budget < 0) throw new TooLarge()
     const own = groupValue(entity, 8) ?? '0'
     const layer = own === '0' && inherited !== null ? inherited : own
+    const outer = this.colour
+    const index = groupNumber(entity, 62, 256)
+    this.colour =
+      index === 0
+        ? outer
+        : index >= 1 && index <= 255
+          ? aciToHex(index)
+          : aciToHex(this.layerColours.get(layer.toUpperCase()) ?? 0)
+    try {
+      this.readEntity(entity, parent, depth, layer, inherited)
+    } finally {
+      this.colour = outer
+    }
+  }
+
+  private readEntity(
+    entity: RawEntity,
+    parent: Matrix,
+    depth: number,
+    layer: string,
+    inherited: string | null,
+  ): void {
     const m =
       OCS_TYPES.has(entity.type) && groupNumber(entity, 230, 1) < 0
         ? multiply(parent, [-1, 0, 0, 1, 0, 0])
@@ -687,7 +789,7 @@ export function readDxf(bytes: Uint8Array, options: DxfReadOptions = {}): DxfRea
   const paperCount = all.length - model.length
   const top = model.length > 0 ? model : all
 
-  const reader = new Reader(blocks, maxEntities)
+  const reader = new Reader(blocks, maxEntities, readLayerColours(sections.get('TABLES')))
   const unit: Matrix = [factor, 0, 0, factor, 0, 0]
   try {
     for (const entity of top) reader.read(entity, unit, 0, null)

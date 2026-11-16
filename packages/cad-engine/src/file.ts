@@ -86,6 +86,11 @@ function withExtra(
 }
 
 function entityJson(e: DrawingEntity): Json {
+  const out = entityShapeJson(e)
+  return e.color === undefined ? out : { ...out, color: e.color }
+}
+
+function entityShapeJson(e: DrawingEntity): Json {
   switch (e.kind) {
     case 'line':
       return { kind: e.kind, a: e.a, b: e.b, layer: e.layer }
@@ -252,6 +257,14 @@ function extraOf(raw: Json, known: Set<string>): Record<string, unknown> | undef
 
 function entity(v: unknown): DrawingEntity {
   const e = obj(v)
+  const shape = entityShape(e)
+  // A colour that is not #rrggbb is dropped, not refused: the entity still draws.
+  return typeof e.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(e.color)
+    ? { ...shape, color: e.color.toLowerCase() }
+    : shape
+}
+
+function entityShape(e: Record<string, unknown>): DrawingEntity {
   const layer = str(e.layer)
   switch (e.kind) {
     case 'line':

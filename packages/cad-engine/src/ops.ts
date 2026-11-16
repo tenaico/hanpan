@@ -335,3 +335,51 @@ export function setWorkplane(doc: CadDocument, wp: Partial<CadDocument['workplan
   if (wp.grid !== undefined) next.grid = positive(wp.grid, 'workplane.grid')
   return { ...doc, workplane: next }
 }
+
+/** A copy of a part with new ids all the way down. */
+function withNewIds(part: Part): Part {
+  if (part.type === 'group')
+    return { ...part, id: newId(), children: part.children.map(withNewIds) }
+  return { ...part, id: newId() }
+}
+
+/** "Box" becomes "Box 2", "Box 2" becomes "Box 3". */
+function nextName(name: string): string {
+  const m = /^(.*) (\d+)$/.exec(name)
+  return m ? `${m[1]} ${Number(m[2]) + 1}` : `${name} 2`
+}
+
+/** Copies top-level parts beside the originals, moved by `offset`; the copies come last. */
+export function duplicateParts(
+  doc: CadDocument,
+  ids: readonly string[],
+  offset: Vec3,
+): { doc: CadDocument; ids: string[] } {
+  const delta = vec(offset, 'offset')!
+  const copies: Part[] = []
+  for (const id of ids) {
+    const part = doc.parts.find((p) => p.id === id)
+    if (!part) throw new CadEditError('unknown-id', id)
+    const position = vec(
+      [part.position[0] + delta[0], part.position[1] + delta[1], part.position[2] + delta[2]],
+      'position',
+    )!
+    copies.push({ ...withNewIds(part), name: nextName(part.name), position, locked: false })
+  }
+  return { doc: { ...doc, parts: [...doc.parts, ...copies] }, ids: copies.map((p) => p.id) }
+}
+
+/** Moves parts by `delta`. A locked part refuses the whole move. */
+export function moveParts(doc: CadDocument, ids: readonly string[], delta: Vec3): CadDocument {
+  const d = vec(delta, 'delta')!
+  if (d[0] === 0 && d[1] === 0 && d[2] === 0) return doc
+  let out = doc
+  for (const id of ids) {
+    const part = findPart(out, id)
+    if (!part) throw new CadEditError('unknown-id', id)
+    out = updatePart(out, id, {
+      position: [part.position[0] + d[0], part.position[1] + d[1], part.position[2] + d[2]],
+    })
+  }
+  return out
+}

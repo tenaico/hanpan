@@ -69,27 +69,35 @@ export interface MeshPart extends PartBase {
   closed: boolean
 }
 
+/** How a drawing entity is drawn: its DXF layer, and its colour (#rrggbb) when the file gives one. */
+export interface EntityStyle {
+  layer: string
+  color?: string
+}
+
 /** 2D entities in millimetres on the workplane, as read from a DXF file. */
-export type DrawingEntity =
-  | { kind: 'line'; a: [number, number]; b: [number, number]; layer: string }
-  | { kind: 'polyline'; points: number[]; closed: boolean; layer: string }
-  | { kind: 'circle'; center: [number, number]; radius: number; layer: string }
-  | {
-      kind: 'arc'
-      center: [number, number]
-      radius: number
-      startDeg: number
-      endDeg: number
-      layer: string
-    }
-  | {
-      kind: 'text'
-      at: [number, number]
-      height: number
-      rotationDeg: number
-      value: string
-      layer: string
-    }
+export type DrawingEntity = EntityStyle &
+  (
+    | { kind: 'line'; a: [number, number]; b: [number, number]; layer: string }
+    | { kind: 'polyline'; points: number[]; closed: boolean; layer: string }
+    | { kind: 'circle'; center: [number, number]; radius: number; layer: string }
+    | {
+        kind: 'arc'
+        center: [number, number]
+        radius: number
+        startDeg: number
+        endDeg: number
+        layer: string
+      }
+    | {
+        kind: 'text'
+        at: [number, number]
+        height: number
+        rotationDeg: number
+        value: string
+        layer: string
+      }
+  )
 
 export interface DrawingPart extends PartBase {
   type: 'drawing'
