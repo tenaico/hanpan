@@ -265,10 +265,7 @@ export function alignParts(
   return out
 }
 
-export function setWorkplane(
-  doc: CadDocument,
-  wp: Partial<CadDocument['workplane']>,
-): CadDocument {
+export function setWorkplane(doc: CadDocument, wp: Partial<CadDocument['workplane']>): CadDocument {
   const next = { ...doc.workplane }
   if (wp.width !== undefined) next.width = positive(wp.width, 'workplane.width')
   if (wp.depth !== undefined) next.depth = positive(wp.depth, 'workplane.depth')

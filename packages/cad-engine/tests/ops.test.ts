@@ -85,14 +85,16 @@ describe('addShape', () => {
 
   it('rejects a torus too thick for its diameter', () => {
     expect(
-      codeOf(() => addShape(createDocument(), 'torus', { dims: { diameter: 10, tubeDiameter: 5 } })),
+      codeOf(() =>
+        addShape(createDocument(), 'torus', { dims: { diameter: 10, tubeDiameter: 5 } }),
+      ),
     ).toBe('bad-number')
   })
 
   it('rejects a non-finite position', () => {
-    expect(
-      codeOf(() => addShape(createDocument(), 'box', { position: [0, Number.NaN, 0] })),
-    ).toBe('bad-number')
+    expect(codeOf(() => addShape(createDocument(), 'box', { position: [0, Number.NaN, 0] }))).toBe(
+      'bad-number',
+    )
   })
 
   it('leaves the input document untouched', () => {
