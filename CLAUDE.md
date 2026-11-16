@@ -49,6 +49,7 @@ openoffice/
 │   ├── markdown/AGENTS.md         ← 마크다운·텍스트 편집기
 │   ├── html/AGENTS.md             ← HTML 편집기
 │   ├── mindmap/AGENTS.md          ← 마인드맵 편집기(`.xmind`)
+│   ├── cad/AGENTS.md              ← AI 도면 편집기(`.ttukcad`): 3D 화면, 리본, 속성 창, 치수 재기·치수 도면, 문서로 보내기, AI 도구
 │   ├── hwp/AGENTS.md              ← 한글(HWP·HWPX) 편집기, 편집 화면은 rhwp
 │   ├── epub/AGENTS.md             ← 전자책(EPUB) 편집기: 읽기, 책 화면에서 고치기, 책 번역
 │   └── graphics/AGENTS.md         ← AI 포토·AI 일러스트(PhotoCraft·VectorCraft 웹판) 탭과 AI 도우미
