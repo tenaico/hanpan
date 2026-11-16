@@ -65,6 +65,8 @@ interface LaunchOptions {
    * does; `E2E_NO_VIDEO=1` turns recording off for a whole run.
    */
   recordVideo?: boolean
+  /** extra Chromium switches, placed before the app path (e.g. to launch without WebGL) */
+  args?: string[]
 }
 
 export interface LaunchedApp {
@@ -119,6 +121,7 @@ export async function launchShell(options: LaunchOptions): Promise<LaunchedApp> 
   // and they never leak into the argv the app parses for documents to open.
   const args: string[] = []
   if (process.platform === 'linux') args.push('--no-sandbox', '--disable-gpu')
+  if (options.args) args.push(...options.args)
   args.push(SHELL_DIR)
   if (options.openFile) args.push(options.openFile)
   if (options.openFiles) args.push(...options.openFiles)

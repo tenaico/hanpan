@@ -3,7 +3,8 @@ import { readFileSync, realpathSync, rmSync } from 'node:fs'
 import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { test, expect, type ElectronApplication, type Page } from '@playwright/test'
+import { test, expect, type ElectronApplication, type Locator, type Page } from '@playwright/test'
+import { PNG } from 'pngjs'
 import {
   SHAPE_DIMS,
   makeMesh,
@@ -616,6 +617,9 @@ interface SentTab {
   title: string
 }
 
+/** Chromium switches that leave a page without any WebGL context (stage 6). */
+const NO_WEBGL_ARGS = ['--disable-gpu', '--disable-software-rasterizer']
+
 const listTabs = (page: Page): Promise<SentTab[]> =>
   page.evaluate(() => (window as unknown as ShellApisOnWindow).aiOfficeTabs.list())
 
@@ -788,6 +792,192 @@ test.describe('AI Drawing tab, the AI assistant (stage 5)', () => {
       await expect(cad.locator('.cad-state')).toHaveAttribute('data-dirty', '')
     } finally {
       await closeAndSaveVideo(launched, 'cad-ai')
+    }
+  })
+})
+
+// ---- stage 6: the dark theme and a PC without WebGL ----
+
+const setAppTheme = (page: Page, theme: 'light' | 'dark'): Promise<void> =>
+  page.evaluate(
+    (t) =>
+      (window as unknown as { aiOffice: { setTheme(v: string): Promise<void> } }).aiOffice.setTheme(
+        t,
+      ),
+    theme,
+  )
+
+/** Relative luminance (0 dark .. 1 light) of an 8-bit RGB colour. */
+function luminance(r: number, g: number, b: number): number {
+  const lin = (c: number): number => {
+    const v = c / 255
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+  }
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+}
+
+/** The luminance of one pixel of what `target` shows on screen, `x`/`y` from its top left. */
+async function pixelLuminance(target: Locator, x: number, y: number): Promise<number> {
+  const png = PNG.sync.read(await target.screenshot())
+  const at = (Math.min(y, png.height - 1) * png.width + Math.min(x, png.width - 1)) * 4
+  return luminance(png.data[at]!, png.data[at + 1]!, png.data[at + 2]!)
+}
+
+/**
+ * Frame problems on the page: a light box (an opaque background lighter than
+ * `maxBackground`) and text whose colour is too close to the background it sits on
+ * (contrast under 3:1). Canvases and pictures are document content and are skipped,
+ * and so is everything inside `skip`.
+ */
+async function frameProblems(cad: Page, maxBackground: number, skip = ''): Promise<string[]> {
+  return cad.evaluate(
+    ({ maxBg, skipSel }) => {
+      const parse = (c: string): [number, number, number, number] | null => {
+        const m = c.match(/rgba?\(([^)]+)\)/)
+        if (!m) return null
+        const [r, g, b, a = '1'] = m[1]!.split(/[ ,/]+/).filter(Boolean)
+        return [Number(r), Number(g), Number(b), Number(a)]
+      }
+      const lum = (r: number, g: number, b: number): number => {
+        const lin = (c: number): number => {
+          const v = c / 255
+          return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+        }
+        return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+      }
+      const backgroundOf = (el: Element | null): number => {
+        for (let at = el; at; at = at.parentElement) {
+          const c = parse(getComputedStyle(at).backgroundColor)
+          if (c && c[3] > 0.5) return lum(c[0], c[1], c[2])
+        }
+        return 1
+      }
+      const name = (el: Element): string =>
+        `${el.tagName.toLowerCase()}.${[...el.classList].join('.')}`
+      const problems: string[] = []
+      for (const el of document.querySelectorAll('body *')) {
+        if (el.closest('canvas, img, svg')) continue
+        if (skipSel && el.closest(skipSel)) continue
+        const box = el.getBoundingClientRect()
+        const style = getComputedStyle(el)
+        if (box.width < 2 || box.height < 2 || style.visibility === 'hidden') continue
+        if (style.opacity === '0') continue
+        const bg = parse(style.backgroundColor)
+        // the primary button is light in the dark theme by design (--color-btn-primary)
+        const lightByDesign = el.matches('.cad-button-primary')
+        if (bg && bg[3] > 0.5 && lum(bg[0], bg[1], bg[2]) > maxBg && !lightByDesign) {
+          problems.push(`light box ${name(el)} ${style.backgroundColor}`)
+        }
+        const ownText = [...el.childNodes].some(
+          (n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').trim() !== '',
+        )
+        if (!ownText) continue
+        const fg = parse(style.color)
+        if (!fg || fg[3] === 0) continue
+        const a = lum(fg[0], fg[1], fg[2])
+        const b = backgroundOf(el)
+        const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+        // disabled controls are dimmed on purpose
+        if (ratio < 3 && !el.closest(':disabled, [aria-disabled="true"]')) {
+          const words = (el.textContent ?? '').trim().slice(0, 20)
+          problems.push(`faint text ${name(el)} "${words}" ${ratio.toFixed(2)}`)
+        }
+      }
+      return problems
+    },
+    { maxBg: maxBackground, skipSel: skip },
+  )
+}
+
+test.describe('AI Drawing tab (stage 6: themes, no WebGL)', () => {
+  test('the frame and the 3D view follow the light and the dark theme; the sheet stays light', async () => {
+    test.setTimeout(240_000)
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-themes' })
+    const { page } = launched
+    try {
+      // light on purpose, not "system": the OS of the PC running the suite does not decide
+      await setAppTheme(page, 'light')
+      const cad = await newDrawing(launched)
+      await placeShape(cad, 'box')
+      await placeShape(cad, 'cylinder')
+      await setProp(cad, 'position.x', '50')
+      await placeShape(cad, 'sphere')
+      await setProp(cad, 'position.x', '-50')
+      await expect(cad.locator('.cad-side .copilot')).toBeVisible()
+      const canvas = cad.locator('.cad-viewport canvas')
+      const html = cad.locator('html')
+
+      await expect(html).toHaveAttribute('data-theme', 'light')
+      // the corner of the view is the space around the workplane (or the plane)
+      await expect.poll(() => pixelLuminance(canvas, 4, 4)).toBeGreaterThan(0.7)
+      expect(await frameProblems(cad, 1.01)).toEqual([])
+      await cad.screenshot({ path: screenshotPath('cad-theme-light') })
+
+      await setAppTheme(page, 'dark')
+      await expect(html).toHaveAttribute('data-theme', 'dark')
+      await expect.poll(() => pixelLuminance(canvas, 4, 4)).toBeLessThan(0.05)
+      for (const part of ['.ribbon', '.cad-side', '[data-cad-status-info]']) {
+        const target = cad.locator(part).first()
+        await expect(target).toBeVisible()
+        const box = (await target.boundingBox())!
+        expect(
+          await pixelLuminance(target, Math.floor(box.width - 3), Math.floor(box.height / 2)),
+          part,
+        ).toBeLessThan(0.1)
+      }
+      expect(await frameProblems(cad, 0.3)).toEqual([])
+      await cad.screenshot({ path: screenshotPath('cad-theme-dark') })
+
+      // the dimension sheet is paper: light in the dark theme too, on a dark dialog
+      await ribbonTab(cad, 'dims')
+      await cad.locator('[data-ribbon-pane="dims"] [data-action="sheet"]').click()
+      const dialog = cad.locator('.cad-sheet-dialog')
+      const preview = dialog.locator('[data-sheet-preview]')
+      await expect(preview).toBeVisible()
+      await expect.poll(() => pixelLuminance(preview, 6, 6)).toBeGreaterThan(0.85)
+      expect(await frameProblems(cad, 0.3, '.cad-sheet-paper')).toEqual([])
+      await cad.screenshot({ path: screenshotPath('cad-theme-dark-sheet') })
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-themes')
+    }
+  })
+
+  test('without WebGL the 3D view gives way to the screen with both remedies', async () => {
+    test.setTimeout(180_000)
+    const launched = await launchShell({
+      onboardingSeen: true,
+      videoDir: 'cad-nowebgl',
+      args: NO_WEBGL_ARGS,
+    })
+    const { app, page } = launched
+    try {
+      await openFromAllApps(page, 'ttukcad')
+      const cad = await waitForPageWithUrl(app, '://cad/')
+      // the switches really took WebGL away in this page
+      expect(
+        await cad.evaluate(() => {
+          const c = document.createElement('canvas')
+          return Boolean(c.getContext('webgl2') ?? c.getContext('webgl'))
+        }),
+      ).toBe(false)
+      await expect(cad.locator('[data-cad-ready]')).toBeVisible({ timeout: 30_000 })
+      const screen = cad.locator('.cad-nowebgl')
+      await expect(screen).toBeVisible()
+      await expect(screen.locator('.cad-nowebgl-title')).not.toBeEmpty()
+      await expect(screen.locator('.cad-nowebgl-remedies li')).toHaveCount(2)
+      for (const item of await screen.locator('.cad-nowebgl-remedies li').all()) {
+        await expect(item).not.toBeEmpty()
+      }
+      await expect(cad.locator('.cad-viewport canvas')).toHaveCount(0)
+      await cad.screenshot({ path: screenshotPath('cad-nowebgl') })
+
+      // nothing hangs: the ribbon still answers and the drawing still takes a part
+      await placeShape(cad, 'box')
+      await expect(cad.locator('[data-cad-status-info]')).toContainText('Box', { timeout: 15_000 })
+      await expect(cad.locator('.cad-state')).toHaveAttribute('data-dirty', '')
+      expect(await menuLabels(app, 'File')).toContain('Save')
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-nowebgl')
     }
   })
 })
