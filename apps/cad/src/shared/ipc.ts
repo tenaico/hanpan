@@ -197,15 +197,29 @@ export type ExportResult =
 
 // ---- send to a document (stage 4) ----
 
+/**
+ * "Send to Hangul / Word": the dimension sheet and its size table, as a new
+ * document. The shell checks every field again (`checkDrawingRequest`).
+ */
 export interface SendToDocumentRequest {
+  /** `hwp` when the Korean document features are on (HWPX), `docx` when off */
+  target: 'hwp' | 'docx'
+  /** the drawing's title: the document title and its file name (at most 200 characters) */
   title: string
-  /** the dimension sheet as PNG */
+  /** the date line under the title, as shown in the title block; empty for none */
+  date: string
+  /** the dimension sheet as PNG, at most 10 MB */
   drawingPng: Uint8Array
-  /** one row per part: name, width, depth, height (mm, formatted) */
+  /**
+   * The size table: `rows[0]` is the header row in the UI language
+   * (name, width, depth, height), then one row per part with formatted mm.
+   * At most 501 rows of at most 4 cells.
+   */
   rows: string[][]
 }
 
-export type SendToDocumentResult = { ok: true } | { ok: false; error: string }
+/** `title`: the new tab's title */
+export type SendToDocumentResult = { ok: true; title: string } | { ok: false; error: string }
 
 // ---- questions from the in-app MCP server ----
 
@@ -276,5 +290,13 @@ export interface CadExportApi {
   onExportRequest(handler: (format: ExportFormat) => void): () => void
 }
 
-/** API exposed by preload to the renderer (window.cadApi). Stages 4 and 5 extend it. */
-export type CadApi = CadCoreApi & CadQueryApi & CadRecoveryApi & CadExportApi
+/** Copy and send (stage 4): the renderer makes the PNG, the main process and the shell do the rest. */
+export interface CadSendApi {
+  /** the dimension sheet as a new Hangul or Word tab */
+  sendToDocument(request: SendToDocumentRequest): Promise<SendToDocumentResult>
+  /** put PNG bytes on the OS clipboard; false when they are refused */
+  copyImage(png: Uint8Array): Promise<boolean>
+}
+
+/** API exposed by preload to the renderer (window.cadApi). Stage 5 extends it. */
+export type CadApi = CadCoreApi & CadQueryApi & CadRecoveryApi & CadExportApi & CadSendApi

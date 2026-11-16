@@ -399,6 +399,7 @@ import {
   sendCadExportRequest,
   sendCadMenuCommand,
   setCadFileSavedHook,
+  setCadSendToDocumentHook,
 } from '../../../cad/src/main/cad-main'
 import type { CadMenuCommand, ExportFormat as CadExportFormat } from '../../../cad/src/shared/ipc'
 import {
@@ -5932,6 +5933,8 @@ function createShellWindow(): void {
   setMindmapMakeFromDocumentHook((wc) => makeFromDocument(wc))
   // Hanpan: the mind map's "send to a document" (HWP report, slides, Word report) in a new tab
   setMindmapSendToDocumentHook((wc, request) => hanpan.sendMap(request, wc))
+  // Hanpan: AI Drawing's "send to Hangul / Word" (dimension sheet and size table) in a new tab
+  setCadSendToDocumentHook((wc, request) => hanpan.sendDrawing(request, wc))
   setHwpHanpanToolHook((wc, request) => hanpan.hwpTool(wc, request))
   setMindmapSendToDesignHook((outline) => openDesignWithOutline(outline))
   setMindmapSyncHooks({

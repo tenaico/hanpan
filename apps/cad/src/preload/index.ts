@@ -10,6 +10,7 @@ import type {
   CadMenuCommand,
   CadQueryApi,
   CadRecoveryApi,
+  CadSendApi,
   ExportFormat,
   SaveMode,
   UiTheme,
@@ -81,7 +82,14 @@ const exporting: CadExportApi = {
   onExportRequest: (handler) => listen<[ExportFormat]>(CAD_CHANNELS.exportRequest, handler),
 }
 
-const api: CadApi = { ...core, ...queries, ...recovery, ...exporting }
+// ---- copy and send: the renderer makes the PNG ----
+
+const sending: CadSendApi = {
+  sendToDocument: (request) => ipcRenderer.invoke(CAD_CHANNELS.sendToDocument, request),
+  copyImage: (png) => ipcRenderer.invoke(CAD_CHANNELS.copyImage, png),
+}
+
+const api: CadApi = { ...core, ...queries, ...recovery, ...exporting, ...sending }
 
 contextBridge.exposeInMainWorld('cadApi', api)
 

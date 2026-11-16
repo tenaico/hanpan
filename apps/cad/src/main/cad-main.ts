@@ -33,7 +33,15 @@
 import { existsSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { basename, dirname, extname, join, resolve } from 'node:path'
-import { BrowserWindow, WebContentsView, app, dialog, ipcMain } from 'electron'
+import {
+  BrowserWindow,
+  WebContentsView,
+  app,
+  clipboard,
+  dialog,
+  ipcMain,
+  nativeImage,
+} from 'electron'
 import type { WebContents } from 'electron'
 import {
   RENDERER_SCHEME,
@@ -84,6 +92,7 @@ import type {
   RecoveryCopyResult,
   SaveCadResult,
   SaveMode,
+  SendToDocumentResult,
 } from '../shared/ipc'
 
 export { cadReadBytes, cadReadSummary } from './mcp-queries'
@@ -113,6 +122,9 @@ const OPENABLE_RE = new RegExp(
   'i',
 )
 const EXPORT_FORMATS: ReadonlySet<string> = new Set<ExportFormat>(['stl', 'obj', 'png'])
+/** The largest picture "Copy as picture" puts on the clipboard. */
+const MAX_COPY_IMAGE_BYTES = 10 * 1024 * 1024
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
 
 export interface CadRuntimePaths {
   preloadPath: string
@@ -211,6 +223,19 @@ let fileSavedHook: ((wc: WebContents, path: string) => void) | null = null
 
 export function setCadFileSavedHook(hook: (wc: WebContents, path: string) => void): void {
   fileSavedHook = hook
+}
+
+/**
+ * "Send to Hangul / Word", carried out by the shell (`send-drawing.ts`): it
+ * checks the request and opens the new tab. Unset in a standalone window.
+ */
+let sendToDocumentHook:
+  ((wc: WebContents, request: unknown) => Promise<SendToDocumentResult>) | null = null
+
+export function setCadSendToDocumentHook(
+  hook: ((wc: WebContents, request: unknown) => Promise<SendToDocumentResult>) | null,
+): void {
+  sendToDocumentHook = hook
 }
 
 /** The tab title of an untitled drawing, recorded with its recovery copy: the shell knows it */
@@ -796,6 +821,30 @@ function registerCadIpc(): void {
   })
 
   ipcMain.handle(CAD_CHANNELS.exportFile, (e, request: unknown) => exportFile(e, request))
+
+  // "Copy as picture": only PNG bytes of at most 10 MB reach the OS clipboard
+  ipcMain.handle(CAD_CHANNELS.copyImage, (_e, raw: unknown): boolean => {
+    const png = bytesOf(raw)
+    if (!png || png.length > MAX_COPY_IMAGE_BYTES) return false
+    if (png.length < PNG_SIGNATURE.length || PNG_SIGNATURE.some((b, i) => png[i] !== b)) {
+      return false
+    }
+    clipboard.writeImage(nativeImage.createFromBuffer(Buffer.from(png)))
+    return true
+  })
+
+  // "Send to Hangul / Word": the shell checks the request and opens the new tab
+  ipcMain.handle(
+    CAD_CHANNELS.sendToDocument,
+    async (e, request: unknown): Promise<SendToDocumentResult> => {
+      if (!sendToDocumentHook) return { ok: false, error: 'not available in this build' }
+      try {
+        return await sendToDocumentHook(e.sender, request)
+      } catch (error) {
+        return { ok: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    },
+  )
 
   ipcMain.on(CAD_CHANNELS.dirtyChanged, (e, dirty: unknown) => {
     if (dirty === true && mayWrite(e.sender.id)) dirtyByWc.add(e.sender.id)
