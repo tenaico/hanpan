@@ -103,6 +103,7 @@ describe('the sheet SVG is always well-formed XML', () => {
     const added = addShape(createDocument(), 'box', { name: 'A\u0001B\uD800C' })
     const doc = { ...added.doc, title: { name: 'T\u0007', date: '', scale: '' } }
     const { svg } = makeSheet(doc, [{ id: added.id, mesh: cube([0, 0, 0], [20, 20, 20]) }], LABELS)
+    // eslint-disable-next-line no-control-regex -- looking for control chars is the point here
     expect(svg).not.toMatch(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/)
     expect(svg).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/)
   })

@@ -77,6 +77,7 @@ function esc(text: string): string {
   return (
     text
       // XML 1.0 forbids these; a single one makes the whole sheet unreadable
+      // eslint-disable-next-line no-control-regex -- stripping control chars is the point here
       .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '')
       .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
       .replace(/&/g, '&amp;')
