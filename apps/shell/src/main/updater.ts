@@ -34,7 +34,7 @@ import {
   setUpdateParentWindow,
   showUpdateWindow,
 } from './update-window'
-import { normalizeReleaseNotes } from './update-notes'
+import { normalizeReleaseNotes, notesForLang } from './update-notes'
 
 /**
  * Full-package auto-update from the GitHub Releases of the product's public
@@ -751,7 +751,7 @@ function initialState(
     percent: 0,
     lang: htmlLang(getUiLang()),
     strings: uiStrings(),
-    releaseNotes,
+    releaseNotes: notesForLang(releaseNotes, getUiLang()),
     visibleInstall,
   }
 }

@@ -41,6 +41,58 @@ export function langFromWindowsLangId(id: number): Lang | null {
   return BY_PRIMARY[id & 0x3ff] ?? null
 }
 
+/**
+ * The Windows language id for each Hanpan language, among the installer's own
+ * languages (electron-builder.cjs installerLanguages). Spanish is NSIS's
+ * SpanishInternational (3082), Portuguese the Brazilian one.
+ */
+const LANG_IDS: Readonly<Record<Lang, number>> = {
+  ar: 1025,
+  cs: 1029,
+  de: 1031,
+  en: 1033,
+  es: 3082,
+  fr: 1036,
+  he: 1037,
+  hi: 1081,
+  id: 1057,
+  it: 1040,
+  ja: 1041,
+  ko: 1042,
+  ms: 1086,
+  nl: 1043,
+  pl: 1045,
+  pt: 1046,
+  ru: 1049,
+  th: 1054,
+  vi: 1066,
+  zh: 2052,
+  'zh-TW': 1028,
+}
+
+export function windowsLangIdFor(lang: Lang): number {
+  return LANG_IDS[lang]
+}
+
+/**
+ * reg.exe arguments that leave the language for the next installer to read
+ * (build/installer.nsh, GENOFFICE_LANG_KEY / GENOFFICE_LANG_VALUE): an update's
+ * installer window then opens in the language chosen in Settings
+ */
+export function installerLanguageRegArgs(lang: Lang): string[] {
+  return [
+    'add',
+    'HKCU\\Software\\Hanpan',
+    '/v',
+    'InstallerLanguage',
+    '/t',
+    'REG_SZ',
+    '/d',
+    String(windowsLangIdFor(lang)),
+    '/f',
+  ]
+}
+
 /** The installer's language, or null when the installer wrote none Hanpan has */
 export function readInstallerLang(exeDir: string): Lang | null {
   let text: string

@@ -9,8 +9,10 @@ import { LANGS } from '@genoffice/i18n'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   INSTALLER_LANGUAGE_FILE,
+  installerLanguageRegArgs,
   langFromWindowsLangId,
   readInstallerLang,
+  windowsLangIdFor,
 } from '../src/main/installer-lang'
 
 describe('langFromWindowsLangId', () => {
@@ -69,6 +71,43 @@ describe('readInstallerLang', () => {
   })
 })
 
+describe('windowsLangIdFor', () => {
+  it('gives every Hanpan language an id that maps back to it', () => {
+    for (const lang of LANGS) expect(langFromWindowsLangId(windowsLangIdFor(lang))).toBe(lang)
+  })
+
+  it('gives each language an id the installer has', () => {
+    const require = createRequire(import.meta.url)
+    const config = require('../electron-builder.cjs') as { nsis: { installerLanguages: string[] } }
+    const { lcid } = require('app-builder-lib/out/util/langs') as { lcid: Record<string, number> }
+    // Spanish is NSIS's SpanishInternational, LANGID 3082, whatever lcid says
+    const ids = new Set([...config.nsis.installerLanguages.map((l) => lcid[l]), 3082])
+    for (const lang of LANGS) expect(ids.has(windowsLangIdFor(lang))).toBe(true)
+  })
+})
+
+describe('installerLanguageRegArgs', () => {
+  it('writes the id where the installer reads it', () => {
+    expect(installerLanguageRegArgs('vi')).toEqual([
+      'add',
+      'HKCU\\Software\\Hanpan',
+      '/v',
+      'InstallerLanguage',
+      '/t',
+      'REG_SZ',
+      '/d',
+      '1066',
+      '/f',
+    ])
+  })
+
+  it('names the key and value installer.nsh reads', () => {
+    const nsh = readFileSync(new URL('../build/installer.nsh', import.meta.url), 'utf8')
+    expect(nsh).toContain('!define GENOFFICE_LANG_KEY "Software\\Hanpan"')
+    expect(nsh).toContain('!define GENOFFICE_LANG_VALUE "InstallerLanguage"')
+  })
+})
+
 describe('the installer offers exactly the languages Hanpan has', () => {
   const require = createRequire(import.meta.url)
   const config = require('../electron-builder.cjs') as {
@@ -100,5 +139,16 @@ describe('the shell main and the installer language', () => {
     expect(at(/readInstallerLang\(/)).toBeGreaterThan(0)
     expect(at(/readInstallerLang\(/)).toBeLessThan(at(/uiLang \?\?= fallbackUiLang/))
     expect(src).toMatch(/if \(chosen\) \{\s*uiLang = chosen\s*persistLang\(chosen\)/)
+  })
+
+  it('hands a language chosen in Settings to the installer of the next update', () => {
+    const src = readFileSync(new URL('../src/main/index.ts', import.meta.url), 'utf8')
+    // a saved language at startup (chosen before this version) and every new choice
+    expect(src).toMatch(
+      /if \(isLang\(saved\)\) \{\s*uiLang = saved\s*syncInstallerLanguage\(saved\)/,
+    )
+    expect(src).toMatch(
+      /uiLang = persisted\s*setUiLang\(persisted\)\s*syncInstallerLanguage\(persisted\)/,
+    )
   })
 })
