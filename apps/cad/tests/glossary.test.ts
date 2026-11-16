@@ -226,7 +226,7 @@ describe('the AI Drawing glossary', () => {
   it('writes German key names the German way in the help and the AI pane', () => {
     // the other German help topics and the German menus say Strg and Umschalt
     const help = helpTopic('de')
-    expect(help).not.toMatch(/bCtrlb|bShiftb/)
+    expect(help).not.toMatch(/\bCtrl\b|\bShift\b/)
     expect(help).toContain('Strg+Z')
     expect(strings.de.aiEmptyBody).toContain('Strg+Z')
   })
