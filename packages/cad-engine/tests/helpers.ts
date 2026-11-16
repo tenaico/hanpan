@@ -1,3 +1,5 @@
+import { createKernel } from '../src/kernel'
+import type { Kernel } from '../src/kernel'
 import { makeMesh } from '../src/mesh'
 import type { Mesh } from '../src/model'
 
@@ -26,4 +28,12 @@ export function cube(min: [number, number, number], max: [number, number, number
   const indices: number[] = []
   for (const [a, b, c, d] of quads) indices.push(a!, b!, c!, a!, c!, d!)
   return makeMesh(p.flat(), indices)
+}
+
+let kernel: Promise<Kernel> | undefined
+
+/** One kernel for the whole test run; the wasm module is slow to start. */
+export function sharedKernel(): Promise<Kernel> {
+  kernel ??= createKernel()
+  return kernel
 }
