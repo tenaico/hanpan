@@ -44,6 +44,7 @@
 ### Task 1: `apps/cad` 뼈대와 계약
 
 **Files:**
+
 - Create: `apps/cad/package.json`, `tsconfig.json`, `electron.vite.config.ts`, `vite.renderer.config.ts`, `vitest.config.ts`, `AGENTS.md`, `tests/setup.ts`
 - Create: `apps/cad/src/shared/ipc.ts`, `apps/cad/src/main/index.ts`(단독 실행 진입점), `apps/cad/src/main/atomic-write.ts`
 - Create: `apps/cad/src/main/cad-main.ts`(이 작업에서는 내보내는 함수의 몸통을 `throw new Error('not implemented')`로 둔 틀)
@@ -51,6 +52,7 @@
 - Test: `apps/cad/tests/ipc.test.ts`
 
 **Interfaces (Produces):**
+
 - `CAD_CHANNELS` (`apps/cad/src/shared/ipc.ts`): `consumePending 'cad:consume-pending'`, `openFile 'cad:open-file'`, `save 'cad:save'`, `saveRequest 'cad:save-request'`, `saveRequestAck 'cad:save-request-ack'`, `dirtyChanged 'cad:dirty-changed'`, `closeSaveRequest 'cad:close-save-request'`, `closeSaveResult 'cad:close-save-result'`, `fileRenamed 'cad:file-renamed'`, `menuCommand 'cad:menu-command'`, `recoveryCopy 'cad:recovery-copy'`, `recoveryCopyNow 'cad:recovery-copy-now'`, `recoveryCopyNowDone 'cad:recovery-copy-now-done'`, `recoveryReset 'cad:recovery-reset'`, `exportFile 'cad:export-file'`(3단계), `copyImage 'cad:copy-image'`(4단계), `sendToDocument 'cad:send-to-document'`(4단계), `summaryRequest 'cad:summary-request'`, `summaryResult 'cad:summary-result'`, `bytesRequest 'cad:bytes-request'`, `bytesResult 'cad:bytes-result'`.
 - `APP_CHANNELS`, `AI_CHANNELS`: 마인드맵 `shared/ipc.ts`의 같은 표를 그대로 옮긴다(값이 같아야 한다).
 - 자료 꼴:
@@ -73,6 +75,7 @@
 ### Task 2: 메인 프로세스(열기·저장·닫기 확인·복구)
 
 **Files:**
+
 - Modify: `apps/cad/src/main/cad-main.ts`
 - Create: `apps/cad/src/main/recovery-main.ts`, `apps/cad/src/main/i18n-main.ts`, `apps/cad/src/main/mcp-queries.ts`, `apps/cad/src/preload/index.ts`
 - Test: `apps/cad/tests/main.test.ts`, `recovery-main.test.ts`, `main-i18n.test.ts`
@@ -80,6 +83,7 @@
 **Interfaces:** Consumes Task 1의 계약. Produces 위 `cad-main.ts` 이름 전부의 실제 동작, `window.cadApi`.
 
 동작(마인드맵 `mindmap-main.ts`·`recovery-main.ts`를 따르고, 다른 점만 적는다):
+
 - `openFile(path)`: 허용된 경로만. `stat` 크기가 `MAX_FILE_BYTES` 초과면 `{kind:'error', reason:'too-large'}`. 확장자 `.ttukcad`는 바이트를 읽어 `openCadFile`이 `ok`면 그 뷰의 저장 대상으로 허락하고 `{kind:'cad'}`, 아니면 저장 대상 없이 `{kind:'cad'}`를 돌려주되 허락하지 않는다(화면이 엔진으로 다시 열어 이유를 보인다). `.dxf`·`.stl`·`.obj`는 `{kind:'import', name: 확장자 뺀 파일 이름}`. 그 밖은 `unsupported`.
 - `save(req)`: `openCadFile(req.bytes).status !== 'ok'`면 `{status:'refused', reason:'not-reopenable'}`. `saveAs`이거나 저장 대상이 없으면 저장 대화 상자(필터 `tm('filterCad')` `['ttukcad']`, 기본 이름 `suggestedName + '.ttukcad'`, 기본 폴더는 마인드맵과 같은 규칙). 확장자가 없으면 `.ttukcad`를 붙인다. `atomicWriteFile`.
 - 복구: `registerRecoveryEditor({ kind: 'cad', ... })`, 저장소 폴더 `<userData>/cad-autosave`, 기본 확장자 `.ttukcad`.
@@ -95,7 +99,7 @@
   - `save as adds .ttukcad when the picked name has none`
   - `after fileRenamed a save goes to the new path`
   - `close with unsaved changes asks; Don't Save closes; Cancel keeps`
-  `recovery-main.test.ts`: 복구 저장소 폴더 이름 `cad-autosave`, 기본 확장자 `.ttukcad`, 마인드맵 `recovery-main.test.ts`의 식별자 시험을 옮긴 것. `main-i18n.test.ts`: 21개 언어 모두 같은 열쇠, 빈 값 없음.
+    `recovery-main.test.ts`: 복구 저장소 폴더 이름 `cad-autosave`, 기본 확장자 `.ttukcad`, 마인드맵 `recovery-main.test.ts`의 식별자 시험을 옮긴 것. `main-i18n.test.ts`: 21개 언어 모두 같은 열쇠, 빈 값 없음.
 - [ ] **Step 2:** `npx vitest run tests/main.test.ts tests/recovery-main.test.ts tests/main-i18n.test.ts` Expected: FAIL.
 - [ ] **Step 3:** 구현.
 - [ ] **Step 4:** 같은 명령 Expected: PASS. `npm run typecheck -w @genoffice/cad` PASS.
@@ -104,6 +108,7 @@
 ### Task 3: 화면(문서 세션, 복구 사본, 빈 3D 작업판)
 
 **Files:**
+
 - Create: `apps/cad/src/renderer/index.html`, `main.tsx`, `App.tsx`, `styles.css`, `env.d.ts`
 - Create: `apps/cad/src/renderer/document/session.ts`, `open.ts`, `recovery-copies.ts`, `autosave.ts`
 - Create: `apps/cad/src/renderer/scene/viewport.ts`, `canvas-colors.ts`, `NoWebGl.tsx`
@@ -111,6 +116,7 @@
 - Test: `apps/cad/tests/session.test.ts`, `open.test.ts`, `recovery-copies.test.ts`, `viewport.test.ts`, `app.test.ts`, `i18n.test.ts`
 
 **Interfaces:**
+
 - Consumes: `window.cadApi`(Task 1 형), 엔진의 `CadHistory`, `createDocument`, `openCadFile`, `saveCadFile`, `readStl`, `readObj`, `readDxf`, `drawingPartFromDxf`, `addPart`.
 - Produces:
   - `class CadSession { constructor(doc: CadDocument, opts: { path?: string; title: string }); history: CadHistory; dirty(): boolean; markSaved(): void; saveBytes(): Uint8Array; title(): string; path(): string | undefined; setPath(p: string): void; summary(): string }`. `dirty()`는 `history.revision()`이 마지막 저장 때의 값과 다르면 참(되돌려서 같은 값이 되어도 참으로 둔다. 마인드맵과 같은 보수적 규칙).
@@ -183,4 +189,4 @@
 - MCP: `mcp/open-documents-bridge.ts`(의존성, 저장·읽기 분기); `mcp/tools/open-documents-tools.ts` `FAMILY_BY_KIND`[TS]·`READABLE_KINDS`·설명 글; `mcp/tools/formats.ts` `EditorFamily`·형식 등록; `index.ts` MCP 저장 표와 `openDocumentsControl`.
 - 문구: `index.ts` `tMain`(21개 블록); `renderer/src/strings.ts`(21개 블록).
 - 일관성 시험: `packages/ui/tests/editors-consistency.test.ts`, `editors-skill-tools.test.ts`, `editors-doc-mention.test.ts`, `ai-context-wiring.test.ts`가 편집기 목록을 하드코딩한다. AI 창은 5단계라서 이 단계에서는 목록에 넣지 않고, 실패하면 이유를 적고 5단계로 미룬다.
-- 셸 시험: tab-manager, tab-manager-unloaded, detached-windows, window-close-guard, main-locale-tables, app-routing, file-associations(`modules/cad`는 있되 연결은 없음), launch-paths, folder-tree, recovery-shell-*, tab-document-actions, mcp/*, home-apps*. `packages/electron-utils/tests`: recovery-store, renderer-scheme, drop-open.
+- 셸 시험: tab-manager, tab-manager-unloaded, detached-windows, window-close-guard, main-locale-tables, app-routing, file-associations(`modules/cad`는 있되 연결은 없음), launch-paths, folder-tree, recovery-shell-_, tab-document-actions, mcp/_, home-apps*. `packages/electron-utils/tests`: recovery-store, renderer-scheme, drop-open.

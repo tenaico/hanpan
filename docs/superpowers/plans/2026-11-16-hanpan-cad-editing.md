@@ -50,6 +50,7 @@
 **Files:** Create `apps/cad/src/renderer/scene/{evaluator.ts,scene-model.ts,picking.ts,handles.ts,camera.ts,drawing-lines.ts}`; Modify `scene/viewport.ts`, `canvas-colors.ts`. Test: `apps/cad/tests/{evaluator,scene-model,picking,handles,camera}.test.ts`.
 
 **Interfaces:**
+
 - `class DocEvaluator { constructor(kernel: Kernel); update(doc: CadDocument): EvaluatedPart[] }`: `EvalCache`를 쥐고, 같은 도형 값은 다시 계산하지 않는다. 계산기는 `createKernel()`(wasm은 Vite가 `manifold-3d`의 `.wasm`을 자원으로 싣는다. `?url`로 받아 `fetch`).
 - `sceneModel(doc, evaluated): SceneItem[]`(순수 함수, three 없음): `{ id, mesh | null, lines: number[][] | null, color, opacity, issue, selectable }`. 구멍은 반투명 회색(0.35), 숨긴 도형은 빠짐, issue가 있는 묶음은 붉은 테두리 표시.
 - `pickPart(items, ray): string | null`(맨 위 도형 id. 묶음 안을 누르면 묶음).
@@ -65,6 +66,7 @@
 **Files:** Create `apps/cad/src/renderer/components/{Ribbon.tsx,ShapeGallery.tsx,PropertyPanel.tsx,StatusBar.tsx,AlignMenu.tsx,icons.tsx}`, `apps/cad/src/renderer/editing/{commands.ts,shortcuts.ts}`; Modify `App.tsx`, i18n `app/<21>.ts`. Test: `apps/cad/tests/{commands,shortcuts,property-panel,ribbon}.test.ts`.
 
 **Interfaces:**
+
 - `commands.ts`: `placeShape(session, kind: ShapeKind)`(작업판 가운데, 바닥에 붙여), `deleteSelected`, `duplicateSelected`, `groupSelected`, `ungroupSelected`, `toggleHole`, `alignSelected(axis: 'x'|'y'|'z', anchor: 'min'|'center'|'max')`, `nudge(dx, dy)`, `setProperty(ids, patch: PartPatch)`. 모두 `session.history.edit` 한 번이고, 오류는 `CommandResult = { ok: true } | { ok: false; message: StringKey }`로 돌려준다.
 - 리본·속성 창의 문구 열쇠를 i18n에 더한다(21개 언어 실제 번역). 도형 15종 이름 열쇠 `shapeBox` … `shapeText`.
 

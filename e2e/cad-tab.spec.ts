@@ -117,7 +117,7 @@ test.describe('AI Drawing tab (stage 2)', () => {
     test.setTimeout(240_000)
     const dir = await mkdtemp(join(tmpdir(), 'genoffice-cad-'))
     const saved = join(dir, 'first.ttukcad')
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-new' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-new' })
     const { app, page } = launched
     try {
       await openFromAllApps(page, 'ttukcad')
@@ -175,7 +175,7 @@ test.describe('AI Drawing tab (stage 2)', () => {
     const stlBytes = cubeStl()
     await writeFile(stl, stlBytes)
     const target = join(dir, 'part-copy.ttukcad')
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-stl' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-stl' })
     const { app, page } = launched
     try {
       await openPath(page, stl)
@@ -217,6 +217,17 @@ const clickExportItem = (app: ElectronApplication, label: string): Promise<boole
     item.click()
     return true
   }, label)
+
+/**
+ * The Linux CI runner has no GPU and the shared launcher passes --disable-gpu, so Chromium starts
+ * without WebGL and the editor shows its no-3D screen. The software renderer (SwiftShader) gives
+ * the 3D view WebGL there; Windows and macOS already fall back on their own. A test that passes
+ * its own args (the no-WebGL test) replaces these.
+ */
+const WEBGL_ARGS = process.platform === 'linux' ? ['--enable-unsafe-swiftshader'] : []
+
+const launchCad = (options: Parameters<typeof launchShell>[0]): Promise<LaunchedApp> =>
+  launchShell({ args: WEBGL_ARGS, ...options })
 
 /** Opens a new drawing from All apps and waits for its editor to be ready. */
 async function newDrawing(launched: LaunchedApp): Promise<Page> {
@@ -277,7 +288,7 @@ test.describe('AI Drawing tab (stage 3: editing)', () => {
   test('places all 15 shapes from the gallery', async () => {
     test.setTimeout(240_000)
     const dir = await mkdtemp(join(tmpdir(), 'genoffice-cad-shapes-'))
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-shapes' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-shapes' })
     const { app, page } = launched
     try {
       const cad = await newDrawing(launched)
@@ -318,7 +329,7 @@ test.describe('AI Drawing tab (stage 3: editing)', () => {
     test.setTimeout(240_000)
     const dir = realpathSync(await mkdtemp(join(tmpdir(), 'genoffice-cad-hole-')))
     const stl = join(dir, 'holed.stl')
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-hole' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-hole' })
     const { app, page } = launched
     try {
       const cad = await newDrawing(launched)
@@ -391,7 +402,7 @@ test.describe('AI Drawing tab (stage 3: editing)', () => {
 
   test('handles move a part and one undo puts it back', async () => {
     test.setTimeout(240_000)
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-handles' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-handles' })
     try {
       const cad = await newDrawing(launched)
       await placeShape(cad, 'box')
@@ -428,7 +439,7 @@ test.describe('AI Drawing tab (stage 3: editing)', () => {
   test('the text button and the sketch tool each add a part', async () => {
     test.setTimeout(240_000)
     const dir = await mkdtemp(join(tmpdir(), 'genoffice-cad-text-'))
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-text-sketch' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-text-sketch' })
     const { app, page } = launched
     try {
       const cad = await newDrawing(launched)
@@ -481,7 +492,7 @@ test.describe('AI Drawing tab (stage 3: editing)', () => {
 
   test('a crashed cad tab offers its recovery copy', async () => {
     test.setTimeout(480_000)
-    const first = await launchShell({
+    const first = await launchCad({
       onboardingSeen: true,
       recordVideo: false,
       videoDir: 'cad-recovery-first',
@@ -502,7 +513,7 @@ test.describe('AI Drawing tab (stage 3: editing)', () => {
       await hardKill(first)
     }
 
-    const second = await launchShell({
+    const second = await launchCad({
       userDataDir,
       recordVideo: false,
       videoDir: 'cad-recovery-second',
@@ -626,7 +637,7 @@ const listTabs = (page: Page): Promise<SentTab[]> =>
 test.describe('AI Drawing tab (stage 4: measure, sheet, send)', () => {
   test('measure reads 80 mm on an 80 mm box', async () => {
     test.setTimeout(240_000)
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-measure' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-measure' })
     try {
       const cad = await newDrawing(launched)
       await placeShape(cad, 'box')
@@ -660,7 +671,7 @@ test.describe('AI Drawing tab (stage 4: measure, sheet, send)', () => {
   test('send to Hangul opens a new hwp tab', async () => {
     test.setTimeout(240_000)
     // the helpers start with the Korean document features on
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-send-hwp' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-send-hwp' })
     const { app, page } = launched
     try {
       const cad = await newDrawing(launched)
@@ -703,7 +714,7 @@ test.describe('AI Drawing tab (stage 4: measure, sheet, send)', () => {
 
   test('send to Word when Korean document features are off opens a docs tab', async () => {
     test.setTimeout(240_000)
-    const launched = await launchShell({
+    const launched = await launchCad({
       onboardingSeen: true,
       settings: { koreanDocFeatures: false },
       videoDir: 'cad-send-docx',
@@ -739,7 +750,7 @@ test.describe('AI Drawing tab (stage 4: measure, sheet, send)', () => {
 test.describe('AI Drawing tab, the AI assistant (stage 5)', () => {
   test('an AI request adds shapes and one undo removes them all', async () => {
     test.setTimeout(240_000)
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-ai' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-ai' })
     const { app } = launched
     try {
       const cad = await newDrawing(launched)
@@ -892,7 +903,7 @@ async function frameProblems(cad: Page, maxBackground: number, skip = ''): Promi
 test.describe('AI Drawing tab (stage 6: themes, no WebGL)', () => {
   test('the frame and the 3D view follow the light and the dark theme; the sheet stays light', async () => {
     test.setTimeout(240_000)
-    const launched = await launchShell({ onboardingSeen: true, videoDir: 'cad-themes' })
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-themes' })
     const { page } = launched
     try {
       // light on purpose, not "system": the OS of the PC running the suite does not decide
@@ -944,7 +955,7 @@ test.describe('AI Drawing tab (stage 6: themes, no WebGL)', () => {
 
   test('without WebGL the 3D view gives way to the screen with both remedies', async () => {
     test.setTimeout(180_000)
-    const launched = await launchShell({
+    const launched = await launchCad({
       onboardingSeen: true,
       videoDir: 'cad-nowebgl',
       args: NO_WEBGL_ARGS,

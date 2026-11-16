@@ -36,11 +36,13 @@
 ### Task 1: 패키지 틀
 
 **Files:**
+
 - Create: `packages/cad-engine/package.json`, `tsconfig.json`, `vitest.config.ts`, `AGENTS.md`, `src/index.ts`, `src/version.ts`
 - Create: `packages/cad-engine/tests/browser-safety.test.ts`, `tests/version.test.ts`
 - Modify: 루트 `package.json`의 `test`·`typecheck` 줄(`-w @genoffice/xmind-engine` 바로 뒤에 `-w @genoffice/cad-engine`), 루트 `AGENTS.md`·`CLAUDE.md`의 구조 목록
 
 **Interfaces:**
+
 - Produces: `CAD_ENGINE_VERSION: string`(package.json의 version과 같다), `CAD_FILE_FORMAT = 'hanpan-cad'`, `CAD_FILE_VERSION = 1`
 
 - [ ] **Step 1:** `packages/xmind-engine`의 `package.json`·`tsconfig.json`·`vitest.config.ts`를 본떠 만든다. 이름 `@genoffice/cad-engine`, version `0.1.0`, dependencies는 비워 둔다. `tests/browser-safety.test.ts`는 xmind-engine 것을 그대로 옮긴다.
@@ -63,42 +65,104 @@ it('ties the exported version to package.json', () => {
 ### Task 2: 문서 모형과 고치는 함수
 
 **Files:**
+
 - Create: `src/model.ts`, `src/ids.ts`, `src/ops.ts`, `tests/model.test.ts`, `tests/ops.test.ts`
 
 **Interfaces:**
+
 - Produces:
 
 ```ts
 type Vec3 = [number, number, number]
-type ShapeKind = 'box'|'cylinder'|'sphere'|'cone'|'pyramid'|'wedge'|'hemisphere'|'tube'
-  |'torus'|'triPrism'|'hexPrism'|'roundedBox'|'starPrism'|'roof'|'text'
-interface PartBase { id: string; name: string; role: 'solid'|'hole'; color: string;
-  position: Vec3; rotation: Vec3; hidden: boolean; locked: boolean }
-interface ShapePart extends PartBase { type: 'shape'; shape: ShapeKind; dims: Record<string, number>;
-  text?: { value: string; outlines: number[][][] } }      // 'text' only; outlines in mm, closed rings
-interface ExtrudePart extends PartBase { type: 'extrude'; rings: number[][]; height: number } // ring = [x0,y0,x1,y1,…], first ring outer
-interface Mesh { positions: Float32Array; indices: Uint32Array }
-interface MeshPart extends PartBase { type: 'mesh'; mesh: Mesh; closed: boolean }
-interface DrawingPart extends PartBase { type: 'drawing'; entities: DrawingEntity[] }  // DrawingEntity is defined in Task 8
-interface GroupPart extends PartBase { type: 'group'; children: Part[] }
+type ShapeKind =
+  | 'box'
+  | 'cylinder'
+  | 'sphere'
+  | 'cone'
+  | 'pyramid'
+  | 'wedge'
+  | 'hemisphere'
+  | 'tube'
+  | 'torus'
+  | 'triPrism'
+  | 'hexPrism'
+  | 'roundedBox'
+  | 'starPrism'
+  | 'roof'
+  | 'text'
+interface PartBase {
+  id: string
+  name: string
+  role: 'solid' | 'hole'
+  color: string
+  position: Vec3
+  rotation: Vec3
+  hidden: boolean
+  locked: boolean
+}
+interface ShapePart extends PartBase {
+  type: 'shape'
+  shape: ShapeKind
+  dims: Record<string, number>
+  text?: { value: string; outlines: number[][][] }
+} // 'text' only; outlines in mm, closed rings
+interface ExtrudePart extends PartBase {
+  type: 'extrude'
+  rings: number[][]
+  height: number
+} // ring = [x0,y0,x1,y1,…], first ring outer
+interface Mesh {
+  positions: Float32Array
+  indices: Uint32Array
+}
+interface MeshPart extends PartBase {
+  type: 'mesh'
+  mesh: Mesh
+  closed: boolean
+}
+interface DrawingPart extends PartBase {
+  type: 'drawing'
+  entities: DrawingEntity[]
+} // DrawingEntity is defined in Task 8
+interface GroupPart extends PartBase {
+  type: 'group'
+  children: Part[]
+}
 type Part = ShapePart | ExtrudePart | MeshPart | DrawingPart | GroupPart
-interface CadDocument { workplane: { width: number; depth: number; grid: number }; parts: Part[];
-  title: { name: string; date: string; scale: string }; extra: Record<string, unknown> }
+interface CadDocument {
+  workplane: { width: number; depth: number; grid: number }
+  parts: Part[]
+  title: { name: string; date: string; scale: string }
+  extra: Record<string, unknown>
+}
 
-function newId(): string                                   // 12 hex chars from getRandomValues
-function createDocument(): CadDocument                     // workplane 200×200, grid 10, no parts
-const SHAPE_DIMS: Record<ShapeKind, readonly string[]>     // dim names per shape
+function newId(): string // 12 hex chars from getRandomValues
+function createDocument(): CadDocument // workplane 200×200, grid 10, no parts
+const SHAPE_DIMS: Record<ShapeKind, readonly string[]> // dim names per shape
 const SHAPE_DEFAULTS: Record<ShapeKind, Record<string, number>>
-function addShape(doc, shape: ShapeKind, init?: Partial<Pick<ShapePart,'name'|'role'|'color'|'position'|'rotation'|'dims'|'text'>>): { doc: CadDocument; id: string }
+function addShape(
+  doc,
+  shape: ShapeKind,
+  init?: Partial<
+    Pick<ShapePart, 'name' | 'role' | 'color' | 'position' | 'rotation' | 'dims' | 'text'>
+  >,
+): { doc: CadDocument; id: string }
 function addPart(doc, part: Part): CadDocument
-function updatePart(doc, id: string, patch: PartPatch): CadDocument   // PartPatch: name, role, color, position, rotation, hidden, locked, dims, height
+function updatePart(doc, id: string, patch: PartPatch): CadDocument // PartPatch: name, role, color, position, rotation, hidden, locked, dims, height
 function removeParts(doc, ids: string[]): CadDocument
-function groupParts(doc, ids: string[]): { doc: CadDocument; id: string }   // needs ≥2 top-level ids
-function ungroupPart(doc, id: string): CadDocument          // children keep their world position
-function alignParts(doc, ids: string[], axis: 'x'|'y'|'z', anchor: 'min'|'center'|'max'): CadDocument  // aligns bounding boxes to the first id's box
+function groupParts(doc, ids: string[]): { doc: CadDocument; id: string } // needs ≥2 top-level ids
+function ungroupPart(doc, id: string): CadDocument // children keep their world position
+function alignParts(
+  doc,
+  ids: string[],
+  axis: 'x' | 'y' | 'z',
+  anchor: 'min' | 'center' | 'max',
+): CadDocument // aligns bounding boxes to the first id's box
 function setWorkplane(doc, wp: Partial<CadDocument['workplane']>): CadDocument
-function findPart(doc, id: string): Part | undefined        // searches groups too
-class CadEditError extends Error { code: 'unknown-id'|'bad-number'|'locked'|'too-few'|'not-group' }
+function findPart(doc, id: string): Part | undefined // searches groups too
+class CadEditError extends Error {
+  code: 'unknown-id' | 'bad-number' | 'locked' | 'too-few' | 'not-group'
+}
 ```
 
 `SHAPE_DIMS`: box `width,depth,height` · cylinder `diameter,height` · sphere `diameter` · cone `diameter,height` · pyramid `width,depth,height` · wedge `width,depth,height` · hemisphere `diameter` · tube `outerDiameter,innerDiameter,height` · torus `diameter,tubeDiameter` · triPrism `width,depth,height` · hexPrism `diameter,height` · roundedBox `width,depth,height,radius` · starPrism `outerDiameter,innerDiameter,points,height` · roof `width,depth,height` · text `size,height`. 기본 치수는 가장 긴 변이 20mm가 되게 한다(`points` 5, `radius` 2).
@@ -111,12 +175,17 @@ expect(createDocument().workplane).toEqual({ width: 200, depth: 200, grid: 10 })
 expect(newId()).toMatch(/^[0-9a-f]{12}$/)
 // ops
 const a = addShape(createDocument(), 'box', { dims: { width: 30 } })
-expect(findPart(a.doc, a.id)).toMatchObject({ type: 'shape', shape: 'box', role: 'solid', dims: { width: 30, depth: 20, height: 20 } })
-expect(() => addShape(doc, 'box', { dims: { width: 0 } })).toThrow(CadEditError)       // bad-number
+expect(findPart(a.doc, a.id)).toMatchObject({
+  type: 'shape',
+  shape: 'box',
+  role: 'solid',
+  dims: { width: 30, depth: 20, height: 20 },
+})
+expect(() => addShape(doc, 'box', { dims: { width: 0 } })).toThrow(CadEditError) // bad-number
 expect(() => addShape(doc, 'box', { dims: { width: NaN } })).toThrow(CadEditError)
 expect(() => updatePart(doc, 'nope', { name: 'x' })).toThrow(/unknown-id/)
-expect(updatePart(d, id, { role: 'hole' })).not.toBe(d)                               // new document
-expect(d.parts).toBe(before)                                                           // the old one is untouched
+expect(updatePart(d, id, { role: 'hole' })).not.toBe(d) // new document
+expect(d.parts).toBe(before) // the old one is untouched
 expect(() => groupParts(d, [id])).toThrow(/too-few/)
 // group then ungroup keeps each child's world position and rotation
 // alignParts(d, [a, b], 'x', 'min') moves b so that its box min x equals a's; a does not move
@@ -132,9 +201,11 @@ expect(() => groupParts(d, [id])).toThrow(/too-few/)
 ### Task 3: 되돌리기
 
 **Files:**
+
 - Create: `src/history.ts`, `tests/history.test.ts`
 
 **Interfaces:**
+
 - Consumes: `CadDocument`
 - Produces:
 
@@ -142,12 +213,14 @@ expect(() => groupParts(d, [id])).toThrow(/too-few/)
 class CadHistory {
   constructor(initial: CadDocument)
   current(): CadDocument
-  revision(): number                      // +1 on every change that lands, including undo/redo
+  revision(): number // +1 on every change that lands, including undo/redo
   edit(label: string, change: (doc: CadDocument) => CadDocument): void
   openGroup(label: string): void
   closeGroup(): void
-  canUndo(): boolean; canRedo(): boolean
-  undo(): boolean; redo(): boolean
+  canUndo(): boolean
+  canRedo(): boolean
+  undo(): boolean
+  redo(): boolean
   undoLabel(): string | null
   subscribe(listener: () => void): () => void
 }
@@ -175,20 +248,22 @@ class CadHistory {
 ### Task 4: 도형을 그물로
 
 **Files:**
+
 - Create: `src/mesh.ts`, `src/shapes.ts`, `src/extrude.ts`, `tests/shapes.test.ts`, `tests/extrude.test.ts`
 - Modify: `packages/cad-engine/package.json` (dependencies에 `earcut`, devDependencies에 `@types/earcut`)
 
 **Interfaces:**
+
 - Consumes: `ShapePart`, `ExtrudePart`, `Mesh`, `SHAPE_DIMS`
 - Produces:
 
 ```ts
-function shapeMesh(part: ShapePart, segments?: number): Mesh       // local space, base centred on the origin, sitting on z = 0; segments default 48
-function extrudeMesh(rings: number[][], height: number): Mesh       // z from 0 to height
-function meshVolume(mesh: Mesh): number                             // signed volume, mm³
+function shapeMesh(part: ShapePart, segments?: number): Mesh // local space, base centred on the origin, sitting on z = 0; segments default 48
+function extrudeMesh(rings: number[][], height: number): Mesh // z from 0 to height
+function meshVolume(mesh: Mesh): number // signed volume, mm³
 function meshBounds(mesh: Mesh): { min: Vec3; max: Vec3 }
-function isClosedMesh(mesh: Mesh): boolean                          // every edge shared by exactly two triangles, opposite directions
-function transformMesh(mesh: Mesh, position: Vec3, rotationDeg: Vec3): Mesh   // rotation order Z·Y·X
+function isClosedMesh(mesh: Mesh): boolean // every edge shared by exactly two triangles, opposite directions
+function transformMesh(mesh: Mesh, position: Vec3, rotationDeg: Vec3): Mesh // rotation order Z·Y·X
 function triangleCount(mesh: Mesh): number
 ```
 
@@ -202,7 +277,7 @@ expect(meshVolume(mesh)).toBeGreaterThan(0)
 expect(meshBounds(mesh).min[2]).toBeCloseTo(0, 5)
 ```
 
-  정확한 값:
+정확한 값:
 
 ```ts
 expect(meshVolume(shapeMesh(box(10, 20, 30)))).toBeCloseTo(6000, 3)
@@ -226,10 +301,12 @@ expect(meshBounds(shapeMesh(box(10, 20, 30)))).toEqual({ min: [-5, -10, 0], max:
 ### Task 5: 입체 계산
 
 **Files:**
+
 - Create: `src/kernel.ts`, `src/evaluate.ts`, `tests/kernel.test.ts`, `tests/evaluate.test.ts`, `tests/helpers.ts`
 - Modify: `packages/cad-engine/package.json` (dependencies에 `manifold-3d`)
 
 **Interfaces:**
+
 - Consumes: Task 2의 형, Task 4의 그물 함수
 - Produces:
 
@@ -239,11 +316,18 @@ interface Kernel {
   subtract(base: Mesh, cutters: Mesh[]): Mesh
   dispose(): void
 }
-function createKernel(wasm?: { locateFile?: (name: string) => string; wasmBinary?: Uint8Array }): Promise<Kernel>
-interface EvaluatedPart { id: string; mesh: Mesh | null; issue: null | 'open-mesh' | 'empty' | 'too-large' }
-function evaluatePart(part: Part, kernel: Kernel, cache?: EvalCache): EvaluatedPart   // world-space mesh; drawings give mesh null, issue null
-function evaluateDocument(doc: CadDocument, kernel: Kernel, cache?: EvalCache): EvaluatedPart[]  // top-level parts, hidden ones skipped
-function createEvalCache(): EvalCache      // keyed by part object identity (WeakMap)
+function createKernel(wasm?: {
+  locateFile?: (name: string) => string
+  wasmBinary?: Uint8Array
+}): Promise<Kernel>
+interface EvaluatedPart {
+  id: string
+  mesh: Mesh | null
+  issue: null | 'open-mesh' | 'empty' | 'too-large'
+}
+function evaluatePart(part: Part, kernel: Kernel, cache?: EvalCache): EvaluatedPart // world-space mesh; drawings give mesh null, issue null
+function evaluateDocument(doc: CadDocument, kernel: Kernel, cache?: EvalCache): EvaluatedPart[] // top-level parts, hidden ones skipped
+function createEvalCache(): EvalCache // keyed by part object identity (WeakMap)
 ```
 
 `tests/helpers.ts`는 Node에서 `createKernel()`을 한 번 만들어 나눠 쓰는 `sharedKernel()`을 둔다.
@@ -272,17 +356,30 @@ function createEvalCache(): EvalCache      // keyed by part object identity (Wea
 ### Task 6: .ttukcad 파일
 
 **Files:**
+
 - Create: `src/file.ts`, `src/base64.ts`, `tests/file.test.ts`
 
 **Interfaces:**
+
 - Produces:
 
 ```ts
 type OpenStatus = 'ok' | 'empty' | 'too-large' | 'unsupported' | 'broken'
-type OpenResult = { status: 'ok'; document: CadDocument }
-  | { status: Exclude<OpenStatus, 'ok'>; reason: 'newer-version' | 'standalone-file' | 'not-json' | 'bad-shape' | 'size' | 'triangles' | 'empty' }
+type OpenResult =
+  | { status: 'ok'; document: CadDocument }
+  | {
+      status: Exclude<OpenStatus, 'ok'>
+      reason:
+        | 'newer-version'
+        | 'standalone-file'
+        | 'not-json'
+        | 'bad-shape'
+        | 'size'
+        | 'triangles'
+        | 'empty'
+    }
 function openCadFile(bytes: Uint8Array): OpenResult
-function saveCadFile(doc: CadDocument): Uint8Array        // UTF-8 JSON, 2-space indent, keys in a fixed order
+function saveCadFile(doc: CadDocument): Uint8Array // UTF-8 JSON, 2-space indent, keys in a fixed order
 ```
 
 파일 모양: `{ "format": "hanpan-cad", "version": 1, "document": { workplane, title, parts, …extra } }`. `MeshPart.mesh`는 `{ "positions": "<base64 of little-endian Float32>", "indices": "<base64 of little-endian Uint32>" }`.
@@ -310,18 +407,21 @@ function saveCadFile(doc: CadDocument): Uint8Array        // UTF-8 JSON, 2-space
 ### Task 7: STL과 OBJ
 
 **Files:**
+
 - Create: `src/stl.ts`, `src/obj.ts`, `src/weld.ts`, `tests/stl.test.ts`, `tests/obj.test.ts`
 
 **Interfaces:**
+
 - Produces:
 
 ```ts
-type MeshReadResult = { status: 'ok'; mesh: Mesh; closed: boolean } | { status: 'empty' | 'too-large' | 'broken' }
+type MeshReadResult =
+  { status: 'ok'; mesh: Mesh; closed: boolean } | { status: 'empty' | 'too-large' | 'broken' }
 function readStl(bytes: Uint8Array): MeshReadResult
-function writeStl(mesh: Mesh): Uint8Array            // binary, 80-byte header "Hanpan"
-function readObj(bytes: Uint8Array): MeshReadResult  // v and f only; polygons fan-triangulated; negative indices supported
+function writeStl(mesh: Mesh): Uint8Array // binary, 80-byte header "Hanpan"
+function readObj(bytes: Uint8Array): MeshReadResult // v and f only; polygons fan-triangulated; negative indices supported
 function writeObj(mesh: Mesh): Uint8Array
-function weldMesh(mesh: Mesh, tolerance?: number): Mesh   // merges vertices closer than 1e-5 mm
+function weldMesh(mesh: Mesh, tolerance?: number): Mesh // merges vertices closer than 1e-5 mm
 ```
 
 - [ ] **Step 1:** 시험을 쓴다.
@@ -346,24 +446,50 @@ function weldMesh(mesh: Mesh, tolerance?: number): Mesh   // merges vertices clo
 ### Task 8: DXF 읽기
 
 **Files:**
+
 - Create: `src/dxf-tokens.ts`, `src/dxf.ts`, `src/drawing-entities.ts`, `tests/dxf.test.ts`, `tests/dxf-helpers.ts`
 
 **Interfaces:**
+
 - Produces:
 
 ```ts
 type DrawingEntity =
   | { kind: 'line'; a: [number, number]; b: [number, number]; layer: string }
-  | { kind: 'polyline'; points: number[]; closed: boolean; layer: string }      // arcs (bulge) are flattened; [x0,y0,…]
+  | { kind: 'polyline'; points: number[]; closed: boolean; layer: string } // arcs (bulge) are flattened; [x0,y0,…]
   | { kind: 'circle'; center: [number, number]; radius: number; layer: string }
-  | { kind: 'arc'; center: [number, number]; radius: number; startDeg: number; endDeg: number; layer: string }
-  | { kind: 'text'; at: [number, number]; height: number; rotationDeg: number; value: string; layer: string }
+  | {
+      kind: 'arc'
+      center: [number, number]
+      radius: number
+      startDeg: number
+      endDeg: number
+      layer: string
+    }
+  | {
+      kind: 'text'
+      at: [number, number]
+      height: number
+      rotationDeg: number
+      value: string
+      layer: string
+    }
 type DxfReadResult =
-  | { status: 'ok'; entities: DrawingEntity[]; skipped: Record<string, number>; unit: 'mm'; sourceUnit: string; bounds: { min: [number, number]; max: [number, number] } | null }
+  | {
+      status: 'ok'
+      entities: DrawingEntity[]
+      skipped: Record<string, number>
+      unit: 'mm'
+      sourceUnit: string
+      bounds: { min: [number, number]; max: [number, number] } | null
+    }
   | { status: 'empty' | 'too-large' | 'broken' }
 function readDxf(bytes: Uint8Array): DxfReadResult
-function drawingPartFromDxf(result: Extract<DxfReadResult, { status: 'ok' }>, name: string): DrawingPart
-function closedOutlines(part: DrawingPart): number[][]    // closed polylines and circles as rings, for extruding
+function drawingPartFromDxf(
+  result: Extract<DxfReadResult, { status: 'ok' }>,
+  name: string,
+): DrawingPart
+function closedOutlines(part: DrawingPart): number[][] // closed polylines and circles as rings, for extruding
 ```
 
 읽는 종류: LINE, LWPOLYLINE, POLYLINE(+VERTEX), CIRCLE, ARC, ELLIPSE(64 선분), SPLINE(조절점을 잇는 선분), TEXT, MTEXT(서식 코드 `\P`, `\f…;`, `{}` 제거), DIMENSION(가리키는 `*D` 블록의 내용을 펼침), INSERT(블록을 위치·배율·회전으로 펼침, 깊이 8까지). 그 밖은 `skipped`에 종류별 개수. `$INSUNITS` 1=인치(×25.4), 2=피트(×304.8), 4=mm, 5=cm(×10), 6=m(×1000), 없거나 0이면 mm로 본다. 엔티티는 20만 개까지 읽고 넘으면 `too-large`.
@@ -396,22 +522,24 @@ function closedOutlines(part: DrawingPart): number[][]    // closed polylines an
 ### Task 9: 치수 재기
 
 **Files:**
+
 - Create: `src/measure.ts`, `tests/measure.test.ts`
 
 **Interfaces:**
+
 - Consumes: `EvaluatedPart`, `DrawingPart`, `Mesh`
 - Produces:
 
 ```ts
 function distance(a: Vec3, b: Vec3): number
 type SnapPoint = { at: Vec3; kind: 'vertex' | 'end' | 'center' | 'mid' }
-function snapPointsOfDrawing(part: DrawingPart): SnapPoint[]          // line ends and mids, circle/arc centres, polyline vertices; world space
-function snapPointsOfMesh(mesh: Mesh, limit?: number): SnapPoint[]    // unique vertices, at most `limit` (default 5000, evenly thinned)
+function snapPointsOfDrawing(part: DrawingPart): SnapPoint[] // line ends and mids, circle/arc centres, polyline vertices; world space
+function snapPointsOfMesh(mesh: Mesh, limit?: number): SnapPoint[] // unique vertices, at most `limit` (default 5000, evenly thinned)
 function nearestSnap(points: SnapPoint[], to: Vec3, within: number): SnapPoint | null
 function entityMeasure(entity: DrawingEntity): { kind: 'length' | 'diameter'; value: number } | null
-  // line → length; polyline → total length; circle → diameter; arc → diameter; text → null
+// line → length; polyline → total length; circle → diameter; arc → diameter; text → null
 function partSize(evaluated: EvaluatedPart): { width: number; depth: number; height: number } | null
-function formatMm(value: number): string      // "12", "12.5", "12.35": at most 2 decimals, no trailing zeros
+function formatMm(value: number): string // "12", "12.5", "12.35": at most 2 decimals, no trailing zeros
 ```
 
 - [ ] **Step 1:** 시험을 쓴다(값 예: `distance([0,0,0],[3,4,12])` → 13, 원 반지름 5 → `{kind:'diameter', value:10}`, `formatMm(12.345)` → `'12.35'`, `formatMm(12)` → `'12'`, `nearestSnap`은 범위 밖이면 null, 그림의 위치·회전이 달라붙는 점에 반영된다).
@@ -423,20 +551,34 @@ function formatMm(value: number): string      // "12", "12.5", "12.35": at most 
 ### Task 10: 치수 도면
 
 **Files:**
+
 - Create: `src/sheet.ts`, `src/silhouette.ts`, `tests/sheet.test.ts`
 
 **Interfaces:**
+
 - Consumes: `evaluateDocument`, `Kernel`, `formatMm`
 - Produces:
 
 ```ts
-interface SheetLabels { front: string; top: string; side: string; title: string; date: string; scale: string }
-interface SheetResult { svg: string; scale: string; widthMm: 297; heightMm: 210;
-  rows: { name: string; width: string; depth: string; height: string }[] }   // one row per visible top-level solid part
+interface SheetLabels {
+  front: string
+  top: string
+  side: string
+  title: string
+  date: string
+  scale: string
+}
+interface SheetResult {
+  svg: string
+  scale: string
+  widthMm: 297
+  heightMm: 210
+  rows: { name: string; width: string; depth: string; height: string }[]
+} // one row per visible top-level solid part
 function chooseScale(sizeMm: number, roomMm: number): { label: string; factor: number }
-  // from 1:1, 1:2, 1:5, 1:10, 1:20, 1:50, 1:100, 1:200, 1:500, 1:1000 and 2:1, 5:1, 10:1 — the largest that fits
+// from 1:1, 1:2, 1:5, 1:10, 1:20, 1:50, 1:100, 1:200, 1:500, 1:1000 and 2:1, 5:1, 10:1 — the largest that fits
 function makeSheet(doc: CadDocument, evaluated: EvaluatedPart[], labels: SheetLabels): SheetResult
-function viewOutline(mesh: Mesh, view: 'front' | 'top' | 'side'): number[][]   // sharp and silhouette edges as 2D segments [x0,y0,x1,y1]
+function viewOutline(mesh: Mesh, view: 'front' | 'top' | 'side'): number[][] // sharp and silhouette edges as 2D segments [x0,y0,x1,y1]
 ```
 
 A4 가로(297×210mm), 여백 10mm, 오른쪽 아래에 표제란(제목·날짜·축척). 입체가 있으면 앞·위·옆 세 그림과 전체 가로·세로·높이 치수선, 그림(`DrawingPart`)만 있으면 위에서 본 한 그림과 전체 가로·세로 치수선. SVG는 검은 선·흰 바탕이고 외부 글꼴을 가리키지 않는다(`font-family="sans-serif"`). 글은 XML로 이스케이프한다.
@@ -464,6 +606,7 @@ expect(chooseScale(10, 120).label).toBe('10:1')
 ### Task 11: 마무리와 결정 기록
 
 **Files:**
+
 - Create: `docs/tracking/decisions/0101-hanpan-cad-tab.md`
 - Modify: `docs/tracking/decisions/index.md`, `packages/cad-engine/AGENTS.md`, `tools/gen-third-party-notices.mjs`가 만드는 `THIRD-PARTY-NOTICES.txt`(다시 생성)
 
