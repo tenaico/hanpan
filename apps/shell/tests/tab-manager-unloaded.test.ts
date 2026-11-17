@@ -187,6 +187,16 @@ const createMindmapView = vi.fn(() => makeFakeView())
 const mindmapIsDirty = vi.fn(() => false)
 const requestMindmapClose = vi.fn(() => Promise.resolve(true))
 
+const createCadView = vi.fn(() => makeFakeView())
+const cadIsDirty = vi.fn(() => false)
+const requestCadClose = vi.fn(() => Promise.resolve(true))
+
+vi.mock('../../cad/src/main/cad-main', () => ({
+  createCadView: (...args: unknown[]) => createCadView(...(args as [])),
+  cadIsDirty: (...args: unknown[]) => cadIsDirty(...(args as [])),
+  requestCadClose: (...args: unknown[]) => requestCadClose(...(args as [])),
+}))
+
 vi.mock('../../mindmap/src/main/mindmap-main', () => ({
   createMindmapView: (...args: unknown[]) => createMindmapView(...(args as [])),
   mindmapIsDirty: (...args: unknown[]) => mindmapIsDirty(...(args as [])),
@@ -346,6 +356,7 @@ describe('before it loads', () => {
     sheetsPendingEditCount.mockImplementation(() => 3)
     slidesIsDirty.mockImplementation(() => true)
     mindmapIsDirty.mockImplementation(() => true)
+    cadIsDirty.mockImplementation(() => true)
     markdownIsDirty.mockImplementation(() => true)
     htmlIsDirty.mockImplementation(() => true)
     hwpIsDirty.mockImplementation(() => true)
@@ -357,6 +368,7 @@ describe('before it loads', () => {
       ['markdown', '/a.md'],
       ['html', '/a.html'],
       ['mindmap', '/a.xmind'],
+      ['cad', '/a.ttukcad'],
       ['hwp', '/a.hwp'],
     ] as const) {
       manager.addUnloadedTab(spec(kind, path, makeOpener().opener))
@@ -367,6 +379,7 @@ describe('before it loads', () => {
     expect(manager.dirtyMarkdownTabs()).toEqual([])
     expect(manager.dirtyHtmlTabs()).toEqual([])
     expect(manager.dirtyMindmapTabs()).toEqual([])
+    expect(manager.dirtyCadTabs()).toEqual([])
     expect(manager.dirtyHwpTabs()).toEqual([])
     expect(manager.docsTabs()).toEqual([])
     expect(manager.slidesTabs()).toEqual([])
@@ -376,9 +389,11 @@ describe('before it loads', () => {
   it('is no menu or save target', () => {
     manager.addUnloadedTab(spec('hwp', '/a.hwp', makeOpener().opener))
     manager.addUnloadedTab(spec('mindmap', '/a.xmind', makeOpener().opener))
+    manager.addUnloadedTab(spec('cad', '/a.ttukcad', makeOpener().opener))
     manager.addUnloadedTab(spec('pdf', '/a.pdf', makeOpener().opener))
     expect(manager.activeHwpTab()).toBeUndefined()
     expect(manager.activeMindmapTab()).toBeUndefined()
+    expect(manager.activeCadTab()).toBeUndefined()
     expect(manager.activePdfTab()).toBeUndefined()
     expect(applyMenuFor).not.toHaveBeenCalled()
   })
@@ -519,6 +534,7 @@ describe('loading on first activation', () => {
       markdown: manager.addUnloadedTab(spec('markdown', '/x.md', makeOpener().opener)),
       html: manager.addUnloadedTab(spec('html', '/x.html', makeOpener().opener)),
       mindmap: manager.addUnloadedTab(spec('mindmap', '/x.xmind', makeOpener().opener)),
+      cad: manager.addUnloadedTab(spec('cad', '/x.ttukcad', makeOpener().opener)),
     }
     expect(manager.findDocsTabByPath('/x.docx')).toBe(ids.docs)
     expect(manager.findSheetsTabByPath('/x.xlsx')).toBe(ids.sheets)
@@ -527,6 +543,7 @@ describe('loading on first activation', () => {
     expect(manager.findMarkdownTabByPath('/x.md')).toBe(ids.markdown)
     expect(manager.findHtmlTabByPath('/x.html')).toBe(ids.html)
     expect(manager.findMindmapTabByPath('/x.xmind')).toBe(ids.mindmap)
+    expect(manager.findCadTabByPath('/x.ttukcad')).toBe(ids.cad)
   })
 
   it('findTabByPath (the CLI focusing an open document) loads the tab it returns', () => {
@@ -846,6 +863,8 @@ describe('createPlainEditorView (the plain-open building block for openers)', ()
     expect(queueWorkbookForView).toHaveBeenCalledTimes(1)
     createPlainEditorView('docs', '/a.docx')
     expect(createDocsView).toHaveBeenCalledWith('/a.docx')
+    createPlainEditorView('cad', '/a.ttukcad')
+    expect(createCadView).toHaveBeenCalledWith('/a.ttukcad')
     expect(() => createPlainEditorView('pdf')).toThrow()
     expect(manager.list()).toHaveLength(1)
   })

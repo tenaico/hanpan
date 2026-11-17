@@ -84,6 +84,8 @@ const FORMATS = {
   // teals (xlsx, hwp) they sat between on Home's app list
   photo: { color: '#A3449E', picto: 'picture' }, // magenta
   illust: { color: '#3E9150', picto: 'pen' }, // green
+  // AI Drawing (3D models and DXF drawings): the app accent, no OS file association yet
+  cad: { color: '#1F7A8C', picto: 'cube' }, // deep teal
   // Hanpan's Home apps that are not a file format, on the same page (0.19.2): the converter
   // and the PDF tools keep their format's color (they start from Markdown and PDF), the
   // forms take the ochre nothing else on Home uses, opening a file stays neutral
@@ -98,6 +100,7 @@ const FORMATS = {
 const TAB_ONLY = new Set([
   'photo',
   'illust',
+  'cad',
   'md-convert',
   'design',
   'templates',
@@ -141,6 +144,7 @@ const MENU_TYPES = [
   'epub',
   'photo',
   'illust',
+  'cad',
 ]
 
 /** attachment-card file name -> icon key (FORMATS or GENERIC) */
@@ -474,6 +478,17 @@ function pictogram(kind, b, fg, bg, sw, small) {
         (small
           ? ''
           : `<circle cx="${X(0.5)}" cy="${Y(0.56)}" r="${num(b.w * 0.07)}" fill="${bg}"/>`)
+      )
+    }
+    case 'cube': {
+      // a box seen from above a corner: a filled top face over two outlined sides
+      const top = `M${X(0.5)} ${Y(0.04)}L${X(0.94)} ${Y(0.28)}L${X(0.5)} ${Y(0.52)}L${X(0.06)} ${Y(0.28)}Z`
+      const sides =
+        `M${X(0.06)} ${Y(0.28)}V${Y(0.74)}L${X(0.5)} ${Y(0.98)}L${X(0.94)} ${Y(0.74)}V${Y(0.28)}` +
+        `M${X(0.5)} ${Y(0.52)}V${Y(0.98)}`
+      return (
+        `<path d="${top}" fill="${fg}" stroke="${fg}" stroke-width="${num(sw * 0.6)}" stroke-linejoin="round"/>` +
+        stroke(sides, sw * (small ? 1 : 0.8))
       )
     }
     case 'picture':

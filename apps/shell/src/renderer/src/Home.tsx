@@ -48,6 +48,7 @@ import iconHwp from './assets/file-hwp.svg'
 import iconEpub from './assets/file-epub.svg'
 import iconPhoto from './assets/file-photo.svg'
 import iconIllust from './assets/file-illust.svg'
+import iconCad from './assets/file-cad.svg'
 import iconDesign from './assets/file-design.svg'
 import iconMdConvert from './assets/file-md-convert.svg'
 import iconPdfTools from './assets/file-pdf-tools.svg'
@@ -173,13 +174,27 @@ const FILE_ICONS: Record<string, string> = {
   svgz: iconIllust,
   ai: iconIllust,
   vectorcraft: iconIllust,
+  // AI Drawing, the 3D/DXF files it imports and the CAD files it explains how to convert
+  ttukcad: iconCad,
+  dxf: iconCad,
+  stl: iconCad,
+  obj: iconCad,
+  '3mf': iconCad,
+  glb: iconCad,
+  ply: iconCad,
+  dwg: iconCad,
+  step: iconCad,
+  stp: iconCad,
+  iges: iconCad,
+  igs: iconCad,
+  brep: iconCad,
 }
 
 /* Formats the open-local card advertises. Too long for the card at any window
    width, so it ellipsizes and a hover ScreenTip carries the full list. Keep in
    sync with the main-process open-dialog filter (OPEN_DIALOG_EXTENSIONS). */
 const OPEN_LOCAL_EXTENSIONS =
-  '.docx / .odt / .xlsx / .xlsm / .xls / .csv / .tsv / .pptx / .pdf / .md / .html / .xmind / .hwp / .hwpx / .epub / .psd / .png / .jpg / .webp / .svg / .ai'
+  '.docx / .odt / .xlsx / .xlsm / .xls / .csv / .tsv / .pptx / .pdf / .md / .html / .xmind / .hwp / .hwpx / .epub / .psd / .png / .jpg / .webp / .svg / .ai / .ttukcad / .dxf / .stl / .obj / .3mf / .glb / .ply'
 
 /** drag payload of home file/folder rows (JSON array of absolute paths) */
 const DRAG_PATHS_MIME = 'application/x-genoffice-paths'
@@ -2035,6 +2050,12 @@ export function Home({
       action: () => window.aiOffice.newIllust(newFileOpts),
     },
     {
+      ext: 'ttukcad',
+      title: t('newCad'),
+      sub: '.ttukcad',
+      action: () => window.aiOffice.newCad(newFileOpts),
+    },
+    {
       ext: 'pdf',
       title: t('newPdf'),
       sub: '.pdf',
@@ -2134,6 +2155,7 @@ export function Home({
         'md-convert': () => setConverterOpen(true),
         photo: made('psd'),
         illust: made('vectorcraft'),
+        ttukcad: made('ttukcad'),
         design: () => window.hanpanApi?.openDesign?.(),
         open: () => window.aiOffice.browse(),
       },

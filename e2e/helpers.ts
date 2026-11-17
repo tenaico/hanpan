@@ -65,6 +65,8 @@ interface LaunchOptions {
    * does; `E2E_NO_VIDEO=1` turns recording off for a whole run.
    */
   recordVideo?: boolean
+  /** extra Chromium switches, placed before the app path (e.g. to launch without WebGL) */
+  args?: string[]
 }
 
 export interface LaunchedApp {
@@ -119,6 +121,7 @@ export async function launchShell(options: LaunchOptions): Promise<LaunchedApp> 
   // and they never leak into the argv the app parses for documents to open.
   const args: string[] = []
   if (process.platform === 'linux') args.push('--no-sandbox', '--disable-gpu')
+  if (options.args) args.push(...options.args)
   args.push(SHELL_DIR)
   if (options.openFile) args.push(options.openFile)
   if (options.openFiles) args.push(...options.openFiles)
@@ -265,9 +268,16 @@ export async function waitForPageWithUrl(
  * reply. A spec that sends to the AI calls this once the editor page exists;
  * without it a PC signed in to a subscription would spend the user's limit
  * (docs/standards.md).
+ *
+ * `replies` scripts the model: the nth stream answers with `replies[n]` (its
+ * chunks, e.g. `{ type: 'tool-call', toolCall: { id, name, input } }`, then
+ * `{ type: 'done' }`); a stream past the list gets the canned reply.
  */
-export async function stubAiReady(app: ElectronApplication): Promise<void> {
-  await app.evaluate(({ ipcMain, webContents }) => {
+export async function stubAiReady(
+  app: ElectronApplication,
+  replies: ReadonlyArray<ReadonlyArray<Record<string, unknown>>> = [],
+): Promise<void> {
+  await app.evaluate(({ ipcMain, webContents }, scripted) => {
     const proto = Object.getPrototypeOf(webContents.getAllWebContents()[0]) as {
       send: (channel: string, ...args: unknown[]) => void
     }
@@ -285,16 +295,20 @@ export async function stubAiReady(app: ElectronApplication): Promise<void> {
       ipcMain.handle(channel, () => statuses)
     }
     ipcMain.removeHandler('ai:stream')
+    let streams = 0
     ipcMain.handle('ai:stream', (event, request: { requestId: string }) => {
       const send = (chunk: Record<string, unknown>) =>
         realSend.call(event.sender, 'ai:stream-chunk', { requestId: request.requestId, ...chunk })
-      send({ type: 'delta', text: 'Stub reply.' })
-      send({ type: 'done' })
+      const chunks = scripted[streams++] ?? [
+        { type: 'delta', text: 'Stub reply.' },
+        { type: 'done' },
+      ]
+      for (const chunk of chunks) send(chunk)
     })
     for (const wc of webContents.getAllWebContents()) {
       if (!wc.isDestroyed()) realSend.call(wc, 'ai:subscription-changed', statuses)
     }
-  })
+  }, replies)
 }
 
 /**

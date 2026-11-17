@@ -42,6 +42,7 @@ function fixture(kind: TabKind) {
     printHwp: vi.fn(),
     saveMindmap: vi.fn(),
     printMindmap: vi.fn(),
+    saveCad: vi.fn(),
     saveEpub: vi.fn(),
     saveGraphics: vi.fn(),
     printGraphics: vi.fn(),
@@ -151,6 +152,17 @@ describe('document actions from a background tab context menu', () => {
     expect(deps.printGraphics).toHaveBeenCalledWith(contents)
   })
 
+  it('saves the clicked AI Drawing and never pretends to print it', () => {
+    const { deps, contents } = fixture('cad')
+    for (const action of ['save', 'saveAs', 'print'] as const)
+      runTabDocumentAction(deps, 'clicked', action)
+    expect(deps.saveCad).toHaveBeenNthCalledWith(1, contents, 'save')
+    expect(deps.saveCad).toHaveBeenNthCalledWith(2, contents, 'saveAs')
+    expect(deps.saveCad).toHaveBeenCalledTimes(2)
+    expect(deps.printMindmap).not.toHaveBeenCalled()
+    expect(contents.send).not.toHaveBeenCalled()
+  })
+
   it('saves the clicked book and never pretends to print it', () => {
     const { deps, contents } = fixture('epub')
     for (const action of ['save', 'saveAs', 'print'] as const)
@@ -173,6 +185,7 @@ describe('which tab kinds can save and print from the tab menu', () => {
       'markdown',
       'html',
       'mindmap',
+      'cad',
       'hwp',
       'epub',
       'photo',
@@ -197,7 +210,7 @@ describe('which tab kinds can save and print from the tab menu', () => {
       'illust',
     ] as const)
       expect(tabDocumentActionSupported(kind, 'print')).toBe(true)
-    for (const kind of ['epub', 'home', 'help'] as const)
+    for (const kind of ['epub', 'cad', 'home', 'help'] as const)
       expect(tabDocumentActionSupported(kind, 'print')).toBe(false)
   })
 })

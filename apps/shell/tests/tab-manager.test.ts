@@ -188,6 +188,16 @@ vi.mock('../../mindmap/src/main/mindmap-main', () => ({
   requestMindmapClose: (...args: unknown[]) => requestMindmapClose(...(args as [])),
 }))
 
+const createCadView = vi.fn(() => makeFakeView())
+const cadIsDirty = vi.fn(() => false)
+const requestCadClose = vi.fn(() => Promise.resolve(true))
+
+vi.mock('../../cad/src/main/cad-main', () => ({
+  createCadView: (...args: unknown[]) => createCadView(...(args as [])),
+  cadIsDirty: (...args: unknown[]) => cadIsDirty(...(args as [])),
+  requestCadClose: (...args: unknown[]) => requestCadClose(...(args as [])),
+}))
+
 const createHwpView = vi.fn(() => makeFakeView())
 const hwpIsDirty = vi.fn(() => false)
 const hwpMemoModalOpen = vi.fn(() => false)
@@ -269,6 +279,8 @@ beforeEach(() => {
   slidesIsDirty.mockImplementation(() => false)
   mindmapIsDirty.mockImplementation(() => false)
   requestMindmapClose.mockImplementation(() => Promise.resolve(true))
+  cadIsDirty.mockImplementation(() => false)
+  requestCadClose.mockImplementation(() => Promise.resolve(true))
   epubIsDirty.mockImplementation(() => false)
   requestEpubClose.mockImplementation(() => Promise.resolve(true))
   shellWindow = makeShellWindow()
@@ -401,6 +413,48 @@ describe('opening tabs', () => {
     const untitled = manager.list().find((t) => t.id === untitledId)
     expect(untitled).toMatchObject({ kind: 'mindmap', title: 'Mind Map' })
     expect(untitled?.filePath).toBeUndefined()
+  })
+
+  it('opens an AI Drawing tab for a file and for a new, untitled drawing', () => {
+    const fileId = manager.openCadTab('/tmp/part.ttukcad')
+    expect(createCadView).toHaveBeenLastCalledWith('/tmp/part.ttukcad')
+    expect(manager.list().find((t) => t.id === fileId)).toMatchObject({
+      kind: 'cad',
+      title: 'part.ttukcad',
+      filePath: '/tmp/part.ttukcad',
+      active: true,
+    })
+    expect(applyMenuFor).toHaveBeenLastCalledWith('cad')
+
+    const untitledId = manager.openCadTab()
+    expect(createCadView).toHaveBeenLastCalledWith(undefined)
+    const untitled = manager.list().find((t) => t.id === untitledId)
+    expect(untitled).toMatchObject({ kind: 'cad', title: 'Untitled Drawing' })
+    expect(untitled?.filePath).toBeUndefined()
+  })
+
+  it('opens an imported .stl/.obj/.dxf as an untitled drawing named after the file, never as that file', () => {
+    const id = manager.openCadTab('/tmp/Bracket.STL')
+    // the editor still reads the file it imports
+    expect(createCadView).toHaveBeenLastCalledWith('/tmp/Bracket.STL')
+    const tab = manager.list().find((t) => t.id === id)
+    expect(tab).toMatchObject({ kind: 'cad', title: 'Bracket' })
+    // no file behind the tab: a save asks for a new .ttukcad, the import source is never written
+    expect(tab?.filePath).toBeUndefined()
+    expect(manager.findCadTabByPath('/tmp/Bracket.STL')).toBeUndefined()
+  })
+
+  it('opens a .3mf import and a .dwg it only explains as untitled drawings, never as those files', () => {
+    for (const [path, title] of [
+      ['/tmp/Bracket.3mf', 'Bracket'],
+      ['/tmp/Floor Plan.dwg', 'Floor Plan'],
+    ] as const) {
+      const id = manager.openCadTab(path)
+      expect(createCadView).toHaveBeenLastCalledWith(path)
+      const tab = manager.list().find((t) => t.id === id)
+      expect(tab).toMatchObject({ kind: 'cad', title })
+      expect(tab?.filePath).toBeUndefined()
+    }
   })
 
   it('opens a book tab for its file, titled by the file name', () => {
@@ -937,6 +991,24 @@ describe('closing tabs', () => {
     expect(manager.list()).toHaveLength(1)
   })
 
+  it('asks before closing a dirty AI Drawing tab and keeps it on cancel', async () => {
+    const cleanId = manager.openCadTab('/tmp/clean.ttukcad')
+    await manager.closeTab(cleanId)
+    expect(requestCadClose).not.toHaveBeenCalled()
+
+    cadIsDirty.mockImplementation(() => true)
+    requestCadClose.mockImplementation(() => Promise.resolve(false))
+    const id = manager.openCadTab()
+    const view = lastCreatedView(createCadView)
+    await manager.closeTab(id)
+    expect(requestCadClose).toHaveBeenCalledWith(view.webContents, shellWindow)
+    expect(manager.list().map((t) => t.id)).toEqual(['home', id])
+
+    requestCadClose.mockImplementation(() => Promise.resolve(true))
+    await manager.closeTab(id)
+    expect(manager.list()).toHaveLength(1)
+  })
+
   it('does not stack close guards while one prompt is pending', async () => {
     sheetsPendingEditCount.mockImplementation(() => 1)
     let resolveGuard!: (ok: boolean) => void
@@ -1082,6 +1154,15 @@ describe('file path bookkeeping', () => {
       },
     },
     {
+      kind: 'cad',
+      file: '/tmp/one.ttukcad',
+      renamed: '/tmp/two.ttukcad',
+      open: () => {
+        manager.openCadTab('/tmp/one.ttukcad')
+        return lastCreatedView(createCadView)
+      },
+    },
+    {
       kind: 'photo',
       file: '/tmp/one.psd',
       renamed: '/tmp/two.psd',
@@ -1183,6 +1264,7 @@ describe('file path bookkeeping', () => {
     const markdownId = seedTab('markdown', '/real/file')
     const htmlId = seedTab('html', '/real/file')
     const mindmapId = seedTab('mindmap', '/real/file')
+    const cadId = seedTab('cad', '/real/file')
 
     expect(manager.findDocsTabByPath('/canonical/file')).toBe(docsId)
     expect(manager.findSheetsTabByPath('/REAL/FILE')).toBe(sheetsId)
@@ -1191,6 +1273,7 @@ describe('file path bookkeeping', () => {
     expect(manager.findMarkdownTabByPath('/canonical/file')).toBe(markdownId)
     expect(manager.findHtmlTabByPath('/REAL/FILE')).toBe(htmlId)
     expect(manager.findMindmapTabByPath('/canonical/file')).toBe(mindmapId)
+    expect(manager.findCadTabByPath('/REAL/FILE')).toBe(cadId)
     expect(manager.findDocsTabByPath('/missing')).toBeUndefined()
     expect(manager.findDocsTabByPath()).toBeUndefined()
   })
@@ -1248,6 +1331,25 @@ describe('dirty-tab queries (shell close guard)', () => {
     expect(manager.dirtyMindmapTabs()).toEqual([
       { id: dirtyId, webContents: dirtyView.webContents },
     ])
+  })
+
+  it('lists dirty AI Drawing tabs, names the active one, and reports it to MCP as kind cad', async () => {
+    manager.openCadTab('/tmp/clean.ttukcad')
+    const dirtyId = manager.openCadTab()
+    const dirtyView = lastCreatedView(createCadView)
+    expect(manager.dirtyCadTabs()).toEqual([])
+    cadIsDirty.mockImplementation(
+      ((id: number) => id === dirtyView.webContents.id) as () => boolean,
+    )
+    expect(manager.dirtyCadTabs()).toEqual([{ id: dirtyId, webContents: dirtyView.webContents }])
+    expect(manager.activeCadTab()).toEqual({ id: dirtyId, webContents: dirtyView.webContents })
+    const documents = await manager.openDocuments()
+    expect(documents.map((d) => [d.kind, d.filePath, d.dirty])).toEqual([
+      ['cad', '/tmp/clean.ttukcad', false],
+      ['cad', undefined, true],
+    ])
+    manager.openSlidesTab()
+    expect(manager.activeCadTab()).toBeUndefined()
   })
 
   it('lists hwp tabs with unsaved edits or an open memo editor', () => {
@@ -1346,9 +1448,10 @@ describe('detach / attach (Open in New Window, tear-off, dock)', () => {
     const markdown = manager.openMarkdownTab()
     const html = manager.openHtmlTab()
     const mindmap = manager.openMindmapTab()
+    const cad = manager.openCadTab()
     const epub = manager.openEpubTab('/tmp/novel.epub')
     const present = manager.openHtmlPresentTab({ id: 999 } as never, 'Preview')
-    for (const id of [docs, sheets, slides, pdf, markdown, html, mindmap, epub])
+    for (const id of [docs, sheets, slides, pdf, markdown, html, mindmap, cad, epub])
       expect(manager.canDetachTab(id)).toBe(true)
     expect(manager.canDetachTab('home')).toBe(false)
     expect(manager.canDetachTab(present)).toBe(false)

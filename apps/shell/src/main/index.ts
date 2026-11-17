@@ -89,6 +89,8 @@ import menuHtmlIcon1x from './assets/menu-html.png?asset'
 import menuHtmlIcon2x from './assets/menu-html@2x.png?asset'
 import menuMindmapIcon1x from './assets/menu-mindmap.png?asset'
 import menuMindmapIcon2x from './assets/menu-mindmap@2x.png?asset'
+import menuCadIcon1x from './assets/menu-cad.png?asset'
+import menuCadIcon2x from './assets/menu-cad@2x.png?asset'
 import menuHwpIcon1x from './assets/menu-hwp.png?asset'
 import menuHwpIcon2x from './assets/menu-hwp@2x.png?asset'
 import menuEpubIcon1x from './assets/menu-epub.png?asset'
@@ -389,6 +391,19 @@ import {
 } from '../../../mindmap/src/main/mindmap-main'
 import { mindmapReadOutline } from '../../../mindmap/src/main/mcp-queries'
 import {
+  cadFileRenamed,
+  cadReadSummary,
+  cadSaveToPath,
+  configureCadRuntime,
+  requestCadSave,
+  sendCadExportRequest,
+  sendCadMenuCommand,
+  setCadFileSavedHook,
+  setCadSendToDocumentHook,
+} from '../../../cad/src/main/cad-main'
+import type { CadMenuCommand, ExportFormat as CadExportFormat } from '../../../cad/src/shared/ipc'
+import { cadEditMenu } from './cad-menu'
+import {
   EPUB_ASSET_SCHEME_PRIVILEGE,
   configureEpubRuntime,
   epubFileRenamed,
@@ -476,6 +491,9 @@ import {
   HTML_RE,
   ODT_RE,
   MINDMAP_RE,
+  CAD_RE,
+  CAD_IMPORT_RE,
+  CAD_GUIDE_RE,
   HWP_RE,
   EPUB_RE,
   PHOTO_RE,
@@ -729,6 +747,9 @@ const HTML_OUT = app.isPackaged
 const MINDMAP_OUT = app.isPackaged
   ? join(process.resourcesPath, 'modules', 'mindmap')
   : join(APPS_ROOT, 'mindmap', 'out')
+const CAD_OUT = app.isPackaged
+  ? join(process.resourcesPath, 'modules', 'cad')
+  : join(APPS_ROOT, 'cad', 'out')
 const HWP_OUT = app.isPackaged
   ? join(process.resourcesPath, 'modules', 'hwp')
   : join(APPS_ROOT, 'hwp', 'out')
@@ -819,6 +840,11 @@ configureMindmapRuntime({
   preloadPath: join(MINDMAP_OUT, 'preload', 'index.js'),
   rendererUrl: process.env.MINDMAP_RENDERER_URL,
   rendererFile: join(MINDMAP_OUT, 'renderer', 'index.html'),
+})
+configureCadRuntime({
+  preloadPath: join(CAD_OUT, 'preload', 'index.js'),
+  rendererUrl: process.env.CAD_RENDERER_URL,
+  rendererFile: join(CAD_OUT, 'renderer', 'index.html'),
 })
 configureHwpRuntime({
   preloadPath: join(HWP_OUT, 'preload', 'index.js'),
@@ -976,6 +1002,7 @@ for (const channel of [
   'pdf:dirty-changed',
   'hwp:dirty-changed',
   'mindmap:dirty-changed',
+  'cad:dirty-changed',
   'epub:dirty-changed',
   'graphics:dirty-changed',
 ]) {
@@ -1194,12 +1221,18 @@ const tMain = createI18n({
     untitledMarkdown: '未命名 Markdown',
     untitledHtml: '未命名 HTML',
     untitledMindmap: '未命名思维导图',
+    untitledCad: '未命名图纸',
     untitledHwp: '未命名 HWP',
     untitledPdf: '未命名 PDF',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: '思维导图',
+    menuNewCad: 'AI 图纸',
+    menuViewTop: '顶视图',
+    menuViewFront: '前视图',
+    menuViewSide: '侧视图',
+    menuViewFit: '适合窗口',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan 模板…',
     menuNewDesign: 'AI 设计',
@@ -1209,6 +1242,10 @@ const tMain = createI18n({
     menuExportHtml: '导出为单文件 HTML…',
     menuExportMapImage: '导出为图片 (PNG)…',
     menuExportMapOutline: '导出为 Markdown 大纲…',
+    menuCadExport: '导出',
+    menuCadExportStl: 'STL（3D 打印）…',
+    menuCadExportObj: 'OBJ（3D 模型）…',
+    menuCadExportPng: '图片 (PNG)…',
     menuMakeFromDocument: '用此文档新建其他文档',
     menuDocumentSources: '查看资料',
     menuDerivedDocuments: '用此文档新建的文档',
@@ -1238,6 +1275,7 @@ const tMain = createI18n({
     filterMarkdown: '文本文件 (Markdown, TXT, JSON)',
     filterHtml: 'HTML 文档',
     filterMindmap: '思维导图 (XMind 文件)',
+    filterCad: 'AI 图纸',
     filterHwp: 'HWP 文档 (HWP, HWPX)',
     filterEpub: '电子书 (EPUB)',
     menuNewPhoto: 'AI 照片',
@@ -1365,12 +1403,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Untitled Markdown',
     untitledHtml: 'Untitled HTML',
     untitledMindmap: 'Untitled Mind Map',
+    untitledCad: 'Untitled Drawing',
     untitledHwp: 'Untitled HWP',
     untitledPdf: 'Untitled PDF',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Mind Map',
+    menuNewCad: 'AI Drawing',
+    menuViewTop: 'Top',
+    menuViewFront: 'Front',
+    menuViewSide: 'Side',
+    menuViewFit: 'Fit to Window',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'AI Design',
@@ -1380,6 +1424,10 @@ const tMain = createI18n({
     menuExportHtml: 'Export as Single-File HTML…',
     menuExportMapImage: 'Export as Image (PNG)…',
     menuExportMapOutline: 'Export as Markdown Outline…',
+    menuCadExport: 'Export',
+    menuCadExportStl: 'STL (3D Printing)…',
+    menuCadExportObj: 'OBJ (3D Model)…',
+    menuCadExportPng: 'Image (PNG)…',
     menuMakeFromDocument: 'Make Another Document from This',
     menuDocumentSources: 'View Sources',
     menuDerivedDocuments: 'Documents Made from This',
@@ -1406,6 +1454,7 @@ const tMain = createI18n({
     filterMarkdown: 'Text Files (Markdown, TXT, JSON)',
     filterHtml: 'HTML Documents',
     filterMindmap: 'Mind Maps (XMind files)',
+    filterCad: 'AI Drawing',
     filterHwp: 'HWP Documents (HWP, HWPX)',
     filterEpub: 'E-books (EPUB)',
     menuNewPhoto: 'AI Photo',
@@ -1537,12 +1586,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown chưa có tiêu đề',
     untitledHtml: 'HTML chưa có tiêu đề',
     untitledMindmap: 'Sơ đồ tư duy chưa có tiêu đề',
+    untitledCad: 'Bản vẽ chưa có tiêu đề',
     untitledHwp: 'HWP chưa có tiêu đề',
     untitledPdf: 'PDF chưa có tiêu đề',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI tài liệu web',
     menuNewMindmap: 'Sơ đồ tư duy',
+    menuNewCad: 'Bản vẽ AI',
+    menuViewTop: 'Nhìn từ trên',
+    menuViewFront: 'Nhìn từ trước',
+    menuViewSide: 'Nhìn từ bên',
+    menuViewFit: 'Vừa cửa sổ',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Mẫu Hanpan…',
     menuNewDesign: 'Thiết kế AI',
@@ -1552,6 +1607,10 @@ const tMain = createI18n({
     menuExportHtml: 'Xuất dưới dạng HTML một tệp…',
     menuExportMapImage: 'Xuất dưới dạng hình ảnh (PNG)…',
     menuExportMapOutline: 'Xuất dưới dạng dàn ý Markdown…',
+    menuCadExport: 'Xuất',
+    menuCadExportStl: 'STL (in 3D)…',
+    menuCadExportObj: 'OBJ (mô hình 3D)…',
+    menuCadExportPng: 'Hình ảnh (PNG)…',
     menuMakeFromDocument: 'Tạo tài liệu khác từ tài liệu này',
     menuDocumentSources: 'Xem tài liệu nguồn',
     menuDerivedDocuments: 'Tài liệu tạo từ tài liệu này',
@@ -1582,6 +1641,7 @@ const tMain = createI18n({
     filterMarkdown: 'Tệp văn bản (Markdown, TXT, JSON)',
     filterHtml: 'Tài liệu HTML',
     filterMindmap: 'Sơ đồ tư duy (tệp XMind)',
+    filterCad: 'Bản vẽ AI',
     filterHwp: 'Tài liệu HWP (HWP, HWPX)',
     filterEpub: 'Sách điện tử (EPUB)',
     menuNewPhoto: 'Ảnh AI',
@@ -1714,12 +1774,18 @@ const tMain = createI18n({
     untitledMarkdown: '無題の Markdown',
     untitledHtml: '無題の HTML',
     untitledMindmap: '無題のマインドマップ',
+    untitledCad: '無題の図面',
     untitledHwp: '無題の HWP',
     untitledPdf: '無題の PDF',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'マインドマップ',
+    menuNewCad: 'AI 図面',
+    menuViewTop: '上面',
+    menuViewFront: '正面',
+    menuViewSide: '側面',
+    menuViewFit: 'ウィンドウに合わせる',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'AI デザイン',
@@ -1729,6 +1795,10 @@ const tMain = createI18n({
     menuExportHtml: '単一ファイル HTML として書き出す…',
     menuExportMapImage: '画像 (PNG) としてエクスポート…',
     menuExportMapOutline: 'Markdown アウトラインとしてエクスポート…',
+    menuCadExport: 'エクスポート',
+    menuCadExportStl: 'STL（3D プリント用）…',
+    menuCadExportObj: 'OBJ（3D モデル）…',
+    menuCadExportPng: '画像 (PNG)…',
     menuMakeFromDocument: 'この文書から別の文書を作成',
     menuDocumentSources: '資料を表示',
     menuDerivedDocuments: 'この文書から作成した文書',
@@ -1759,6 +1829,7 @@ const tMain = createI18n({
     filterMarkdown: 'テキストファイル (Markdown, TXT, JSON)',
     filterHtml: 'HTML ドキュメント',
     filterMindmap: 'マインドマップ (XMind ファイル)',
+    filterCad: 'AI 図面',
     filterHwp: 'HWP ドキュメント (HWP, HWPX)',
     filterEpub: '電子書籍 (EPUB)',
     menuNewPhoto: 'AI フォト',
@@ -1892,12 +1963,18 @@ const tMain = createI18n({
     untitledMarkdown: '제목 없는 마크다운',
     untitledHtml: '제목 없는 웹 문서',
     untitledMindmap: '제목 없는 마인드맵',
+    untitledCad: '제목 없는 도면',
     untitledHwp: '제목 없는 한글 문서',
     untitledPdf: '제목 없는 PDF',
     menuNewSlide: 'AI 파워포인트',
     menuNewMarkdown: 'AI 마크다운',
     menuNewHtml: 'AI 웹 문서',
     menuNewMindmap: '마인드맵',
+    menuNewCad: 'AI 도면',
+    menuViewTop: '위에서 보기',
+    menuViewFront: '앞에서 보기',
+    menuViewSide: '옆에서 보기',
+    menuViewFit: '화면에 맞추기',
     menuNewHwp: 'AI 한글',
     menuNewTemplates: '한판 양식…',
     menuNewDesign: 'AI 디자인',
@@ -1907,6 +1984,10 @@ const tMain = createI18n({
     menuExportHtml: '단일 파일 HTML로 내보내기…',
     menuExportMapImage: '이미지(PNG)로 내보내기…',
     menuExportMapOutline: '마크다운 개요로 내보내기…',
+    menuCadExport: '내보내기',
+    menuCadExportStl: 'STL(3D 프린팅)…',
+    menuCadExportObj: 'OBJ(3D 모형)…',
+    menuCadExportPng: '이미지(PNG)…',
     menuMakeFromDocument: '이 문서로 새 문서 만들기',
     menuDocumentSources: '자료 보기',
     menuDerivedDocuments: '이 문서로 만든 문서',
@@ -1936,6 +2017,7 @@ const tMain = createI18n({
     filterMarkdown: '텍스트 파일 (Markdown, TXT, JSON)',
     filterHtml: 'HTML 문서',
     filterMindmap: '마인드맵 (XMind 파일)',
+    filterCad: 'AI 도면',
     filterHwp: '한글 문서 (HWP, HWPX)',
     filterEpub: '전자책 (EPUB)',
     menuNewPhoto: 'AI 포토',
@@ -2067,12 +2149,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown sans titre',
     untitledHtml: 'HTML sans titre',
     untitledMindmap: 'Carte mentale sans titre',
+    untitledCad: 'Dessin sans titre',
     untitledHwp: 'HWP sans titre',
     untitledPdf: 'PDF sans titre',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Carte mentale',
+    menuNewCad: 'Dessin IA',
+    menuViewTop: 'Dessus',
+    menuViewFront: 'Face',
+    menuViewSide: 'Côté',
+    menuViewFit: 'Ajuster à la fenêtre',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'Design IA',
@@ -2082,6 +2170,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exporter en HTML (fichier unique)…',
     menuExportMapImage: 'Exporter en image (PNG)…',
     menuExportMapOutline: 'Exporter en plan Markdown…',
+    menuCadExport: 'Exporter',
+    menuCadExportStl: 'STL (impression 3D)…',
+    menuCadExportObj: 'OBJ (modèle 3D)…',
+    menuCadExportPng: 'Image (PNG)…',
     menuMakeFromDocument: 'Créer un autre document à partir de celui-ci',
     menuDocumentSources: 'Voir les sources',
     menuDerivedDocuments: 'Documents créés à partir de celui-ci',
@@ -2112,6 +2204,7 @@ const tMain = createI18n({
     filterMarkdown: 'Fichiers texte (Markdown, TXT, JSON)',
     filterHtml: 'Documents HTML',
     filterMindmap: 'Cartes mentales (fichiers XMind)',
+    filterCad: 'Dessin IA',
     filterHwp: 'Documents HWP (HWP, HWPX)',
     filterEpub: 'Livres numériques (EPUB)',
     menuNewPhoto: 'Photo IA',
@@ -2246,12 +2339,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Unbenanntes Markdown',
     untitledHtml: 'Unbenanntes HTML',
     untitledMindmap: 'Unbenannte Mindmap',
+    untitledCad: 'Unbenannte Zeichnung',
     untitledHwp: 'Unbenanntes HWP',
     untitledPdf: 'Unbenanntes PDF',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Mindmap',
+    menuNewCad: 'KI-Zeichnung',
+    menuViewTop: 'Oben',
+    menuViewFront: 'Vorne',
+    menuViewSide: 'Seite',
+    menuViewFit: 'An Fenster anpassen',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'KI-Design',
@@ -2261,6 +2360,10 @@ const tMain = createI18n({
     menuExportHtml: 'Als Einzeldatei-HTML exportieren…',
     menuExportMapImage: 'Als Bild (PNG) exportieren…',
     menuExportMapOutline: 'Als Markdown-Gliederung exportieren…',
+    menuCadExport: 'Exportieren',
+    menuCadExportStl: 'STL (3D-Druck)…',
+    menuCadExportObj: 'OBJ (3D-Modell)…',
+    menuCadExportPng: 'Bild (PNG)…',
     menuMakeFromDocument: 'Anderes Dokument aus diesem erstellen',
     menuDocumentSources: 'Quellen anzeigen',
     menuDerivedDocuments: 'Aus diesem erstellte Dokumente',
@@ -2291,6 +2394,7 @@ const tMain = createI18n({
     filterMarkdown: 'Textdateien (Markdown, TXT, JSON)',
     filterHtml: 'HTML-Dokumente',
     filterMindmap: 'Mindmaps (XMind-Dateien)',
+    filterCad: 'KI-Zeichnung',
     filterHwp: 'HWP-Dokumente (HWP, HWPX)',
     filterEpub: 'E-Books (EPUB)',
     menuNewPhoto: 'KI-Foto',
@@ -2425,12 +2529,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown sin título',
     untitledHtml: 'HTML sin título',
     untitledMindmap: 'Mapa mental sin título',
+    untitledCad: 'Dibujo sin título',
     untitledHwp: 'HWP sin título',
     untitledPdf: 'PDF sin título',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Mapa mental',
+    menuNewCad: 'Dibujo IA',
+    menuViewTop: 'Superior',
+    menuViewFront: 'Frontal',
+    menuViewSide: 'Lateral',
+    menuViewFit: 'Ajustar a la ventana',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'Diseño IA',
@@ -2440,6 +2550,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exportar como HTML de archivo único…',
     menuExportMapImage: 'Exportar como imagen (PNG)…',
     menuExportMapOutline: 'Exportar como esquema Markdown…',
+    menuCadExport: 'Exportar',
+    menuCadExportStl: 'STL (impresión 3D)…',
+    menuCadExportObj: 'OBJ (modelo 3D)…',
+    menuCadExportPng: 'Imagen (PNG)…',
     menuMakeFromDocument: 'Crear otro documento a partir de este',
     menuDocumentSources: 'Ver fuentes',
     menuDerivedDocuments: 'Documentos creados a partir de este',
@@ -2470,6 +2584,7 @@ const tMain = createI18n({
     filterMarkdown: 'Archivos de texto (Markdown, TXT, JSON)',
     filterHtml: 'Documentos HTML',
     filterMindmap: 'Mapas mentales (archivos XMind)',
+    filterCad: 'Dibujo IA',
     filterHwp: 'Documentos HWP (HWP, HWPX)',
     filterEpub: 'Libros electrónicos (EPUB)',
     menuNewPhoto: 'Foto IA',
@@ -2603,12 +2718,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown ไม่มีชื่อ',
     untitledHtml: 'HTML ไม่มีชื่อ',
     untitledMindmap: 'แผนที่ความคิดไม่มีชื่อ',
+    untitledCad: 'แบบร่างไม่มีชื่อ',
     untitledHwp: 'HWP ไม่มีชื่อ',
     untitledPdf: 'PDF ไม่มีชื่อ',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'แผนที่ความคิด',
+    menuNewCad: 'แบบร่าง AI',
+    menuViewTop: 'มุมบน',
+    menuViewFront: 'มุมหน้า',
+    menuViewSide: 'มุมข้าง',
+    menuViewFit: 'พอดีหน้าต่าง',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'ออกแบบ AI',
@@ -2618,6 +2739,10 @@ const tMain = createI18n({
     menuExportHtml: 'ส่งออกเป็น HTML ไฟล์เดียว…',
     menuExportMapImage: 'ส่งออกเป็นรูปภาพ (PNG)…',
     menuExportMapOutline: 'ส่งออกเป็นโครงร่าง Markdown…',
+    menuCadExport: 'ส่งออก',
+    menuCadExportStl: 'STL (พิมพ์ 3 มิติ)…',
+    menuCadExportObj: 'OBJ (โมเดล 3 มิติ)…',
+    menuCadExportPng: 'รูปภาพ (PNG)…',
     menuMakeFromDocument: 'สร้างเอกสารอื่นจากเอกสารนี้',
     menuDocumentSources: 'ดูแหล่งข้อมูล',
     menuDerivedDocuments: 'เอกสารที่สร้างจากเอกสารนี้',
@@ -2648,6 +2773,7 @@ const tMain = createI18n({
     filterMarkdown: 'ไฟล์ข้อความ (Markdown, TXT, JSON)',
     filterHtml: 'เอกสาร HTML',
     filterMindmap: 'แผนที่ความคิด (ไฟล์ XMind)',
+    filterCad: 'แบบร่าง AI',
     filterHwp: 'เอกสาร HWP (HWP, HWPX)',
     filterEpub: 'หนังสืออิเล็กทรอนิกส์ (EPUB)',
     menuNewPhoto: 'ภาพถ่าย AI',
@@ -2777,12 +2903,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown tanpa judul',
     untitledHtml: 'HTML tanpa judul',
     untitledMindmap: 'Peta pikiran tanpa judul',
+    untitledCad: 'Gambar tanpa judul',
     untitledHwp: 'HWP tanpa judul',
     untitledPdf: 'PDF tanpa judul',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Peta pikiran',
+    menuNewCad: 'Gambar AI',
+    menuViewTop: 'Atas',
+    menuViewFront: 'Depan',
+    menuViewSide: 'Samping',
+    menuViewFit: 'Sesuaikan dengan jendela',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'Desain AI',
@@ -2792,6 +2924,10 @@ const tMain = createI18n({
     menuExportHtml: 'Ekspor sebagai HTML satu file…',
     menuExportMapImage: 'Ekspor sebagai gambar (PNG)…',
     menuExportMapOutline: 'Ekspor sebagai kerangka Markdown…',
+    menuCadExport: 'Ekspor',
+    menuCadExportStl: 'STL (cetak 3D)…',
+    menuCadExportObj: 'OBJ (model 3D)…',
+    menuCadExportPng: 'Gambar (PNG)…',
     menuMakeFromDocument: 'Buat dokumen lain dari dokumen ini',
     menuDocumentSources: 'Lihat sumber',
     menuDerivedDocuments: 'Dokumen yang dibuat dari dokumen ini',
@@ -2822,6 +2958,7 @@ const tMain = createI18n({
     filterMarkdown: 'File teks (Markdown, TXT, JSON)',
     filterHtml: 'Dokumen HTML',
     filterMindmap: 'Peta pikiran (file XMind)',
+    filterCad: 'Gambar AI',
     filterHwp: 'Dokumen HWP (HWP, HWPX)',
     filterEpub: 'Buku elektronik (EPUB)',
     menuNewPhoto: 'Foto AI',
@@ -2955,12 +3092,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown без названия',
     untitledHtml: 'HTML без названия',
     untitledMindmap: 'Интеллект-карта без названия',
+    untitledCad: 'Чертёж без названия',
     untitledHwp: 'HWP без названия',
     untitledPdf: 'PDF без названия',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Интеллект-карта',
+    menuNewCad: 'ИИ-чертёж',
+    menuViewTop: 'Сверху',
+    menuViewFront: 'Спереди',
+    menuViewSide: 'Сбоку',
+    menuViewFit: 'По размеру окна',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'ИИ-дизайн',
@@ -2970,6 +3113,10 @@ const tMain = createI18n({
     menuExportHtml: 'Экспортировать в один файл HTML…',
     menuExportMapImage: 'Экспорт в изображение (PNG)…',
     menuExportMapOutline: 'Экспорт в структуру Markdown…',
+    menuCadExport: 'Экспорт',
+    menuCadExportStl: 'STL (3D-печать)…',
+    menuCadExportObj: 'OBJ (3D-модель)…',
+    menuCadExportPng: 'Изображение (PNG)…',
     menuMakeFromDocument: 'Создать другой документ из этого',
     menuDocumentSources: 'Показать источники',
     menuDerivedDocuments: 'Документы, созданные из этого',
@@ -3000,6 +3147,7 @@ const tMain = createI18n({
     filterMarkdown: 'Текстовые файлы (Markdown, TXT, JSON)',
     filterHtml: 'Документы HTML',
     filterMindmap: 'Интеллект-карты (файлы XMind)',
+    filterCad: 'ИИ-чертёж',
     filterHwp: 'Документы HWP (HWP, HWPX)',
     filterEpub: 'Электронные книги (EPUB)',
     menuNewPhoto: 'ИИ-фото',
@@ -3132,12 +3280,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown بدون عنوان',
     untitledHtml: 'HTML بدون عنوان',
     untitledMindmap: 'خريطة ذهنية بدون عنوان',
+    untitledCad: 'رسم بدون عنوان',
     untitledHwp: 'HWP بدون عنوان',
     untitledPdf: 'PDF بدون عنوان',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'خريطة ذهنية',
+    menuNewCad: 'رسم هندسي بالذكاء الاصطناعي',
+    menuViewTop: 'من الأعلى',
+    menuViewFront: 'من الأمام',
+    menuViewSide: 'من الجانب',
+    menuViewFit: 'ملاءمة النافذة',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'تصميم بالذكاء الاصطناعي',
@@ -3147,6 +3301,10 @@ const tMain = createI18n({
     menuExportHtml: 'تصدير كملف HTML واحد…',
     menuExportMapImage: 'تصدير كصورة (PNG)…',
     menuExportMapOutline: 'تصدير كمخطط Markdown…',
+    menuCadExport: 'تصدير',
+    menuCadExportStl: 'STL (طباعة ثلاثية الأبعاد)…',
+    menuCadExportObj: 'OBJ (نموذج ثلاثي الأبعاد)…',
+    menuCadExportPng: 'صورة (PNG)…',
     menuMakeFromDocument: 'إنشاء مستند آخر من هذا المستند',
     menuDocumentSources: 'عرض المصادر',
     menuDerivedDocuments: 'المستندات المُنشأة من هذا المستند',
@@ -3177,6 +3335,7 @@ const tMain = createI18n({
     filterMarkdown: 'ملفات نصية (Markdown, TXT, JSON)',
     filterHtml: 'مستندات HTML',
     filterMindmap: 'خرائط ذهنية (ملفات XMind)',
+    filterCad: 'رسم هندسي بالذكاء الاصطناعي',
     filterHwp: 'مستندات HWP (HWP, HWPX)',
     filterEpub: 'كتب إلكترونية (EPUB)',
     menuNewPhoto: 'صور بالذكاء الاصطناعي',
@@ -3306,12 +3465,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown sem título',
     untitledHtml: 'HTML sem título',
     untitledMindmap: 'Mapa mental sem título',
+    untitledCad: 'Desenho sem título',
     untitledHwp: 'HWP sem título',
     untitledPdf: 'PDF sem título',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Mapa mental',
+    menuNewCad: 'Desenho IA',
+    menuViewTop: 'Superior',
+    menuViewFront: 'Frontal',
+    menuViewSide: 'Lateral',
+    menuViewFit: 'Ajustar à janela',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'Design IA',
@@ -3321,6 +3486,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exportar como HTML de arquivo único…',
     menuExportMapImage: 'Exportar como imagem (PNG)…',
     menuExportMapOutline: 'Exportar como estrutura de tópicos Markdown…',
+    menuCadExport: 'Exportar',
+    menuCadExportStl: 'STL (impressão 3D)…',
+    menuCadExportObj: 'OBJ (modelo 3D)…',
+    menuCadExportPng: 'Imagem (PNG)…',
     menuMakeFromDocument: 'Criar outro documento a partir deste',
     menuDocumentSources: 'Ver fontes',
     menuDerivedDocuments: 'Documentos criados a partir deste',
@@ -3351,6 +3520,7 @@ const tMain = createI18n({
     filterMarkdown: 'Arquivos de texto (Markdown, TXT, JSON)',
     filterHtml: 'Documentos HTML',
     filterMindmap: 'Mapas mentais (arquivos XMind)',
+    filterCad: 'Desenho IA',
     filterHwp: 'Documentos HWP (HWP, HWPX)',
     filterEpub: 'Livros digitais (EPUB)',
     menuNewPhoto: 'Foto IA',
@@ -3484,12 +3654,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown senza titolo',
     untitledHtml: 'HTML senza titolo',
     untitledMindmap: 'Mappa mentale senza titolo',
+    untitledCad: 'Disegno senza titolo',
     untitledHwp: 'HWP senza titolo',
     untitledPdf: 'PDF senza titolo',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Mappa mentale',
+    menuNewCad: 'Disegno IA',
+    menuViewTop: 'Alto',
+    menuViewFront: 'Fronte',
+    menuViewSide: 'Lato',
+    menuViewFit: 'Adatta alla finestra',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'Design IA',
@@ -3499,6 +3675,10 @@ const tMain = createI18n({
     menuExportHtml: 'Esporta come HTML a file singolo…',
     menuExportMapImage: 'Esporta come immagine (PNG)…',
     menuExportMapOutline: 'Esporta come struttura Markdown…',
+    menuCadExport: 'Esporta',
+    menuCadExportStl: 'STL (stampa 3D)…',
+    menuCadExportObj: 'OBJ (modello 3D)…',
+    menuCadExportPng: 'Immagine (PNG)…',
     menuMakeFromDocument: 'Crea un altro documento da questo',
     menuDocumentSources: 'Mostra le fonti',
     menuDerivedDocuments: 'Documenti creati da questo',
@@ -3529,6 +3709,7 @@ const tMain = createI18n({
     filterMarkdown: 'File di testo (Markdown, TXT, JSON)',
     filterHtml: 'Documenti HTML',
     filterMindmap: 'Mappe mentali (file XMind)',
+    filterCad: 'Disegno IA',
     filterHwp: 'Documenti HWP (HWP, HWPX)',
     filterEpub: 'Libri digitali (EPUB)',
     menuNewPhoto: 'Foto IA',
@@ -3662,12 +3843,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown bez tytułu',
     untitledHtml: 'HTML bez tytułu',
     untitledMindmap: 'Mapa myśli bez tytułu',
+    untitledCad: 'Rysunek bez tytułu',
     untitledHwp: 'HWP bez tytułu',
     untitledPdf: 'PDF bez tytułu',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Mapa myśli',
+    menuNewCad: 'Rysunek AI',
+    menuViewTop: 'Z góry',
+    menuViewFront: 'Z przodu',
+    menuViewSide: 'Z boku',
+    menuViewFit: 'Dopasuj do okna',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'Grafika AI',
@@ -3677,6 +3864,10 @@ const tMain = createI18n({
     menuExportHtml: 'Eksportuj jako pojedynczy plik HTML…',
     menuExportMapImage: 'Eksportuj jako obraz (PNG)…',
     menuExportMapOutline: 'Eksportuj jako konspekt Markdown…',
+    menuCadExport: 'Eksportuj',
+    menuCadExportStl: 'STL (druk 3D)…',
+    menuCadExportObj: 'OBJ (model 3D)…',
+    menuCadExportPng: 'Obraz (PNG)…',
     menuMakeFromDocument: 'Utwórz inny dokument z tego',
     menuDocumentSources: 'Pokaż źródła',
     menuDerivedDocuments: 'Dokumenty utworzone z tego',
@@ -3707,6 +3898,7 @@ const tMain = createI18n({
     filterMarkdown: 'Pliki tekstowe (Markdown, TXT, JSON)',
     filterHtml: 'Dokumenty HTML',
     filterMindmap: 'Mapy myśli (pliki XMind)',
+    filterCad: 'Rysunek AI',
     filterHwp: 'Dokumenty HWP (HWP, HWPX)',
     filterEpub: 'E-booki (EPUB)',
     menuNewPhoto: 'Zdjęcia AI',
@@ -3839,12 +4031,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown bez názvu',
     untitledHtml: 'HTML bez názvu',
     untitledMindmap: 'Myšlenková mapa bez názvu',
+    untitledCad: 'Výkres bez názvu',
     untitledHwp: 'HWP bez názvu',
     untitledPdf: 'PDF bez názvu',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Myšlenková mapa',
+    menuNewCad: 'Výkres AI',
+    menuViewTop: 'Shora',
+    menuViewFront: 'Zepředu',
+    menuViewSide: 'Z boku',
+    menuViewFit: 'Přizpůsobit oknu',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'Grafika AI',
@@ -3854,6 +4052,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exportovat jako samostatné HTML…',
     menuExportMapImage: 'Exportovat jako obrázek (PNG)…',
     menuExportMapOutline: 'Exportovat jako osnovu Markdown…',
+    menuCadExport: 'Exportovat',
+    menuCadExportStl: 'STL (3D tisk)…',
+    menuCadExportObj: 'OBJ (3D model)…',
+    menuCadExportPng: 'Obrázek (PNG)…',
     menuMakeFromDocument: 'Vytvořit jiný dokument z tohoto',
     menuDocumentSources: 'Zobrazit zdroje',
     menuDerivedDocuments: 'Dokumenty vytvořené z tohoto',
@@ -3884,6 +4086,7 @@ const tMain = createI18n({
     filterMarkdown: 'Textové soubory (Markdown, TXT, JSON)',
     filterHtml: 'Dokumenty HTML',
     filterMindmap: 'Myšlenkové mapy (soubory XMind)',
+    filterCad: 'Výkres AI',
     filterHwp: 'Dokumenty HWP (HWP, HWPX)',
     filterEpub: 'E-knihy (EPUB)',
     menuNewPhoto: 'Fotky AI',
@@ -4015,12 +4218,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Naamloos Markdown',
     untitledHtml: 'Naamloos HTML',
     untitledMindmap: 'Naamloze mindmap',
+    untitledCad: 'Naamloze tekening',
     untitledHwp: 'Naamloos HWP',
     untitledPdf: 'Naamloze PDF',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Mindmap',
+    menuNewCad: 'AI-tekening',
+    menuViewTop: 'Boven',
+    menuViewFront: 'Voor',
+    menuViewSide: 'Zij',
+    menuViewFit: 'Aanpassen aan venster',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'AI-ontwerp',
@@ -4030,6 +4239,10 @@ const tMain = createI18n({
     menuExportHtml: 'Exporteren als één HTML-bestand…',
     menuExportMapImage: 'Exporteren als afbeelding (PNG)…',
     menuExportMapOutline: 'Exporteren als Markdown-overzicht…',
+    menuCadExport: 'Exporteren',
+    menuCadExportStl: 'STL (3D-printen)…',
+    menuCadExportObj: 'OBJ (3D-model)…',
+    menuCadExportPng: 'Afbeelding (PNG)…',
     menuMakeFromDocument: 'Ander document maken van dit document',
     menuDocumentSources: 'Bronnen weergeven',
     menuDerivedDocuments: 'Documenten gemaakt van dit document',
@@ -4060,6 +4273,7 @@ const tMain = createI18n({
     filterMarkdown: 'Tekstbestanden (Markdown, TXT, JSON)',
     filterHtml: 'HTML-documenten',
     filterMindmap: 'Mindmaps (XMind-bestanden)',
+    filterCad: 'AI-tekening',
     filterHwp: 'HWP-documenten (HWP, HWPX)',
     filterEpub: 'E-boeken (EPUB)',
     menuNewPhoto: 'AI-foto',
@@ -4194,12 +4408,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown tanpa tajuk',
     untitledHtml: 'HTML tanpa tajuk',
     untitledMindmap: 'Peta minda tanpa tajuk',
+    untitledCad: 'Lukisan tanpa tajuk',
     untitledHwp: 'HWP tanpa tajuk',
     untitledPdf: 'PDF tanpa tajuk',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'Peta minda',
+    menuNewCad: 'Lukisan AI',
+    menuViewTop: 'Atas',
+    menuViewFront: 'Depan',
+    menuViewSide: 'Sisi',
+    menuViewFit: 'Muat ke tetingkap',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'Reka bentuk AI',
@@ -4209,6 +4429,10 @@ const tMain = createI18n({
     menuExportHtml: 'Eksport sebagai HTML fail tunggal…',
     menuExportMapImage: 'Eksport sebagai imej (PNG)…',
     menuExportMapOutline: 'Eksport sebagai rangka Markdown…',
+    menuCadExport: 'Eksport',
+    menuCadExportStl: 'STL (cetakan 3D)…',
+    menuCadExportObj: 'OBJ (model 3D)…',
+    menuCadExportPng: 'Imej (PNG)…',
     menuMakeFromDocument: 'Buat dokumen lain daripada dokumen ini',
     menuDocumentSources: 'Lihat sumber',
     menuDerivedDocuments: 'Dokumen yang dibuat daripada dokumen ini',
@@ -4239,6 +4463,7 @@ const tMain = createI18n({
     filterMarkdown: 'Fail teks (Markdown, TXT, JSON)',
     filterHtml: 'Dokumen HTML',
     filterMindmap: 'Peta minda (fail XMind)',
+    filterCad: 'Lukisan AI',
     filterHwp: 'Dokumen HWP (HWP, HWPX)',
     filterEpub: 'Buku elektronik (EPUB)',
     menuNewPhoto: 'Foto AI',
@@ -4370,12 +4595,18 @@ const tMain = createI18n({
     untitledMarkdown: 'Markdown ללא שם',
     untitledHtml: 'HTML ללא שם',
     untitledMindmap: 'מפת חשיבה ללא שם',
+    untitledCad: 'שרטוט ללא שם',
     untitledHwp: 'HWP ללא שם',
     untitledPdf: 'PDF ללא שם',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'מפת חשיבה',
+    menuNewCad: 'שרטוט AI',
+    menuViewTop: 'מלמעלה',
+    menuViewFront: 'מלפנים',
+    menuViewSide: 'מהצד',
+    menuViewFit: 'התאמה לחלון',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'עיצוב AI',
@@ -4385,6 +4616,10 @@ const tMain = createI18n({
     menuExportHtml: 'ייצוא כ-HTML בקובץ יחיד…',
     menuExportMapImage: 'ייצוא כתמונה (PNG)…',
     menuExportMapOutline: 'ייצוא כמתאר Markdown…',
+    menuCadExport: 'ייצוא',
+    menuCadExportStl: 'STL (הדפסה תלת-ממדית)…',
+    menuCadExportObj: 'OBJ (מודל תלת-ממדי)…',
+    menuCadExportPng: 'תמונה (PNG)…',
     menuMakeFromDocument: 'יצירת מסמך אחר מהמסמך הזה',
     menuDocumentSources: 'הצגת מקורות',
     menuDerivedDocuments: 'מסמכים שנוצרו מהמסמך הזה',
@@ -4415,6 +4650,7 @@ const tMain = createI18n({
     filterMarkdown: 'קובצי טקסט (Markdown, TXT, JSON)',
     filterHtml: 'מסמכי HTML',
     filterMindmap: 'מפות חשיבה (קובצי XMind)',
+    filterCad: 'שרטוט AI',
     filterHwp: 'מסמכי HWP (HWP, HWPX)',
     filterEpub: 'ספרים אלקטרוניים (EPUB)',
     menuNewPhoto: 'תמונות AI',
@@ -4545,12 +4781,18 @@ const tMain = createI18n({
     untitledMarkdown: 'अनाम Markdown',
     untitledHtml: 'अनाम HTML',
     untitledMindmap: 'अनाम माइंड मैप',
+    untitledCad: 'बिना शीर्षक की ड्रॉइंग',
     untitledHwp: 'अनाम HWP',
     untitledPdf: 'अनाम PDF',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: 'माइंड मैप',
+    menuNewCad: 'AI ड्रॉइंग',
+    menuViewTop: 'ऊपर से',
+    menuViewFront: 'सामने से',
+    menuViewSide: 'बगल से',
+    menuViewFit: 'विंडो में फ़िट करें',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'AI डिज़ाइन',
@@ -4560,6 +4802,10 @@ const tMain = createI18n({
     menuExportHtml: 'एकल-फ़ाइल HTML के रूप में निर्यात…',
     menuExportMapImage: 'छवि (PNG) के रूप में निर्यात…',
     menuExportMapOutline: 'Markdown रूपरेखा के रूप में निर्यात…',
+    menuCadExport: 'निर्यात',
+    menuCadExportStl: 'STL (3D प्रिंटिंग)…',
+    menuCadExportObj: 'OBJ (3D मॉडल)…',
+    menuCadExportPng: 'छवि (PNG)…',
     menuMakeFromDocument: 'इस दस्तावेज़ से दूसरा दस्तावेज़ बनाएँ',
     menuDocumentSources: 'स्रोत देखें',
     menuDerivedDocuments: 'इस दस्तावेज़ से बने दस्तावेज़',
@@ -4590,6 +4836,7 @@ const tMain = createI18n({
     filterMarkdown: 'पाठ फ़ाइलें (Markdown, TXT, JSON)',
     filterHtml: 'HTML दस्तावेज़',
     filterMindmap: 'माइंड मैप (XMind फ़ाइलें)',
+    filterCad: 'AI ड्रॉइंग',
     filterHwp: 'HWP दस्तावेज़ (HWP, HWPX)',
     filterEpub: 'ई-बुक (EPUB)',
     menuNewPhoto: 'AI फ़ोटो',
@@ -4721,12 +4968,18 @@ const tMain = createI18n({
     untitledMarkdown: '未命名 Markdown',
     untitledHtml: '未命名 HTML',
     untitledMindmap: '未命名心智圖',
+    untitledCad: '未命名圖面',
     untitledHwp: '未命名 HWP',
     untitledPdf: '未命名 PDF',
     menuNewSlide: 'AI Slides',
     menuNewMarkdown: 'AI Markdown',
     menuNewHtml: 'AI HTML',
     menuNewMindmap: '心智圖',
+    menuNewCad: 'AI 圖面',
+    menuViewTop: '俯視',
+    menuViewFront: '前視',
+    menuViewSide: '側視',
+    menuViewFit: '符合視窗',
     menuNewHwp: 'AI HWP',
     menuNewTemplates: 'Hanpan templates…',
     menuNewDesign: 'AI 設計',
@@ -4736,6 +4989,10 @@ const tMain = createI18n({
     menuExportHtml: '匯出為單檔 HTML…',
     menuExportMapImage: '匯出為圖片 (PNG)…',
     menuExportMapOutline: '匯出為 Markdown 大綱…',
+    menuCadExport: '匯出',
+    menuCadExportStl: 'STL（3D 列印）…',
+    menuCadExportObj: 'OBJ（3D 模型）…',
+    menuCadExportPng: '圖片 (PNG)…',
     menuMakeFromDocument: '用此文件新增其他文件',
     menuDocumentSources: '檢視資料',
     menuDerivedDocuments: '用此文件新增的文件',
@@ -4766,6 +5023,7 @@ const tMain = createI18n({
     filterMarkdown: '文字檔 (Markdown, TXT, JSON)',
     filterHtml: 'HTML 文件',
     filterMindmap: '心智圖 (XMind 檔案)',
+    filterCad: 'AI 圖面',
     filterHwp: 'HWP 文件 (HWP, HWPX)',
     filterEpub: '電子書 (EPUB)',
     menuNewPhoto: 'AI 相片',
@@ -4861,13 +5119,15 @@ function untitledTabTitle(kind: TabKind, lang: Lang): string {
               ? 'untitledHtml'
               : kind === 'mindmap'
                 ? 'untitledMindmap'
-                : kind === 'hwp'
-                  ? 'untitledHwp'
-                  : kind === 'photo'
-                    ? 'untitledPhoto'
-                    : kind === 'illust'
-                      ? 'untitledIllust'
-                      : 'untitledSheet'
+                : kind === 'cad'
+                  ? 'untitledCad'
+                  : kind === 'hwp'
+                    ? 'untitledHwp'
+                    : kind === 'photo'
+                      ? 'untitledPhoto'
+                      : kind === 'illust'
+                        ? 'untitledIllust'
+                        : 'untitledSheet'
   return tMain(lang, key)
 }
 
@@ -5012,6 +5272,7 @@ function afterFileMoved(oldPath: string, newPath: string): void {
     else if (t.kind === 'markdown') markdownFileRenamed(t.webContents, oldPath, newPath)
     else if (t.kind === 'html') htmlFileRenamed(t.webContents, oldPath, newPath)
     else if (t.kind === 'mindmap') mindmapFileRenamed(t.webContents, oldPath, newPath)
+    else if (t.kind === 'cad') cadFileRenamed(t.webContents, oldPath, newPath)
     else if (t.kind === 'hwp') hwpFileRenamed(t.webContents, oldPath, newPath)
     else if (t.kind === 'epub') epubFileRenamed(t.webContents, oldPath, newPath)
     else if (t.kind === 'photo' || t.kind === 'illust')
@@ -5241,6 +5502,9 @@ function applyMenuFor(kind: TabKind): void {
       break
     case 'mindmap':
       buildMindmapMenu()
+      break
+    case 'cad':
+      buildCadMenu()
       break
     case 'hwp':
       buildHwpMenu()
@@ -5658,10 +5922,20 @@ function createShellWindow(): void {
     noteDocumentSaved(wc, path)
     applyPendingDir(wc.id, path)
   })
+  // AI Drawing's untitled first save / Save As lands on a new path (document links stay out:
+  // a drawing is not a linkable document yet)
+  setCadFileSavedHook((wc, path) => {
+    manager.setTabFileFor(wc.id, path)
+    detachedSetFileFor(wc.id, path)
+    recordRecentFile(path)
+    applyPendingDir(wc.id, path)
+  })
   // the mind map's toolbar button "make another document from this one"
   setMindmapMakeFromDocumentHook((wc) => makeFromDocument(wc))
   // Hanpan: the mind map's "send to a document" (HWP report, slides, Word report) in a new tab
   setMindmapSendToDocumentHook((wc, request) => hanpan.sendMap(request, wc))
+  // Hanpan: AI Drawing's "send to Hangul / Word" (dimension sheet and size table) in a new tab
+  setCadSendToDocumentHook((wc, request) => hanpan.sendDrawing(request, wc))
   setHwpHanpanToolHook((wc, request) => hanpan.hwpTool(wc, request))
   setMindmapSendToDesignHook((outline) => openDesignWithOutline(outline))
   setMindmapSyncHooks({
@@ -5818,6 +6092,15 @@ const OPEN_DIALOG_EXTENSIONS = [
   'epub',
   ...OPEN_EXTS.photo,
   ...OPEN_EXTS.illust,
+  // AI Drawing and the 3D/DXF files it imports (a .dwg/.step/.iges/.brep still opens a guide
+  // when picked through "All files", but is not offered as a supported file)
+  'ttukcad',
+  'dxf',
+  'stl',
+  'obj',
+  '3mf',
+  'glb',
+  'ply',
 ]
 
 function notifyUnsupportedFile(filePath: string): void {
@@ -5947,6 +6230,21 @@ function routeDocumentPath(filePath: string): boolean {
     const existing = tabManager.findMindmapTabByPath(filePath)
     if (existing) tabManager.activateTab(existing)
     else tabManager.openMindmapTab(filePath)
+    return true
+  }
+  if (CAD_RE.test(filePath)) {
+    recordRecentFile(filePath)
+    const existing = tabManager.findCadTabByPath(filePath)
+    if (existing) tabManager.activateTab(existing)
+    else tabManager.openCadTab(filePath)
+    return true
+  }
+  // a .dxf/.stl/.obj/.3mf/.glb/.ply becomes a new untitled drawing every time: the file is a
+  // source, not the document. A .dwg/.step/.iges/.brep opens the same way, with the guide that
+  // says how to get a file AI Drawing can read
+  if (CAD_IMPORT_RE.test(filePath) || CAD_GUIDE_RE.test(filePath)) {
+    recordRecentFile(filePath)
+    tabManager.openCadTab(filePath)
     return true
   }
   if (HWP_RE.test(filePath)) {
@@ -6176,6 +6474,14 @@ function newHtmlTab(): void {
 function newMindmapTab(): void {
   try {
     bindPendingDir('mindmap', tabManager?.openMindmapTab())
+  } catch (err) {
+    surfaceNewTabError(err)
+  }
+}
+
+function newCadTab(): void {
+  try {
+    bindPendingDir('cad', tabManager?.openCadTab())
   } catch (err) {
     surfaceNewTabError(err)
   }
@@ -6568,6 +6874,10 @@ function registerHomeIpc(): void {
         { name: tm('filterMarkdown'), extensions: ['md', 'markdown', 'txt', 'json'] },
         { name: tm('filterHtml'), extensions: ['html', 'htm'] },
         { name: tm('filterMindmap'), extensions: ['xmind'] },
+        {
+          name: tm('filterCad'),
+          extensions: ['ttukcad', 'dxf', 'stl', 'obj', '3mf', 'glb', 'ply'],
+        },
         { name: tm('filterHwp'), extensions: ['hwp', 'hwpx'] },
         { name: tm('filterEpub'), extensions: ['epub'] },
         { name: tm('filterPhoto'), extensions: [...OPEN_EXTS.photo] },
@@ -6606,6 +6916,11 @@ function registerHomeIpc(): void {
   ipcMain.handle(HOME_CHANNELS.newMindmap, (_event, opts?: NewFileOpts) => {
     rememberPendingDir('mindmap', opts)
     newMindmapTab()
+  })
+
+  ipcMain.handle(HOME_CHANNELS.newCad, (_event, opts?: NewFileOpts) => {
+    rememberPendingDir('cad', opts)
+    newCadTab()
   })
 
   ipcMain.handle(HOME_CHANNELS.newHwp, (_event, opts?: NewFileOpts) => {
@@ -7242,6 +7557,7 @@ interface MenuIconSet {
   md: NativeImage
   html: NativeImage
   mindmap: NativeImage
+  cad: NativeImage
   hwp: NativeImage
   epub: NativeImage
   photo: NativeImage
@@ -7258,6 +7574,7 @@ function menuIcons(): MenuIconSet {
     md: loadMenuIcon(menuMdIcon1x, menuMdIcon2x),
     html: loadMenuIcon(menuHtmlIcon1x, menuHtmlIcon2x),
     mindmap: loadMenuIcon(menuMindmapIcon1x, menuMindmapIcon2x),
+    cad: loadMenuIcon(menuCadIcon1x, menuCadIcon2x),
     hwp: loadMenuIcon(menuHwpIcon1x, menuHwpIcon2x),
     epub: loadMenuIcon(menuEpubIcon1x, menuEpubIcon2x),
     photo: loadMenuIcon(menuPhotoIcon1x, menuPhotoIcon2x),
@@ -7276,6 +7593,7 @@ const TAB_MENU_ICON: Record<TabKind, keyof MenuIconSet> = {
   markdown: 'md',
   html: 'html',
   mindmap: 'mindmap',
+  cad: 'cad',
   hwp: 'hwp',
   epub: 'epub',
   photo: 'photo',
@@ -7700,6 +8018,10 @@ function activeMindmapTarget() {
   return activeEditorTarget('mindmap', () => tabManager?.activeMindmapTab())
 }
 
+function activeCadTarget() {
+  return activeEditorTarget('cad', () => tabManager?.activeCadTab())
+}
+
 /** the document a kind's File menu acts on, for the provenance entries (spec 8.2, 9) */
 function linkedDocumentFor(kind: TabKind): LinkedDocument | undefined {
   const target =
@@ -7845,6 +8167,9 @@ function tabMenuActions(): TabMenuActions {
           void requestMindmapSave(contents, mode)
         },
         printMindmap: sendMindmapPrintRequest,
+        saveCad: (contents, mode) => {
+          void requestCadSave(contents, mode)
+        },
         saveEpub: (contents, mode) => {
           void requestEpubSave(contents, mode)
         },
@@ -8372,6 +8697,11 @@ function registerTabsIpc(): void {
         click: () => newIllustTab(),
       },
       {
+        label: tm('menuNewCad'),
+        icon: menuIcons().cad,
+        click: () => newCadTab(),
+      },
+      {
         label: tm('menuNewPdf'),
         icon: menuIcons().pdf,
         click: () => void newPdfTab(),
@@ -8451,6 +8781,7 @@ function buildHomeMenu(): void {
         ...(koreanDocsOn() ? [{ label: tm('menuNewHwp'), click: () => newHwpTab() }] : []),
         { label: tm('menuNewPhoto'), click: () => newPhotoTab() },
         { label: tm('menuNewIllust'), click: () => newIllustTab() },
+        { label: tm('menuNewCad'), click: () => newCadTab() },
         { label: tm('menuNewPdf'), click: () => void newPdfTab() },
         { type: 'separator' },
         {
@@ -9077,6 +9408,104 @@ function buildHtmlMenu(): void {
       ],
     },
     editMenuTemplate(process.platform, appMenuLabels(currentLang())),
+    windowMenuTemplate(process.platform, appMenuLabels(currentLang())),
+    {
+      role: 'help',
+      label: tm('menuHelp'),
+      submenu: [
+        { label: tm('thirdPartyNotices'), click: () => void openThirdPartyNotices() },
+        { type: 'separator' },
+        ...helpCheckUpdatesItems(appMenuLabels(currentLang())),
+        aboutMenuItem(appMenuLabels(currentLang())),
+      ],
+    },
+  ]
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+}
+
+// ---- AI Drawing menu (cad-main has no menu of its own; the shell owns AI Drawing tabs) ----
+
+function buildCadMenu(): void {
+  const isMac = process.platform === 'darwin'
+  const labels = appMenuLabels(currentLang())
+  // the drawing has its own history, selection and camera: every Edit (cad-menu.ts) and
+  // View item goes to the page
+  const command = (cmd: CadMenuCommand) => () => {
+    const tab = activeCadTarget()
+    if (tab) sendCadMenuCommand(tab.webContents, cmd)
+  }
+  // the drawing makes the bytes; cad-main asks where to write them
+  const exportAs = (format: CadExportFormat) => () => {
+    const tab = activeCadTarget()
+    if (tab) sendCadExportRequest(tab.webContents, format)
+  }
+  const template: MenuItemConstructorOptions[] = [
+    ...(isMac ? [{ role: 'appMenu' as const }] : []),
+    {
+      label: tm('menuFile'),
+      submenu: [
+        {
+          label: tm('menuSectionNew'),
+          accelerator: 'CmdOrCtrl+N',
+          click: () => newCadTab(),
+        },
+        {
+          label: tm('menuOpen'),
+          accelerator: 'CmdOrCtrl+O',
+          click: () => void openFileViaDialog(),
+        },
+        { type: 'separator' },
+        {
+          label: tm('backToHome'),
+          accelerator: 'Shift+CmdOrCtrl+H',
+          click: () => tabManager?.openHomeTab(),
+        },
+        { type: 'separator' },
+        {
+          label: tm('menuSave'),
+          accelerator: 'CmdOrCtrl+S',
+          click: () => {
+            const tab = activeCadTarget()
+            if (tab) void requestCadSave(tab.webContents, 'save')
+          },
+        },
+        {
+          label: tm('menuSaveAs'),
+          accelerator: 'CmdOrCtrl+Shift+S',
+          click: () => {
+            const tab = activeCadTarget()
+            if (tab) void requestCadSave(tab.webContents, 'saveAs')
+          },
+        },
+        { type: 'separator' },
+        {
+          label: tm('menuCadExport'),
+          submenu: [
+            { label: tm('menuCadExportStl'), click: exportAs('stl') },
+            { label: tm('menuCadExportObj'), click: exportAs('obj') },
+            { label: tm('menuCadExportPng'), click: exportAs('png') },
+          ],
+        },
+        { type: 'separator' },
+        {
+          label: tm('menuClose'),
+          accelerator: 'CmdOrCtrl+W',
+          click: () => closeFocusedEditor(),
+        },
+      ],
+    },
+    cadEditMenu(process.platform, labels, command),
+    {
+      // withViewMenu appends the interface-scale items to this menu
+      label: tm('menuView'),
+      submenu: [
+        { label: tm('menuViewTop'), click: command('view-top') },
+        { label: tm('menuViewFront'), click: command('view-front') },
+        { label: tm('menuViewSide'), click: command('view-side') },
+        { type: 'separator' },
+        { label: tm('menuViewFit'), click: command('view-fit') },
+      ],
+    },
     windowMenuTemplate(process.platform, appMenuLabels(currentLang())),
     {
       role: 'help',
@@ -10314,6 +10743,7 @@ app.whenReady().then(async () => {
       markdown: join(MARKDOWN_OUT, 'renderer'),
       html: join(HTML_OUT, 'renderer'),
       mindmap: join(MINDMAP_OUT, 'renderer'),
+      cad: join(CAD_OUT, 'renderer'),
       hwp: join(HWP_OUT, 'renderer'),
       epub: join(EPUB_OUT, 'renderer'),
       photo: join(GRAPHICS_OUT, 'renderer'),
@@ -10704,6 +11134,10 @@ app.whenReady().then(async () => {
       mindmap: {
         read: mindmapReadOutline,
         save: mindmapSaveToPath,
+      },
+      cad: {
+        read: cadReadSummary,
+        save: cadSaveToPath,
       },
       hwp: { read: hwpReadText },
       epub: {

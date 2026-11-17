@@ -70,6 +70,7 @@ export const RECOVERY_EDITOR_KINDS = [
   'mindmap',
   'photo',
   'illust',
+  'cad',
 ] as const
 
 export type RecoveryEditorKind = (typeof RECOVERY_EDITOR_KINDS)[number]
@@ -372,6 +373,7 @@ const KIND_DEFAULT_EXT: Record<RecoveryEditorKind, string> = {
   mindmap: '.xmind',
   photo: '.psd',
   illust: '.vectorcraft',
+  cad: '.ttukcad',
 }
 
 export function recoveryFolderName(kind: RecoveryEditorKind): string {

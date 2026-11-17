@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const hi = {
+  aiOpenAssistant: 'AI सहायक खोलें',
+  aiCollapsePanel: 'पैनल संक्षिप्त करें',
+  aiNewChat: 'नई चैट',
+  aiEmptyTitle: 'AI के साथ ड्रॉ करें',
+  aiEmptyBody:
+    'बताइए क्या बनाना है, जैसे "80 चौड़ा और 100 ऊँचा पेन स्टैंड बनाओ, अंदर से 68 व्यास का खोखला"। एक अनुरोध एक चरण है: Ctrl+Z एक बार दबाने से सब वापस हो जाता है।',
+  aiComposerPlaceholder: 'AI को बताइए क्या बनाना या बदलना है…',
+  aiHintIdle: 'भेजने के लिए Enter, नई पंक्ति के लिए Shift+Enter',
+  aiHintBusy: 'उत्तर दिया जा रहा है…',
+  aiSend: 'भेजें',
+  aiStop: 'रोकें',
+  aiThinking: 'सोच रहा है',
+  aiWorking: 'कार्य कर रहा है',
+  aiGroupWorking: 'कार्य जारी…',
+  aiWorkedSteps: 'पूर्ण · {n} चरण',
+  aiStopped: 'रोका गया',
+  aiNoReply: '(कोई उत्तर नहीं)',
+  aiTurnLimit: 'प्रति रन चरण सीमा पूरी हुई — जारी रखने के लिए एक और निर्देश भेजें।',
+  aiTruncatedNote: '(उत्तर लंबाई सीमा के कारण कट गया और अधूरा हो सकता है।)',
+  aiUndelivered: 'भेजा नहीं गया',
+  aiRetry: 'पुनः प्रयास',
+  aiCopyReplyTitle: 'जवाब कॉपी करें',
+  aiRegenerateTitle: 'फिर से जनरेट करें',
+  aiUnknownError: 'AI अनुरोध विफल, पुनः प्रयास करें',
+  aiTimeoutError: 'AI प्रतिक्रिया समय समाप्त',
+  aiCreditsExhausted: 'क्रेडिट समाप्त — अपने AI प्रदाता के पास रिचार्ज करें',
+  aiNetworkError:
+    'नेटवर्क समस्या: AI सेवा से कनेक्ट नहीं हो सका। कनेक्शन जांचें और फिर से प्रयास करें',
+  aiOverloadedError: 'AI सेवा अभी व्यस्त है — कृपया थोड़ी देर बाद फिर से प्रयास करें',
+  // the quick actions above the input
+  aiQuickActions: 'त्वरित कार्य',
+  aiQuickSheet: 'माप शीट बनाएँ',
+  aiQuickRoom: 'कमरे की व्यवस्था शुरू करें',
+  aiQuickRoomPrompt: 'कार्य पटल को 5 × 4 मी का कमरा बनाओ और 4 डेस्क रखो',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'ड्रॉइंग पढ़ना',
+  aiToolAddShapes: 'आकार रखना · {n}',
+  aiToolUpdateShapes: 'आकार बदलना · {n}',
+  aiToolDeleteShapes: 'आकार हटाना · {n}',
+  aiToolGroupShapes: 'आकारों का समूह बनाना',
+  aiToolUngroupShapes: 'समूह तोड़ना',
+  aiToolAlignShapes: 'आकार संरेखित करना · {n}',
+  aiToolSetWorkplane: 'कार्य पटल का आकार बदलना',
+  aiToolRefused: '{action} · अस्वीकृत',
+} satisfies Record<keyof typeof zh, string>

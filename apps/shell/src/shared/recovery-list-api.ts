@@ -15,6 +15,7 @@ export const RECOVERY_LIST_EDITOR_KINDS = [
   'hwp',
   'photo',
   'illust',
+  'cad',
 ] as const
 
 export type RecoveryListEditorKind = (typeof RECOVERY_LIST_EDITOR_KINDS)[number]

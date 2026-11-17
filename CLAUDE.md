@@ -49,6 +49,7 @@ openoffice/
 │   ├── markdown/AGENTS.md         ← 마크다운·텍스트 편집기
 │   ├── html/AGENTS.md             ← HTML 편집기
 │   ├── mindmap/AGENTS.md          ← 마인드맵 편집기(`.xmind`)
+│   ├── cad/AGENTS.md              ← AI 도면 편집기(`.ttukcad`): 3D 화면, 리본, 속성 창, 치수 재기·치수 도면, 문서로 보내기, AI 도구
 │   ├── hwp/AGENTS.md              ← 한글(HWP·HWPX) 편집기, 편집 화면은 rhwp
 │   ├── epub/AGENTS.md             ← 전자책(EPUB) 편집기: 읽기, 책 화면에서 고치기, 책 번역
 │   └── graphics/AGENTS.md         ← AI 포토·AI 일러스트(PhotoCraft·VectorCraft 웹판) 탭과 AI 도우미
@@ -69,6 +70,7 @@ openoffice/
 │   ├── pdf2docx/AGENTS.md         ← PDF → 워드 변환
 │   ├── pdf-structure/AGENTS.md    ← PDF 문서 나무, Markdown·EPUB 변환, AI 페이지 읽기·번역, 결과 보관소
 │   ├── html2docx/AGENTS.md        ← HTML → 워드 변환
+│   ├── cad-engine/AGENTS.md       ← AI 도면 엔진(문서 모형, 되돌리기, 입체 계산, .ttukcad·STL·OBJ·DXF, 치수 도면)
 │   ├── xmind-engine/AGENTS.md     ← 마인드맵 파일 엔진(열기, 원본 보존, 맞추기, 개요 글, 테마 표)
 │   ├── epub-engine/AGENTS.md      ← EPUB 엔진(열기, 블록 지도, 범위 바꾸기 저장, 책 번역과 결과 책)
 │   ├── file-parse/AGENTS.md       ← 첨부·검색용 파일 읽기, 다른 파일로 읽을 때의 가리기

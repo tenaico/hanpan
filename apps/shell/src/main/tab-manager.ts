@@ -41,6 +41,8 @@ import {
   mindmapIsDirty,
   requestMindmapClose,
 } from '../../../mindmap/src/main/mindmap-main'
+import { cadIsDirty, createCadView, requestCadClose } from '../../../cad/src/main/cad-main'
+import { CAD_GUIDE_RE, CAD_IMPORT_RE } from './app-routing'
 import { createEpubView, epubIsDirty, requestEpubClose } from '../../../epub/src/main/epub-main'
 import {
   createGraphicsView,
@@ -516,6 +518,8 @@ export class TabManager {
           return rendererReportedDirty(wc.id)
         case 'mindmap':
           return mindmapIsDirty(wc.id) === true
+        case 'cad':
+          return cadIsDirty(wc.id) === true
         case 'epub':
           return epubIsDirty(wc.id) === true
         case 'photo':
@@ -578,6 +582,8 @@ export class TabManager {
         return docsQueryDirty(wc)
       case 'mindmap':
         return mindmapIsDirty(wc.id)
+      case 'cad':
+        return cadIsDirty(wc.id)
       case 'epub':
         return epubIsDirty(wc.id)
       case 'photo':
@@ -759,6 +765,38 @@ export class TabManager {
       view,
       title: openPath ? basename(openPath) : this.untitled('mindmap', 'Mind Map'),
       filePath: openPath,
+    })
+    this.activateTab(id)
+    return id
+  }
+
+  /**
+   * AI Drawing: a .ttukcad file, a new untitled drawing, or a .dxf/.stl/.obj/.3mf/
+   * .glb/.ply the editor imports into a new untitled drawing named after the file.
+   * An import has no file behind the tab, so a save asks where to write a .ttukcad
+   * and the source file is never written. A .dwg/.step/.iges/.brep opens the same
+   * way, with a guide in place of its content (the editor cannot read it).
+   */
+  openCadTab(openPath?: string): string {
+    const view = createCadView(openPath)
+    const id = `t${this.nextId++}`
+    this.shellWindow.contentView.addChildView(view)
+    view.setVisible(false)
+    this.trackHtmlFullScreen(view)
+    this.trackPaneFocus(view)
+    const imported =
+      openPath !== undefined && (CAD_IMPORT_RE.test(openPath) || CAD_GUIDE_RE.test(openPath))
+    const name = openPath ? basename(openPath) : undefined
+    this.tabs.push({
+      id,
+      kind: 'cad',
+      view,
+      title: !name
+        ? this.untitled('cad', 'Untitled Drawing')
+        : imported
+          ? name.slice(0, name.lastIndexOf('.'))
+          : name,
+      filePath: imported ? undefined : openPath,
     })
     this.activateTab(id)
     return id
@@ -1486,6 +1524,8 @@ export class TabManager {
         return this.openHtmlTab(path)
       case 'mindmap':
         return this.openMindmapTab(path)
+      case 'cad':
+        return this.openCadTab(path)
       case 'hwp':
         return this.openHwpTab(path)
       case 'epub':
@@ -1661,6 +1701,13 @@ export class TabManager {
       .map((t) => ({ id: t.id, webContents: t.view!.webContents }))
   }
 
+  /** AI Drawing tabs whose renderer reports unsaved edits (shell-close guard) */
+  dirtyCadTabs(): Array<{ id: string; webContents: WebContents }> {
+    return this.tabs
+      .filter((t) => t.kind === 'cad' && t.view && cadIsDirty(t.view.webContents.id))
+      .map((t) => ({ id: t.id, webContents: t.view!.webContents }))
+  }
+
   /** hwp tabs whose renderer reports unsaved edits (shell-close guard) */
   dirtyHwpTabs(): Array<{ id: string; webContents: WebContents }> {
     return this.tabs
@@ -1757,6 +1804,9 @@ export class TabManager {
                   : null)
     if (!closeGuard && tab.kind === 'mindmap' && tab.view) {
       if (mindmapIsDirty(tab.view.webContents.id)) closeGuard = requestMindmapClose
+    }
+    if (!closeGuard && tab.kind === 'cad' && tab.view) {
+      if (cadIsDirty(tab.view.webContents.id)) closeGuard = requestCadClose
     }
     if (!closeGuard && tab.kind === 'epub' && tab.view) {
       if (epubIsDirty(tab.view.webContents.id)) closeGuard = requestEpubClose
@@ -2023,6 +2073,22 @@ export class TabManager {
       : undefined
   }
 
+  findCadTabByPath(path?: string): string | undefined {
+    return this.findTabOfKindByPath('cad', path)
+  }
+
+  /** the active tab's AI Drawing view, if the active tab is one (AI Drawing menu target) */
+  activeCadTab(): { id: string; webContents: WebContents; filePath?: string } | undefined {
+    const tab = this.tabs.find((t) => t.id === this.activeId)
+    return tab?.kind === 'cad' && tab.view
+      ? {
+          id: tab.id,
+          webContents: tab.view.webContents,
+          ...(tab.filePath ? { filePath: tab.filePath } : {}),
+        }
+      : undefined
+  }
+
   findEpubTabByPath(path?: string): string | undefined {
     return this.findTabOfKindByPath('epub', path)
   }
@@ -2128,6 +2194,8 @@ export function createPlainEditorView(kind: DocumentTabKind, filePath?: string):
       return createHtmlView(filePath)
     case 'mindmap':
       return createMindmapView(filePath)
+    case 'cad':
+      return createCadView(filePath)
     case 'hwp':
       return createHwpView(filePath, { untitledCopy: false })
     case 'epub':

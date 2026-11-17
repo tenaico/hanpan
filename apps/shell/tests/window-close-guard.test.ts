@@ -17,6 +17,7 @@ const requestPdfClose = vi.fn(() => Promise.resolve(true))
 const requestMarkdownClose = vi.fn(() => Promise.resolve(true))
 const requestHtmlClose = vi.fn(() => Promise.resolve(true))
 const requestMindmapClose = vi.fn(() => Promise.resolve(true))
+const requestCadClose = vi.fn(() => Promise.resolve(true))
 const requestHwpClose = vi.fn(() => Promise.resolve(true))
 const requestEpubClose = vi.fn(() => Promise.resolve(true))
 
@@ -48,6 +49,10 @@ vi.mock('../../html/src/main/html-main', () => ({
 
 vi.mock('../../mindmap/src/main/mindmap-main', () => ({
   requestMindmapClose: (...args: unknown[]) => requestMindmapClose(...(args as [])),
+}))
+
+vi.mock('../../cad/src/main/cad-main', () => ({
+  requestCadClose: (...args: unknown[]) => requestCadClose(...(args as [])),
 }))
 
 vi.mock('../../hwp/src/main/hwp-main', () => ({
@@ -112,6 +117,7 @@ type DirtyKinds =
   | 'markdown'
   | 'html'
   | 'mindmap'
+  | 'cad'
   | 'hwp'
   | 'epub'
   | 'graphics'
@@ -128,6 +134,7 @@ function fakeManager(dirty: Partial<Record<DirtyKinds, TabStub[]>> = {}) {
     dirtyMarkdownTabs: () => dirty.markdown ?? [],
     dirtyHtmlTabs: () => dirty.html ?? [],
     dirtyMindmapTabs: () => dirty.mindmap ?? [],
+    dirtyCadTabs: () => dirty.cad ?? [],
     dirtyHwpTabs: () => dirty.hwp ?? [],
     dirtyOrMemoHwpTabs: () => dirty.hwp ?? [],
     dirtyEpubTabs: () => dirty.epub ?? [],
@@ -155,6 +162,7 @@ beforeEach(async () => {
     requestMarkdownClose,
     requestHtmlClose,
     requestMindmapClose,
+    requestCadClose,
     requestHwpClose,
     requestEpubClose,
   ]) {
@@ -344,5 +352,25 @@ describe('failure in the prompt chain', () => {
     expect(win.requestClose()).toBe(true)
     await flush()
     expect(requestSheetsClose).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('a dirty AI Drawing tab', () => {
+  it('is in the prompt list: activated and asked, and a cancel keeps the window open', async () => {
+    requestCadClose.mockResolvedValueOnce(false)
+    const win = new FakeWindow()
+    const tab = { id: 'cad-1', webContents: { id: 11 } }
+    const manager = fakeManager({ cad: [tab] })
+    install(win as never, manager as never)
+    expect(win.requestClose()).toBe(true)
+    await flush()
+    expect(manager.activateTab).toHaveBeenCalledWith('cad-1')
+    expect(requestCadClose).toHaveBeenCalledWith(tab.webContents, win)
+    expect(win.destroyed).toBe(false)
+
+    expect(win.requestClose()).toBe(true)
+    await flush()
+    expect(requestCadClose).toHaveBeenCalledTimes(2)
+    expect(win.destroyed).toBe(true)
   })
 })

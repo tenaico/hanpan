@@ -9,6 +9,7 @@ describe('rendererUrl', () => {
     )
     expect(rendererUrl(undefined, 'docs')).toBe('genoffice-app://docs/index.html')
     expect(rendererUrl(undefined, 'mindmap')).toBe('genoffice-app://mindmap/index.html')
+    expect(rendererUrl(undefined, 'cad')).toBe('genoffice-app://cad/index.html')
     expect(rendererUrl(undefined, 'epub')).toBe('genoffice-app://epub/index.html')
   })
 

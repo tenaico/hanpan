@@ -21,6 +21,7 @@ const APPS = [
   'markdown',
   'html',
   'mindmap',
+  'cad',
   'hwp',
   'epub',
   'graphics',

@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const nl = {
+  aiOpenAssistant: 'AI-assistent openen',
+  aiCollapsePanel: 'Paneel inklappen',
+  aiNewChat: 'Nieuwe chat',
+  aiEmptyTitle: 'Tekenen met AI',
+  aiEmptyBody:
+    'Beschrijf wat er gemaakt moet worden, bijvoorbeeld "een pennenbak van 80 breed en 100 hoog, van binnen uitgehold met een gat van 68". Eén verzoek is één stap: Ctrl+Z draait het helemaal terug.',
+  aiComposerPlaceholder: 'Vertel de AI wat er gemaakt of gewijzigd moet worden…',
+  aiHintIdle: 'Enter om te verzenden, Shift+Enter nieuwe regel',
+  aiHintBusy: 'Antwoordt…',
+  aiSend: 'Verzenden',
+  aiStop: 'Stoppen',
+  aiThinking: 'Denkt na',
+  aiWorking: 'Bezig',
+  aiGroupWorking: 'Bezig…',
+  aiWorkedSteps: 'Klaar · stappen: {n}',
+  aiStopped: 'Gestopt',
+  aiNoReply: '(geen antwoord)',
+  aiTurnLimit: 'Stappenlimiet per run bereikt — stuur nog een instructie om door te gaan.',
+  aiTruncatedNote: '(Het antwoord is afgekapt door de lengtelimiet en is mogelijk onvolledig.)',
+  aiUndelivered: 'Niet verzonden',
+  aiRetry: 'Opnieuw proberen',
+  aiCopyReplyTitle: 'Antwoord kopiëren',
+  aiRegenerateTitle: 'Opnieuw genereren',
+  aiUnknownError: 'AI-verzoek mislukt, probeer opnieuw',
+  aiTimeoutError: 'AI-antwoord time-out',
+  aiCreditsExhausted: 'Credits op — waardeer op bij je AI-aanbieder',
+  aiNetworkError:
+    'Netwerkprobleem: kan de AI-service niet bereiken. Controleer je verbinding en probeer het opnieuw',
+  aiOverloadedError: 'De AI-service is momenteel overbelast — probeer het zo opnieuw',
+  // the quick actions above the input
+  aiQuickActions: 'Snelle acties',
+  aiQuickSheet: 'Maatblad maken',
+  aiQuickRoom: 'Kamerindeling beginnen',
+  aiQuickRoomPrompt: 'Maak van het werkvlak een kamer van 5 × 4 m en zet er 4 bureaus in',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'Tekening lezen',
+  aiToolAddShapes: 'Vormen plaatsen · {n}',
+  aiToolUpdateShapes: 'Vormen wijzigen · {n}',
+  aiToolDeleteShapes: 'Vormen verwijderen · {n}',
+  aiToolGroupShapes: 'Vormen groeperen',
+  aiToolUngroupShapes: 'Groep opheffen',
+  aiToolAlignShapes: 'Vormen uitlijnen · {n}',
+  aiToolSetWorkplane: 'Werkvlak aanpassen',
+  aiToolRefused: '{action} · geweigerd',
+} satisfies Record<keyof typeof zh, string>

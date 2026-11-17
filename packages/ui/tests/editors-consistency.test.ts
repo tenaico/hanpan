@@ -79,6 +79,13 @@ const EDITORS: Record<string, Editor> = {
     locales: 'apps/mindmap/src/renderer/i18n',
     retiredKeys: [],
   },
+  cad: {
+    panel: 'apps/cad/src/renderer/ai/AiPanel.tsx',
+    ribbon: 'apps/cad/src/renderer/components/Ribbon.tsx',
+    gate: 'apps/cad/src/renderer/ai/AiPanel.tsx',
+    locales: 'apps/cad/src/renderer/i18n',
+    retiredKeys: [],
+  },
   // no ribbon of its own (the embedded editor brings its chrome): the AI entry is the dock rail
   hwp: {
     panel: 'apps/hwp/src/renderer/ai/AiPanel.tsx',
@@ -186,7 +193,18 @@ describe('the send gate', () => {
 })
 
 describe('reading subscription IPC answers', () => {
-  const APPS = ['docs', 'sheets', 'slides', 'pdf', 'markdown', 'html', 'mindmap', 'hwp', 'shell']
+  const APPS = [
+    'docs',
+    'sheets',
+    'slides',
+    'pdf',
+    'markdown',
+    'html',
+    'mindmap',
+    'cad',
+    'hwp',
+    'shell',
+  ]
 
   it.each(APPS)('%s: the local contract file re-exports the shared readers', (app) => {
     const text = source(`apps/${app}/src/shared/subscription-api.ts`)

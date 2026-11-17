@@ -23,7 +23,7 @@ export type SessionFamily = 'docx' | 'pptx' | 'xlsx'
 
 /** every family the app can edit, including ones MCP does not drive yet */
 export type EditorFamily =
-  SessionFamily | 'md' | 'html' | 'pdf' | 'xmind' | 'hwp' | 'epub' | 'photo' | 'illust'
+  SessionFamily | 'md' | 'html' | 'pdf' | 'xmind' | 'hwp' | 'epub' | 'photo' | 'illust' | 'cad'
 
 export interface McpFormats {
   /** format the headless `create_*` tool writes, when exposed */
@@ -171,6 +171,19 @@ export const FORMAT_FAMILIES: readonly FormatFamily[] = [
     editorSave: ['vectorcraft', 'svg', 'svgz', 'ai'],
     editorExport: ['png', 'svg'],
     // no `mcp` block: an open illustration is only listed by open_documents
+  },
+  {
+    family: 'cad',
+    label: 'AI drawing',
+    // its own document, plus the 3D and DXF files it imports into a new untitled drawing
+    // (a .dwg/.step/.iges/.brep opens a tab with a guide only, so it is not listed)
+    editorOpen: ['ttukcad', 'dxf', 'stl', 'obj', '3mf', 'glb', 'ply'],
+    // an import is never written back: a drawing is always saved as .ttukcad
+    editorSave: ['ttukcad'],
+    // File › Export: the visible solids as one mesh, or a picture of the 3D view
+    editorExport: ['stl', 'obj', 'png'],
+    // no `mcp` block: an open drawing is listed, read (a model summary), saved and
+    // closed through open_documents only
   },
 ]
 

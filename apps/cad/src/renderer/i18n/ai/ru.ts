@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const ru = {
+  aiOpenAssistant: 'Открыть ИИ-ассистента',
+  aiCollapsePanel: 'Свернуть панель',
+  aiNewChat: 'Новый чат',
+  aiEmptyTitle: 'Рисовать с ИИ',
+  aiEmptyBody:
+    'Опишите, что нужно сделать, например «подставку для карандашей шириной 80 и высотой 100, полую внутри с отверстием 68». Один запрос — один шаг: Ctrl+Z отменяет его целиком.',
+  aiComposerPlaceholder: 'Скажите ИИ, что создать или изменить…',
+  aiHintIdle: 'Enter — отправить, Shift+Enter — новая строка',
+  aiHintBusy: 'Отвечает…',
+  aiSend: 'Отправить',
+  aiStop: 'Стоп',
+  aiThinking: 'Думает',
+  aiWorking: 'Работает',
+  aiGroupWorking: 'Выполняется…',
+  aiWorkedSteps: 'Готово · шагов: {n}',
+  aiStopped: 'Остановлено',
+  aiNoReply: '(нет ответа)',
+  aiTurnLimit: 'Достигнут лимит шагов за один запуск — отправьте ещё одну инструкцию.',
+  aiTruncatedNote: '(Ответ был обрезан из-за ограничения длины и может быть неполным.)',
+  aiUndelivered: 'Не отправлено',
+  aiRetry: 'Повторить',
+  aiCopyReplyTitle: 'Копировать ответ',
+  aiRegenerateTitle: 'Создать заново',
+  aiUnknownError: 'Сбой запроса ИИ, попробуйте ещё раз',
+  aiTimeoutError: 'Тайм-аут ответа ИИ',
+  aiCreditsExhausted: 'Кредиты закончились — пополните баланс у поставщика ИИ',
+  aiNetworkError:
+    'Проблема с сетью: не удалось подключиться к сервису ИИ. Проверьте подключение и повторите попытку',
+  aiOverloadedError: 'Сервис ИИ сейчас перегружен — повторите попытку чуть позже',
+  // the quick actions above the input
+  aiQuickActions: 'Быстрые действия',
+  aiQuickSheet: 'Сделать размерный чертёж',
+  aiQuickRoom: 'Начать планировку комнаты',
+  aiQuickRoomPrompt: 'Сделай рабочую плоскость комнатой 5 × 4 м и поставь 4 стола',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'Чтение чертежа',
+  aiToolAddShapes: 'Добавление фигур · {n}',
+  aiToolUpdateShapes: 'Изменение фигур · {n}',
+  aiToolDeleteShapes: 'Удаление фигур · {n}',
+  aiToolGroupShapes: 'Группировка фигур',
+  aiToolUngroupShapes: 'Разгруппировка',
+  aiToolAlignShapes: 'Выравнивание фигур · {n}',
+  aiToolSetWorkplane: 'Изменение размера рабочей плоскости',
+  aiToolRefused: '{action} · отклонено',
+} satisfies Record<keyof typeof zh, string>

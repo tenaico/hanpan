@@ -120,6 +120,56 @@ describe('the mind map strings', () => {
   })
 })
 
+/**
+ * The AI Drawing editor (cad) is registered like the mind map: a missing
+ * `untitledCad` would make a new drawing's tab fall back to another kind's
+ * name, and the View menu's four camera items need a name in every language.
+ */
+describe('the AI Drawing strings', () => {
+  const LOCALES = LANGS.map((lang) => (lang === 'zh-TW' ? "'zh-TW'" : lang))
+  const KEYS = [
+    'untitledCad',
+    'menuNewCad',
+    'filterCad',
+    'menuViewTop',
+    'menuViewFront',
+    'menuViewSide',
+    'menuViewFit',
+  ]
+  const valueIn = (locale: string, key: string): string => {
+    const value = localeBlock(locale).match(new RegExp(`\\n {4}${key}: '([^']*)'`))?.[1]
+    if (value === undefined) throw new Error(`no ${key} in the ${locale} block`)
+    return value
+  }
+
+  it.each(LOCALES)('are all present in the %s block', (locale) => {
+    for (const key of KEYS) expect(valueIn(locale, key).length, key).toBeGreaterThan(0)
+  })
+
+  it('are translated: no locale but English carries the English text', () => {
+    for (const key of KEYS) {
+      const english = valueIn('en', key)
+      for (const locale of LOCALES) {
+        if (locale === 'en') continue
+        expect(valueIn(locale, key), `${key} in ${locale}`).not.toBe(english)
+      }
+    }
+  })
+
+  it('name the editor in Korean and English as written', () => {
+    expect(valueIn('ko', 'menuNewCad')).toBe('AI 도면')
+    expect(valueIn('en', 'menuNewCad')).toBe('AI Drawing')
+    expect(valueIn('ko', 'untitledCad')).toBe('제목 없는 도면')
+    expect(valueIn('en', 'untitledCad')).toBe('Untitled Drawing')
+    expect(valueIn('ko', 'filterCad')).toBe('AI 도면')
+    expect(valueIn('en', 'filterCad')).toBe('AI Drawing')
+  })
+
+  it('give the untitled name its own branch', () => {
+    expect(source).toMatch(/kind === 'cad'\s*\?\s*'untitledCad'/)
+  })
+})
+
 /** The menu keeps the Korean editor name localized, with AI Markdown in other languages. */
 describe('the File > New menu label', () => {
   it('uses the expected Markdown name in each locale', () => {

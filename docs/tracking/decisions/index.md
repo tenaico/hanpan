@@ -101,3 +101,4 @@
 | [0098](0098-hanpan-graphics-look.md)                          | AI 포토·AI 일러스트는 한판의 색·글꼴·이름으로 그리고, .ai로 가는 길을 따로 둔다(0093 일부 대체)        | 2026-11-11 |
 | [0099](0099-hanpan-local-security-key.md)                     | 한판은 이용 조건에 동의해야 켜지고, Windows판은 이 PC나 USB에 만든 보안키가 있어야 켜진다(0094를 대체) | 2026-11-12 |
 | [0100](0100-hanpan-installer-language.md)                     | Windows 설치 프로그램 첫 화면에서 언어를 고르고, 그 언어로 한판이 처음 켜진다(0092 보완)               | 2026-11-16 |
+| [0101](0101-hanpan-cad-tab.md)                                | "AI 도면" 탭을 한판 저장소에서 새로 만들고(apps/cad, packages/cad-engine), DWG·STEP 없이 낸다          | 2026-11-16 |

@@ -11,8 +11,13 @@ import { describe, expect, it } from 'vitest'
 const REPO = fileURLToPath(new URL('../../..', import.meta.url))
 const source = (path: string): string => readFileSync(join(REPO, path), 'utf8')
 
-/** where a panel composes its tools, and where it renders its chat */
-const PANELS: Record<string, { loop: string; view: string; stores: boolean }> = {
+/**
+ * Where a panel composes its tools, and where it renders its chat. `template`:
+ * the panel's document can be a skill's template and a template request can
+ * be handed to it; false for the home panel (no document) and the AI Drawing
+ * (design 9 leaves it out of the template copy).
+ */
+const PANELS: Record<string, { loop: string; view: string; stores: boolean; template?: false }> = {
   docs: {
     loop: 'apps/docs/src/renderer/ai/AiPanel.tsx',
     view: 'apps/docs/src/renderer/ai/AiPanel.tsx',
@@ -48,6 +53,12 @@ const PANELS: Record<string, { loop: string; view: string; stores: boolean }> = 
     view: 'apps/mindmap/src/renderer/ai/AiPanel.tsx',
     stores: true,
   },
+  cad: {
+    loop: 'apps/cad/src/renderer/ai/AiPanel.tsx',
+    view: 'apps/cad/src/renderer/ai/AiPanel.tsx',
+    stores: true,
+    template: false,
+  },
   hwp: {
     loop: 'apps/hwp/src/renderer/ai/AiPanel.tsx',
     view: 'apps/hwp/src/renderer/ai/AiPanel.tsx',
@@ -57,6 +68,7 @@ const PANELS: Record<string, { loop: string; view: string; stores: boolean }> = 
     loop: 'apps/shell/src/renderer/src/KbAskPanel.tsx',
     view: 'apps/shell/src/renderer/src/KbAskPanel.tsx',
     stores: false,
+    template: false,
   },
 }
 
@@ -71,10 +83,10 @@ describe.each(Object.entries(PANELS))('%s AI panel', (_name, panel) => {
     expect(view).toMatch(/skillProposals\?\.map\(\(key\) => /)
   })
 
-  it('offers the template box through the panel’s document; the home panel never', () => {
+  it('offers the template box through the panel’s document; the home panel and cad never', () => {
     const options = loop.match(/useSkillProposals\(\{[\s\S]*?\}\)/)?.[0] ?? ''
     expect(options).not.toContain('canBeTemplate')
-    if (panel.loop.includes('KbAskPanel')) expect(options).not.toContain('templateDocument')
+    if (panel.template === false) expect(options).not.toContain('templateDocument')
     else expect(options).toContain('templateDocument')
   })
 
@@ -84,8 +96,8 @@ describe.each(Object.entries(PANELS))('%s AI panel', (_name, panel) => {
     expect(loop).toMatch(/onUsed: \(skill\) => skillTemplatesRef\.current\.onUsed\(skill\)/)
     expect(loop).toMatch(/skillTemplatesRef\.current\.noteRequest\(/)
     const templates = loop.match(/useSkillTemplates\(\{[\s\S]*?\}\)/)?.[0] ?? ''
-    if (panel.loop.includes('KbAskPanel')) {
-      // no document: nothing is ever handed to the home panel
+    if (panel.template === false) {
+      // no document that takes a hand-off: nothing is ever handed to the home panel or cad
       expect(templates).toContain('editor: null')
     } else {
       expect(templates).toMatch(/editor: '(docs|sheets|slides|pdf|markdown|html|mindmap|hwp)'/)

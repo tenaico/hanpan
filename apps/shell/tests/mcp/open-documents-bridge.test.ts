@@ -66,6 +66,7 @@ describe('open_documents close: untitled documents', () => {
     ['markdown', '.md'],
     ['html', '.html'],
     ['mindmap', '.xmind'],
+    ['cad', '.ttukcad'],
   ] as const)('saves an untitled dirty %s tab before closing it', async (kind, ext) => {
     const doc = tab({ id: 't1', kind, title: `untitled ${kind}` })
     const { call } = await controlWith([doc], {
@@ -84,6 +85,7 @@ describe('open_documents close: untitled documents', () => {
       },
       html: { read: async () => '', save: async () => undefined, discard: async () => undefined },
       mindmap: { read: async () => '', save: async () => undefined },
+      cad: { read: async () => '', save: async () => undefined },
     })
 
     const result = await call({ action: 'close', target: 't1' })
@@ -160,7 +162,7 @@ describe('open_documents: picture tabs', () => {
 })
 
 describe('open_documents: restored tabs and recovery copies', () => {
-  it.each(['docs', 'mindmap', 'hwp'] as const)(
+  it.each(['docs', 'mindmap', 'cad', 'hwp'] as const)(
     'drops a %s document’s recovery copy on discard, before the tab goes',
     async (kind) => {
       const order: string[] = []
@@ -297,6 +299,44 @@ describe('open_documents on a mind map tab', () => {
   it('names the missing editor instead of failing silently', async () => {
     const { call } = await controlWith([mapDoc(true)])
     await expect(call({ action: 'read', target: 't8' })).rejects.toThrow(/mind map editor/)
+  })
+})
+
+describe('open_documents on an AI Drawing tab', () => {
+  const cadDoc = (dirty: boolean): OpenDocumentTab =>
+    tab({ id: 'c1', kind: 'cad', title: 'part.ttukcad', filePath: 'C:/parts/part.ttukcad', dirty })
+
+  it('reads through the drawing summary and saves through the editor save', async () => {
+    const read = vi.fn(async () => 'AI Drawing "part": 0 parts\n')
+    const save = vi.fn(async () => undefined)
+    const { call } = await controlWith([cadDoc(true)], { cad: { read, save } })
+
+    expect((await call({ action: 'read', target: 'c1' })).content).toBe(
+      'AI Drawing "part": 0 parts\n',
+    )
+    const closed = await call({ action: 'close', target: 'c1' })
+    expect(closed.savedTo).toBe('C:/parts/part.ttukcad')
+    expect(save).toHaveBeenCalledWith(expect.anything(), 'C:/parts/part.ttukcad')
+  })
+
+  it('a refused save keeps the tab open', async () => {
+    const closeTab = vi.fn(() => true)
+    const { call } = await controlWith([cadDoc(true)], {
+      closeTab,
+      cad: {
+        read: async () => '',
+        save: async () => {
+          throw new Error('the drawing bytes did not reopen')
+        },
+      },
+    })
+    await expect(call({ action: 'close', target: 'c1' })).rejects.toThrow(/did not reopen/)
+    expect(closeTab).not.toHaveBeenCalled()
+  })
+
+  it('names the missing editor instead of failing silently', async () => {
+    const { call } = await controlWith([cadDoc(true)])
+    await expect(call({ action: 'read', target: 'c1' })).rejects.toThrow(/AI Drawing editor/)
   })
 })
 

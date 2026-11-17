@@ -1,6 +1,6 @@
 /**
  * The `@` document list is in the AI input of the six editors that can attach
- * files, and nowhere else (the PDF and markdown editors have no attachments;
+ * files, and nowhere else (the PDF, markdown and AI Drawing editors have no attachments;
  * the home Ask and the agent window are out of its scope). These guards read
  * the panels' sources.
  */
@@ -49,6 +49,7 @@ const WIRED: Record<string, { actions: string; input: string; prop: RegExp }> = 
 const NOT_WIRED = [
   'apps/pdf/src/renderer/ai/AiPanel.tsx',
   'apps/markdown/src/renderer/ai/AiPanel.tsx',
+  'apps/cad/src/renderer/ai/AiPanel.tsx',
   'apps/shell/src/renderer/src/KbAskPanel.tsx',
   'apps/shell/src/renderer/src/agent/AgentWindow.tsx',
 ]

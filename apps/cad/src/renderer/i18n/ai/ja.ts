@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const ja = {
+  aiOpenAssistant: 'AI アシスタントを開く',
+  aiCollapsePanel: 'パネルを折りたたむ',
+  aiNewChat: '新しいチャット',
+  aiEmptyTitle: 'AIで図面を描く',
+  aiEmptyBody:
+    '作りたいものを言葉で書いてください。例:「幅80、高さ100のペン立てを作って。中は直径68でくり抜いて」。1つの依頼は1ステップなので、Ctrl+Zを1回押せばすべて元に戻ります。',
+  aiComposerPlaceholder: '作るものや変えることをAIに伝えてください…',
+  aiHintIdle: 'Enter で送信、Shift+Enter で改行',
+  aiHintBusy: '返信中…',
+  aiSend: '送信',
+  aiStop: '停止',
+  aiThinking: '思考中',
+  aiWorking: '処理中',
+  aiGroupWorking: '処理中…',
+  aiWorkedSteps: '完了 · {n} ステップ',
+  aiStopped: '停止しました',
+  aiNoReply: '（返信なし）',
+  aiTurnLimit: '1 回の実行のステップ上限に達しました。続けるには指示をもう一度送ってください。',
+  aiTruncatedNote: '（返信は長さ制限により途中で打ち切られ、不完全な可能性があります。）',
+  aiUndelivered: '送信できませんでした',
+  aiRetry: '再試行',
+  aiCopyReplyTitle: '返信をコピー',
+  aiRegenerateTitle: '再生成',
+  aiUnknownError: 'AI リクエストに失敗しました。再試行してください',
+  aiTimeoutError: 'AI の応答がタイムアウトしました',
+  aiCreditsExhausted: 'クレジット不足です。ご利用の AI プロバイダーでチャージしてください',
+  aiNetworkError:
+    'ネットワークに問題があり、AI サービスに接続できません。接続を確認して再試行してください',
+  aiOverloadedError: 'AI サービスが混み合っています。しばらくしてからもう一度お試しください',
+  // the quick actions above the input
+  aiQuickActions: 'クイック操作',
+  aiQuickSheet: '寸法図を作る',
+  aiQuickRoom: '部屋のレイアウトを始める',
+  aiQuickRoomPrompt: '作業面を5×4mの部屋にして、机を4つ置いて',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: '図面を読む',
+  aiToolAddShapes: '図形を置く · {n}個',
+  aiToolUpdateShapes: '図形を変更 · {n}個',
+  aiToolDeleteShapes: '図形を削除 · {n}個',
+  aiToolGroupShapes: '図形をグループ化',
+  aiToolUngroupShapes: 'グループ解除',
+  aiToolAlignShapes: '図形を整列 · {n}個',
+  aiToolSetWorkplane: '作業面のサイズを変更',
+  aiToolRefused: '{action} · 拒否されました',
+} satisfies Record<keyof typeof zh, string>

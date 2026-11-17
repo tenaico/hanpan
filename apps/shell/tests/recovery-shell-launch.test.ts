@@ -49,6 +49,11 @@ vi.mock('../../mindmap/src/main/mindmap-main', () => ({
   mindmapRecoveryIdentity: () => null,
   setMindmapRecoveryTitleHook: vi.fn(),
 }))
+vi.mock('../../cad/src/main/cad-main', () => ({
+  discardCadRecovery: vi.fn(),
+  cadRecoveryIdentity: () => null,
+  setCadRecoveryTitleHook: vi.fn(),
+}))
 vi.mock('../../hwp/src/main/hwp-main', () => ({
   hwpDiscardRecoveryCopy: vi.fn(),
   hwpRecoveryIdentity: () => null,

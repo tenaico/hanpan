@@ -26,6 +26,7 @@ import { markdownIsDirty, requestMarkdownClose } from '../../../markdown/src/mai
 import { hwpIsDirty, hwpMemoModalOpen, requestHwpClose } from '../../../hwp/src/main/hwp-main'
 import { htmlIsDirty, requestHtmlClose } from '../../../html/src/main/html-main'
 import { mindmapIsDirty, requestMindmapClose } from '../../../mindmap/src/main/mindmap-main'
+import { cadIsDirty, requestCadClose } from '../../../cad/src/main/cad-main'
 import { epubIsDirty, requestEpubClose } from '../../../epub/src/main/epub-main'
 import { graphicsIsDirty, requestGraphicsClose } from '../../../graphics/src/main/graphics-main'
 import { canonicalPath } from './tab-manager'
@@ -128,6 +129,7 @@ const DEFAULT_SIZE: Record<string, { width: number; height: number }> = {
   markdown: { width: 1200, height: 850 },
   html: { width: 1200, height: 850 },
   mindmap: { width: 1200, height: 850 },
+  cad: { width: 1200, height: 850 },
   hwp: { width: 1280, height: 900 },
   epub: { width: 1200, height: 900 },
   photo: { width: 1400, height: 900 },
@@ -264,6 +266,8 @@ async function detachedIsDirty(rec: DetachedRecord): Promise<boolean> {
       return htmlIsDirty(wc.id)
     case 'mindmap':
       return mindmapIsDirty(wc.id)
+    case 'cad':
+      return cadIsDirty(wc.id)
     case 'hwp':
       return hwpIsDirty(wc.id)
     case 'epub':
@@ -299,6 +303,8 @@ async function confirmDetachedClose(rec: DetachedRecord): Promise<boolean> {
       return requestHtmlClose(wc, win)
     case 'mindmap':
       return requestMindmapClose(wc, win)
+    case 'cad':
+      return requestCadClose(wc, win)
     case 'hwp':
       return requestHwpClose(wc, win)
     case 'epub':

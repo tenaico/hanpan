@@ -148,13 +148,14 @@ function tokenAround(line, start, end) {
 
 /**
  * Index of the ALLOW entry that lets this hit through, or -1.
- * `sectionOf` answers the Markdown heading the current line sits under.
+ * `sectionOf` answers the Markdown headings the current line sits under, outermost first: a
+ * line under a subheading still belongs to the section above it.
  */
 function allowedBy(entries, hit, line, sectionOf) {
   for (const [index, entry] of entries) {
     if (entry.patterns && !entry.patterns.includes(hit.pattern)) continue
     if (entry.line && !entry.line.test(line)) continue
-    if (entry.section && !entry.section.test(sectionOf())) continue
+    if (entry.section && !sectionOf().some((heading) => entry.section.test(heading))) continue
     if (
       entry.span &&
       !spansOf(entry.span, line).some(([from, to]) => from <= hit.start && hit.end <= to)
@@ -200,7 +201,7 @@ for (const file of git.stdout.split('\0')) {
     pathMatches(entry, file),
   )
   for (const hit of hitsIn(file)) {
-    const allowed = allowedBy(entries, hit, file, () => '')
+    const allowed = allowedBy(entries, hit, file, () => [])
     if (allowed >= 0) {
       allowedCounts[allowed]++
       continue
@@ -217,15 +218,19 @@ for (const file of git.stdout.split('\0')) {
   }
   if (looksBinary(bytes)) continue
   scanned++
-  let heading = ''
+  const headings = []
   bytes
     .toString('utf8')
     .split('\n')
     .forEach((raw, index) => {
       const line = raw.replace(/\r$/, '')
-      if (/^#{1,6} /.test(line)) heading = line
+      const level = /^(#{1,6}) /.exec(line)?.[1].length
+      if (level) {
+        headings.length = level - 1
+        headings[level - 1] = line
+      }
       for (const hit of hitsIn(line)) {
-        const allowed = allowedBy(entries, hit, line, () => heading)
+        const allowed = allowedBy(entries, hit, line, () => headings.filter(Boolean))
         if (allowed >= 0) {
           allowedCounts[allowed]++
           continue

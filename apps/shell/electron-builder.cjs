@@ -245,6 +245,7 @@ function assertModuleTreesPresent() {
     '../markdown/out',
     '../html/out',
     '../mindmap/out',
+    '../cad/out',
     '../hwp/out',
     '../epub/out',
     '../graphics/out',
@@ -607,6 +608,11 @@ const config = {
     {
       from: '../mindmap/out',
       to: 'modules/mindmap',
+    },
+    {
+      // AI Drawing: the module only, no OS file association yet
+      from: '../cad/out',
+      to: 'modules/cad',
     },
     {
       from: '../hwp/out',

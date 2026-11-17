@@ -37,8 +37,9 @@ const card = (id: string, type: string, w: number, h: number, extra: object = {}
 })
 
 describe('app keys', () => {
-  it('lists the fifteen apps and recognizes only them', () => {
-    expect(APP_KEYS).toHaveLength(15)
+  it('lists the sixteen apps and recognizes only them', () => {
+    expect(APP_KEYS).toHaveLength(16)
+    expect(isAppKey('ttukcad')).toBe(true)
     expect(isAppKey('xmind')).toBe(true)
     expect(isAppKey('calc')).toBe(false)
     expect(isAppKey(3)).toBe(false)

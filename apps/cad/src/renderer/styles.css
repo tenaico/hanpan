@@ -1,0 +1,1023 @@
+/*
+ * The editor's frame: the ribbon, the notice lines, the 3D stage with the
+ * property panel beside it, the status line and the no-3D screen.
+ * Every colour here is a token from @genoffice/ui (tokens.css) and follows the
+ * app's light or dark setting. The 3D view inside has its own colour table
+ * (scene/canvas-colors.ts), because WebGL cannot read CSS.
+ */
+
+:root {
+  --accent: #1f7a8c;
+  --accent-dark: #17606e;
+  --accent-soft: rgba(31, 122, 140, 0.12);
+}
+
+[data-theme='dark'] {
+  --accent: #5fb3c4;
+  --accent-dark: #8fd0dc;
+  --accent-soft: rgba(95, 179, 196, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --accent: #5fb3c4;
+    --accent-dark: #8fd0dc;
+    --accent-soft: rgba(95, 179, 196, 0.2);
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
+.cad-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ---- the ribbon (same structure and metrics as the other editors' ribbons) ---- */
+
+.ribbon {
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  user-select: none;
+  color: var(--text-primary);
+}
+
+/* quick-access row, tabs, title and saved state; doubles as the window drag strip */
+.ribbon-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 10px 0;
+  min-height: 39px;
+  -webkit-app-region: drag;
+}
+
+html.genoffice-popover-open .ribbon-tabs {
+  -webkit-app-region: no-drag;
+}
+
+.ribbon-tabs button,
+.ribbon-tabs .autosave-toggle {
+  -webkit-app-region: no-drag;
+}
+
+.qa-btn {
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.qa-btn svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.qa-btn:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.qa-btn:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.qa-sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 6px;
+  background: var(--border-strong);
+  flex-shrink: 0;
+}
+
+.autosave-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.autosave-toggle input {
+  display: none;
+}
+
+.autosave-knob {
+  width: 26px;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--border-strong);
+  position: relative;
+  transition: background 0.15s;
+}
+
+.autosave-knob::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: left 0.15s;
+}
+
+.autosave-toggle.on .autosave-knob {
+  background: var(--accent);
+}
+
+.autosave-toggle.on .autosave-knob::after {
+  left: 14px;
+}
+
+.autosave-text {
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.cad-tab-row {
+  display: flex;
+  align-items: flex-end;
+  align-self: stretch;
+}
+
+.ribbon-tab {
+  position: relative;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  border-radius: 4px 4px 0 0;
+  background: none;
+  padding: 7px 9px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ribbon-tab:hover,
+.ribbon-tab.active {
+  color: var(--accent);
+}
+
+/* the underline is as wide as the label, not the padded button */
+.ribbon-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: -2.5px;
+  height: 2.5px;
+  border-radius: 1px;
+  background: var(--accent);
+}
+
+.cad-title {
+  min-width: 0;
+  margin-inline-start: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cad-state {
+  margin-inline-start: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.cad-state[data-dirty] {
+  color: var(--accent);
+}
+
+/* the AI button at the far end of the tab row */
+.cad-ai-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin-inline-start: auto;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cad-ai-entry:hover {
+  background: var(--hover);
+}
+
+.cad-ai-entry.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* the band under the tabs: big buttons with the group name below. The height is
+   fixed so switching tabs never moves the 3D view. */
+.ribbon-body {
+  display: flex;
+  align-items: stretch;
+  padding: 4px 12px 2px;
+  height: 84px;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.ribbon-body::-webkit-scrollbar {
+  display: none;
+}
+
+.cad-pane {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.cad-pane[hidden] {
+  display: none;
+}
+
+.ribbon-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 4px 0;
+  flex-shrink: 0;
+}
+
+.ribbon-group-items {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  flex: 1;
+}
+
+.ribbon-group-label {
+  padding-top: 2px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.rb-sep {
+  width: 1px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: var(--border);
+  margin: 2px 6px;
+}
+
+.rb-big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 46px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  padding: 3px 6px 2px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.rb-big-icon {
+  flex: 1;
+  align-self: stretch;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  padding: 3px 4px;
+  margin: 0 -4px;
+  color: var(--text-primary);
+}
+
+/* hover paints the picture row only, the name below stays clear */
+.rb-big:hover:not(:disabled) .rb-big-icon {
+  background: var(--hover);
+}
+
+.rb-big.active .rb-big-icon {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.rb-big:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.rb-big svg {
+  width: 22px;
+  height: 22px;
+}
+
+.cad-ribbon-menu {
+  display: flex;
+  align-items: stretch;
+}
+
+.cad-menu-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.cad-menu-break {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.cad-menu-hint {
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* the shape gallery: all 15 shapes, five to a row */
+.cad-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 72px);
+  gap: 2px;
+  padding: 6px;
+}
+
+.cad-gallery-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 2px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.cad-gallery-item:hover {
+  background: var(--hover);
+}
+
+/* the text prompt */
+.cad-text-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.cad-text-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cad-text-label .cad-input {
+  width: 200px;
+}
+
+.cad-button {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cad-button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.cad-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* the shortcut list (Help) */
+.cad-shortcut-list {
+  margin: 0;
+  padding: 8px 12px;
+}
+
+.cad-shortcut {
+  display: flex;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.cad-shortcut dt {
+  min-width: 96px;
+}
+
+.cad-shortcut dd {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.cad-shortcut kbd {
+  font: inherit;
+  font-weight: 600;
+}
+
+/* ---- one notice per line, above the view ---- */
+
+.cad-notice {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--accent-soft);
+  font-size: 13px;
+}
+
+.cad-notice-error {
+  border-bottom-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ---- the 3D view beside the property panel and the AI assistant's place ---- */
+
+.cad-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  /* the right column is as wide as the AI pane's resizer makes it */
+  grid-template-columns: minmax(0, 1fr) var(--cad-side-width, 320px);
+}
+
+.cad-stage {
+  position: relative;
+  min-height: 0;
+  background: var(--canvas);
+}
+
+.cad-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* the sketch bar floats over the top of the 3D view while an outline is drawn */
+.cad-sketch-dock {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 16px);
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+  box-shadow: var(--shadow-menu);
+}
+
+.cad-sketch-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.cad-sketch-hint {
+  color: var(--text-secondary);
+}
+
+.cad-sketch-height {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.cad-sketch-height .cad-input {
+  width: 64px;
+}
+
+.cad-sketch-refusal {
+  color: var(--danger);
+}
+
+.cad-side {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-inline-start: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* ---- the property panel ---- */
+
+.cad-props {
+  flex: 0 1 auto;
+  overflow-y: auto;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.cad-props-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cad-props-empty {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.cad-props-body {
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.cad-props-group {
+  margin-top: 8px;
+}
+
+.cad-props-sub {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.cad-prop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+  color: var(--text-secondary);
+}
+
+.cad-prop-label {
+  flex-shrink: 0;
+}
+
+.cad-prop-value {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+  color: var(--text-primary);
+}
+
+.cad-input {
+  box-sizing: border-box;
+  height: 24px;
+  min-width: 0;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.cad-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.cad-prop-value .cad-input {
+  width: 128px;
+}
+
+.cad-number {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.cad-props-axes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.cad-axis {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.cad-axis-name {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cad-axis .cad-input {
+  width: 100%;
+}
+
+.cad-segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cad-segment {
+  padding: 2px 10px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cad-segment + .cad-segment {
+  border-inline-start: 1px solid var(--border);
+}
+
+.cad-segment.active {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.cad-color {
+  width: 40px;
+  height: 24px;
+  padding: 0 2px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.cad-color[data-mixed] {
+  opacity: 0.5;
+}
+
+.cad-props-flags {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.cad-flag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.cad-props-body:disabled {
+  opacity: 0.6;
+}
+
+/* the AI assistant under the property panel; folded, it is a bar at the bottom */
+.cad-ai-slot {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 280px;
+  border-top: 1px solid var(--border);
+}
+
+.cad-ai-slot:has(> .ai-dock.collapsed) {
+  flex: 0 0 auto;
+  min-height: 0;
+  margin-top: auto;
+}
+
+/* ---- the no-3D screen ---- */
+
+.cad-nowebgl {
+  max-width: 520px;
+  margin: 48px auto;
+  padding: 24px 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+}
+
+.cad-nowebgl-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.cad-nowebgl-body {
+  margin: 0 0 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.cad-nowebgl-remedies {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.7;
+}
+
+/* "How to open this file": a CAD program's file this editor cannot read */
+.cad-guide {
+  max-width: 520px;
+  margin: 48px auto;
+  padding: 24px 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+}
+
+.cad-guide-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.cad-guide-file {
+  margin: 0 0 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cad-guide-body,
+.cad-guide-ask {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.cad-guide-body {
+  color: var(--text-secondary);
+}
+
+.cad-guide-ask {
+  margin-bottom: 0;
+}
+
+/* ---- inside the 3D view: the reason beside a part that could not be computed ---- */
+
+.cad-issue-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cad-issue-label {
+  position: absolute;
+  max-width: 280px;
+  padding: 2px 8px;
+  border: 1px solid var(--danger-border);
+  border-radius: 4px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
+/* ---- the status line under the view: what happened on the left, the drawing on the right ---- */
+
+.cad-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 22px;
+  padding: 3px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--chrome-bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.cad-status-message {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cad-status[data-error] .cad-status-message {
+  color: var(--danger);
+}
+
+.cad-status-info {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- measuring: the bar over the view, and the marks the view places over the model ---- */
+
+.cad-measure-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.cad-measure-reading {
+  min-width: 4em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cad-measure-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cad-measure-layer[hidden] {
+  display: none;
+}
+
+.cad-measure-snap {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 2px solid var(--accent);
+  background: var(--surface);
+  transform: translate(-50%, -50%);
+}
+
+.cad-measure-first {
+  background: var(--accent);
+}
+
+.cad-measure-label {
+  position: absolute;
+  padding: 2px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
+.cad-measure-label:empty {
+  display: none;
+}
+
+/* ---- the dimension sheet dialog: a themed frame around paper that is always white ---- */
+
+.cad-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-overlay);
+}
+
+.cad-modal {
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 18px 20px 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-modal-strong);
+}
+
+.cad-modal-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cad-sheet-dialog {
+  width: min(960px, calc(100vw - 48px));
+}
+
+.cad-sheet-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cad-sheet-paper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 297 / 210;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-subtle);
+}
+
+/* the sheet paints its own white paper (the engine's SVG); it is shown as it is */
+.cad-sheet-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cad-sheet-empty {
+  margin: 0;
+  padding: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.cad-sheet-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.cad-sheet-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cad-sheet-field .cad-input[readonly] {
+  color: var(--text-muted);
+}
+
+.cad-sheet-status {
+  min-height: 18px;
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.cad-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cad-button-primary {
+  border-color: var(--color-btn-primary);
+  background: var(--color-btn-primary);
+  color: var(--color-btn-primary-text);
+}
+
+.cad-button-primary:hover:not(:disabled) {
+  background: var(--color-btn-primary-hover);
+}
+
+/* the measuring bar sits at the bottom, so it never covers the line being measured at the top */
+.cad-measure-dock {
+  top: auto;
+  bottom: 8px;
+}

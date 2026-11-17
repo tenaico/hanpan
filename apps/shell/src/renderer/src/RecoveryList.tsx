@@ -10,6 +10,7 @@ import iconMindmap from './assets/file-mindmap.svg'
 import iconHwp from './assets/file-hwp.svg'
 import iconPhoto from './assets/file-photo.svg'
 import iconIllust from './assets/file-illust.svg'
+import iconCad from './assets/file-cad.svg'
 import { defaultRecoveryChoice } from '../../shared/recovery-list-api'
 import type {
   RecoveryChoice,
@@ -50,6 +51,7 @@ const KIND_ICONS: Record<RecoveryListEditorKind, string> = {
   hwp: iconHwp,
   photo: iconPhoto,
   illust: iconIllust,
+  cad: iconCad,
 }
 
 /** the editor kind's name, shared with the home list's type filter */
@@ -64,6 +66,7 @@ const KIND_LABELS: Record<RecoveryListEditorKind, StringKey> = {
   hwp: 'filterHwp',
   photo: 'newPhoto',
   illust: 'newIllust',
+  cad: 'filterCad',
 }
 
 /** every row at its starting choice: restore, except a file that changed afterwards */

@@ -65,6 +65,7 @@ const SRC_GLOBS = [
   'apps/docs/src',
   'apps/html/src',
   'apps/mindmap/src',
+  'apps/cad/src',
   'apps/hwp/src',
   'apps/epub/src',
   'apps/markdown/src',

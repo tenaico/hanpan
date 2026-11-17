@@ -73,6 +73,47 @@ describe('collectLaunchPaths', () => {
     expect(collectLaunchPaths(['GenOffice.exe', '/plan.xmind'], undefined, () => false)).toEqual([])
   })
 
+  it('accepts an AI Drawing file and the files it imports from argv and the second-instance payload', () => {
+    expect(
+      collectLaunchPaths(['GenOffice.exe', 'C:\\parts\\part.ttukcad'], undefined, () => true),
+    ).toEqual(['C:\\parts\\part.ttukcad'])
+    expect(
+      collectLaunchPaths(
+        ['GenOffice.exe'],
+        {
+          launchPaths: [
+            '/m/plan.DXF',
+            '/m/a.stl',
+            '/m/a.obj',
+            '/m/a.3mf',
+            '/m/a.GLB',
+            '/m/a.ply',
+            '/m/a.dwg',
+            '/m/a.step',
+            '/m/a.stp',
+            '/m/a.iges',
+            '/m/a.igs',
+            '/m/a.brep',
+          ],
+        },
+        () => true,
+      ),
+    ).toEqual([
+      '/m/plan.DXF',
+      '/m/a.stl',
+      '/m/a.obj',
+      '/m/a.3mf',
+      '/m/a.GLB',
+      '/m/a.ply',
+      '/m/a.dwg',
+      '/m/a.step',
+      '/m/a.stp',
+      '/m/a.iges',
+      '/m/a.igs',
+      '/m/a.brep',
+    ])
+  })
+
   it('accepts a book from argv and from the second-instance payload', () => {
     expect(
       collectLaunchPaths(['GenOffice.exe', 'C:\\books\\novel.epub'], undefined, () => true),

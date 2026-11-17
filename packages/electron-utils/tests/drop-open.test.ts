@@ -153,6 +153,12 @@ describe('partitionDropPayload', () => {
     expect(KNOWN_UNSUPPORTED_DOC_RE.test('a.odt')).toBe(false)
   })
 
+  it('routes dropped AI Drawing imports and the CAD files it explains to the shell', () => {
+    for (const ext of ['3mf', 'GLB', 'ply', 'dwg', 'step', 'stp', 'iges', 'igs', 'brep']) {
+      expect(OPENABLE_DOC_RE.test(`a.${ext}`), ext).toBe(true)
+    }
+  })
+
   it('routes dropped pictures and vector art as openable (decision 0093)', () => {
     const result = partitionDropPayload(['/p/cat.png', '/p/CAT.PSD', '/p/logo.svg', '/p/logo.ai'])
     expect(result.supported).toEqual(['/p/cat.png', '/p/CAT.PSD', '/p/logo.svg', '/p/logo.ai'])
@@ -168,6 +174,13 @@ describe('partitionDropPayload', () => {
   it('routes dropped .xmind files as openable', () => {
     const result = partitionDropPayload(['/maps/plan.xmind', '/maps/PLAN2.XMIND'])
     expect(result.supported).toEqual(['/maps/plan.xmind', '/maps/PLAN2.XMIND'])
+    expect(result.unsupportedExts).toEqual([])
+  })
+
+  it('routes dropped AI Drawing files and the 3D/DXF files it imports as openable', () => {
+    const paths = ['/parts/a.ttukcad', '/parts/B.TTUKCAD', '/p/plan.dxf', '/p/m.STL', '/p/m.obj']
+    const result = partitionDropPayload(paths)
+    expect(result.supported).toEqual(paths)
     expect(result.unsupportedExts).toEqual([])
   })
 

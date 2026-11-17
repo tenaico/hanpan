@@ -1,0 +1,48 @@
+import type { zh } from './zh'
+
+export const ms = {
+  aiOpenAssistant: 'Buka pembantu AI',
+  aiCollapsePanel: 'Runtuhkan panel',
+  aiNewChat: 'Sembang baharu',
+  aiEmptyTitle: 'Lukis dengan AI',
+  aiEmptyBody:
+    'Terangkan apa yang hendak dibuat, contohnya "bekas pensel lebar 80 dan tinggi 100, berongga di dalam dengan lubang 68". Satu permintaan ialah satu langkah: Ctrl+Z membuat asal kesemuanya sekali gus.',
+  aiComposerPlaceholder: 'Beritahu AI apa yang hendak dibuat atau diubah…',
+  aiHintIdle: 'Enter untuk hantar, Shift+Enter baris baharu',
+  aiHintBusy: 'Membalas…',
+  aiSend: 'Hantar',
+  aiStop: 'Berhenti',
+  aiThinking: 'Berfikir',
+  aiWorking: 'Bekerja',
+  aiGroupWorking: 'Sedang berjalan…',
+  aiWorkedSteps: 'Selesai · {n} langkah',
+  aiStopped: 'Dihentikan',
+  aiNoReply: '(tiada balasan)',
+  aiTurnLimit: 'Had langkah setiap larian dicapai — hantar arahan lain untuk teruskan.',
+  aiTruncatedNote: '(Balasan terpotong kerana had panjang dan mungkin tidak lengkap.)',
+  aiUndelivered: 'Tidak dihantar',
+  aiRetry: 'Cuba lagi',
+  aiCopyReplyTitle: 'Salin balasan',
+  aiRegenerateTitle: 'Jana semula',
+  aiUnknownError: 'Permintaan AI gagal, cuba lagi',
+  aiTimeoutError: 'Respons AI tamat masa',
+  aiCreditsExhausted: 'Kredit habis — tambah nilai dengan penyedia AI anda',
+  aiNetworkError:
+    'Masalah rangkaian: tidak dapat menghubungi perkhidmatan AI. Semak sambungan anda dan cuba lagi',
+  aiOverloadedError: 'Perkhidmatan AI sedang sibuk — sila cuba lagi sebentar lagi',
+  // the quick actions above the input
+  aiQuickActions: 'Tindakan pantas',
+  aiQuickSheet: 'Buat helaian dimensi',
+  aiQuickRoom: 'Mulakan susun atur bilik',
+  aiQuickRoomPrompt: 'Jadikan papan kerja sebuah bilik 5 × 4 m dan letakkan 4 meja',
+  // the steps of a reply: what each drawing tool did
+  aiToolReadModel: 'Membaca lukisan',
+  aiToolAddShapes: 'Meletak bentuk · {n}',
+  aiToolUpdateShapes: 'Mengubah bentuk · {n}',
+  aiToolDeleteShapes: 'Memadam bentuk · {n}',
+  aiToolGroupShapes: 'Mengumpulkan bentuk',
+  aiToolUngroupShapes: 'Meleraikan kumpulan',
+  aiToolAlignShapes: 'Menjajarkan bentuk · {n}',
+  aiToolSetWorkplane: 'Mengubah saiz papan kerja',
+  aiToolRefused: '{action} · ditolak',
+} satisfies Record<keyof typeof zh, string>

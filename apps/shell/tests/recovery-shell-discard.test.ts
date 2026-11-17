@@ -10,6 +10,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const discardDocsRecovery = vi.fn()
 const discardSheetsRecovery = vi.fn()
 const discardMindmapRecovery = vi.fn()
+const discardCadRecovery = vi.fn()
+const cadRecoveryIdentity = vi.fn((_id: number): unknown => null)
+const setCadRecoveryTitleHook = vi.fn()
 const hwpDiscardRecoveryCopy = vi.fn()
 const discardGraphicsRecovery = vi.fn()
 const graphicsRecoveryIdentity = vi.fn((_id: number): unknown => null)
@@ -56,6 +59,12 @@ vi.mock('../../mindmap/src/main/mindmap-main', () => ({
   discardMindmapRecovery: (...args: unknown[]) => discardMindmapRecovery(...args),
   mindmapRecoveryIdentity: () => null,
   setMindmapRecoveryTitleHook: () => {},
+}))
+
+vi.mock('../../cad/src/main/cad-main', () => ({
+  discardCadRecovery: (...args: unknown[]) => discardCadRecovery(...args),
+  cadRecoveryIdentity: (id: number) => cadRecoveryIdentity(id),
+  setCadRecoveryTitleHook: (...args: unknown[]) => setCadRecoveryTitleHook(...args),
 }))
 
 vi.mock('../../hwp/src/main/hwp-main', () => ({
@@ -135,5 +144,30 @@ describe('AI Photo and AI Illustration tabs', () => {
     installRecoveryTitleSources(titleOf)
 
     expect(setGraphicsRecoveryTitleSource).toHaveBeenCalledWith(titleOf)
+  })
+})
+
+describe('AI Drawing tabs', () => {
+  it("run the cad editor's own Don't Save", () => {
+    const tab = contents()
+    discardEditorRecovery('cad', tab as never)
+
+    expect(discardCadRecovery).toHaveBeenCalledTimes(1)
+    expect(discardCadRecovery).toHaveBeenCalledWith(tab)
+  })
+
+  it('answer which copy the tab writes', () => {
+    const copy = { kind: 'cad', untitledId: 'c1', ext: '.ttukcad' }
+    cadRecoveryIdentity.mockReturnValueOnce(copy)
+
+    expect(editorRecoveryIdentity('cad', contents() as never)).toBe(copy)
+    expect(cadRecoveryIdentity).toHaveBeenCalledWith(7)
+  })
+
+  it('list an untitled copy under the tab title', () => {
+    const titleOf = vi.fn()
+    installRecoveryTitleSources(titleOf)
+
+    expect(setCadRecoveryTitleHook).toHaveBeenCalledWith(titleOf)
   })
 })

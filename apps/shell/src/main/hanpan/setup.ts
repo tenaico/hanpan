@@ -1,6 +1,6 @@
 /**
  * Hanpan's main-process parts in one place: the map → document sender, the
- * link store, and the rhwp engine the sender writes HWPX with. `index.ts` calls
+ * drawing → document sender, the link store, and the rhwp engine the sender writes HWPX with. `index.ts` calls
  * `setupHanpan` once and forwards the editors' "file saved" hooks to it.
  */
 import {
@@ -53,6 +53,7 @@ import { outlineToOps } from '../mcp/pptx-outline'
 import { readStoredAiSettings, writeStoredAiSettings } from '../../../../docs/src/main/docs-main'
 import { createLinkStore, type LinkStore, type TabContents } from './link-store'
 import { defaultAiDeps, settleDefaultAi } from './local-ai-first'
+import { createDrawingSender } from './send-drawing'
 import { createMapSender, type SendMapDeps } from './send-map'
 import { createSyncService, type SyncTab } from './sync-service'
 import { hwpReadBytes, hwpReplaceDocument } from '../../../../hwp/src/main/hwp-main'
@@ -197,6 +198,8 @@ export async function buildHanpanDeck(
 export interface HanpanSetup {
   links: LinkStore
   sendMap: ReturnType<typeof createMapSender>
+  /** an AI Drawing tab's dimension sheet as a new untitled Hangul or Word tab (no link, no sync) */
+  sendDrawing: ReturnType<typeof createDrawingSender>
   /** a document tab (HWP, Word, slides) saved to `path` */
   documentSaved(wc: TabContents, path: string): void
   /** a mind map tab saved to `path` */
@@ -256,6 +259,19 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
     removeDir: async (dir) => rmSync(dir, { recursive: true, force: true }),
     openCopy: deps.openCopy,
     recordLink: (link, documentTab, mapTab) => links.add(link, documentTab, mapTab),
+    newId: () => randomUUID(),
+    now: () => Date.now(),
+  })
+  const sendDrawing = createDrawingSender({
+    loadHwpEngine,
+    makeCopyDir: async () => {
+      const dir = join(app.getPath('temp'), 'hanpan-sent', randomUUID())
+      mkdirSync(dir, { recursive: true })
+      return dir
+    },
+    writeFile: (path, bytes) => atomicWriteFile(path, Buffer.from(bytes)),
+    removeDir: async (dir) => rmSync(dir, { recursive: true, force: true }),
+    openCopy: deps.openCopy,
     newId: () => randomUUID(),
     now: () => Date.now(),
   })
@@ -523,6 +539,7 @@ export function setupHanpan(deps: HanpanShellDeps): HanpanSetup {
       }),
     links,
     sendMap,
+    sendDrawing,
     sync,
     documentSaved: (wc, path) => links.documentSaved(wc.id, path, Date.now()),
     mapSaved: (wc, path) => links.mapSaved(wc.id, path, Date.now()),
