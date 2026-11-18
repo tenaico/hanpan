@@ -838,7 +838,7 @@ test.describe('AI pane attachments', () => {
       ])
       const pane = cad.locator('.cad-side .copilot')
       await expect(pane).toBeVisible()
-      await pane.locator('.ai-attach-btn').click()
+      await pane.locator('.ai-attach-btn:not(.ai-doc-attach-btn)').click()
       await expect(pane.locator('.ai-attachments .ai-attachment-card-name')).toHaveText('spec.txt')
 
       // a pasted screenshot (no file of its own) goes through main to a temporary file
