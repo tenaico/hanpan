@@ -45,4 +45,12 @@ export const hi = {
   aiToolAlignShapes: 'आकार संरेखित करना · {n}',
   aiToolSetWorkplane: 'कार्य पटल का आकार बदलना',
   aiToolRefused: '{action} · अस्वीकृत',
+  aiAttachTitle: 'स्थानीय फ़ाइलें संलग्न करें (या उन्हें पैनल पर खींचें)',
+  aiRemoveAttachmentTitle: 'अनुलग्नक हटाएँ',
+  aiImageReadFail: '{name}: पढ़ने में विफल',
+  aiTooManyImages: 'प्रति संदेश अधिकतम {max} चित्र; अतिरिक्त को अनदेखा कर दिया गया',
+  aiSumReadAttachment: 'अनुलग्नक पढ़ें',
+  aiSumImageAttachment: 'चित्र अनुलग्नक {name}',
+  aiSumReadAttachmentName: 'अनुलग्नक {name} पढ़ें',
+  aiAttachNoVision: 'मौजूदा मॉडल चित्र नहीं देख सकता, इसलिए जोड़े गए चित्र नहीं भेजे गए; टेक्स्ट फ़ाइलें अब भी पढ़ी जाती हैं',
 } satisfies Record<keyof typeof zh, string>

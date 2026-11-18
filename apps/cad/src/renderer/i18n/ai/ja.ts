@@ -45,4 +45,12 @@ export const ja = {
   aiToolAlignShapes: '図形を整列 · {n}個',
   aiToolSetWorkplane: '作業面のサイズを変更',
   aiToolRefused: '{action} · 拒否されました',
+  aiAttachTitle: 'ローカルファイルを添付(パネルへのドラッグ&ドロップも可)',
+  aiRemoveAttachmentTitle: '添付ファイルを削除',
+  aiImageReadFail: '{name}: 読み取りに失敗しました',
+  aiTooManyImages: '画像は 1 メッセージにつき最大 {max} 枚までです。超過分は無視されました',
+  aiSumReadAttachment: '添付ファイルを読み取り',
+  aiSumImageAttachment: '画像添付 {name}',
+  aiSumReadAttachmentName: '添付ファイル {name} を読み取り',
+  aiAttachNoVision: '現在のモデルは画像を見られないため、添付した画像は送信されませんでした。文字のファイルは読み込まれます',
 } satisfies Record<keyof typeof zh, string>

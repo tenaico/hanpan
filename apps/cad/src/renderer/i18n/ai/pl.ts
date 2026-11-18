@@ -45,4 +45,12 @@ export const pl = {
   aiToolAlignShapes: 'Wyrównanie kształtów · {n}',
   aiToolSetWorkplane: 'Zmiana rozmiaru płyty roboczej',
   aiToolRefused: '{action} · odrzucono',
+  aiAttachTitle: 'Załącz pliki lokalne (lub przeciągnij je na panel)',
+  aiRemoveAttachmentTitle: 'Usuń załącznik',
+  aiImageReadFail: '{name}: odczyt nie powiódł się',
+  aiTooManyImages: 'Maksymalnie {max} obrazów na wiadomość; nadmiarowe zostały zignorowane',
+  aiSumReadAttachment: 'Odczyt załącznika',
+  aiSumImageAttachment: 'Załącznik graficzny {name}',
+  aiSumReadAttachmentName: 'Odczyt załącznika {name}',
+  aiAttachNoVision: 'Obecny model nie widzi obrazów, więc załączone obrazy nie zostały wysłane; pliki tekstowe są nadal czytane',
 } satisfies Record<keyof typeof zh, string>

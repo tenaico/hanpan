@@ -46,4 +46,12 @@ export const it = {
   aiToolAlignShapes: 'Allinea forme · {n}',
   aiToolSetWorkplane: 'Ridimensiona il piano di lavoro',
   aiToolRefused: '{action} · rifiutato',
+  aiAttachTitle: 'Allega file locali (o trascinali sul pannello)',
+  aiRemoveAttachmentTitle: 'Rimuovi allegato',
+  aiImageReadFail: '{name}: lettura non riuscita',
+  aiTooManyImages: 'Al massimo {max} immagini per messaggio; quelle in eccesso sono state ignorate',
+  aiSumReadAttachment: 'Lettura allegato',
+  aiSumImageAttachment: 'Immagine allegata {name}',
+  aiSumReadAttachmentName: 'Lettura allegato {name}',
+  aiAttachNoVision: 'Il modello attuale non può vedere le immagini, quindi le immagini allegate non sono state inviate; i file di testo vengono comunque letti',
 } satisfies Record<keyof typeof zh, string>
