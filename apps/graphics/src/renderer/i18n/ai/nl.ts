@@ -57,5 +57,6 @@ export const nl = {
   aiSumReadAttachment: 'Bijlage lezen',
   aiSumImageAttachment: 'Afbeeldingsbijlage {name}',
   aiSumReadAttachmentName: 'Bijlage {name} lezen',
-  aiAttachNoVision: 'Het huidige model kan geen afbeeldingen zien, dus de bijgevoegde afbeeldingen zijn niet verzonden; tekstbestanden worden nog steeds gelezen',
+  aiAttachNoVision:
+    'Het huidige model kan geen afbeeldingen zien, dus de bijgevoegde afbeeldingen zijn niet verzonden; tekstbestanden worden nog steeds gelezen',
 } satisfies Record<keyof typeof zh, string>

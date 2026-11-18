@@ -55,5 +55,6 @@ export const cs = {
   aiSumReadAttachment: 'Čtení přílohy',
   aiSumImageAttachment: 'Obrázková příloha {name}',
   aiSumReadAttachmentName: 'Čtení přílohy {name}',
-  aiAttachNoVision: 'Aktuální model nevidí obrázky, proto přiložené obrázky nebyly odeslány; textové soubory se stále čtou',
+  aiAttachNoVision:
+    'Aktuální model nevidí obrázky, proto přiložené obrázky nebyly odeslány; textové soubory se stále čtou',
 } satisfies Record<keyof typeof zh, string>

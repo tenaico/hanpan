@@ -54,5 +54,6 @@ export const th = {
   aiSumReadAttachment: 'อ่านสิ่งที่แนบ',
   aiSumImageAttachment: 'รูปภาพแนบ {name}',
   aiSumReadAttachmentName: 'อ่านสิ่งที่แนบ {name}',
-  aiAttachNoVision: 'โมเดลปัจจุบันมองเห็นรูปภาพไม่ได้ จึงไม่ได้ส่งรูปภาพที่แนบไว้ ไฟล์ข้อความยังคงอ่านได้',
+  aiAttachNoVision:
+    'โมเดลปัจจุบันมองเห็นรูปภาพไม่ได้ จึงไม่ได้ส่งรูปภาพที่แนบไว้ ไฟล์ข้อความยังคงอ่านได้',
 } satisfies Record<keyof typeof zh, string>

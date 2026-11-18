@@ -54,5 +54,6 @@ export const de = {
   aiSumReadAttachment: 'Anlage lesen',
   aiSumImageAttachment: 'Bildanlage {name}',
   aiSumReadAttachmentName: 'Anlage {name} lesen',
-  aiAttachNoVision: 'Das aktuelle Modell kann keine Bilder sehen, daher wurden die angehängten Bilder nicht gesendet; Textdateien werden weiterhin gelesen',
+  aiAttachNoVision:
+    'Das aktuelle Modell kann keine Bilder sehen, daher wurden die angehängten Bilder nicht gesendet; Textdateien werden weiterhin gelesen',
 } satisfies Record<keyof typeof zh, string>

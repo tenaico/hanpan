@@ -55,5 +55,6 @@ export const en = {
   aiSumReadAttachment: 'Read attachment',
   aiSumImageAttachment: 'Image attachment {name}',
   aiSumReadAttachmentName: 'Read attachment {name}',
-  aiAttachNoVision: 'The current model cannot see images, so the attached pictures were not sent; text files are still read',
+  aiAttachNoVision:
+    'The current model cannot see images, so the attached pictures were not sent; text files are still read',
 } satisfies Record<keyof typeof zh, string>

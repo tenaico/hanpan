@@ -33,6 +33,7 @@
 ### Task 1: graphics main·preload·ipc 첨부 채널
 
 **Files:**
+
 - Create: `apps/graphics/src/main/ai-attachments.ts`(전자책 `apps/epub/src/main/ai-attachments.ts`와 같은 내용, `registerGraphicsAttachmentIpc()`)
 - Modify: `apps/graphics/src/shared/ipc.ts`(GRAPHICS_CHANNELS에 `filesPick/filesAdd/filesAddPastedImage/filesRead/filesReadImage` = `graphics:files-*`, `AttachmentMeta` 등 타입, `ATTACHMENT_IMAGE_EXTS`, GraphicsApi에 `pickAttachments/addAttachmentPaths/addPastedImage/readAttachment/readAttachmentImage`)
 - Modify: `apps/graphics/src/main/graphics-main.ts`(`registerGraphicsIpc` 안에서 등록), `apps/graphics/src/preload/index.ts`(api에 다섯 함수, `DOC_ATTACH_BRIDGE_KEY`로 `docAttachBridge()` 노출)
@@ -43,6 +44,7 @@
 ### Task 2: graphics AI 창 첨부
 
 **Files:**
+
 - Create: `apps/graphics/src/renderer/ai/files-skill.ts`(전자책 것, `graphicsApi().readAttachment`)
 - Modify: `apps/graphics/src/renderer/ai/AiPanel.tsx`(첨부 상태·줄·단추·`DocAttachButton`·끌어 놓기·붙여넣기·`collectImages`, 보낼 때 `[...shot.images, ...attached]`, 그림 못 보는 모델은 첨부 그림 빼고 안내, 대기열 항목에 첨부, 새 대화에 비움, `TOOL_LABELS.read_attachment`)
 - Modify: `apps/graphics/src/renderer/i18n/ai/*.ts` 21개(키 `aiAttachTitle`, `aiRemoveAttachmentTitle`, `aiTooManyImages`, `aiSumReadAttachment`, `aiSumImageAttachment`, `aiSumReadAttachmentName`, `aiToolReadAttachment`, `aiAttachNoVision`)

@@ -52,5 +52,6 @@ export const vi = {
   aiSumReadAttachment: 'Đọc tệp đính kèm',
   aiSumImageAttachment: 'Tệp hình ảnh đính kèm {name}',
   aiSumReadAttachmentName: 'Đọc tệp đính kèm {name}',
-  aiAttachNoVision: 'Mô hình hiện tại không xem được hình ảnh nên hình đính kèm chưa được gửi; các tệp văn bản vẫn được đọc',
+  aiAttachNoVision:
+    'Mô hình hiện tại không xem được hình ảnh nên hình đính kèm chưa được gửi; các tệp văn bản vẫn được đọc',
 } satisfies Record<keyof typeof zh, string>

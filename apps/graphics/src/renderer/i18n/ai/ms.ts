@@ -57,5 +57,6 @@ export const ms = {
   aiSumReadAttachment: 'Baca lampiran',
   aiSumImageAttachment: 'Lampiran imej {name}',
   aiSumReadAttachmentName: 'Baca lampiran {name}',
-  aiAttachNoVision: 'Model semasa tidak dapat melihat imej, jadi imej yang dilampirkan tidak dihantar; fail teks masih dibaca',
+  aiAttachNoVision:
+    'Model semasa tidak dapat melihat imej, jadi imej yang dilampirkan tidak dihantar; fail teks masih dibaca',
 } satisfies Record<keyof typeof zh, string>

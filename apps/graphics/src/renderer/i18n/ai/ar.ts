@@ -55,5 +55,6 @@ export const ar = {
   aiSumReadAttachment: 'قراءة المرفق',
   aiSumImageAttachment: 'مرفق صورة {name}',
   aiSumReadAttachmentName: 'قراءة المرفق {name}',
-  aiAttachNoVision: 'لا يستطيع النموذج الحالي رؤية الصور، لذا لم تُرسل الصور المرفقة؛ ولا تزال الملفات النصية تُقرأ',
+  aiAttachNoVision:
+    'لا يستطيع النموذج الحالي رؤية الصور، لذا لم تُرسل الصور المرفقة؛ ولا تزال الملفات النصية تُقرأ',
 } satisfies Record<keyof typeof zh, string>

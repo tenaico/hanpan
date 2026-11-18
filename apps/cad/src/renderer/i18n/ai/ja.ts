@@ -52,5 +52,6 @@ export const ja = {
   aiSumReadAttachment: '添付ファイルを読み取り',
   aiSumImageAttachment: '画像添付 {name}',
   aiSumReadAttachmentName: '添付ファイル {name} を読み取り',
-  aiAttachNoVision: '現在のモデルは画像を見られないため、添付した画像は送信されませんでした。文字のファイルは読み込まれます',
+  aiAttachNoVision:
+    '現在のモデルは画像を見られないため、添付した画像は送信されませんでした。文字のファイルは読み込まれます',
 } satisfies Record<keyof typeof zh, string>

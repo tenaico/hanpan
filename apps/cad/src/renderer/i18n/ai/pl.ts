@@ -52,5 +52,6 @@ export const pl = {
   aiSumReadAttachment: 'Odczyt załącznika',
   aiSumImageAttachment: 'Załącznik graficzny {name}',
   aiSumReadAttachmentName: 'Odczyt załącznika {name}',
-  aiAttachNoVision: 'Obecny model nie widzi obrazów, więc załączone obrazy nie zostały wysłane; pliki tekstowe są nadal czytane',
+  aiAttachNoVision:
+    'Obecny model nie widzi obrazów, więc załączone obrazy nie zostały wysłane; pliki tekstowe są nadal czytane',
 } satisfies Record<keyof typeof zh, string>

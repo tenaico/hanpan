@@ -52,5 +52,6 @@ export const ko = {
   aiSumReadAttachment: '첨부 파일 읽기',
   aiSumImageAttachment: '이미지 첨부 {name}',
   aiSumReadAttachmentName: '첨부 파일 {name} 읽기',
-  aiAttachNoVision: '지금 모델은 그림을 볼 수 없어 첨부한 그림은 보내지 않았습니다. 글이 든 파일은 그대로 읽습니다',
+  aiAttachNoVision:
+    '지금 모델은 그림을 볼 수 없어 첨부한 그림은 보내지 않았습니다. 글이 든 파일은 그대로 읽습니다',
 } satisfies Record<keyof typeof zh, string>

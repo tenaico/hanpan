@@ -58,5 +58,6 @@ export const fr = {
   aiSumReadAttachment: 'Lire la pièce jointe',
   aiSumImageAttachment: 'Pièce jointe image {name}',
   aiSumReadAttachmentName: 'Lire la pièce jointe {name}',
-  aiAttachNoVision: "Le modèle actuel ne voit pas les images : les images jointes n'ont pas été envoyées ; les fichiers texte sont toujours lus",
+  aiAttachNoVision:
+    "Le modèle actuel ne voit pas les images : les images jointes n'ont pas été envoyées ; les fichiers texte sont toujours lus",
 } satisfies Record<keyof typeof zh, string>

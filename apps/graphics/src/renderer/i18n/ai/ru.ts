@@ -57,5 +57,6 @@ export const ru = {
   aiSumReadAttachment: 'Чтение вложения',
   aiSumImageAttachment: 'Вложенное изображение {name}',
   aiSumReadAttachmentName: 'Чтение вложения {name}',
-  aiAttachNoVision: 'Текущая модель не видит изображения, поэтому прикреплённые картинки не отправлены; текстовые файлы по-прежнему читаются',
+  aiAttachNoVision:
+    'Текущая модель не видит изображения, поэтому прикреплённые картинки не отправлены; текстовые файлы по-прежнему читаются',
 } satisfies Record<keyof typeof zh, string>

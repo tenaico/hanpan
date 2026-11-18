@@ -43,7 +43,11 @@ vi.mock('@genoffice/file-parse', async (importOriginal) => {
 
 import { UNSAVED_CHANGES_MESSAGE, setOpenFilesSource } from '@genoffice/electron-utils'
 import { setUiLang } from '@genoffice/i18n'
-import { ATTACHMENT_EXTS, collectAttachments, registerCadAttachmentIpc } from '../src/main/ai-attachments'
+import {
+  ATTACHMENT_EXTS,
+  collectAttachments,
+  registerCadAttachmentIpc,
+} from '../src/main/ai-attachments'
 import { CAD_CHANNELS } from '../src/shared/ipc'
 import type { AttachmentAddResult, AttachmentReadResult } from '../src/shared/ipc'
 
@@ -97,10 +101,18 @@ describe('which files are taken', () => {
 
   it('keeps a pasted picture in a temporary file and attaches it', async () => {
     const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47])
-    const result = await call<AttachmentAddResult>(CAD_CHANNELS.filesAddPastedImage, png.buffer, 'png')
+    const result = await call<AttachmentAddResult>(
+      CAD_CHANNELS.filesAddPastedImage,
+      png.buffer,
+      'png',
+    )
     expect(result.accepted).toHaveLength(1)
     expect(result.accepted[0]!.ext).toBe('png')
-    const refused = await call<AttachmentAddResult>(CAD_CHANNELS.filesAddPastedImage, png.buffer, 'exe')
+    const refused = await call<AttachmentAddResult>(
+      CAD_CHANNELS.filesAddPastedImage,
+      png.buffer,
+      'exe',
+    )
     expect(refused.accepted).toEqual([])
   })
 })

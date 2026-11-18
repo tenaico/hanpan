@@ -831,7 +831,8 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
               <DocAttachButton
                 lang={lang}
                 onPicked={async ({ paths, notes }) => {
-                  const added = paths.length > 0 ? await ATTACH_BRIDGE().addAttachmentPaths?.(paths) : null
+                  const added =
+                    paths.length > 0 ? await ATTACH_BRIDGE().addAttachmentPaths?.(paths) : null
                   atts.merge({
                     accepted: added?.accepted ?? [],
                     rejected: [...(added?.rejected ?? []), ...notes],

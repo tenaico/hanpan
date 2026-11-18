@@ -416,7 +416,12 @@ describe('the graphics AI panel', () => {
   })
 })
 
-const refPicture = { path: 'C:/ref/logo-ref.png', name: 'logo-ref.png', ext: 'png', sizeBytes: 2048 }
+const refPicture = {
+  path: 'C:/ref/logo-ref.png',
+  name: 'logo-ref.png',
+  ext: 'png',
+  sizeBytes: 2048,
+}
 const specPdf = { path: 'C:/ref/spec.pdf', name: 'spec.pdf', ext: 'pdf', sizeBytes: 40960 }
 
 function attachmentApi(accepted: unknown[]) {

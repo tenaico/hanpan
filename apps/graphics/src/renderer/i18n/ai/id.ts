@@ -57,5 +57,6 @@ export const id = {
   aiSumReadAttachment: 'Baca lampiran',
   aiSumImageAttachment: 'Lampiran gambar {name}',
   aiSumReadAttachmentName: 'Baca lampiran {name}',
-  aiAttachNoVision: 'Model saat ini tidak dapat melihat gambar, jadi gambar lampiran tidak dikirim; file teks tetap dibaca',
+  aiAttachNoVision:
+    'Model saat ini tidak dapat melihat gambar, jadi gambar lampiran tidak dikirim; file teks tetap dibaca',
 } satisfies Record<keyof typeof zh, string>

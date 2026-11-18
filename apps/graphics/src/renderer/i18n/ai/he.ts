@@ -54,5 +54,6 @@ export const he = {
   aiSumReadAttachment: 'קריאת קובץ מצורף',
   aiSumImageAttachment: 'תמונה מצורפת {name}',
   aiSumReadAttachmentName: 'קריאת הקובץ המצורף {name}',
-  aiAttachNoVision: 'המודל הנוכחי לא יכול לראות תמונות, ולכן התמונות שצורפו לא נשלחו; קובצי טקסט עדיין נקראים',
+  aiAttachNoVision:
+    'המודל הנוכחי לא יכול לראות תמונות, ולכן התמונות שצורפו לא נשלחו; קובצי טקסט עדיין נקראים',
 } satisfies Record<keyof typeof zh, string>
