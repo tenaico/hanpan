@@ -48,4 +48,12 @@ export const en = {
   aiToolInspect: 'Read the document',
   aiToolExport: 'Exported a copy',
   aiToolGuide: 'Read a guide',
+  aiAttachTitle: 'Attach local files (or drag them onto the panel)',
+  aiRemoveAttachmentTitle: 'Remove attachment',
+  aiImageReadFail: '{name}: failed to read',
+  aiTooManyImages: 'At most {max} images per message; extras were ignored',
+  aiSumReadAttachment: 'Read attachment',
+  aiSumImageAttachment: 'Image attachment {name}',
+  aiSumReadAttachmentName: 'Read attachment {name}',
+  aiAttachNoVision: 'The current model cannot see images, so the attached pictures were not sent; text files are still read',
 } satisfies Record<keyof typeof zh, string>

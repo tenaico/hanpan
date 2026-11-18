@@ -50,4 +50,12 @@ export const ms = {
   aiToolInspect: 'Membaca dokumen',
   aiToolExport: 'Mengeksport salinan',
   aiToolGuide: 'Membaca panduan',
+  aiAttachTitle: 'Lampirkan fail setempat (atau seret ke panel)',
+  aiRemoveAttachmentTitle: 'Alih keluar lampiran',
+  aiImageReadFail: '{name}: gagal dibaca',
+  aiTooManyImages: 'Maksimum {max} imej setiap mesej; yang lebihan diabaikan',
+  aiSumReadAttachment: 'Baca lampiran',
+  aiSumImageAttachment: 'Lampiran imej {name}',
+  aiSumReadAttachmentName: 'Baca lampiran {name}',
+  aiAttachNoVision: 'Model semasa tidak dapat melihat imej, jadi imej yang dilampirkan tidak dihantar; fail teks masih dibaca',
 } satisfies Record<keyof typeof zh, string>

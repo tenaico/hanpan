@@ -1,12 +1,16 @@
 /**
- * Preload of the AI Photo and AI Illustration tabs: exposes `window.graphicsApi`
- * (see ../shared/ipc). The web app runs in a same-origin iframe and can reach this
- * through `parent`; main therefore decides every path itself (docs/security.md).
+ * Preload of the AI Photo and AI Illustration tabs: hands the host page the
+ * `GraphicsApi` once (see ../shared/ipc). The web app runs in a frame on its own
+ * origin and gets no bridge (decision 0093, option B); main still decides every
+ * path itself and answers the attachment calls only for the top frame
+ * (docs/security.md).
  */
-import { contextBridge, ipcRenderer, webFrame } from 'electron'
+import { contextBridge, ipcRenderer, webFrame, webUtils } from 'electron'
 import { SPLIT_PANE_BRIDGE_KEY, splitPaneBridge } from '@genoffice/electron-utils/split-pane-bridge'
 import { installDropOpenBridge } from '@genoffice/electron-utils/drop-open'
 import { outboundBridge } from '@genoffice/electron-utils/outbound-bridge'
+import { docAttachBridge } from '@genoffice/electron-utils/doc-attach-bridge'
+import { DOC_ATTACH_BRIDGE_KEY } from '@genoffice/electron-utils/doc-attach-channels'
 import type { Lang } from '@genoffice/i18n'
 import type { AiPanelPrefs } from '@genoffice/ui'
 import type { AiStreamChunk } from '@genoffice/ai-provider'
@@ -116,6 +120,14 @@ const api: GraphicsApi = {
   aiStream: (request) => ipcRenderer.invoke(AI_CHANNELS.stream, request),
   aiStreamCancel: (requestId) => ipcRenderer.invoke(AI_CHANNELS.streamCancel, requestId),
   onAiStream: (handler) => listen<[AiStreamChunk]>(AI_CHANNELS.streamChunk, handler),
+  pickAttachments: () => ipcRenderer.invoke(GRAPHICS_CHANNELS.filesPick),
+  addAttachmentPaths: (paths) => ipcRenderer.invoke(GRAPHICS_CHANNELS.filesAdd, paths),
+  addPastedImage: (data, ext) =>
+    ipcRenderer.invoke(GRAPHICS_CHANNELS.filesAddPastedImage, data, ext),
+  readAttachment: (path, offset, maxChars) =>
+    ipcRenderer.invoke(GRAPHICS_CHANNELS.filesRead, path, offset, maxChars),
+  readAttachmentImage: (path) => ipcRenderer.invoke(GRAPHICS_CHANNELS.filesReadImage, path),
+  getPathForFile: (file) => webUtils.getPathForFile(file),
 }
 
 function exposeHostBridges(): void {
@@ -131,6 +143,8 @@ function exposeHostBridges(): void {
   })
   // the AI's outbound guard (decision 0062): the graphics tools reach no address, the guard stays uniform
   contextBridge.exposeInMainWorld('aiOfficeOutbound', outboundBridge())
+  // The shell's document picker, for the AI panel's attach button (decision 0035)
+  contextBridge.exposeInMainWorld(DOC_ATTACH_BRIDGE_KEY, docAttachBridge())
   // The shell's split panes: this view's pane role, and its way to ask for focus
   contextBridge.exposeInMainWorld(SPLIT_PANE_BRIDGE_KEY, splitPaneBridge(ipcRenderer))
   // open documents dragged from the OS onto this tab's own controls as a new shell tab

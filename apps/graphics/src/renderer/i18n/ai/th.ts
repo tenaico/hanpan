@@ -47,4 +47,12 @@ export const th = {
   aiToolInspect: 'อ่านเอกสาร',
   aiToolExport: 'ส่งออกสำเนา',
   aiToolGuide: 'อ่านคู่มือ',
+  aiAttachTitle: 'แนบไฟล์ในเครื่อง (หรือลากมาวางบนแผงก็ได้)',
+  aiRemoveAttachmentTitle: 'เอาสิ่งที่แนบออก',
+  aiImageReadFail: '{name}: อ่านไม่สำเร็จ',
+  aiTooManyImages: 'ส่งรูปได้สูงสุด {max} รูปต่อข้อความ ส่วนที่เกินถูกละเว้น',
+  aiSumReadAttachment: 'อ่านสิ่งที่แนบ',
+  aiSumImageAttachment: 'รูปภาพแนบ {name}',
+  aiSumReadAttachmentName: 'อ่านสิ่งที่แนบ {name}',
+  aiAttachNoVision: 'โมเดลปัจจุบันมองเห็นรูปภาพไม่ได้ จึงไม่ได้ส่งรูปภาพที่แนบไว้ ไฟล์ข้อความยังคงอ่านได้',
 } satisfies Record<keyof typeof zh, string>

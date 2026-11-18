@@ -160,7 +160,12 @@ async function settle(times = 12): Promise<void> {
   for (let i = 0; i < times; i++) await act(() => new Promise((r) => setTimeout(r, 5)))
 }
 
-async function mount(opts: { settings: AiSettings; turns: Turn[]; appHeld?: boolean }) {
+async function mount(opts: {
+  settings: AiSettings
+  turns: Turn[]
+  appHeld?: boolean
+  api?: Record<string, unknown>
+}) {
   const { transport, requests } = scriptedTransport(opts.turns)
   const app = fakeAdapter()
   const unlock = vi.fn()
@@ -170,6 +175,7 @@ async function mount(opts: { settings: AiSettings; turns: Turn[]; appHeld?: bool
     getAiSettings: vi.fn(async () => opts.settings),
     onLanguageChanged: () => () => {},
     exportFile: vi.fn(),
+    ...opts.api,
   } as never)
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -407,5 +413,87 @@ describe('the graphics AI panel', () => {
     await setAppHeld(false)
     expect(requests).toHaveLength(1)
     expect(lockFrame).toHaveBeenCalledTimes(1)
+  })
+})
+
+const refPicture = { path: 'C:/ref/logo-ref.png', name: 'logo-ref.png', ext: 'png', sizeBytes: 2048 }
+const specPdf = { path: 'C:/ref/spec.pdf', name: 'spec.pdf', ext: 'pdf', sizeBytes: 40960 }
+
+function attachmentApi(accepted: unknown[]) {
+  return {
+    pickAttachments: vi.fn(async () => ({ accepted, rejected: [] })),
+    readAttachmentImage: vi.fn(async () => ({ ok: true, base64: 'QUJD', mime: 'image/png' })),
+    readAttachment: vi.fn(async (_path: string, offset: number) => ({
+      ok: true,
+      name: 'spec.pdf',
+      totalChars: 12,
+      offset,
+      text: 'width 80 mm.',
+    })),
+    getPathForFile: () => '',
+  }
+}
+
+async function attach(el: HTMLElement): Promise<void> {
+  const button = el.querySelector('.ai-attach-btn') as HTMLButtonElement
+  expect(button).not.toBeNull()
+  await act(async () => button.click())
+  await settle()
+}
+
+describe('attachments in the graphics AI panel', () => {
+  it('sends an attached picture after the canvas picture, and lists it for the model', async () => {
+    const api = attachmentApi([refPicture])
+    const { el, requests } = await mount({ settings: vision(), turns: [{ text: 'ok' }], api })
+    await attach(el)
+    expect(el.querySelectorAll('.ai-attachments .ai-attachment-thumb')).toHaveLength(1)
+    await send(el, 'Draw it like this logo')
+    const last = requests[0]!.messages.at(-1) as { images?: { base64: string }[] }
+    expect(last.images).toHaveLength(2)
+    expect(last.images![1]!.base64).toBe('QUJD')
+    expect(JSON.stringify(requests[0])).toContain('logo-ref.png')
+    // the composer is empty again; the message shows what it took
+    expect(el.querySelector('.ai-attachments')).toBeNull()
+    expect(el.querySelectorAll('.ai-msg-user .ai-attachment-thumb')).toHaveLength(1)
+  })
+
+  it('does not send attached pictures to a model that cannot see images, and says so', async () => {
+    const api = attachmentApi([refPicture])
+    const { el, requests } = await mount({ settings: textOnly(), turns: [{ text: 'ok' }], api })
+    await attach(el)
+    await send(el, 'Draw it like this logo')
+    const last = requests[0]!.messages.at(-1) as { images?: unknown[] }
+    expect(last.images ?? []).toHaveLength(0)
+    expect(el.querySelector('.ai-attach-notice')?.textContent).toContain('cannot see images')
+  })
+
+  it('reads an attached PDF through read_attachment, and the run offers no undo', async () => {
+    const api = attachmentApi([specPdf])
+    const { el, requests } = await mount({
+      settings: vision(),
+      turns: [{ tools: [{ name: 'read_attachment', input: { index: 0 } }] }, { text: 'Read it.' }],
+      api,
+    })
+    await attach(el)
+    await send(el, 'Use the sizes in the spec')
+    expect(api.readAttachment).toHaveBeenCalledWith(specPdf.path, 0, 24_000)
+    expect(JSON.stringify(requests[1])).toContain('width 80 mm.')
+    expect(undoButton(el)).toBeNull()
+  })
+
+  it('a new chat clears the attachments', async () => {
+    const api = attachmentApi([specPdf])
+    const { el, requests } = await mount({
+      settings: vision(),
+      turns: [{ text: 'ok' }, { text: 'ok' }],
+      api,
+    })
+    await attach(el)
+    await send(el, 'First')
+    const newChat = el.querySelector('.ai-panel-header-actions .ai-header-btn') as HTMLButtonElement
+    await act(async () => newChat.click())
+    await settle()
+    await send(el, 'Second')
+    expect(JSON.stringify(requests[1])).not.toContain('spec.pdf')
   })
 })

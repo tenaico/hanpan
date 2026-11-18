@@ -3,9 +3,10 @@
  * shared parts and rules as the other editors' panels (the send gate, the
  * connect prompt, the first-connection notice, the blocked-run notice, the
  * shared run-error wording, the model picker, the message queue), built on
- * the epub panel with what a picture tab has no use for left out: no
- * attachments, no web search, no Drive files, no person's skills, no saved
- * conversation.
+ * the epub panel with what a picture tab has no use for left out: no web
+ * search, no Drive files, no person's skills, no saved conversation. Files
+ * the person attaches are read by main and seen by the AI only: they never
+ * reach the app's frame (decision 0093, option B).
  *
  * A run works through the app's own commands (`graphics-skill.ts`). The
  * person's input to the app is locked while it runs, so the app's undo
@@ -26,6 +27,9 @@ import {
   AiToolsUnsupportedNotice,
   AiTypingIndicator,
   AiUsageChip,
+  DocAttachButton,
+  docMentionActions,
+  type AiComposerDocs,
   addTokenUsage,
   aiSubscriptionText,
   Markdown,
@@ -51,6 +55,10 @@ import { aiLangDirective } from './lang-directive'
 import { blockedRunFor, mergeSubscriptionUsage, type BlockedRun } from './connection'
 import { createGraphicsSkill, type GraphicsSkill } from './graphics-skill'
 import { canvasShot } from './snapshot'
+import { createFilesSkill } from './files-skill'
+import { AttachmentList, useAttachments, type AttachmentBridge } from './attachments'
+import { ATTACHMENT_IMAGE_EXTS, type AttachmentMeta } from '../../shared/ipc'
+import attachIcon from './assets/attach-icon.png'
 import { useSubscriptionConnection } from './subscription-client'
 import { createElectronTransport } from './transport'
 import { createUndoTracker, undoRun, type RunUndo, type UndoTracker } from './undo-tracker'
@@ -70,6 +78,7 @@ const TOOL_LABELS: Record<string, StringKey> = {
   inspect_document: 'aiToolInspect',
   export_file: 'aiToolExport',
   load_guide: 'aiToolGuide',
+  read_attachment: 'aiSumReadAttachment',
 }
 
 function toolLabel(name: string, summary: string): string {
@@ -91,6 +100,9 @@ const MODEL_BRIDGE: AiModelPickerBridge = {
       ?.openAiModelSettings?.()
       .catch(() => {}) ?? Promise.resolve(),
 }
+
+/** the preload bridge's attachment calls; none when it has not been handed over */
+const ATTACH_BRIDGE = (): AttachmentBridge => graphicsApiOrNull() ?? {}
 
 interface ToolActivity {
   name: string
@@ -114,6 +126,8 @@ interface ChatEntry {
   /** what the run changed, for its one [Undo]; absent when it changed nothing */
   undo?: RunUndo
   undoState?: UndoState
+  /** attachments this message took from the composer (shown read-only; a retry sends them again) */
+  attachments?: AttachmentMeta[]
 }
 
 export interface GraphicsAiPanelProps {
@@ -163,12 +177,12 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
       window.removeEventListener('focus', refresh)
     }
   }, [])
-  const sendGate = useAiSendGate<{ text: string }>({
+  const sendGate = useAiSendGate<{ text: string; attachments?: AttachmentMeta[] }>({
     settings: aiSettings,
     statuses: subscription.statuses,
     store: MODEL_BRIDGE,
     start: (held) => {
-      send(held.text)
+      send(held.text, held.attachments)
     },
     onSettingsSaved: setAiSettings,
   })
@@ -177,13 +191,23 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
   const [subscriptionUsage, setSubscriptionUsage] = useState<AiSubscriptionUsage[]>([])
   const [inputTruncated, setInputTruncated] = useState(false)
   const lastStreamErrorRef = useRef<IpcStreamError | null>(null)
-  const msgQueue = useChatRunQueue<Record<string, never>>({
+  const atts = useAttachments(
+    ATTACH_BRIDGE,
+    {
+      imageReadFail: (name) => tGlobal('aiImageReadFail', { name }),
+      tooManyImages: (max) => tGlobal('aiTooManyImages', { max }),
+    },
+    chat.flatMap((entry) => entry.attachments ?? []),
+  )
+  const attsRef = useRef(atts)
+  attsRef.current = atts
+  const msgQueue = useChatRunQueue<{ atts: AttachmentMeta[] }>({
     busy: busy || props.appHeld === true,
-    submit: (text) => {
+    submit: (text, meta) => {
       const loop = loopRef.current
       if (!loop || loop.busy) return false
       if (!sendGateRef.current.admitQueued(() => msgQueueRef.current.setPaused(true))) return false
-      return send(text)
+      return send(text, meta.atts)
     },
   })
   const msgQueueRef = useRef(msgQueue)
@@ -284,6 +308,10 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
         settingsRef.current ? localModelCapabilities(settingsRef.current).tools !== false : true,
       skill: composeWithDrive('graphics', '', () => loopRef.current?.messages ?? [], [
         graphicsSkillRef.current,
+        createFilesSkill(
+          () => attsRef.current.available(),
+          (path, offset, maxChars) => graphicsApi().readAttachment(path, offset, maxChars),
+        ),
       ]),
       systemSuffix: () => aiLangDirective(langRef.current),
       events: {
@@ -390,19 +418,30 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
     stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48
   }
 
-  /** false when nothing was started (empty text, no app yet, a run already active, or the gate held or refused it) */
-  const send = (text: string): boolean => {
+  /**
+   * false when nothing was started (empty text, no app yet, a run already active, or the gate
+   * held or refused it). `attachmentsOverride` is a queued or retried message's own list; without
+   * it the message takes the composer's attachments.
+   */
+  const send = (text: string, attachmentsOverride?: AttachmentMeta[]): boolean => {
     const instruction = text.trim()
     const loop = loopRef.current
     const app = adapterRef.current
     if (!instruction || !loop || loop.busy || runRef.current || !app) return false
     if (propsRef.current.appHeld) {
-      // the app is a quick action's until it ends: the request waits its turn
-      msgQueue.enqueue(instruction, {})
+      // the app is a quick action's until it ends: the request waits its turn, with its attachments
+      msgQueue.enqueue(instruction, { atts: attachmentsOverride ?? atts.detach() })
       setPrompt('')
       return true
     }
-    if (!sendGate.admit({ text: instruction })) return false
+    if (!sendGate.admit({ text: instruction, attachments: attachmentsOverride })) return false
+    let sentAtts: AttachmentMeta[]
+    if (attachmentsOverride) {
+      atts.keep(attachmentsOverride)
+      sentAtts = attachmentsOverride
+    } else {
+      sentAtts = atts.take()
+    }
     lastStreamErrorRef.current = null
     setInputTruncated(false)
     stickToBottomRef.current = true
@@ -411,7 +450,11 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
     runUsageRef.current = undefined
     setChat((prev) => [
       ...prev,
-      { role: 'user', text: instruction },
+      {
+        role: 'user',
+        text: instruction,
+        ...(sentAtts.length > 0 ? { attachments: sentAtts } : {}),
+      },
       { role: 'assistant', text: '', streaming: true },
     ])
     setPrompt('')
@@ -423,11 +466,18 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
         if (!settings) throw new Error(tGlobal('aiUnknownError'))
         settingsRef.current = settings
         contextRef.current = await app.contextSummary().catch(() => '')
-        const shot = await canvasShot(app, settingsSupportVision(settings, statusesRef.current))
+        const seeing = settingsSupportVision(settings, statusesRef.current)
+        const shot = await canvasShot(app, seeing)
+        // the canvas is the first picture, the attached ones follow; a model without
+        // vision gets none of them, and the person is told the attached ones stayed back
+        const pictures = sentAtts.filter((a) => ATTACHMENT_IMAGE_EXTS.has(a.ext))
+        const attached = seeing ? await atts.images(sentAtts) : []
+        if (!seeing && pictures.length > 0) atts.showNotice([tGlobal('aiAttachNoVision')])
         if (!mountedRef.current || seq !== sendSeqRef.current) return
         runRef.current = { unlock: propsRef.current.lockFrame() }
         propsRef.current.onBusyChange(true)
-        loop.run(`${instruction}\n\n${shot.note}`, shot.images)
+        const images = [...(shot.images ?? []), ...attached]
+        loop.run(`${instruction}\n\n${shot.note}`, images.length > 0 ? images : undefined)
       } catch (err) {
         if (!mountedRef.current || seq !== sendSeqRef.current) return
         patchLast({
@@ -466,18 +516,22 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
   const enqueueDraft = () => {
     const text = prompt.trim()
     if (!text) return
-    msgQueue.enqueue(text, {})
+    // the queued message owns the composer attachments; they go with it when it runs
+    msgQueue.enqueue(text, { atts: atts.detach() })
     setPrompt('')
   }
 
+  const lastUserAttachments = (): AttachmentMeta[] =>
+    [...chat].reverse().find((entry) => entry.role === 'user')?.attachments ?? []
+
   const retry = (): void => {
-    send(runInstructionRef.current)
+    send(runInstructionRef.current, lastUserAttachments())
   }
 
   const continueWith = (provider: AiSubscriptionProviderId): void => {
     const last = [...chat].reverse().find((entry) => entry.role === 'user')
     sendGate.continueWith(provider, () => {
-      if (last) send(last.text)
+      if (last) send(last.text, last.attachments ?? [])
       else retry()
     })
   }
@@ -500,11 +554,39 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
 
   const example = kind === 'photo' ? t('aiEmptyPhoto') : t('aiEmptyIllust')
 
+  /** The `@` document list in the input attaches through the same route as the buttons */
+  const docMention: AiComposerDocs = {
+    lang,
+    ...docMentionActions({
+      lang,
+      add: async (paths) => (await ATTACH_BRIDGE().addAttachmentPaths?.(paths)) ?? null,
+      merge: atts.merge,
+    }),
+    attachments: atts.list,
+  }
+
   return (
     <aside
-      className="copilot"
+      className={`copilot${atts.dragOver ? ' ai-panel-dragover' : ''}`}
       style={{ width: '100%' }}
       dir={lang === 'ar' || lang === 'he' ? 'rtl' : undefined}
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes('Files')) {
+          e.preventDefault()
+          e.stopPropagation()
+          atts.setDragOver(true)
+        }
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) atts.setDragOver(false)
+      }}
+      onDrop={(e) => {
+        // the files are this panel's: the shell's "open in a new tab" does not take them
+        e.preventDefault()
+        e.stopPropagation()
+        atts.setDragOver(false)
+        void atts.drop(Array.from(e.dataTransfer.files))
+      }}
     >
       <header className="ai-panel-header">
         <span className="ai-panel-title">
@@ -521,6 +603,7 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
                 msgQueue.clear()
                 sendGate.reset()
                 loopRef.current?.reset()
+                atts.clear()
                 setChat([])
               }}
               data-tip={t('aiNewChat')}
@@ -554,6 +637,11 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
             return (
               <div key={i} className="ai-msg ai-msg-user">
                 <span dir="auto">{entry.text}</span>
+                {entry.attachments && entry.attachments.length > 0 && (
+                  <div className="ai-msg-attachments">
+                    <AttachmentList atts={entry.attachments} previews={atts.previews} />
+                  </div>
+                )}
                 {entry.undelivered && (
                   <div className="ai-msg-undelivered">
                     {t('aiUndelivered')}
@@ -679,6 +767,17 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
         {aiSettings !== null && localModelCapabilities(aiSettings).tools === false && (
           <AiToolsUnsupportedNotice lang={lang} />
         )}
+        {atts.list.length > 0 && (
+          <div className="ai-attachments">
+            <AttachmentList
+              atts={atts.list}
+              previews={atts.previews}
+              onRemove={atts.remove}
+              removeLabel={t('aiRemoveAttachmentTitle')}
+            />
+          </div>
+        )}
+        {atts.notice && <div className="ai-attach-notice">{atts.notice}</div>}
         <AiComposer
           queueStrip={
             <AiQueueStrip
@@ -709,6 +808,8 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
           onChange={setPrompt}
           onSend={() => void send(prompt)}
           onStop={stop}
+          docs={docMention}
+          onPasteFiles={(files) => void atts.paste(files)}
           footerStart={
             <>
               <AiModelPicker
@@ -718,6 +819,25 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
               />
               <AiSubscriptionUsageLine usage={subscriptionUsage} lang={lang} />
               {sessionUsage && <AiUsageChip usage={sessionUsage} session lang={lang} />}
+              <button
+                type="button"
+                className="ai-attach-btn"
+                onClick={() => void atts.pick()}
+                data-tip={t('aiAttachTitle')}
+                aria-label={t('aiAttachTitle')}
+              >
+                <img src={attachIcon} alt="" aria-hidden />
+              </button>
+              <DocAttachButton
+                lang={lang}
+                onPicked={async ({ paths, notes }) => {
+                  const added = paths.length > 0 ? await ATTACH_BRIDGE().addAttachmentPaths?.(paths) : null
+                  atts.merge({
+                    accepted: added?.accepted ?? [],
+                    rejected: [...(added?.rejected ?? []), ...notes],
+                  })
+                }}
+              />
             </>
           }
         />

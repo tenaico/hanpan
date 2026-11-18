@@ -48,4 +48,12 @@ export const ar = {
   aiToolInspect: 'قراءة المستند',
   aiToolExport: 'تصدير نسخة',
   aiToolGuide: 'قراءة دليل',
+  aiAttachTitle: 'إرفاق ملفات محلية (أو اسحبها إلى اللوحة)',
+  aiRemoveAttachmentTitle: 'إزالة المرفق',
+  aiImageReadFail: '{name}: فشلت القراءة',
+  aiTooManyImages: 'يمكن إرسال {max} صور كحد أقصى مع كل رسالة؛ تم تجاهل الزائد',
+  aiSumReadAttachment: 'قراءة المرفق',
+  aiSumImageAttachment: 'مرفق صورة {name}',
+  aiSumReadAttachmentName: 'قراءة المرفق {name}',
+  aiAttachNoVision: 'لا يستطيع النموذج الحالي رؤية الصور، لذا لم تُرسل الصور المرفقة؛ ولا تزال الملفات النصية تُقرأ',
 } satisfies Record<keyof typeof zh, string>

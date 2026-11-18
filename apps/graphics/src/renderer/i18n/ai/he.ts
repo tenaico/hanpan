@@ -47,4 +47,12 @@ export const he = {
   aiToolInspect: 'קריאת המסמך',
   aiToolExport: 'ייצוא עותק',
   aiToolGuide: 'קריאת מדריך',
+  aiAttachTitle: 'צירוף קבצים מקומיים (אפשר גם לגרור אל החלונית)',
+  aiRemoveAttachmentTitle: 'הסרת הקובץ המצורף',
+  aiImageReadFail: '{name}: הקריאה נכשלה',
+  aiTooManyImages: 'עד {max} תמונות בהודעה; הנוספות לא נכללו',
+  aiSumReadAttachment: 'קריאת קובץ מצורף',
+  aiSumImageAttachment: 'תמונה מצורפת {name}',
+  aiSumReadAttachmentName: 'קריאת הקובץ המצורף {name}',
+  aiAttachNoVision: 'המודל הנוכחי לא יכול לראות תמונות, ולכן התמונות שצורפו לא נשלחו; קובצי טקסט עדיין נקראים',
 } satisfies Record<keyof typeof zh, string>

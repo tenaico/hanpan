@@ -39,6 +39,17 @@ export const GRAPHICS_CHANNELS = {
   recoveryCopyNowDone: 'graphics:recovery-copy-now-done',
   /** the copy was saved or dropped: the next copy is written even if nothing changed since */
   recoveryReset: 'graphics:recovery-reset',
+  // ---- AI panel attachments (the other editors' contract) ----
+  /** invoke → `AttachmentAddResult | null` */
+  filesPick: 'graphics:files-pick',
+  /** invoke(paths) → `AttachmentAddResult` */
+  filesAdd: 'graphics:files-add',
+  /** invoke(bytes, ext) → `AttachmentAddResult` */
+  filesAddPastedImage: 'graphics:files-add-pasted-image',
+  /** invoke(path, offset, maxChars) → `AttachmentReadResult` */
+  filesRead: 'graphics:files-read',
+  /** invoke(path) → `AttachmentImageResult` */
+  filesReadImage: 'graphics:files-read-image',
 } as const
 
 export const APP_CHANNELS = {
@@ -152,7 +163,15 @@ export interface GraphicsApi {
   onRecoveryCopyNow(handler: () => void): () => void
   recoveryCopyNowDone(): void
   onRecoveryReset(handler: () => void): () => void
-  // ---- the AI panel: no attachments, no web search, no files of its own ----
+  // ---- the AI panel: attachments read by main, no web search, no files of its own ----
+  // attachments: picked, read and handed back by main; the panel never reads a file itself
+  pickAttachments(): Promise<AttachmentAddResult | null>
+  addAttachmentPaths(paths: string[]): Promise<AttachmentAddResult>
+  addPastedImage(data: ArrayBuffer, ext: string): Promise<AttachmentAddResult>
+  readAttachment(path: string, offset: number, maxChars: number): Promise<AttachmentReadResult>
+  readAttachmentImage(path: string): Promise<AttachmentImageResult>
+  /** the local path of a dropped or pasted file; '' for one with no file of its own */
+  getPathForFile(file: File): string
   getAiPanelPrefs(): Promise<AiPanelPrefs>
   setAiPanelPrefs(patch: Partial<AiPanelPrefs>): Promise<AiPanelPrefs>
   onAiPanelPrefsChanged(handler: (prefs: AiPanelPrefs) => void): () => void
@@ -165,4 +184,38 @@ export interface GraphicsApi {
   aiStream(request: AiStreamRequest): Promise<void>
   aiStreamCancel(requestId: string): Promise<void>
   onAiStream(handler: (chunk: AiStreamChunk) => void): () => void
+}
+
+// ---- AI panel attachments (same shapes as the other editors) ----
+
+/** image attachments skip text extraction: read as base64 on send and passed to the model with the user message */
+export const ATTACHMENT_IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp'])
+
+export interface AttachmentMeta {
+  path: string
+  name: string
+  ext: string
+  sizeBytes: number
+}
+
+export interface AttachmentAddResult {
+  accepted: AttachmentMeta[]
+  /** per-file reasons, already localized */
+  rejected: string[]
+}
+
+export interface AttachmentReadResult {
+  ok: boolean
+  name?: string
+  totalChars?: number
+  offset?: number
+  text?: string
+  error?: string
+}
+
+export interface AttachmentImageResult {
+  ok: boolean
+  base64?: string
+  mime?: string
+  error?: string
 }
