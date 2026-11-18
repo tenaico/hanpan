@@ -83,6 +83,7 @@ import {
   writeViewCopy,
 } from './recovery-main'
 import { APP_CHANNELS, CAD_CHANNELS } from '../shared/ipc'
+import { registerCadAttachmentIpc } from './ai-attachments'
 import type {
   CadMenuCommand,
   ExportFormat,
@@ -725,6 +726,8 @@ let ipcRegistered = false
 function registerCadIpc(): void {
   if (ipcRegistered) return
   ipcRegistered = true
+  // the AI panel's attachments: picked and read here, never inside the page
+  registerCadAttachmentIpc()
 
   ipcMain.handle(CAD_CHANNELS.consumePending, (e) => {
     const wcId = e.sender.id

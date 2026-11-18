@@ -1,8 +1,10 @@
 import type { AiPanelPrefs } from '@genoffice/ui'
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import { installDropOpenBridge } from '@genoffice/electron-utils/drop-open'
 import { userSkillsBridge } from '@genoffice/electron-utils/user-skills-bridge'
 import { USER_SKILLS_BRIDGE_KEY } from '@genoffice/electron-utils/user-skills-channels'
+import { docAttachBridge } from '@genoffice/electron-utils/doc-attach-bridge'
+import { DOC_ATTACH_BRIDGE_KEY } from '@genoffice/electron-utils/doc-attach-channels'
 import { SPLIT_PANE_BRIDGE_KEY, splitPaneBridge } from '@genoffice/electron-utils/split-pane-bridge'
 import type { Lang } from '@genoffice/i18n'
 import type { AiStreamChunk } from '@genoffice/ai-provider'
@@ -168,6 +170,13 @@ const ai: CadAiApi = {
   aiStream: (request) => ipcRenderer.invoke(AI_CHANNELS.stream, request),
   aiStreamCancel: (requestId) => ipcRenderer.invoke(AI_CHANNELS.streamCancel, requestId),
   onAiStream: (handler) => listen<[AiStreamChunk]>(AI_CHANNELS.streamChunk, handler),
+  pickAttachments: () => ipcRenderer.invoke(CAD_CHANNELS.filesPick),
+  addAttachmentPaths: (paths) => ipcRenderer.invoke(CAD_CHANNELS.filesAdd, paths),
+  addPastedImage: (data, ext) => ipcRenderer.invoke(CAD_CHANNELS.filesAddPastedImage, data, ext),
+  readAttachment: (path, offset, maxChars) =>
+    ipcRenderer.invoke(CAD_CHANNELS.filesRead, path, offset, maxChars),
+  readAttachmentImage: (path) => ipcRenderer.invoke(CAD_CHANNELS.filesReadImage, path),
+  getPathForFile: (file) => webUtils.getPathForFile(file),
 }
 
 const api: CadApi = { ...core, ...queries, ...recovery, ...exporting, ...sending, ...ai }
@@ -183,6 +192,8 @@ const projectApi: Pick<ProjectApi, 'resolveChat' | 'appendChat' | 'loadChat' | '
 contextBridge.exposeInMainWorld('cadApi', api)
 // the person's skills: the AI pane's `/` list and skill reads, skill cards (shell main checks each)
 contextBridge.exposeInMainWorld(USER_SKILLS_BRIDGE_KEY, userSkillsBridge())
+// The shell's document picker, for the AI pane's attach button (decision 0035)
+contextBridge.exposeInMainWorld(DOC_ATTACH_BRIDGE_KEY, docAttachBridge())
 // The shell's split panes: this view's pane role, and its way to ask for focus
 contextBridge.exposeInMainWorld(SPLIT_PANE_BRIDGE_KEY, splitPaneBridge(ipcRenderer))
 contextBridge.exposeInMainWorld('projectApi', projectApi)
