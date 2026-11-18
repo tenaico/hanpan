@@ -29,3 +29,4 @@ Dvě karty pro obrázky. **AI Photo** otevírá fotografie a obrázky s vrstvami
 ## Co se odesílá
 
 - AI dostane váš požadavek, krátký souhrn obrázku (název, velikost, vrstvy a výběr) a u modelu, který vidí obrázky, malý obrázek plátna. Samotné aplikace nic neodesílají. Více v části [Panel asistenta AI](help://ai-panel).
+- Chcete-li AI ukázat předlohu, přiložte soubor tlačítkem se sponkou pod polem pro zadání, přetáhněte ho na panel nebo vložte obrázek (Ctrl+V). AI si přiložené obrázky prohlédne a přiložené dokumenty přečte; nic z přiloženého se nedostane do obrázku ani do aplikace.

@@ -48,6 +48,7 @@ AI Drawing is a tab for simple 3D models and drawings. Open a drawing someone se
   - "Align the selected parts to the left"
 - Everything one request changed comes back with one **Undo** (Ctrl+Z), however many parts it touched.
 - The AI receives your request and a summary of the model (each part's name, kind, size and position). It cannot save, open, export or send; those stay with you.
+- To give the AI a spec sheet or a sketch, attach it with the paper-clip button under the input, drag it onto the panel or paste a picture (Ctrl+V). The AI reads it and builds from it; the file never goes into the drawing, and the request is still one undo step.
 
 ## Saving and recovery
 

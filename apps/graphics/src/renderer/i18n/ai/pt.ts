@@ -51,4 +51,13 @@ export const pt = {
   aiToolInspect: 'Documento lido',
   aiToolExport: 'Cópia exportada',
   aiToolGuide: 'Guia lido',
+  aiAttachTitle: 'Anexar arquivos locais (ou arraste-os para o painel)',
+  aiRemoveAttachmentTitle: 'Remover anexo',
+  aiImageReadFail: '{name}: falha na leitura',
+  aiTooManyImages: 'No máximo {max} imagens por mensagem; as excedentes foram ignoradas',
+  aiSumReadAttachment: 'Ler anexo',
+  aiSumImageAttachment: 'Imagem anexada {name}',
+  aiSumReadAttachmentName: 'Ler anexo {name}',
+  aiAttachNoVision:
+    'O modelo atual não consegue ver imagens, por isso as imagens anexadas não foram enviadas; os arquivos de texto continuam a ser lidos',
 } satisfies Record<keyof typeof zh, string>

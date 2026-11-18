@@ -43,4 +43,12 @@ export const zh = {
   aiToolInspect: '读取文档',
   aiToolExport: '导出副本',
   aiToolGuide: '读取指南',
+  aiAttachTitle: '添加本地文件作为附件(也可拖拽到面板)',
+  aiRemoveAttachmentTitle: '移除附件',
+  aiImageReadFail: '{name}: 读取失败',
+  aiTooManyImages: '图片最多随消息发送 {max} 张,多余的已忽略',
+  aiSumReadAttachment: '读取附件',
+  aiSumImageAttachment: '图片附件 {name}',
+  aiSumReadAttachmentName: '读取附件 {name}',
+  aiAttachNoVision: '当前模型无法查看图片，附加的图片未发送；文字文件仍会读取',
 }

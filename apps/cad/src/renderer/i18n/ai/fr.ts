@@ -46,4 +46,13 @@ export const fr = {
   aiToolAlignShapes: 'Aligner des formes · {n}',
   aiToolSetWorkplane: 'Redimensionner le plan de travail',
   aiToolRefused: '{action} · refusé',
+  aiAttachTitle: 'Joindre des fichiers locaux (ou faites-les glisser sur le panneau)',
+  aiRemoveAttachmentTitle: 'Supprimer la pièce jointe',
+  aiImageReadFail: '{name} : échec de la lecture',
+  aiTooManyImages: 'Au plus {max} images par message ; les images en trop ont été ignorées',
+  aiSumReadAttachment: 'Lire la pièce jointe',
+  aiSumImageAttachment: 'Pièce jointe image {name}',
+  aiSumReadAttachmentName: 'Lire la pièce jointe {name}',
+  aiAttachNoVision:
+    "Le modèle actuel ne voit pas les images : les images jointes n'ont pas été envoyées ; les fichiers texte sont toujours lus",
 } satisfies Record<keyof typeof zh, string>

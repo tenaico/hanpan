@@ -4,7 +4,14 @@ import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { graphicsGpuMissing, launchShell, closeAndSaveVideo, waitForPageWithUrl } from './helpers'
+import {
+  graphicsGpuMissing,
+  launchShell,
+  closeAndSaveVideo,
+  screenshotPath,
+  stubAiReady,
+  waitForPageWithUrl,
+} from './helpers'
 
 /**
  * AI Illustration (decision 0093) with the web build the graphics package was
@@ -217,6 +224,65 @@ test.describe('AI Illustration tab', () => {
       await expect(tab.locator('.gx-notice')).not.toContainText('could not')
     } finally {
       await closeAndSaveVideo(launched, 'graphics-quick')
+    }
+  })
+
+  test('the AI panel takes an attached file for the AI to read; the app frame gets no bridge', async () => {
+    const launched = await launchShell({ onboardingSeen: true, videoDir: 'graphics-attach' })
+    const { app, page } = launched
+    const dir = await mkdtemp(join(tmpdir(), 'hanpan-graphics-attach-'))
+    try {
+      const brief = join(dir, 'brief.txt')
+      writeFileSync(brief, 'Logo: a blue rounded square with the word TEN.')
+      await page.locator('.quick-card[data-new="illust"]').click()
+      const tab = await waitForPageWithUrl(app, '://illust/')
+      const noGpu = await graphicsGpuMissing(tab)
+      test.skip(noGpu !== null, noGpu ?? '')
+      await expect
+        .poll(() => inApp<number>(tab, 'return (await vc.commands()).length').catch(() => 0), {
+          timeout: 60_000,
+        })
+        .toBeGreaterThan(1000)
+      // decision 0093 option B: the app's own frame sees none of the host's bridges
+      const frameSees = await appFrame(tab, 'illust').evaluate(() => ({
+        docs: typeof (window as { aiOfficeDocs?: unknown }).aiOfficeDocs,
+        bridge: typeof (window as { graphicsBridge?: unknown }).graphicsBridge,
+      }))
+      expect(frameSees).toEqual({ docs: 'undefined', bridge: 'undefined' })
+
+      await app.evaluate(({ dialog }, path) => {
+        dialog.showOpenDialog = (async () => ({
+          canceled: false,
+          filePaths: [path],
+        })) as typeof dialog.showOpenDialog
+      }, brief)
+      await stubAiReady(app, [
+        [
+          {
+            type: 'tool-call',
+            toolCall: { id: 'r1', name: 'read_attachment', input: { index: 0 } },
+          },
+          { type: 'done' },
+        ],
+        [{ type: 'delta', text: 'The brief asks for a blue rounded square.' }, { type: 'done' }],
+      ])
+      const panel = tab.locator('.copilot')
+      await expect(panel).toBeVisible()
+      await panel.locator('.ai-attach-btn:not(.ai-doc-attach-btn)').click()
+      await expect(panel.locator('.ai-attachments .ai-attachment-card-name')).toHaveText(
+        'brief.txt',
+      )
+      await tab.screenshot({ path: screenshotPath('graphics-ai-attachments') })
+      await panel.locator('.ai-input-box textarea').fill('Draw the logo in the brief')
+      await panel.locator('.ai-send-btn').click()
+      await expect(panel.locator('.ai-msg-assistant').last()).toContainText(
+        'The brief asks for a blue rounded square.',
+        { timeout: 30_000 },
+      )
+      await expect(panel.locator('.ai-msg-user .ai-attachment-card-name')).toHaveText('brief.txt')
+      await expect(panel.locator('.ai-attachments')).toHaveCount(0)
+    } finally {
+      await closeAndSaveVideo(launched, 'graphics-attach')
     }
   })
 

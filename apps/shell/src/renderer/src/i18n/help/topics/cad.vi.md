@@ -48,6 +48,7 @@ Bản vẽ AI là thẻ dành cho các mô hình 3D và bản vẽ đơn giản.
   - "Căn các hình đang chọn sang trái"
 - Mọi thay đổi của một yêu cầu đều được trả lại chỉ bằng một lần **Hoàn tác** (Ctrl+Z), dù yêu cầu đó đụng đến bao nhiêu hình.
 - AI nhận yêu cầu của bạn và bản tóm tắt mô hình (tên, loại, kích thước và vị trí của từng hình). AI không thể lưu, mở, xuất hay gửi tệp; những việc đó vẫn do bạn làm.
+- Để đưa cho AI bảng thông số hoặc bản phác, hãy đính kèm bằng nút kẹp giấy dưới ô nhập, kéo vào bảng hoặc dán hình (Ctrl+V). AI đọc và dựng theo đó; tệp không bao giờ đi vào bản vẽ, và yêu cầu đó vẫn hoàn tác trong một bước.
 
 ## Lưu và khôi phục
 

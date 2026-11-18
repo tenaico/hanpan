@@ -29,3 +29,4 @@ Dwie karty do obrazów. **AI Photo** otwiera zdjęcia i obrazy z warstwami (PSD,
 ## Co jest wysyłane
 
 - AI otrzymuje twoją prośbę, krótkie podsumowanie obrazu (nazwa, rozmiar, warstwy i zaznaczenie) oraz, jeśli model widzi obrazy, mały obraz płótna. Same aplikacje niczego nie wysyłają. Więcej w [Panel asystenta AI](help://ai-panel).
+- Aby pokazać AI wzór, dołącz plik przyciskiem spinacza pod polem wpisywania, przeciągnij go na panel lub wklej obraz (Ctrl+V). AI ogląda dołączone obrazy i czyta dołączone dokumenty; nic z tego nie trafia do obrazu ani do aplikacji.

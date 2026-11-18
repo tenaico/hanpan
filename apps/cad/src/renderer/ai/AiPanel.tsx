@@ -2,8 +2,9 @@
  * The AI Drawing's AI pane: the same parts and rules as the other editors'
  * panels (the send gate, the connect prompt, the first-connection notice, the
  * blocked-run notice, the shared run-error wording, the person's skills),
- * with the drawing's own skill (`cad-skill.ts`) and nothing else: no
- * attachments, pictures, web search or hand-over.
+ * with the drawing's own skill (`cad-skill.ts`) and the person's attachments
+ * (`files-skill.ts`, read by main and seen by the AI as reference, never put
+ * into the drawing), and nothing else: no web search or hand-over.
  *
  * One request is one undo step (apps/cad/AGENTS.md): the pane opens a group
  * in the drawing's history right before the run starts and closes it in a
@@ -32,6 +33,9 @@ import {
   AiTypingIndicator,
   AiUsageChip,
   addTokenUsage,
+  DocAttachButton,
+  docMentionActions,
+  type AiComposerDocs,
   type AiTokenUsageView,
   Markdown,
   useAiSendGate,
@@ -56,8 +60,9 @@ import type {
   AiSubscriptionProviderId,
   AiSubscriptionUsage,
 } from '@genoffice/ai-provider'
-import { localModelCapabilities } from '@genoffice/ai-provider/browser'
-import type { CadAiApi } from '../../shared/ipc'
+import { localModelCapabilities, settingsSupportVision } from '@genoffice/ai-provider/browser'
+import { ATTACHMENT_IMAGE_EXTS } from '../../shared/ipc'
+import type { AttachmentMeta, CadAiApi } from '../../shared/ipc'
 import type { CadSession } from '../document/session'
 import { t as tGlobal, useI18n } from '../i18n/locale'
 import { createCadSkill } from './cad-skill'
@@ -66,6 +71,9 @@ import { aiLangDirective } from './lang-directive'
 import { QuickActions, type QuickActionsProps } from './QuickActions'
 import { useSubscriptionConnection } from './subscription-client'
 import { createElectronTransport } from './transport'
+import { createFilesSkill } from './files-skill'
+import { AttachmentList, useAttachments, type AttachmentBridge } from './attachments'
+import attachIcon from './assets/attach-icon.png'
 import sendEnterOn from './assets/send-enter-on.png'
 import sendEnterOff from './assets/send-enter-off.png'
 import sendStop from './assets/send-stop.png'
@@ -110,6 +118,9 @@ function loadPanelWidth(): number {
     : PANEL_WIDTH_DEFAULT
 }
 
+/** the preload bridge's attachment calls */
+const ATTACH_BRIDGE = (): AttachmentBridge => aiApi()
+
 interface ToolActivity {
   name: string
   summary: string
@@ -137,6 +148,8 @@ interface ChatEntry {
   tools?: ToolActivity[]
   /** tokens the provider billed for this reply (absent when unreported) */
   usage?: AiTokenUsageView
+  /** attachments this message took from the composer (shown read-only; a retry sends them again) */
+  attachments?: AttachmentMeta[]
 }
 
 export interface AiPanelProps {
@@ -183,12 +196,16 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
   /** The send gate every editor shares: holds a request made during a status check or in front
       of the first-connection notice, refuses in front of "not connected", and writes this
       pane's settings changes ("continue with …", the acknowledged notice) onto the stored ones. */
-  const sendGate = useAiSendGate<{ text: string; skillUse: SkillUse }>({
+  const sendGate = useAiSendGate<{
+    text: string
+    skillUse: SkillUse
+    attachments?: AttachmentMeta[]
+  }>({
     settings: aiSettings,
     statuses: subscription.statuses,
     store: MODEL_BRIDGE,
     start: (held) => {
-      send(held.text, held.skillUse)
+      send(held.text, held.skillUse, held.attachments)
     },
     onSettingsSaved: setAiSettings,
   })
@@ -201,7 +218,19 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
   /** structured cause of the last failed stream */
   const lastStreamErrorRef = useRef<IpcStreamError | null>(null)
   /** messages queued while a reply runs; the pump re-runs them through send on settle */
-  const msgQueue = useChatRunQueue<{ skillUse: SkillUse }>({
+  const atts = useAttachments(
+    ATTACH_BRIDGE,
+    {
+      imageReadFail: (name) => tGlobal('aiImageReadFail', { name }),
+      tooManyImages: (max) => tGlobal('aiTooManyImages', { max }),
+    },
+    chat.flatMap((entry) => entry.attachments ?? []),
+  )
+  const attsRef = useRef(atts)
+  attsRef.current = atts
+  const statusesRef = useRef(subscription.statuses)
+  statusesRef.current = subscription.statuses
+  const msgQueue = useChatRunQueue<{ skillUse: SkillUse; atts: AttachmentMeta[] }>({
     busy,
     submit: (text, meta) => {
       const loop = loopRef.current
@@ -209,7 +238,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
       // a queued message waits instead of being refused and dropped; in front of "not
       // connected" the queue is paused so it does not start by itself after a sign-in
       if (!sendGateRef.current.admitQueued(() => msgQueueRef.current.setPaused(true))) return false
-      return send(text, meta.skillUse)
+      return send(text, meta.skillUse, meta.atts)
     },
   })
   const msgQueueRef = useRef(msgQueue)
@@ -292,6 +321,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
       role: 'user' | 'assistant'
       text: string
       tools?: ToolActivity[]
+      attachments?: AttachmentMeta[]
       skillChips?: SkillChipRef[]
     }>
   >([])
@@ -311,11 +341,12 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
     text: string,
     tools?: ToolActivity[],
     skillChips?: SkillChipRef[],
+    attachments?: AttachmentMeta[],
   ) => {
     const ids = chatIdsRef.current
     if (!window.projectApi) return
     if (!ids) {
-      pendingPersistRef.current.push({ role, text, tools, skillChips })
+      pendingPersistRef.current.push({ role, text, tools, attachments, skillChips })
       return
     }
     void window.projectApi
@@ -325,6 +356,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         role,
         text,
         ...(tools && tools.length > 0 ? { tools } : {}),
+        ...(attachments && attachments.length > 0 ? { attachments } : {}),
         ...(skillChips && skillChips.length > 0 ? { skills: skillChips } : {}),
       })
       .catch(() => {
@@ -355,6 +387,13 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         settingsRef.current ? localModelCapabilities(settingsRef.current).tools !== false : true,
       skill: composeSkills('cad', '', [
         createCadSkill({ session: () => sessionRef.current }),
+        // the person's attachments: read_attachment pages through their text and changes nothing
+        createFilesSkill(
+          () => attsRef.current.available(),
+          (path, offset, maxChars) =>
+            aiApi().readAttachment?.(path, offset, maxChars) ??
+            Promise.resolve({ ok: false, error: tGlobal('aiUnknownError') }),
+        ),
         // the person's skills: use_skill, read_skill_file, propose_skill (app-run tools)
         ...panelUserSkills({
           lang: () => langRef.current,
@@ -476,7 +515,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
       .then((ids) => {
         chatIdsRef.current = ids
         for (const msg of pendingPersistRef.current.splice(0)) {
-          persistMessage(msg.role, msg.text, msg.tools, msg.skillChips)
+          persistMessage(msg.role, msg.text, msg.tools, msg.skillChips, msg.attachments)
         }
         return api.loadChat({ projectId: ids.projectId, chatId: ids.chatId, limit: 200 })
       })
@@ -485,6 +524,15 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         // skill cards come back closed; a saved card's record is not part of the conversation
         const msgs = skillCardsRef.current.restore(stored)
         let applied = false
+        const restoredAtts = (m: (typeof msgs)[number]): AttachmentMeta[] | undefined =>
+          m.attachments
+            ?.filter((a) => a.path)
+            .map((a) => ({
+              name: a.name,
+              path: a.path ?? '',
+              ext: a.ext ?? '',
+              sizeBytes: a.sizeBytes ?? 0,
+            }))
         setChat((prev) => {
           // a message sent while the history was loading wins over the history
           if (prev.length > 0) return prev
@@ -498,6 +546,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
               isError: tool.isError,
               output: tool.output ? tool.output.slice(0, TOOL_OUTPUT_MAX_CHARS) : undefined,
             })),
+            attachments: restoredAtts(m),
             ...(m.role === 'user' && skillChipRefsOf(m.skills).length > 0
               ? { skills: skillChipRefsOf(m.skills) }
               : {}),
@@ -512,6 +561,8 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         }
         if (applied && !loopRef.current?.busy) {
           loopRef.current?.restore(msgs.map((m) => ({ role: m.role, text: m.text })))
+          // the earlier conversation's files stay readable for the next request
+          attsRef.current.keep(msgs.flatMap((m) => restoredAtts(m) ?? []))
         }
       })
       .catch(() => {
@@ -551,6 +602,8 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
     text: string,
     /** the chosen skills: their text goes to the model, their chips onto the bubble */
     skillUse: SkillUse = NO_SKILL_USE,
+    /** a queued or retried message's own attachments; without it the composer's go */
+    attachmentsOverride?: AttachmentMeta[],
   ): boolean => {
     const instruction = text.trim()
     const loop = loopRef.current
@@ -558,7 +611,16 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
     // Nothing connected, or the first-connection notice not acknowledged: nothing is sent, the
     // input keeps the text, and the dock above it says what to do. A request made during a
     // status check or in front of the notice is held and starts by itself.
-    if (!sendGate.admit({ text: instruction, skillUse })) return false
+    if (!sendGate.admit({ text: instruction, skillUse, attachments: attachmentsOverride })) {
+      return false
+    }
+    let sentAtts: AttachmentMeta[]
+    if (attachmentsOverride) {
+      atts.keep(attachmentsOverride)
+      sentAtts = attachmentsOverride
+    } else {
+      sentAtts = atts.take()
+    }
     lastStreamErrorRef.current = null
     setInputTruncated(false)
     stickToBottomRef.current = true
@@ -571,6 +633,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         role: 'user',
         text: instruction,
         ...(skillUse.chips.length > 0 ? { skills: skillUse.chips, skillText: skillUse.text } : {}),
+        ...(sentAtts.length > 0 ? { attachments: sentAtts } : {}),
       },
       { role: 'assistant', text: '', streaming: true },
     ])
@@ -579,7 +642,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
     lastSkillUseRef.current = skillUse
     skillTemplatesRef.current.noteRequest(text)
     setBusy(true)
-    persistMessage('user', instruction, undefined, skillUse.chips)
+    persistMessage('user', instruction, undefined, skillUse.chips, sentAtts)
     // Stop or New chat during the read before the run bump the sequence; a stale send never starts the loop
     const seq = ++sendSeqRef.current
     void (async () => {
@@ -589,7 +652,12 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         const settings = await aiApi().getAiSettings?.()
         if (!settings) throw new Error(tGlobal('aiUnknownError'))
         settingsRef.current = settings
+        // attached pictures go with the request as pictures, to a model that can see them
+        const seeing = settingsSupportVision(settings, statusesRef.current)
+        const pictures = sentAtts.filter((a) => ATTACHMENT_IMAGE_EXTS.has(a.ext))
+        const images = seeing && pictures.length > 0 ? await atts.images(sentAtts) : []
         if (!mountedRef.current || seq !== sendSeqRef.current) return
+        if (!seeing && pictures.length > 0) atts.showNotice([tGlobal('aiAttachNoVision')])
         const ended = new Promise<void>((resolve) => {
           runEndRef.current = resolve
         })
@@ -597,7 +665,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         grouped = sessionRef.current
         grouped?.history.openGroup(AI_GROUP_LABEL)
         // the skill text rides with this request only; the bubble and the record keep the chips
-        loop.run(instruction + skillUse.text)
+        loop.run(instruction + skillUse.text, images.length > 0 ? images : undefined)
         await ended
       } catch (err) {
         if (!mountedRef.current || seq !== sendSeqRef.current) return
@@ -634,7 +702,8 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
     if (!text) return
     skills.withSkills(text, (skillUse) => {
       skillsRef.current.consume(skillUse)
-      msgQueue.enqueue(text, { skillUse })
+      // the queued message owns the composer attachments; they go with it when it runs
+      msgQueue.enqueue(text, { skillUse, atts: atts.detach() })
       setPrompt('')
     })
   }
@@ -660,16 +729,28 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
   }
 
   const retry = (): void => {
-    send(runInstructionRef.current, lastSkillUseRef.current)
+    const last = [...chat].reverse().find((entry) => entry.role === 'user')
+    send(runInstructionRef.current, lastSkillUseRef.current, last?.attachments ?? [])
   }
 
   /** "Continue with …" on a blocked run: that provider becomes the selection and the request runs again */
   const continueWith = (provider: AiSubscriptionProviderId): void => {
     const last = [...chat].reverse().find((entry) => entry.role === 'user')
     sendGate.continueWith(provider, () => {
-      if (last) send(last.text, entrySkillUse(last))
+      if (last) send(last.text, entrySkillUse(last), last.attachments ?? [])
       else retry()
     })
+  }
+
+  /** The `@` document list in the input attaches through the same route as the buttons */
+  const docMention: AiComposerDocs = {
+    lang,
+    ...docMentionActions({
+      lang,
+      add: async (paths) => (await ATTACH_BRIDGE().addAttachmentPaths?.(paths)) ?? null,
+      merge: atts.merge,
+    }),
+    attachments: atts.list,
   }
 
   /** "Start a room layout": the request goes into the input for the person to read and send */
@@ -731,9 +812,26 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
   return (
     <aside
       ref={asideRef}
-      className={`copilot${resizing ? ' ai-panel-resizing' : ''}`}
+      className={`copilot${resizing ? ' ai-panel-resizing' : ''}${atts.dragOver ? ' ai-panel-dragover' : ''}`}
       style={{ width: '100%' }}
       dir={lang === 'ar' || lang === 'he' ? 'rtl' : undefined}
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes('Files')) {
+          e.preventDefault()
+          e.stopPropagation()
+          atts.setDragOver(true)
+        }
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) atts.setDragOver(false)
+      }}
+      onDrop={(e) => {
+        // the files are this pane's: the shell's "open in a new tab" does not take them
+        e.preventDefault()
+        e.stopPropagation()
+        atts.setDragOver(false)
+        void atts.drop(Array.from(e.dataTransfer.files))
+      }}
     >
       <div
         className="ai-panel-resizer"
@@ -760,6 +858,7 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
                 // a reset run reports nothing more: its group closes here
                 endRun()
                 setBusy(false)
+                atts.clear()
                 setChat([])
                 skills.resetConversation()
                 skillCards.reset()
@@ -796,6 +895,11 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
               <div key={i} className="ai-msg ai-msg-user">
                 <SentSkillChips lang={lang} chips={entry.skills} isAvailable={skills.isAvailable} />
                 <span dir="auto">{entry.text}</span>
+                {entry.attachments && entry.attachments.length > 0 && (
+                  <div className="ai-msg-attachments">
+                    <AttachmentList atts={entry.attachments} previews={atts.previews} />
+                  </div>
+                )}
                 {entry.undelivered && (
                   <div className="ai-msg-undelivered">
                     {t('aiUndelivered')}
@@ -925,6 +1029,17 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         {aiSettings !== null && localModelCapabilities(aiSettings).tools === false && (
           <AiToolsUnsupportedNotice lang={lang} />
         )}
+        {atts.list.length > 0 && (
+          <div className="ai-attachments">
+            <AttachmentList
+              atts={atts.list}
+              previews={atts.previews}
+              onRemove={atts.remove}
+              removeLabel={t('aiRemoveAttachmentTitle')}
+            />
+          </div>
+        )}
+        {atts.notice && <div className="ai-attach-notice">{atts.notice}</div>}
         <AiComposer
           queueStrip={
             <AiQueueStrip
@@ -956,6 +1071,8 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
           onSend={sendDraft}
           onStop={stop}
           skills={skills.composer}
+          docs={docMention}
+          onPasteFiles={(files) => void atts.paste(files)}
           footerStart={
             <>
               <AiModelPicker
@@ -966,6 +1083,26 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
               />
               <AiSubscriptionUsageLine usage={subscriptionUsage} lang={lang} />
               {sessionUsage && <AiUsageChip usage={sessionUsage} session lang={lang} />}
+              <button
+                type="button"
+                className="ai-attach-btn"
+                onClick={() => void atts.pick()}
+                data-tip={t('aiAttachTitle')}
+                aria-label={t('aiAttachTitle')}
+              >
+                <img src={attachIcon} alt="" aria-hidden />
+              </button>
+              <DocAttachButton
+                lang={lang}
+                onPicked={async ({ paths, notes }) => {
+                  const added =
+                    paths.length > 0 ? await ATTACH_BRIDGE().addAttachmentPaths?.(paths) : null
+                  atts.merge({
+                    accepted: added?.accepted ?? [],
+                    rejected: [...(added?.rejected ?? []), ...notes],
+                  })
+                }}
+              />
             </>
           }
         />

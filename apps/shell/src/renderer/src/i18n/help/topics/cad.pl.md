@@ -48,6 +48,7 @@ Rysunek AI to karta do prostych modeli 3D i rysunków. Otworzysz w niej rysunek,
   - „Wyrównaj zaznaczone kształty do lewej”
 - Wszystko, co zmieniła jedna prośba, cofniesz jednym **Cofnij** (Ctrl+Z), niezależnie od liczby zmienionych kształtów.
 - AI dostaje twoją prośbę i podsumowanie modelu (nazwę, rodzaj, rozmiar i położenie każdego kształtu). Nie może zapisywać, otwierać, eksportować ani wysyłać plików; to zostaje w twoich rękach.
+- Aby dać AI kartę specyfikacji lub szkic, dołącz go przyciskiem spinacza pod polem wpisywania, przeciągnij na panel lub wklej obraz (Ctrl+V). AI czyta go i buduje według niego; plik nigdy nie trafia do rysunku, a prośba nadal cofa się jednym krokiem.
 
 ## Zapisywanie i odzyskiwanie
 

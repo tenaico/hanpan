@@ -47,4 +47,13 @@ export const ko = {
   aiToolInspect: '문서 읽기',
   aiToolExport: '사본 내보내기',
   aiToolGuide: '안내서 읽기',
+  aiAttachTitle: '로컬 파일을 첨부 (패널로 끌어다 놓아도 됩니다)',
+  aiRemoveAttachmentTitle: '첨부 파일 제거',
+  aiImageReadFail: '{name}: 읽기 실패',
+  aiTooManyImages: '이미지는 메시지당 최대 {max}장까지 보낼 수 있으며, 초과분은 무시되었습니다',
+  aiSumReadAttachment: '첨부 파일 읽기',
+  aiSumImageAttachment: '이미지 첨부 {name}',
+  aiSumReadAttachmentName: '첨부 파일 {name} 읽기',
+  aiAttachNoVision:
+    '지금 모델은 그림을 볼 수 없어 첨부한 그림은 보내지 않았습니다. 글이 든 파일은 그대로 읽습니다',
 } satisfies Record<keyof typeof zh, string>

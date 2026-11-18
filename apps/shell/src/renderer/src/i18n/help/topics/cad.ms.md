@@ -48,6 +48,7 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
   - "Jajarkan bentuk yang dipilih ke kiri"
 - Semua yang diubah oleh satu permintaan dikembalikan dengan satu **Buat asal** (Ctrl+Z), tidak kira berapa banyak bentuk yang terlibat.
 - AI menerima permintaan anda dan ringkasan model (nama, jenis, saiz dan kedudukan setiap bentuk). AI tidak boleh menyimpan, membuka, mengeksport atau menghantar; semua itu kekal di tangan anda.
+- Untuk memberi AI lembaran spesifikasi atau lakaran, lampirkannya dengan butang klip kertas di bawah ruang input, seret ke panel atau tampal gambar (Ctrl+V). AI membacanya dan membina mengikutnya; fail tidak pernah masuk ke dalam lukisan, dan permintaan itu masih satu langkah buat asal.
 
 ## Menyimpan dan memulihkan
 

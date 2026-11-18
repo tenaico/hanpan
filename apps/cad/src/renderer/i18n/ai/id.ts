@@ -45,4 +45,13 @@ export const id = {
   aiToolAlignShapes: 'Meratakan bentuk · {n}',
   aiToolSetWorkplane: 'Mengubah ukuran bidang kerja',
   aiToolRefused: '{action} · ditolak',
+  aiAttachTitle: 'Lampirkan file lokal (atau seret ke panel)',
+  aiRemoveAttachmentTitle: 'Hapus lampiran',
+  aiImageReadFail: '{name}: gagal dibaca',
+  aiTooManyImages: 'Maksimal {max} gambar per pesan; kelebihannya diabaikan',
+  aiSumReadAttachment: 'Baca lampiran',
+  aiSumImageAttachment: 'Lampiran gambar {name}',
+  aiSumReadAttachmentName: 'Baca lampiran {name}',
+  aiAttachNoVision:
+    'Model saat ini tidak dapat melihat gambar, jadi gambar lampiran tidak dikirim; file teks tetap dibaca',
 } satisfies Record<keyof typeof zh, string>

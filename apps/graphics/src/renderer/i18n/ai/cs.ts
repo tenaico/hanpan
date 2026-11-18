@@ -48,4 +48,13 @@ export const cs = {
   aiToolInspect: 'Čtení dokumentu',
   aiToolExport: 'Export kopie',
   aiToolGuide: 'Čtení návodu',
+  aiAttachTitle: 'Připojit místní soubory (nebo je přetáhněte na panel)',
+  aiRemoveAttachmentTitle: 'Odebrat přílohu',
+  aiImageReadFail: '{name}: nelze přečíst',
+  aiTooManyImages: 'Nejvýše {max} obrázků na zprávu; přebývající byly ignorovány',
+  aiSumReadAttachment: 'Čtení přílohy',
+  aiSumImageAttachment: 'Obrázková příloha {name}',
+  aiSumReadAttachmentName: 'Čtení přílohy {name}',
+  aiAttachNoVision:
+    'Aktuální model nevidí obrázky, proto přiložené obrázky nebyly odeslány; textové soubory se stále čtou',
 } satisfies Record<keyof typeof zh, string>

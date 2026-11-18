@@ -48,4 +48,13 @@ export const vi = {
   aiToolInspect: 'Đã đọc tài liệu',
   aiToolExport: 'Đã xuất bản sao',
   aiToolGuide: 'Đã đọc hướng dẫn',
+  aiAttachTitle: 'Đính kèm tệp cục bộ (hoặc kéo thả vào bảng điều khiển)',
+  aiRemoveAttachmentTitle: 'Xóa tệp đính kèm',
+  aiImageReadFail: '{name}: không thể đọc',
+  aiTooManyImages: 'Tối đa {max} hình ảnh cho mỗi tin nhắn; các ảnh thừa đã bị bỏ qua',
+  aiSumReadAttachment: 'Đọc tệp đính kèm',
+  aiSumImageAttachment: 'Tệp hình ảnh đính kèm {name}',
+  aiSumReadAttachmentName: 'Đọc tệp đính kèm {name}',
+  aiAttachNoVision:
+    'Mô hình hiện tại không xem được hình ảnh nên hình đính kèm chưa được gửi; các tệp văn bản vẫn được đọc',
 } satisfies Record<keyof typeof zh, string>

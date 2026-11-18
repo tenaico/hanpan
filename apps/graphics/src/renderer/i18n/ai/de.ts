@@ -51,4 +51,13 @@ export const de = {
   aiToolInspect: 'Dokument gelesen',
   aiToolExport: 'Kopie exportiert',
   aiToolGuide: 'Anleitung gelesen',
+  aiAttachTitle: 'Lokale Dateien anhängen (oder auf den Bereich ziehen)',
+  aiRemoveAttachmentTitle: 'Anlage entfernen',
+  aiImageReadFail: '{name}: Lesen fehlgeschlagen',
+  aiTooManyImages: 'Höchstens {max} Bilder pro Nachricht; überzählige wurden ignoriert',
+  aiSumReadAttachment: 'Anlage lesen',
+  aiSumImageAttachment: 'Bildanlage {name}',
+  aiSumReadAttachmentName: 'Anlage {name} lesen',
+  aiAttachNoVision:
+    'Das aktuelle Modell kann keine Bilder sehen, daher wurden die angehängten Bilder nicht gesendet; Textdateien werden weiterhin gelesen',
 } satisfies Record<keyof typeof zh, string>

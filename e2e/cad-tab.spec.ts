@@ -807,6 +807,78 @@ test.describe('AI Drawing tab, the AI assistant (stage 5)', () => {
   })
 })
 
+// ---- attachments in the AI pane (design 2026-11-18) ----
+
+test.describe('AI pane attachments', () => {
+  test('an attached text file is read by the AI, and the picture and the file show as chips', async () => {
+    test.setTimeout(240_000)
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-attach' })
+    const { app } = launched
+    const dir = await mkdtemp(join(tmpdir(), 'hanpan-cad-attach-'))
+    try {
+      const spec = join(dir, 'spec.txt')
+      await writeFile(spec, 'Box: 80 x 60 x 40 mm.')
+      const cad = await newDrawing(launched)
+      // the attach button's file dialog answers with the spec (no dialog is shown)
+      await app.evaluate(({ dialog }, path) => {
+        dialog.showOpenDialog = (async () => ({
+          canceled: false,
+          filePaths: [path],
+        })) as typeof dialog.showOpenDialog
+      }, spec)
+      await stubAiReady(app, [
+        [
+          {
+            type: 'tool-call',
+            toolCall: { id: 'r1', name: 'read_attachment', input: { index: 0 } },
+          },
+          { type: 'done' },
+        ],
+        [{ type: 'delta', text: 'The spec asks for an 80 mm box.' }, { type: 'done' }],
+      ])
+      const pane = cad.locator('.cad-side .copilot')
+      await expect(pane).toBeVisible()
+      await pane.locator('.ai-attach-btn:not(.ai-doc-attach-btn)').click()
+      await expect(pane.locator('.ai-attachments .ai-attachment-card-name')).toHaveText('spec.txt')
+
+      // a pasted screenshot (no file of its own) goes through main to a temporary file
+      await pane.locator('.ai-input-box textarea').focus()
+      await cad.evaluate(() => {
+        const bytes = Uint8Array.from(
+          atob(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==',
+          ),
+          (c) => c.charCodeAt(0),
+        )
+        const data = new DataTransfer()
+        data.items.add(new File([bytes], 'shot.png', { type: 'image/png' }))
+        document
+          .querySelector('.ai-input-box textarea')!
+          .dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true }))
+      })
+      await expect(pane.locator('.ai-attachments .ai-attachment-thumb img')).toHaveCount(1)
+      await cad.screenshot({ path: screenshotPath('cad-ai-attachments') })
+
+      await pane.locator('.ai-input-box textarea').fill('Make the box in the spec')
+      await pane.locator('.ai-send-btn').click()
+      await expect(pane.locator('.ai-msg-assistant').last()).toContainText(
+        'The spec asks for an 80 mm box.',
+      )
+      await expect(pane.locator('.ai-stop-btn')).toHaveCount(0)
+      // the message shows what it took; the composer is empty again
+      await expect(pane.locator('.ai-msg-user .ai-attachment-card-name')).toHaveText('spec.txt')
+      await expect(pane.locator('.ai-attachments')).toHaveCount(0)
+      await pane.locator('.ai-work-group-summary').click()
+      await expect(pane.locator('.ai-step-title')).toHaveText(['Read attachment spec.txt'])
+      // reading a file changed nothing in the drawing
+      await expect(cad.locator('.ribbon-tabs [data-action="undo"]')).toBeDisabled()
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-attach')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
 // ---- stage 6: the dark theme and a PC without WebGL ----
 
 const setAppTheme = (page: Page, theme: 'light' | 'dark'): Promise<void> =>

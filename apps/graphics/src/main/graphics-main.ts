@@ -88,6 +88,7 @@ import type {
 import { APP_GLOBAL, WRITABLE_EXTS, extOf, graphicsKindForPath } from '../shared/kinds'
 import type { GraphicsKind } from '../shared/kinds'
 import { decideSaveTarget } from '../shared/save-target'
+import { registerGraphicsAttachmentIpc } from './ai-attachments'
 
 export interface GraphicsRuntime {
   preloadPath: string
@@ -436,6 +437,8 @@ let ipcRegistered = false
 function registerGraphicsIpc(): void {
   if (ipcRegistered) return
   ipcRegistered = true
+  // the AI panel's attachments: picked and read here, never inside the page
+  registerGraphicsAttachmentIpc()
 
   // the web build beside the built renderer: its page carries the app's own marker
   ipcMain.handle(GRAPHICS_CHANNELS.webPresent, async (e): Promise<boolean> => {

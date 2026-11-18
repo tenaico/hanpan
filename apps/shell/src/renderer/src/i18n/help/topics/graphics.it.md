@@ -29,3 +29,4 @@ Due schede per le immagini. **AI Photo** apre foto e immagini a livelli (PSD, PS
 ## Cosa viene inviato
 
 - L'IA riceve la tua richiesta, un breve riepilogo dell'immagine (nome, dimensione, livelli e selezione) e, per un modello che vede le immagini, una piccola immagine della tela. Le due app non inviano nulla da sole. Altro in [Il pannello dell'assistente IA](help://ai-panel).
+- Per mostrare un riferimento all'IA, allega un file con il pulsante a graffetta sotto il campo di testo, trascinalo sul pannello o incolla un'immagine (Ctrl+V). L'IA guarda le immagini allegate e legge i documenti allegati; nulla di ciò che alleghi entra nell'immagine o nell'app.

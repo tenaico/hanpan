@@ -45,4 +45,13 @@ export const nl = {
   aiToolAlignShapes: 'Vormen uitlijnen · {n}',
   aiToolSetWorkplane: 'Werkvlak aanpassen',
   aiToolRefused: '{action} · geweigerd',
+  aiAttachTitle: 'Lokale bestanden bijvoegen (of sleep ze naar het paneel)',
+  aiRemoveAttachmentTitle: 'Bijlage verwijderen',
+  aiImageReadFail: '{name}: lezen mislukt',
+  aiTooManyImages: 'Maximaal {max} afbeeldingen per bericht; extra afbeeldingen zijn genegeerd',
+  aiSumReadAttachment: 'Bijlage lezen',
+  aiSumImageAttachment: 'Afbeeldingsbijlage {name}',
+  aiSumReadAttachmentName: 'Bijlage {name} lezen',
+  aiAttachNoVision:
+    'Het huidige model kan geen afbeeldingen zien, dus de bijgevoegde afbeeldingen zijn niet verzonden; tekstbestanden worden nog steeds gelezen',
 } satisfies Record<keyof typeof zh, string>

@@ -48,6 +48,7 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
   - « Aligne les formes sélectionnées à gauche »
 - Tout ce qu'une demande a modifié revient en arrière avec un seul **Annuler** (Ctrl+Z), quel que soit le nombre de formes touchées.
 - L'IA reçoit votre demande et un résumé du modèle (nom, type, dimensions et emplacement de chaque forme). Elle ne peut ni enregistrer, ni ouvrir, ni exporter, ni envoyer : ces actions restent entre vos mains.
+- Pour donner à l'IA une fiche technique ou un croquis, joignez-le avec le trombone sous la zone de saisie, faites-le glisser sur le panneau ou collez une image (Ctrl+V). L'IA le lit et construit d'après lui ; le fichier n'entre jamais dans le dessin, et la demande reste une seule annulation.
 
 ## Enregistrer et récupérer
 

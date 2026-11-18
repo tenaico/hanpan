@@ -48,6 +48,7 @@ Disegno IA è una scheda per modelli 3D e disegni semplici. Apri un disegno che 
   - «Allinea a sinistra le forme selezionate»
 - Tutto quello che una richiesta ha cambiato torna indietro con un solo **Annulla** (Ctrl+Z), anche se ha toccato molte forme.
 - L'IA riceve la tua richiesta e un riepilogo del modello (nome, tipo, dimensioni e posizione di ogni forma). Non può salvare, aprire, esportare o inviare: queste cose restano a te.
+- Per dare all'IA una scheda tecnica o uno schizzo, allegalo con il pulsante a graffetta sotto il campo di testo, trascinalo sul pannello o incolla un'immagine (Ctrl+V). L'IA lo legge e costruisce di conseguenza; il file non entra mai nel disegno e la richiesta resta un solo annullamento.
 
 ## Salvare e recuperare
 

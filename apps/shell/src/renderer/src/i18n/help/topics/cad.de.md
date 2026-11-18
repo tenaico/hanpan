@@ -48,6 +48,7 @@ KI-Zeichnung ist ein Tab für einfache 3D-Modelle und Zeichnungen. Öffnen Sie e
   - „Richte die ausgewählten Formen links aus“
 - Alles, was eine Anfrage geändert hat, nimmt ein einziges **Rückgängig** (Strg+Z) zurück, egal wie viele Formen betroffen waren.
 - Die KI erhält Ihre Anfrage und eine Zusammenfassung des Modells (Name, Art, Maße und Position jeder Form). Sie kann nicht speichern, öffnen, exportieren oder versenden; das bleibt bei Ihnen.
+- Um der KI ein Datenblatt oder eine Skizze zu geben, hängen Sie sie mit der Büroklammer unter dem Eingabefeld an, ziehen Sie sie auf den Bereich oder fügen Sie ein Bild ein (Strg+V). Die KI liest sie und baut danach; die Datei gelangt nie in die Zeichnung, und die Anfrage bleibt ein einziger Rückgängig-Schritt.
 
 ## Speichern und Wiederherstellen
 

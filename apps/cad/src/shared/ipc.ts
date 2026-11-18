@@ -65,6 +65,17 @@ export const CAD_CHANNELS = {
   copyImage: 'cad:copy-image',
   /** invoke(`SendToDocumentRequest`) → `SendToDocumentResult` (stage 4) */
   sendToDocument: 'cad:send-to-document',
+  // ---- AI panel attachments (the other editors' contract) ----
+  /** invoke → `AttachmentAddResult | null` */
+  filesPick: 'cad:files-pick',
+  /** invoke(paths) → `AttachmentAddResult` */
+  filesAdd: 'cad:files-add',
+  /** invoke(bytes, ext) → `AttachmentAddResult` */
+  filesAddPastedImage: 'cad:files-add-pasted-image',
+  /** invoke(path, offset, maxChars) → `AttachmentReadResult` */
+  filesRead: 'cad:files-read',
+  /** invoke(path) → `AttachmentImageResult` */
+  filesReadImage: 'cad:files-read-image',
 } as const
 
 /** Channels the shell registers for every editor. Called here, never registered. */
@@ -302,9 +313,10 @@ export interface CadSendApi {
 }
 
 /**
- * The AI pane's bridge (stage 5): the mind map's AI bridge without its
- * attachments, pictures, web search and hand-over. Every call goes to a shared
- * `ai:*` or `app:*` channel; this editor registers none of them.
+ * The AI pane's bridge (stage 5): the mind map's AI bridge with its
+ * attachments, without web search and hand-over. The attachment calls go to
+ * this editor's own `cad:files-*` channels; every other call goes to a shared
+ * `ai:*` or `app:*` channel, which this editor never registers.
  */
 export interface CadAiApi {
   getAiPanelPrefs(): Promise<AiPanelPrefs>
@@ -315,6 +327,14 @@ export interface CadAiApi {
   onAiSettingsChanged(handler: () => void): () => void
   /** shell only: switch to Home and open Settings › AI Model (rejects in standalone) */
   openAiModelSettings(): Promise<void>
+  // attachments: picked, read and handed back by main; the panel never reads a file itself
+  pickAttachments(): Promise<AttachmentAddResult | null>
+  addAttachmentPaths(paths: string[]): Promise<AttachmentAddResult>
+  addPastedImage(data: ArrayBuffer, ext: string): Promise<AttachmentAddResult>
+  readAttachment(path: string, offset: number, maxChars: number): Promise<AttachmentReadResult>
+  readAttachmentImage(path: string): Promise<AttachmentImageResult>
+  /** the local path of a dropped or pasted file; '' for one with no file of its own */
+  getPathForFile(file: File): string
   subscription: CadSubscriptionApi
   aiStream(request: AiStreamRequest): Promise<void>
   aiStreamCancel(requestId: string): Promise<void>
@@ -328,3 +348,37 @@ export type CadApi = CadCoreApi &
   CadExportApi &
   CadSendApi &
   CadAiApi
+
+// ---- AI panel attachments (same shapes as the other editors) ----
+
+/** image attachments skip text extraction: read as base64 on send and passed to the model with the user message */
+export const ATTACHMENT_IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp'])
+
+export interface AttachmentMeta {
+  path: string
+  name: string
+  ext: string
+  sizeBytes: number
+}
+
+export interface AttachmentAddResult {
+  accepted: AttachmentMeta[]
+  /** per-file reasons, already localized */
+  rejected: string[]
+}
+
+export interface AttachmentReadResult {
+  ok: boolean
+  name?: string
+  totalChars?: number
+  offset?: number
+  text?: string
+  error?: string
+}
+
+export interface AttachmentImageResult {
+  ok: boolean
+  base64?: string
+  mime?: string
+  error?: string
+}

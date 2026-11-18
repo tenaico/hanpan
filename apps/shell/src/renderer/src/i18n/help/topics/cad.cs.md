@@ -48,6 +48,7 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
   - „Zarovnej vybrané tvary vlevo“
 - Všechno, co změnil jeden požadavek, vrátíte jedním **Zpět** (Ctrl+Z), bez ohledu na to, kolika tvarů se týkal.
 - AI dostane váš požadavek a shrnutí modelu (název, druh, velikost a polohu každého tvaru). Nemůže ukládat, otevírat, exportovat ani odesílat; to zůstává na vás.
+- Chcete-li AI dát specifikaci nebo náčrt, přiložte je tlačítkem se sponkou pod polem pro zadání, přetáhněte je na panel nebo vložte obrázek (Ctrl+V). AI je přečte a postaví podle nich; soubor se nikdy nedostane do výkresu a požadavek se stále vrací jedním krokem zpět.
 
 ## Ukládání a obnovení
 

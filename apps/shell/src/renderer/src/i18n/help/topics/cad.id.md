@@ -48,6 +48,7 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
   - "Ratakan bentuk yang dipilih ke kiri"
 - Semua yang diubah oleh satu permintaan kembali dengan satu kali **Urungkan** (Ctrl+Z), berapa pun banyak bentuk yang tersentuh.
 - AI menerima permintaan Anda dan ringkasan model (nama, jenis, ukuran, dan posisi tiap bentuk). AI tidak bisa menyimpan, membuka, mengekspor, atau mengirim; semua itu tetap di tangan Anda.
+- Untuk memberi AI lembar spesifikasi atau sketsa, lampirkan dengan tombol penjepit kertas di bawah kolom input, seret ke panel, atau tempel gambar (Ctrl+V). AI membacanya dan membangun sesuai isinya; file tidak pernah masuk ke gambar kerja, dan permintaan itu tetap satu kali urungkan.
 
 ## Menyimpan dan memulihkan
 

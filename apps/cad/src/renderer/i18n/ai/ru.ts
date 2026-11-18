@@ -45,4 +45,13 @@ export const ru = {
   aiToolAlignShapes: 'Выравнивание фигур · {n}',
   aiToolSetWorkplane: 'Изменение размера рабочей плоскости',
   aiToolRefused: '{action} · отклонено',
+  aiAttachTitle: 'Прикрепить локальные файлы (или перетащите их на панель)',
+  aiRemoveAttachmentTitle: 'Удалить вложение',
+  aiImageReadFail: '{name}: не удалось прочитать',
+  aiTooManyImages: 'Не более {max} изображений на сообщение; лишние проигнорированы',
+  aiSumReadAttachment: 'Чтение вложения',
+  aiSumImageAttachment: 'Вложенное изображение {name}',
+  aiSumReadAttachmentName: 'Чтение вложения {name}',
+  aiAttachNoVision:
+    'Текущая модель не видит изображения, поэтому прикреплённые картинки не отправлены; текстовые файлы по-прежнему читаются',
 } satisfies Record<keyof typeof zh, string>

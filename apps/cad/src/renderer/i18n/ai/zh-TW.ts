@@ -44,4 +44,12 @@ export const zhTW = {
   aiToolAlignShapes: '對齊形狀 · {n} 個',
   aiToolSetWorkplane: '調整工作板大小',
   aiToolRefused: '{action} · 已拒絕',
+  aiAttachTitle: '新增本機檔案作為附件(也可拖曳到面板)',
+  aiRemoveAttachmentTitle: '移除附件',
+  aiImageReadFail: '{name}: 讀取失敗',
+  aiTooManyImages: '圖片最多隨訊息傳送 {max} 張,多餘的已忽略',
+  aiSumReadAttachment: '讀取附件',
+  aiSumImageAttachment: '圖片附件 {name}',
+  aiSumReadAttachmentName: '讀取附件 {name}',
+  aiAttachNoVision: '目前的模型無法查看圖片，附加的圖片未傳送；文字檔案仍會讀取',
 } satisfies Record<keyof typeof zh, string>
