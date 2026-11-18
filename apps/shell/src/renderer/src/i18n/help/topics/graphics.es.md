@@ -29,3 +29,4 @@ Dos pestañas para imágenes. **AI Photo** abre fotos e imágenes con capas (PSD
 ## Qué se envía
 
 - La IA recibe su petición, un breve resumen de la imagen (nombre, tamaño, capas y selección) y, si el modelo puede ver imágenes, una imagen pequeña del lienzo. Las dos aplicaciones no envían nada por sí mismas. Más en [El panel del asistente de IA](help://ai-panel).
+- Para mostrar una referencia a la IA, adjunte un archivo con el botón del clip bajo la entrada, arrástrelo al panel o pegue una imagen (Ctrl+V). La IA mira las imágenes adjuntas y lee los documentos adjuntos; nada de lo que adjunte entra en la imagen ni en la aplicación.

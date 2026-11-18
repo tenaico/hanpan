@@ -29,3 +29,4 @@ Dua tab untuk gambar. **AI Photo** membuka foto dan gambar berlapis (PSD, PSB, P
 ## Apa yang dihantar
 
 - AI menerima permintaan anda, ringkasan pendek gambar (nama, saiz, lapisan dan pilihan) dan, bagi model yang boleh melihat gambar, gambar kecil kanvas. Kedua-dua aplikasi itu tidak menghantar apa-apa sendiri. Lagi dalam [Panel pembantu AI](help://ai-panel).
+- Untuk menunjukkan rujukan kepada AI, lampirkan fail dengan butang klip kertas di bawah ruang input, seret ke panel atau tampal gambar (Ctrl+V). AI melihat gambar yang dilampirkan dan membaca dokumen yang dilampirkan; apa-apa yang anda lampirkan tidak masuk ke dalam gambar atau aplikasi.

@@ -29,3 +29,4 @@ Deux onglets pour les images. **AI Photo** ouvre les photos et les images à cal
 ## Ce qui est envoyé
 
 - L'IA reçoit votre demande, un court résumé de l'image (nom, taille, calques et sélection) et, pour un modèle qui voit les images, une petite image du canevas. Les deux applications n'envoient rien elles-mêmes. Plus de détails dans [Le panneau de l'assistant IA](help://ai-panel).
+- Pour montrer une référence à l'IA, joignez un fichier avec le trombone sous la zone de saisie, faites-le glisser sur le panneau ou collez une image (Ctrl+V). L'IA regarde les images jointes et lit les documents joints ; rien de ce que vous joignez n'entre dans l'image ni dans l'application.

@@ -29,3 +29,4 @@ Hai thẻ dành cho hình ảnh. **AI Photo** mở ảnh chụp và ảnh có l�
 ## Những gì được gửi
 
 - AI nhận yêu cầu của bạn, bản tóm tắt ngắn về hình (tên, kích thước, lớp và vùng chọn) và, với mô hình có thể xem ảnh, một ảnh nhỏ của khung vẽ. Hai ứng dụng tự chúng không gửi gì. Xem thêm ở [Bảng trợ lý AI](help://ai-panel).
+- Để cho AI xem tài liệu tham khảo, hãy đính kèm tệp bằng nút kẹp giấy dưới ô nhập, kéo tệp vào bảng hoặc dán hình (Ctrl+V). AI xem hình đính kèm và đọc tài liệu đính kèm; những gì bạn đính kèm không đi vào hình hay ứng dụng.

@@ -29,3 +29,4 @@ Zwei Tabs für Bilder. **AI Photo** öffnet Fotos und Bilder mit Ebenen (PSD, PS
 ## Was gesendet wird
 
 - Die KI erhält Ihre Anfrage, eine kurze Zusammenfassung des Bildes (Name, Größe, Ebenen und Auswahl) und, bei einem Modell, das Bilder sehen kann, ein kleines Bild der Arbeitsfläche. Die beiden Apps selbst senden nichts. Mehr dazu unter [Der KI-Assistent-Bereich](help://ai-panel).
+- Um der KI eine Vorlage zu zeigen, hängen Sie mit der Büroklammer unter dem Eingabefeld eine Datei an, ziehen Sie sie auf den Bereich oder fügen Sie ein Bild ein (Strg+V). Die KI sieht sich angehängte Bilder an und liest angehängte Dokumente; nichts davon gelangt in das Bild oder in die App.

@@ -29,3 +29,4 @@ Twee tabbladen voor afbeeldingen. **AI Photo** opent foto's en afbeeldingen met 
 ## Wat wordt verzonden
 
 - De AI ontvangt uw verzoek, een korte samenvatting van de afbeelding (naam, formaat, lagen en selectie) en, bij een model dat afbeeldingen kan zien, een kleine afbeelding van het canvas. De twee apps verzenden zelf niets. Meer in [Het AI-assistentpaneel](help://ai-panel).
+- Wilt u de AI een voorbeeld laten zien, voeg dan een bestand toe met de paperclipknop onder het invoerveld, sleep het naar het paneel of plak een afbeelding (Ctrl+V). De AI bekijkt bijgevoegde afbeeldingen en leest bijgevoegde documenten; niets daarvan komt in de afbeelding of in de app.

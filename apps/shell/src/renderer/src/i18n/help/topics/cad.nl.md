@@ -48,6 +48,7 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
   - "Lijn de geselecteerde vormen links uit"
 - Alles wat één verzoek veranderde, draait u terug met één keer **Ongedaan maken** (Ctrl+Z), hoeveel vormen het ook raakte.
 - De AI krijgt uw verzoek en een samenvatting van het model (naam, soort, grootte en positie van elke vorm). Hij kan niet opslaan, openen, exporteren of versturen; dat blijft bij u.
+- Wilt u de AI een specificatieblad of schets geven, voeg die dan toe met de paperclipknop onder het invoerveld, sleep hem naar het paneel of plak een afbeelding (Ctrl+V). De AI leest hem en bouwt ernaar; het bestand komt nooit in de tekening en het verzoek blijft één keer ongedaan maken.
 
 ## Opslaan en herstellen
 

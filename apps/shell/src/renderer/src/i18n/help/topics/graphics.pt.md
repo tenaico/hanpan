@@ -29,3 +29,4 @@ Duas abas para imagens. **AI Photo** abre fotos e imagens com camadas (PSD, PSB,
 ## O que é enviado
 
 - A IA recebe sua solicitação, um resumo curto da imagem (nome, tamanho, camadas e seleção) e, para um modelo que vê imagens, uma imagem pequena da tela. Os dois aplicativos não enviam nada por conta própria. Mais em [O painel do assistente de IA](help://ai-panel).
+- Para mostrar uma referência à IA, anexe um arquivo com o botão de clipe abaixo da entrada, arraste-o para o painel ou cole uma imagem (Ctrl+V). A IA olha as imagens anexadas e lê os documentos anexados; nada do que você anexa entra na imagem ou no aplicativo.

@@ -48,6 +48,7 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
   - "Alinhe à esquerda as formas selecionadas"
 - Tudo o que um pedido mudou volta com um único **Desfazer** (Ctrl+Z), não importa quantas formas ele tenha alterado.
 - A IA recebe o seu pedido e um resumo do modelo (nome, tipo, tamanho e posição de cada forma). Ela não pode salvar, abrir, exportar nem enviar; isso fica com você.
+- Para dar à IA uma ficha técnica ou um esboço, anexe-o com o botão de clipe abaixo da entrada, arraste-o para o painel ou cole uma imagem (Ctrl+V). A IA lê e constrói a partir dele; o arquivo nunca entra no desenho, e o pedido continua a ser um único desfazer.
 
 ## Salvar e recuperar
 

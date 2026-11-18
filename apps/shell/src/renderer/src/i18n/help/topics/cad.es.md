@@ -48,6 +48,7 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
   - «Alinea a la izquierda las formas seleccionadas»
 - Todo lo que cambió una petición se revierte con un solo **Deshacer** (Ctrl+Z), aunque haya tocado muchas formas.
 - La IA recibe su petición y un resumen del modelo (nombre, tipo, tamaño y posición de cada forma). No puede guardar, abrir, exportar ni enviar; eso queda en sus manos.
+- Para dar a la IA una hoja de especificaciones o un boceto, adjúntelo con el botón del clip bajo la entrada, arrástrelo al panel o pegue una imagen (Ctrl+V). La IA lo lee y construye a partir de él; el archivo nunca entra en el dibujo y la solicitud sigue siendo un solo deshacer.
 
 ## Guardar y recuperar
 

@@ -29,3 +29,4 @@ Two tabs for pictures. **AI Photo** opens photos and layered pictures (PSD, PSB,
 ## What is sent
 
 - The AI receives your request, a short summary of the picture (its name, size, layers and selection) and, for a model that can see images, a small picture of the canvas. The two apps send nothing themselves. More in [The AI assistant panel](help://ai-panel).
+- To show the AI a reference, attach a file with the paper-clip button under the input, drag it onto the panel or paste a picture (Ctrl+V). The AI looks at attached pictures and reads attached documents; nothing you attach goes into the picture or into the app.
