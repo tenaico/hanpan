@@ -111,6 +111,7 @@ export function createDocPicker(deps: DocPickerDeps) {
   // ---- an editor's AI panel asks the shell for documents to attach ----
   ipcMain.handle(DOC_ATTACH_CHANNELS.available, (): boolean => true)
   ipcMain.handle(DOC_ATTACH_CHANNELS.pick, (event): Promise<DocAttachResult> => {
+    if (!fromTopFrame(event)) return Promise.resolve({ ok: false, reason: 'unavailable' })
     const parent = BrowserWindow.fromWebContents(event.sender)
     // a request whose sender is not a window cannot parent a modal picker
     if (!parent || parent.isDestroyed()) {
@@ -119,6 +120,7 @@ export function createDocPicker(deps: DocPickerDeps) {
     return open(parent, askerOf(event))
   })
   ipcMain.handle(DOC_ATTACH_CHANNELS.list, async (event): Promise<DocMentionListResult> => {
+    if (!fromTopFrame(event)) return { ok: false, reason: 'unavailable' }
     try {
       const result = await deps.list(askerOf(event))
       if (!result.ok) return { ok: false, reason: 'unavailable' }
@@ -127,6 +129,17 @@ export function createDocPicker(deps: DocPickerDeps) {
       return { ok: false, reason: 'unavailable' }
     }
   })
+
+  /**
+   * Only a page's own top frame asks for documents. A frame inside a page (the
+   * graphics tabs' web app, decision 0093) never gets the bridge; should one
+   * reach these channels anyway, it learns no document name and opens nothing.
+   */
+  function fromTopFrame(event: IpcMainInvokeEvent): boolean {
+    const frame = (event as { senderFrame?: { parent?: unknown } | null }).senderFrame
+    if (frame === undefined) return true
+    return frame !== null && (frame.parent ?? null) === null
+  }
 
   /** an unknown sender is no error: it leaves nothing out and has no pane */
   function askerOf(event: IpcMainInvokeEvent): DocAsker {

@@ -175,4 +175,17 @@ describe('only the host page asks (decision 0093, option B)', () => {
     }
     expect(image.ok).toBe(false)
   })
+
+  it('refuses a frame with a parent, and a frame that is gone', async () => {
+    const path = join(dir, 'spec.txt')
+    writeFileSync(path, 'width 80')
+    const read = (event: unknown) =>
+      Promise.resolve(handlers.get(GRAPHICS_CHANNELS.filesRead)!(event, path, 0, 24_000))
+    await expect(read({ sender: { id: 7 }, senderFrame: { parent: {} } })).resolves.toMatchObject({
+      ok: false,
+    })
+    await expect(read({ sender: { id: 7 }, senderFrame: null })).resolves.toMatchObject({
+      ok: false,
+    })
+  })
 })

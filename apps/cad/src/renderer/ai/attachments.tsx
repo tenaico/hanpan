@@ -149,8 +149,8 @@ export interface Attachments {
   keep(atts: readonly AttachmentMeta[]): void
   /** "New chat": nothing stays */
   clear(): void
-  /** the pictures among `atts`, read as pictures (5 MB each, at most 20) */
-  images(atts: readonly AttachmentMeta[]): Promise<AgentImage[]>
+  /** the pictures among `atts`, read as pictures (5 MB each, at most `max`, 20 by default) */
+  images(atts: readonly AttachmentMeta[], max?: number): Promise<AgentImage[]>
 }
 
 /**
@@ -170,6 +170,8 @@ export function useAttachments(
   const [dragOver, setDragOver] = useState(false)
   const [previews, setPreviews] = useState<Record<string, string>>({})
   const requestedRef = useRef(new Set<string>())
+  const noticeTimerRef = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(noticeTimerRef.current), [])
   const echoedRef = useRef(echoed)
   echoedRef.current = echoed
 
@@ -210,7 +212,9 @@ export function useAttachments(
   const showNotice = (lines: string[]) => {
     if (lines.length === 0) return
     setNotice(lines.join('; '))
-    window.setTimeout(() => setNotice(null), 5000)
+    // a newer notice keeps its own five seconds
+    window.clearTimeout(noticeTimerRef.current)
+    noticeTimerRef.current = window.setTimeout(() => setNotice(null), 5000)
   }
   const merge = (result: AttachmentAddResult | null) => {
     if (!result) return
@@ -289,12 +293,12 @@ export function useAttachments(
       sentRef.current = []
       setNotice(null)
     },
-    images: async (atts) => {
+    images: async (atts, max = MAX_IMAGES_PER_MESSAGE) => {
       const pictures = atts.filter(isImageAttachment)
       const images: AgentImage[] = []
       const failures: string[] = []
       const read = bridge().readAttachmentImage
-      for (const att of pictures.slice(0, MAX_IMAGES_PER_MESSAGE)) {
+      for (const att of pictures.slice(0, max)) {
         const result: AttachmentImageResult = read ? await read(att.path) : { ok: false }
         if (result.ok && result.base64 && result.mime) {
           images.push({ base64: result.base64, mime: result.mime })
@@ -302,9 +306,7 @@ export function useAttachments(
           failures.push(result.error ?? texts.imageReadFail(att.name))
         }
       }
-      if (pictures.length > MAX_IMAGES_PER_MESSAGE) {
-        failures.push(texts.tooManyImages(MAX_IMAGES_PER_MESSAGE))
-      }
+      if (pictures.length > max) failures.push(texts.tooManyImages(max))
       showNotice(failures)
       return images
     },

@@ -656,8 +656,8 @@ export function AiPanel({ session, filePath, onCollapse, quick }: AiPanelProps):
         const seeing = settingsSupportVision(settings, statusesRef.current)
         const pictures = sentAtts.filter((a) => ATTACHMENT_IMAGE_EXTS.has(a.ext))
         const images = seeing && pictures.length > 0 ? await atts.images(sentAtts) : []
-        if (!seeing && pictures.length > 0) atts.showNotice([tGlobal('aiAttachNoVision')])
         if (!mountedRef.current || seq !== sendSeqRef.current) return
+        if (!seeing && pictures.length > 0) atts.showNotice([tGlobal('aiAttachNoVision')])
         const ended = new Promise<void>((resolve) => {
           runEndRef.current = resolve
         })

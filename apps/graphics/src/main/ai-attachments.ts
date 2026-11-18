@@ -535,9 +535,12 @@ export function readAttachmentImage(filePath: unknown): AttachmentImageResult {
  * read for the web app.
  */
 function fromHostPage(e: IpcMainInvokeEvent): boolean {
-  const frame = (e as { senderFrame?: unknown }).senderFrame
+  const frame = (e as { senderFrame?: { parent?: unknown } | null }).senderFrame
+  // no frame on the event at all: a direct call (tests), not a page
+  if (frame === undefined) return true
+  if (frame === null || (frame.parent ?? null) !== null) return false
   const main = (e.sender as { mainFrame?: unknown } | undefined)?.mainFrame
-  return frame === undefined || main === undefined || frame === main
+  return main === undefined || frame === main
 }
 
 const REFUSED: AttachmentAddResult = { accepted: [], rejected: [] }

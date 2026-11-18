@@ -457,6 +457,9 @@ describe('attachments in the graphics AI panel', () => {
     expect(last.images).toHaveLength(2)
     expect(last.images![1]!.base64).toBe('QUJD')
     expect(JSON.stringify(requests[0])).toContain('logo-ref.png')
+    const sent = requests[0]!.messages.at(-1) as { text: string }
+    expect(sent.text).toContain('The first picture is the current canvas')
+    expect(sent.text).toContain('1 picture the user attached')
     // the composer is empty again; the message shows what it took
     expect(el.querySelector('.ai-attachments')).toBeNull()
     expect(el.querySelectorAll('.ai-msg-user .ai-attachment-thumb')).toHaveLength(1)
@@ -500,5 +503,48 @@ describe('attachments in the graphics AI panel', () => {
     await settle()
     await send(el, 'Second')
     expect(JSON.stringify(requests[1])).not.toContain('spec.pdf')
+  })
+})
+
+describe('attachment limits and notices', () => {
+  it('sends at most 19 attached pictures next to the canvas: 20 in all', async () => {
+    const many = Array.from({ length: 22 }, (_, i) => ({
+      path: `C:/ref/p${i}.png`,
+      name: `p${i}.png`,
+      ext: 'png',
+      sizeBytes: 100,
+    }))
+    const api = attachmentApi(many)
+    const { el, requests } = await mount({ settings: vision(), turns: [{ text: 'ok' }], api })
+    await attach(el)
+    await send(el, 'Use these')
+    const last = requests[0]!.messages.at(-1) as { images?: unknown[] }
+    expect(last.images).toHaveLength(20)
+    expect(el.querySelector('.ai-attach-notice')?.textContent).toContain('19')
+  })
+
+  it('a newer notice is not cleared by the timer of an older one', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      const api = {
+        ...attachmentApi([]),
+        pickAttachments: vi
+          .fn()
+          .mockResolvedValueOnce({ accepted: [], rejected: ['first.exe: not supported'] })
+          .mockResolvedValueOnce({ accepted: [], rejected: ['second.exe: not supported'] }),
+      }
+      const { el } = await mount({ settings: vision(), turns: [], api })
+      await attach(el)
+      await act(async () => {
+        vi.advanceTimersByTime(4000)
+      })
+      await attach(el)
+      await act(async () => {
+        vi.advanceTimersByTime(2000)
+      })
+      expect(el.querySelector('.ai-attach-notice')?.textContent).toContain('second.exe')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

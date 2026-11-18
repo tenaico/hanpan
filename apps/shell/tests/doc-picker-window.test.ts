@@ -186,6 +186,25 @@ describe('createDocPicker window', () => {
     expect(winOptions).toHaveLength(0)
   })
 
+  it('answers no list and opens no picker for a frame inside a page', async () => {
+    const { deps } = await load()
+    const parent = fakeParent()
+    const inner = { sender: parent.webContents, senderFrame: { parent: {} } }
+    await expect(invoke(DOC_ATTACH_CHANNELS.list, inner)).resolves.toEqual({
+      ok: false,
+      reason: 'unavailable',
+    })
+    expect(deps.list).not.toHaveBeenCalled()
+    await expect(invoke(DOC_ATTACH_CHANNELS.pick, inner)).resolves.toEqual({
+      ok: false,
+      reason: 'unavailable',
+    })
+    expect(winOptions).toHaveLength(0)
+    // the page's own top frame is answered
+    const top = { sender: parent.webContents, senderFrame: { parent: null } }
+    await expect(invoke(DOC_ATTACH_CHANNELS.list, top)).resolves.toMatchObject({ ok: true })
+  })
+
   it('opens one modal child of the requesting window, sized and titled like the Drive picker', async () => {
     await load()
     const { parent, pending } = await openPicker()

@@ -56,7 +56,12 @@ import { blockedRunFor, mergeSubscriptionUsage, type BlockedRun } from './connec
 import { createGraphicsSkill, type GraphicsSkill } from './graphics-skill'
 import { canvasShot } from './snapshot'
 import { createFilesSkill } from './files-skill'
-import { AttachmentList, useAttachments, type AttachmentBridge } from './attachments'
+import {
+  AttachmentList,
+  MAX_IMAGES_PER_MESSAGE,
+  useAttachments,
+  type AttachmentBridge,
+} from './attachments'
 import { ATTACHMENT_IMAGE_EXTS, type AttachmentMeta } from '../../shared/ipc'
 import attachIcon from './assets/attach-icon.png'
 import { useSubscriptionConnection } from './subscription-client'
@@ -99,6 +104,19 @@ const MODEL_BRIDGE: AiModelPickerBridge = {
     graphicsApiOrNull()
       ?.openAiModelSettings?.()
       .catch(() => {}) ?? Promise.resolve(),
+}
+
+/**
+ * The line telling the model which pictures came from the person: the canvas
+ * picture, when there is one, comes first and the attached ones after it.
+ */
+function attachedPicturesNote(canvas: number, attached: number): string {
+  if (attached === 0) return ''
+  const which =
+    attached === 1 ? '1 picture the user attached' : `${attached} pictures the user attached`
+  return canvas > 0
+    ? `\n(The first picture is the current canvas; the next ${which} as reference. They are not part of the document.)`
+    : `\n(The pictures are ${which} as reference. They are not part of the document.)`
 }
 
 /** the preload bridge's attachment calls; none when it has not been handed over */
@@ -471,13 +489,16 @@ export function GraphicsAiPanel(props: GraphicsAiPanelProps): ReactElement {
         // the canvas is the first picture, the attached ones follow; a model without
         // vision gets none of them, and the person is told the attached ones stayed back
         const pictures = sentAtts.filter((a) => ATTACHMENT_IMAGE_EXTS.has(a.ext))
-        const attached = seeing ? await atts.images(sentAtts) : []
-        if (!seeing && pictures.length > 0) atts.showNotice([tGlobal('aiAttachNoVision')])
+        const attached = seeing ? await atts.images(sentAtts, MAX_IMAGES_PER_MESSAGE - 1) : []
         if (!mountedRef.current || seq !== sendSeqRef.current) return
+        if (!seeing && pictures.length > 0) atts.showNotice([tGlobal('aiAttachNoVision')])
         runRef.current = { unlock: propsRef.current.lockFrame() }
         propsRef.current.onBusyChange(true)
         const images = [...(shot.images ?? []), ...attached]
-        loop.run(`${instruction}\n\n${shot.note}`, images.length > 0 ? images : undefined)
+        loop.run(
+          `${instruction}\n\n${shot.note}${attachedPicturesNote(shot.images?.length ?? 0, attached.length)}`,
+          images.length > 0 ? images : undefined,
+        )
       } catch (err) {
         if (!mountedRef.current || seq !== sendSeqRef.current) return
         patchLast({
