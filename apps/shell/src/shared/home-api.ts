@@ -417,6 +417,8 @@ export interface HomeApi {
   onDocumentThemeChanged(handler: (theme: DocTheme) => void): () => void
   /** open the public GitHub repository in the default browser */
   openGitHubRepo(): Promise<void>
+  /** open the maker's site (https://tenai.kr) in the default browser: the "Made by TenAI" line */
+  openMakerSite(): Promise<void>
   /**
    * Show what the app would contribute (version, OS, UI language), copy it,
    * and open the feedback survey in the browser. The app sends nothing itself.
@@ -656,6 +658,7 @@ export const HOME_CHANNELS = {
   setDefaultApp: 'home:set-default-app',
   pickDefaultSaveDir: 'home:pick-default-save-dir',
   openGitHubRepo: 'home:open-github-repo',
+  openMakerSite: 'home:open-maker-site',
   openFeedbackSurvey: 'home:open-feedback-survey',
   openLicenseNotices: 'home:open-license-notices',
   openLicenseTerms: 'home:open-license-terms',

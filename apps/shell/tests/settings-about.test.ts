@@ -186,3 +186,22 @@ describe('Settings → About', () => {
     expect(distinct.size).toBeGreaterThanOrEqual(LANGS.length - 2)
   })
 })
+
+describe('Settings → About: who made it, and the partner', () => {
+  it('names TenAI as the maker in every language', async () => {
+    await openAbout('en')
+    expect(host.textContent).toContain(strings.en.setMadeBy)
+    expect(host.textContent).toContain('TenAI (tenai.kr)')
+    for (const lang of LANGS) expect(strings[lang].setMadeBy.trim()).not.toBe('')
+  })
+
+  it('names DON CHICKEN Vietnam as the partner on the Vietnamese screen only', async () => {
+    await openAbout('vi')
+    expect(host.textContent).toContain(strings.vi.setPartner)
+    expect(host.textContent).toContain('DON CHICKEN Vietnam')
+    act(() => root.unmount())
+    root = createRoot(host)
+    await openAbout('ko')
+    expect(host.textContent).not.toContain('DON CHICKEN')
+  })
+})

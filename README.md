@@ -477,6 +477,10 @@ Parallel과 DuckDuckGo로, 업데이트 확인은 GitHub로 갑니다. 편집기
 그대로 두었고, 출처와 "고쳐 만든 버전"이라는 사실은 [NOTICE](NOTICE)에 적어
 두었습니다.
 
+베트남어 화면에 나오는 DON CHICKEN 로고(`apps/shell/src/renderer/src/assets/partners/don-chicken.png`)는
+DON CHICKEN Vietnam의 상표이고, 허락을 받아 넣었습니다. Apache-2.0에 들지 않으니 다른 곳에
+쓰지 마세요([자세히](apps/shell/src/renderer/src/assets/partners/NOTICE.md)).
+
 ### Code signing policy
 
 Windows 설치 파일의 코드 서명 방침은 [Code signing policy](docs/code-signing-policy.md)에 있습니다. Free code signing provided by SignPath.io, certificate by SignPath Foundation(신청 중, 0.20.2까지는 서명 없음).

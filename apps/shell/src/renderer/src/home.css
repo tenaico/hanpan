@@ -18,6 +18,9 @@
 
   /* genoffice-logo.svg is pure black-and-white; dark themes flip it to 1 */
   --logo-invert: 0;
+  /* the partner logo is drawn for a light page: dark themes put it on a white chip */
+  --cobrand-chip: transparent;
+  --cobrand-chip-pad: 0;
   /* lift for the kb-ask composer box */
   --shadow-composer: 0 1px 3px rgb(0 0 0 / 5%);
 }
@@ -38,6 +41,8 @@
   --shadow-composer: 0 6px 30px rgb(0 0 0 / 30%);
   --logo-invert: 1;
   --shadow-composer: 0 1px 3px rgb(0 0 0 / 25%);
+  --cobrand-chip: #fff;
+  --cobrand-chip-pad: 2px 4px;
 }
 
 /* System dark: no data-theme or data-theme="system" — follow OS preference */
@@ -55,6 +60,8 @@
     --shadow-composer: 0 6px 30px rgb(0 0 0 / 30%);
     --logo-invert: 1;
     --shadow-composer: 0 1px 3px rgb(0 0 0 / 25%);
+    --cobrand-chip: #fff;
+    --cobrand-chip-pad: 2px 4px;
   }
 }
 
@@ -140,6 +147,63 @@ body.vib .home {
   height: 28px;
   width: auto;
   filter: invert(var(--logo-invert));
+}
+
+/* the Vietnamese screen: the partner's logo on the logo row, after a divider (home/CoBrand.tsx) */
+.sidebar-logo.with-partner {
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.sidebar-logo.with-partner .logo-lockup {
+  flex: none;
+  height: 20px;
+}
+
+.cobrand-bar {
+  flex: none;
+  width: 1px;
+  height: 26px;
+  background: var(--border);
+}
+
+.cobrand-logo {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: auto;
+  max-height: 34px;
+  object-fit: contain;
+  object-position: left center;
+  box-sizing: border-box;
+  padding: var(--cobrand-chip-pad);
+  border-radius: 4px;
+  background: var(--cobrand-chip);
+}
+
+/* "Made by TenAI" at the foot of the sidebar, the beta mark in front of it */
+.made-by {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.made-by-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.made-by-link:hover {
+  color: var(--text);
+  text-decoration: underline;
 }
 
 /* shown while RELEASE_IS_BETA */

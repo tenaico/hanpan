@@ -584,6 +584,9 @@ const homeApi: HomeApi = {
   async openGitHubRepo() {
     await ipcRenderer.invoke(HOME_CHANNELS.openGitHubRepo)
   },
+  async openMakerSite() {
+    await ipcRenderer.invoke(HOME_CHANNELS.openMakerSite)
+  },
   async openFeedbackSurvey() {
     await ipcRenderer.invoke(HOME_CHANNELS.openFeedbackSurvey)
   },
