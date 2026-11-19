@@ -4,8 +4,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactElement,
 } from 'react'
-import logoLockup from './assets/genoffice-logo.svg'
-import { MadeByLine, PartnerLogo } from './home/CoBrand'
+import { LogoRow, MadeByLine } from './home/CoBrand'
 import { KbAskPanel } from './KbAskPanel'
 import { TemplatePicker } from './hanpan/TemplatePicker'
 import { StartBoard } from './hanpan/StartBoard'
@@ -79,7 +78,6 @@ import {
   useKoreanDocFeatures,
 } from '@genoffice/ui'
 import type { AiSettings } from '@genoffice/ai-provider/browser'
-import { productName } from '@genoffice/i18n'
 import { RELEASE_IS_BETA } from '../../shared/release-stage'
 import { fileCountLabel, visiblePageCount } from './counts'
 import { useI18n } from './locale'
@@ -3798,15 +3796,7 @@ export function Home({
         ref={sidebarRef}
         style={sidebarWidth === null ? undefined : { width: sidebarWidth }}
       >
-        <div className="sidebar-logo">
-          <img className="logo-lockup" src={logoLockup} alt={productName(lang)} />
-          {RELEASE_IS_BETA && (
-            <span className="beta-badge" title={t('betaTooltip')}>
-              {t('betaBadge')}
-            </span>
-          )}
-        </div>
-        <PartnerLogo lang={lang} />
+        <LogoRow lang={lang} />
         <nav className="sidebar-nav">
           <button
             className={`nav-item${activeNav === 'home' ? ' active' : ''}`}
@@ -3947,7 +3937,9 @@ export function Home({
           onFileSearchSettingsChange={() => setRerankSettingsTick((n) => n + 1)}
           openRequest={settingsRequest}
         />
-        <MadeByLine lang={lang} />
+        <MadeByLine
+          beta={RELEASE_IS_BETA ? { label: t('betaBadge'), title: t('betaTooltip') } : null}
+        />
       </aside>
       <div className="sidebar-resizer" onPointerDown={onSidebarResizeStart} />
       {selectedFolder && rootOf(selectedFolder, roots)?.readable ? (

@@ -7491,6 +7491,13 @@ function registerHomeIpc(): void {
     })
   })
 
+  // the "Made by TenAI" line: always this one address, never one the page passes
+  ipcMain.handle(HOME_CHANNELS.openMakerSite, () => {
+    shell.openExternal('https://tenai.kr').catch(() => {
+      // no browser handler available; nothing actionable for the user here
+    })
+  })
+
   ipcMain.handle(HOME_CHANNELS.openFeedbackSurvey, () => {
     void openFeedbackSurvey()
   })

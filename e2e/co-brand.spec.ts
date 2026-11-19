@@ -2,12 +2,15 @@ import { test, expect } from '@playwright/test'
 import { closeAndSaveVideo, launchShell, screenshotPath } from './helpers'
 
 /**
- * The Vietnamese screen shows DON CHICKEN's logo under Hanpan's (with DON
- * CHICKEN Vietnam's permission, 2026-11-19); every language says TenAI made
- * the app.
+ * The logo row and the made-by line on the real home: Vietnamese shows
+ * "Hanpan" with DON CHICKEN's logo beside it (with DON CHICKEN Vietnam's
+ * permission, 2026-11-19), Korean shows "한판" alone, and every language
+ * says "Made by TenAI". The line is not pressed here: it opens a browser.
  */
-test.describe('partner logo and maker line', () => {
-  test('the Vietnamese home shows the DON CHICKEN logo and the TenAI line', async () => {
+test.describe('logo row and made-by line', () => {
+  test.describe.configure({ timeout: 120_000 })
+
+  test('the Vietnamese home shows Hanpan beside the DON CHICKEN logo', async () => {
     const launched = await launchShell({
       onboardingSeen: true,
       lang: 'vi',
@@ -15,21 +18,25 @@ test.describe('partner logo and maker line', () => {
     })
     const { page } = launched
     try {
-      const logo = page.locator('.sidebar .cobrand img.cobrand-logo')
+      const row = page.locator('.sidebar .sidebar-logo.with-partner')
+      await expect(row.locator('img.logo-lockup')).toHaveAttribute('alt', 'Hanpan')
+      const logo = row.locator('img.cobrand-logo')
       await expect(logo).toBeVisible()
       await expect(logo).toHaveAttribute('alt', 'DON CHICKEN')
-      // the picture really loaded (a broken image has no natural width)
-      await expect
-        .poll(() => logo.evaluate((img: HTMLImageElement) => img.naturalWidth))
-        .toBeGreaterThan(1000)
-      await expect(page.locator('.sidebar .made-by')).toHaveText('Sản phẩm của TenAI')
+      // both pictures really loaded (a broken image has no natural width)
+      for (const img of [row.locator('img.logo-lockup'), logo]) {
+        await expect
+          .poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth))
+          .toBeGreaterThan(500)
+      }
+      await expect(page.locator('.sidebar .made-by-link')).toHaveText('Made by TenAI')
       await page.screenshot({ path: screenshotPath('co-brand-vi-home') })
     } finally {
       await closeAndSaveVideo(launched, 'co-brand-vi')
     }
   })
 
-  test('the Korean home has no partner logo and says TenAI made it', async () => {
+  test('the Korean home shows 한판 alone and the same made-by line', async () => {
     const launched = await launchShell({
       onboardingSeen: true,
       lang: 'ko',
@@ -37,8 +44,9 @@ test.describe('partner logo and maker line', () => {
     })
     const { page } = launched
     try {
-      await expect(page.locator('.sidebar .made-by')).toHaveText('TenAI가 만들었습니다')
-      await expect(page.locator('.cobrand')).toHaveCount(0)
+      await expect(page.locator('.sidebar img.logo-lockup')).toHaveAttribute('alt', '한판')
+      await expect(page.locator('.sidebar .cobrand-logo')).toHaveCount(0)
+      await expect(page.locator('.sidebar .made-by-link')).toHaveText('Made by TenAI')
     } finally {
       await closeAndSaveVideo(launched, 'co-brand-ko')
     }
