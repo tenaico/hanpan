@@ -5,6 +5,7 @@ import type {
   ReactElement,
 } from 'react'
 import logoLockup from './assets/genoffice-logo.svg'
+import { MadeByLine, PartnerLogo } from './home/CoBrand'
 import { KbAskPanel } from './KbAskPanel'
 import { TemplatePicker } from './hanpan/TemplatePicker'
 import { StartBoard } from './hanpan/StartBoard'
@@ -3805,6 +3806,7 @@ export function Home({
             </span>
           )}
         </div>
+        <PartnerLogo lang={lang} />
         <nav className="sidebar-nav">
           <button
             className={`nav-item${activeNav === 'home' ? ' active' : ''}`}
@@ -3945,6 +3947,7 @@ export function Home({
           onFileSearchSettingsChange={() => setRerankSettingsTick((n) => n + 1)}
           openRequest={settingsRequest}
         />
+        <MadeByLine lang={lang} />
       </aside>
       <div className="sidebar-resizer" onPointerDown={onSidebarResizeStart} />
       {selectedFolder && rootOf(selectedFolder, roots)?.readable ? (

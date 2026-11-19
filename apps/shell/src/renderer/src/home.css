@@ -18,6 +18,8 @@
 
   /* genoffice-logo.svg is pure black-and-white; dark themes flip it to 1 */
   --logo-invert: 0;
+  /* the partner logo is drawn for a light page: it sits on this chip in every theme */
+  --cobrand-chip: #fff;
   /* lift for the kb-ask composer box */
   --shadow-composer: 0 1px 3px rgb(0 0 0 / 5%);
 }
@@ -140,6 +142,38 @@ body.vib .home {
   height: 28px;
   width: auto;
   filter: invert(var(--logo-invert));
+}
+
+/* "× DON CHICKEN" under the product logo (Vietnamese screen, home/CoBrand.tsx) */
+.cobrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  margin: -10px 0 18px;
+}
+
+.cobrand-x {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.cobrand-logo {
+  display: block;
+  height: 38px;
+  width: auto;
+  max-width: calc(100% - 20px);
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: var(--cobrand-chip);
+  object-fit: contain;
+}
+
+/* "Made by TenAI" at the foot of the sidebar */
+.made-by {
+  padding: 8px 8px 0;
+  color: var(--text-muted);
+  font-size: 11px;
 }
 
 /* shown while RELEASE_IS_BETA */

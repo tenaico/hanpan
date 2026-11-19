@@ -76,6 +76,7 @@ import {
 import type { MediaSpecialChoice } from './settings-ai'
 import { mergeLoadedModel } from './local-ai'
 import { SecureKeySettingsCard } from './SecureKeySettingsCard'
+import { MAKER_NAME, MAKER_SITE, partnerFor } from './home/CoBrand'
 import './settings.css'
 
 // ── Settings modal (opened from the account menu) ─────────
@@ -2170,6 +2171,10 @@ export function SettingsModal({
                     }}
                   />
                 </div>
+                <Field label={t('setMadeBy')} value={`${MAKER_NAME} (${MAKER_SITE})`} />
+                {partnerFor(lang) && (
+                  <Field label={t('setPartner')} value={partnerFor(lang)!.fullName} />
+                )}
                 <Field
                   label={t('setGithub')}
                   value={`github.com/${PRODUCT_REPO_SLUG}`}

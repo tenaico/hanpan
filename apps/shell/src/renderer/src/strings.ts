@@ -550,6 +550,9 @@ export const strings = {
     setReadUrlClear: '清除',
     setAiSharedKeyHint: '同一服务商的 key 与 Base URL 在各项能力间共用，只需填一次。',
     setGithub: '开源项目',
+    setMadeBy: '制作',
+    setPartner: '合作伙伴',
+    homeMadeBy: '由 {name} 制作',
     setBasedOn: '基于开源项目 {{GenOffice}} 构建（Apache License 2.0）。',
     setTerms: '使用许可与免责声明',
     setTermsDesc: '再次查看安装时同意的使用许可与免责声明。',
@@ -1281,6 +1284,9 @@ export const strings = {
     setAiSharedKeyHint:
       "A vendor's key and base URL are shared across capabilities; enter them once.",
     setGithub: 'Open Source',
+    setMadeBy: 'Made by',
+    setPartner: 'Partner',
+    homeMadeBy: 'Made by {name}',
     setBasedOn: 'Based on the open-source project {{GenOffice}} (Apache License 2.0).',
     setTerms: 'License and disclaimer',
     setTermsDesc: 'Read again the license and disclaimer you agreed to when installing.',
@@ -2024,6 +2030,9 @@ export const strings = {
     setAiSharedKeyHint:
       'Khóa và URL cơ sở của nhà cung cấp được dùng chung cho các chức năng; chỉ cần nhập một lần.',
     setGithub: 'Mã nguồn mở',
+    setMadeBy: 'Thực hiện bởi',
+    setPartner: 'Đối tác',
+    homeMadeBy: 'Sản phẩm của {name}',
     setBasedOn: 'Dựa trên dự án mã nguồn mở {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Giấy phép và miễn trừ trách nhiệm',
     setTermsDesc: 'Xem lại giấy phép và phần miễn trừ trách nhiệm bạn đã đồng ý khi cài đặt.',
@@ -2777,6 +2786,9 @@ export const strings = {
     setAiSharedKeyHint:
       '同じプロバイダーのキーと Base URL は各機能で共有されます。一度入力すれば済みます。',
     setGithub: 'オープンソース',
+    setMadeBy: '制作',
+    setPartner: 'パートナー',
+    homeMadeBy: '{name} 制作',
     setBasedOn:
       'オープンソースプロジェクト {{GenOffice}}（Apache License 2.0）をもとに開発されています。',
     setTerms: '使用許諾と免責事項',
@@ -3526,6 +3538,9 @@ export const strings = {
     setAiSharedKeyHint:
       '같은 제공업체의 키와 서버 주소는 모든 기능이 함께 쓰므로 한 번만 넣으면 됩니다.',
     setGithub: '오픈 소스',
+    setMadeBy: '만든 곳',
+    setPartner: '함께한 곳',
+    homeMadeBy: '{name}가 만들었습니다',
     setBasedOn: '오픈 소스 프로젝트 {{GenOffice}}(Apache License 2.0)를 바탕으로 만들었습니다.',
     setTerms: '사용권 및 면책 안내',
     setTermsDesc: '설치할 때 동의한 사용권과 면책 안내를 다시 봅니다.',
@@ -4285,6 +4300,9 @@ export const strings = {
     setAiSharedKeyHint:
       "La clé et l'URL de base d'un fournisseur sont partagées entre les capacités ; saisissez-les une seule fois.",
     setGithub: 'Open source',
+    setMadeBy: 'Réalisé par',
+    setPartner: 'Partenaire',
+    homeMadeBy: 'Réalisé par {name}',
     setBasedOn: 'Basé sur le projet open source {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Licence et clause de non-responsabilité',
     setTermsDesc:
@@ -5056,6 +5074,9 @@ export const strings = {
     setAiSharedKeyHint:
       'Schlüssel und Base URL eines Anbieters gelten für alle Fähigkeiten; einmal eintragen genügt.',
     setGithub: 'Open Source',
+    setMadeBy: 'Erstellt von',
+    setPartner: 'Partner',
+    homeMadeBy: 'Erstellt von {name}',
     setBasedOn: 'Basiert auf dem Open-Source-Projekt {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Lizenz und Haftungsausschluss',
     setTermsDesc:
@@ -5826,6 +5847,9 @@ export const strings = {
     setAiSharedKeyHint:
       'La clave y la URL base de un proveedor se comparten entre capacidades; introdúcelas una sola vez.',
     setGithub: 'Código abierto',
+    setMadeBy: 'Hecho por',
+    setPartner: 'Socio',
+    homeMadeBy: 'Hecho por {name}',
     setBasedOn: 'Basado en el proyecto de código abierto {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Licencia y descargo de responsabilidad',
     setTermsDesc:
@@ -6571,6 +6595,9 @@ export const strings = {
     setAiSharedKeyHint:
       'คีย์และ Base URL ของผู้ให้บริการเดียวกันใช้ร่วมกันทุกความสามารถ กรอกครั้งเดียวพอ',
     setGithub: 'โอเพนซอร์ส',
+    setMadeBy: 'จัดทำโดย',
+    setPartner: 'พาร์ทเนอร์',
+    homeMadeBy: 'จัดทำโดย {name}',
     setBasedOn: 'พัฒนาต่อยอดจากโครงการโอเพนซอร์ส {{GenOffice}} (Apache License 2.0)',
     setTerms: 'สัญญาอนุญาตและข้อจำกัดความรับผิดชอบ',
     setTermsDesc: 'อ่านสัญญาอนุญาตและข้อจำกัดความรับผิดชอบที่ยอมรับตอนติดตั้งอีกครั้ง',
@@ -7325,6 +7352,9 @@ export const strings = {
     setAiSharedKeyHint:
       'Kunci dan Base URL satu penyedia dipakai bersama oleh semua kemampuan; cukup isi sekali.',
     setGithub: 'Sumber Terbuka',
+    setMadeBy: 'Dibuat oleh',
+    setPartner: 'Mitra',
+    homeMadeBy: 'Dibuat oleh {name}',
     setBasedOn: 'Dibuat berdasarkan proyek sumber terbuka {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Lisensi dan penafian',
     setTermsDesc: 'Baca lagi lisensi dan penafian yang Anda setujui saat memasang.',
@@ -8083,6 +8113,9 @@ export const strings = {
     setAiSharedKeyHint:
       'Ключ и базовый URL провайдера общие для всех функций; введите их один раз.',
     setGithub: 'Открытый код',
+    setMadeBy: 'Разработчик',
+    setPartner: 'Партнёр',
+    homeMadeBy: 'Создано {name}',
     setBasedOn:
       'Создано на основе проекта с открытым исходным кодом {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Лицензия и отказ от ответственности',
@@ -8831,6 +8864,9 @@ export const strings = {
     setAiSharedKeyHint:
       'مفتاح المزوّد وعنوان Base URL مشتركان بين جميع القدرات؛ أدخلهما مرة واحدة فقط.',
     setGithub: 'مفتوح المصدر',
+    setMadeBy: 'من إعداد',
+    setPartner: 'الشريك',
+    homeMadeBy: 'من إعداد {name}',
     setBasedOn: 'مبني على المشروع مفتوح المصدر {{GenOffice}} (Apache License 2.0).',
     setTerms: 'الترخيص وإخلاء المسؤولية',
     setTermsDesc: 'اقرأ مرة أخرى الترخيص وإخلاء المسؤولية اللذين وافقت عليهما عند التثبيت.',
@@ -9582,6 +9618,9 @@ export const strings = {
     setAiSharedKeyHint:
       'A chave e a URL base de um provedor são compartilhadas entre as capacidades; insira-as uma só vez.',
     setGithub: 'Código aberto',
+    setMadeBy: 'Feito por',
+    setPartner: 'Parceiro',
+    homeMadeBy: 'Feito por {name}',
     setBasedOn: 'Baseado no projeto de código aberto {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Licença e isenção de responsabilidade',
     setTermsDesc: 'Leia novamente a licença e a isenção de responsabilidade aceitas na instalação.',
@@ -10334,6 +10373,9 @@ export const strings = {
     setAiSharedKeyHint:
       "La chiave e l'URL base di un provider sono condivisi tra le capacità; inseriscili una volta sola.",
     setGithub: 'Open source',
+    setMadeBy: 'Realizzato da',
+    setPartner: 'Partner',
+    homeMadeBy: 'Realizzato da {name}',
     setBasedOn: 'Basato sul progetto open source {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Licenza ed esclusione di responsabilità',
     setTermsDesc:
@@ -11086,6 +11128,9 @@ export const strings = {
     setAiSharedKeyHint:
       'Klucz i bazowy URL dostawcy są wspólne dla wszystkich funkcji; wpisz je raz.',
     setGithub: 'Open source',
+    setMadeBy: 'Twórca',
+    setPartner: 'Partner',
+    homeMadeBy: 'Stworzone przez {name}',
     setBasedOn: 'Oparte na projekcie open source {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Licencja i wyłączenie odpowiedzialności',
     setTermsDesc:
@@ -11786,6 +11831,9 @@ export const strings = {
     setAiSharedKeyHint:
       'Klíč a základní URL jednoho poskytovatele se sdílejí mezi funkcemi; zadejte je jen jednou.',
     setGithub: 'Open source',
+    setMadeBy: 'Vytvořil',
+    setPartner: 'Partner',
+    homeMadeBy: 'Vytvořil {name}',
     setBasedOn: 'Založeno na open source projektu {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Licence a vyloučení odpovědnosti',
     setTermsDesc:
@@ -12584,6 +12632,9 @@ export const strings = {
     setAiSharedKeyHint:
       'De sleutel en basis-URL van een provider gelden voor alle functies; één keer invoeren volstaat.',
     setGithub: 'Open source',
+    setMadeBy: 'Gemaakt door',
+    setPartner: 'Partner',
+    homeMadeBy: 'Gemaakt door {name}',
     setBasedOn: 'Gebaseerd op het opensourceproject {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Licentie en disclaimer',
     setTermsDesc:
@@ -13338,6 +13389,9 @@ export const strings = {
     setAiSharedKeyHint:
       'Kunci dan Base URL pembekal dikongsi oleh semua keupayaan; isi sekali sahaja.',
     setGithub: 'Sumber Terbuka',
+    setMadeBy: 'Dibuat oleh',
+    setPartner: 'Rakan kongsi',
+    homeMadeBy: 'Dibuat oleh {name}',
     setBasedOn: 'Berasaskan projek sumber terbuka {{GenOffice}} (Apache License 2.0).',
     setTerms: 'Lesen dan penafian',
     setTermsDesc: 'Baca semula lesen dan penafian yang anda persetujui semasa memasang.',
@@ -14070,6 +14124,9 @@ export const strings = {
     setAiSharedKeyHint:
       'המפתח וכתובת ה-Base URL של ספק משותפים לכל היכולות; יש להזין אותם פעם אחת בלבד.',
     setGithub: 'קוד פתוח',
+    setMadeBy: 'נוצר על ידי',
+    setPartner: 'שותף',
+    homeMadeBy: 'נוצר על ידי {name}',
     setBasedOn: 'מבוסס על פרויקט הקוד הפתוח {{GenOffice}} (Apache License 2.0).',
     setTerms: 'רישיון והסרת אחריות',
     setTermsDesc: 'לקרוא שוב את הרישיון והסרת האחריות שאישרת בהתקנה.',
@@ -14805,6 +14862,9 @@ export const strings = {
     setAiSharedKeyHint:
       'एक प्रदाता की कुंजी और Base URL सभी क्षमताओं में साझा होते हैं; एक बार ही दर्ज करें।',
     setGithub: 'ओपन सोर्स',
+    setMadeBy: 'निर्माता',
+    setPartner: 'साझेदार',
+    homeMadeBy: '{name} द्वारा निर्मित',
     setBasedOn: 'ओपन सोर्स प्रोजेक्ट {{GenOffice}} (Apache License 2.0) पर आधारित।',
     setTerms: 'लाइसेंस और अस्वीकरण',
     setTermsDesc: 'इंस्टॉल करते समय स्वीकार किया गया लाइसेंस और अस्वीकरण फिर से पढ़ें।',
@@ -15524,6 +15584,9 @@ export const strings = {
     setReadUrlClear: '清除',
     setAiSharedKeyHint: '同一服務商的 key 與 Base URL 在各項能力間共用，只需填一次。',
     setGithub: '開源專案',
+    setMadeBy: '製作',
+    setPartner: '合作夥伴',
+    homeMadeBy: '由 {name} 製作',
     setBasedOn: '以開源專案 {{GenOffice}} 為基礎打造（Apache License 2.0）。',
     setTerms: '使用授權與免責聲明',
     setTermsDesc: '再次查看安裝時同意的使用授權與免責聲明。',
