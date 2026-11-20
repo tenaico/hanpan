@@ -32,11 +32,22 @@
   "rewrites": [
     {
       "source": "/ko",
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/ko/",
-      "destination": "/index.html"
+      "destination": "/"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "x-vercel-ip-country",
+          "value": "KR"
+        }
+      ],
+      "destination": "/vi/"
     }
   ]
 }
