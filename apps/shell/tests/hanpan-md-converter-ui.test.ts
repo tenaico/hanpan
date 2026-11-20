@@ -8,6 +8,7 @@ import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { applyKoreanDocFeatures } from '@genoffice/ui'
 import {
   MarkdownConverter,
   resetConverterDraft,
@@ -29,13 +30,16 @@ const api: MarkdownConverterApi = {
   mdShowFolder: async () => '',
 }
 
-async function open(): Promise<void> {
+async function open(
+  lang: 'ko' | 'vi' = 'ko',
+  convertApi: MarkdownConverterApi = api,
+): Promise<void> {
   await act(async () => {
     root.render(
       createElement(
         LocaleProvider,
-        { initial: 'ko' },
-        createElement(MarkdownConverter, { api, onClose: () => undefined }),
+        { initial: lang },
+        createElement(MarkdownConverter, { api: convertApi, onClose: () => undefined }),
       ),
     )
   })
@@ -60,6 +64,8 @@ const source = () => host.querySelector<HTMLTextAreaElement>('[data-hanpan="md-s
 
 beforeEach(() => {
   resetConverterDraft()
+  localStorage.clear()
+  applyKoreanDocFeatures(null)
   host = document.createElement('div')
   document.body.append(host)
   root = createRoot(host)
@@ -98,5 +104,39 @@ describe('Markdown converter', () => {
     await setValue(host.querySelector('[data-hanpan="md-theme"]'), 'gongmun')
     expect(title().style.fontFamily).not.toBe(report)
     expect(title().style.fontFamily).toContain('맑은 고딕')
+  })
+
+  // decision 0091: with the Korean document features off (a Vietnamese screen)
+  // there is no HWP to tick and no Korean official-letter look; the files come
+  // out in the plain Arial look
+  it('offers no HWP and no Korean look with the Korean document features off', async () => {
+    let sent: Parameters<MarkdownConverterApi['mdConvert']>[0] | null = null
+    localStorage.setItem('hanpan.convert.formats', JSON.stringify(['hwp', 'docx']))
+    await open('vi', {
+      ...api,
+      mdConvert: async (request) => {
+        sent = request
+        return { ok: true, written: [], failed: [] }
+      },
+    })
+    const chips = [...host.querySelectorAll<HTMLInputElement>('[data-format]')].map(
+      (el) => el.dataset.format,
+    )
+    expect(chips).toEqual(['docx', 'odt', 'pdf', 'html'])
+    expect(host.querySelector('[data-hanpan="md-theme"]')).toBeNull()
+    await setValue(source(), '# Báo cáo\n\nNội dung')
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>('[data-hanpan="md-convert"]')!.click(),
+    )
+    expect(sent).toMatchObject({ formats: ['docx'], theme: 'basic' })
+  })
+
+  it('keeps HWP and the looks on a Korean screen', async () => {
+    await open('ko')
+    const chips = [...host.querySelectorAll<HTMLInputElement>('[data-format]')].map(
+      (el) => el.dataset.format,
+    )
+    expect(chips).toEqual(['hwp', 'hwpx', 'docx', 'odt', 'pdf', 'html'])
+    expect(host.querySelector('[data-hanpan="md-theme"]')).not.toBeNull()
   })
 })

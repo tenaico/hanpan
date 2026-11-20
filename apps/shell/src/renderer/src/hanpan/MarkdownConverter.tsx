@@ -21,11 +21,12 @@ import {
   type TextLook,
   type ParaLook,
 } from '@genoffice/hanpan-core/renderer'
+import { useKoreanDocFeatures } from '@genoffice/ui'
 import { useDialogKeys } from '../dialog-keys'
 import { useI18n } from '../locale'
 
 export type ConvertFormat = 'hwp' | 'hwpx' | 'docx' | 'odt' | 'pdf' | 'html'
-export type ConvertTheme = 'report' | 'plain' | 'gongmun'
+export type ConvertTheme = 'report' | 'plain' | 'gongmun' | 'basic'
 type ConvertOutcome =
   | {
       ok: true
@@ -57,14 +58,23 @@ const FORMATS: { id: ConvertFormat; label: string }[] = [
 ]
 const FORMATS_KEY = 'hanpan.convert.formats'
 const DEFAULT_FORMATS: ConvertFormat[] = ['hwp', 'docx', 'pdf']
+/** HWP and HWPX are Korean document features (decision 0091) */
+const KOREAN_FORMATS: readonly ConvertFormat[] = ['hwp', 'hwpx']
 
-function storedFormats(): ConvertFormat[] {
+/** the formats this window offers: no HWP with the Korean document features off */
+function offeredFormats(korean: boolean): { id: ConvertFormat; label: string }[] {
+  return korean ? FORMATS : FORMATS.filter((f) => !KOREAN_FORMATS.includes(f.id))
+}
+
+function storedFormats(korean: boolean): ConvertFormat[] {
+  const offered = offeredFormats(korean).map((f) => f.id)
+  const defaults = DEFAULT_FORMATS.filter((id) => offered.includes(id))
   try {
     const raw = JSON.parse(localStorage.getItem(FORMATS_KEY) ?? 'null') as unknown
-    const list = Array.isArray(raw) ? FORMATS.map((f) => f.id).filter((id) => raw.includes(id)) : []
-    return list.length > 0 ? list : DEFAULT_FORMATS
+    const list = Array.isArray(raw) ? offered.filter((id) => raw.includes(id)) : []
+    return list.length > 0 ? list : defaults
   } catch {
-    return DEFAULT_FORMATS
+    return defaults
   }
 }
 
@@ -194,7 +204,9 @@ function Preview(p: { blocks: DocBlock[]; theme: DocTheme }) {
 }
 
 export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): void }) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
+  const korean = useKoreanDocFeatures(lang)
+  const offered = offeredFormats(korean)
   const [markdown, setMarkdownState] = useState(draft.markdown)
   const [name, setNameState] = useState(draft.name)
   const setMarkdown = (next: string) => {
@@ -205,8 +217,11 @@ export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): voi
     draft = { ...draft, name: next }
     setNameState(next)
   }
-  const [formats, setFormats] = useState<ConvertFormat[]>(storedFormats)
-  const [theme, setTheme] = useState<ConvertTheme>('report')
+  const [picked, setFormats] = useState<ConvertFormat[]>(() => storedFormats(korean))
+  const formats = picked.filter((f) => offered.some((o) => o.id === f))
+  const [chosenTheme, setTheme] = useState<ConvertTheme>('report')
+  // without the Korean document features there is one look: Arial, no Korean marks
+  const theme: ConvertTheme = korean ? chosenTheme : 'basic'
   const [folder, setFolder] = useState('')
   const [busy, setBusy] = useState(false)
   const dialogRef = useDialogKeys(p.onClose, { canClose: !busy })
@@ -224,7 +239,7 @@ export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): voi
   const toggle = (id: ConvertFormat) => {
     const next = formats.includes(id)
       ? formats.filter((f) => f !== id)
-      : FORMATS.map((f) => f.id).filter((f) => f === id || formats.includes(f))
+      : offered.map((f) => f.id).filter((f) => f === id || formats.includes(f))
     setFormats(next)
     try {
       localStorage.setItem(FORMATS_KEY, JSON.stringify(next))
@@ -366,7 +381,7 @@ export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): voi
             </label>
             <fieldset className="hp-conv-formats">
               <legend>{t('hpConvFormats')}</legend>
-              {FORMATS.map((f) => (
+              {offered.map((f) => (
                 <label
                   key={f.id}
                   className={formats.includes(f.id) ? 'hp-conv-chip is-on' : 'hp-conv-chip'}
@@ -381,18 +396,20 @@ export function MarkdownConverter(p: { api: MarkdownConverterApi; onClose(): voi
                 </label>
               ))}
             </fieldset>
-            <label className="hp-conv-field">
-              <span>{t('hpConvStyle')}</span>
-              <select
-                value={theme}
-                onChange={(e) => setTheme(e.target.value as ConvertTheme)}
-                data-hanpan="md-theme"
-              >
-                <option value="report">{t('hpConvStyleReport')}</option>
-                <option value="plain">{t('hpConvStylePlain')}</option>
-                <option value="gongmun">{t('hpConvStyleGongmun')}</option>
-              </select>
-            </label>
+            {korean && (
+              <label className="hp-conv-field">
+                <span>{t('hpConvStyle')}</span>
+                <select
+                  value={theme}
+                  onChange={(e) => setTheme(e.target.value as ConvertTheme)}
+                  data-hanpan="md-theme"
+                >
+                  <option value="report">{t('hpConvStyleReport')}</option>
+                  <option value="plain">{t('hpConvStylePlain')}</option>
+                  <option value="gongmun">{t('hpConvStyleGongmun')}</option>
+                </select>
+              </label>
+            )}
             <div className="hp-conv-field hp-conv-folder">
               <span>{t('hpConvFolder')}</span>
               <span className="hp-conv-path" title={folder}>

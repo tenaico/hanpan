@@ -66,6 +66,17 @@ describe('checkConvertRequest', () => {
     expect(request.theme).toBe('report')
   })
 
+  // decision 0091: a window without the Korean document features asks for the Arial look
+  it('takes the plain Arial look the non-Korean converter asks for', () => {
+    const request = checkConvertRequest({
+      markdown: '# a',
+      name: 'x',
+      formats: ['docx'],
+      theme: 'basic',
+    })
+    expect(request.theme).toBe('basic')
+  })
+
   it('refuses an empty text or no format', () => {
     expect(() => checkConvertRequest({ markdown: '  ', name: 'x', formats: ['hwp'] })).toThrow()
     expect(() => checkConvertRequest({ markdown: '# a', name: 'x', formats: [] })).toThrow()
