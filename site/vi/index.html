@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hanpan — Sơ đồ tư duy thành ngay kế hoạch kinh doanh</title>
+    <meta
+      name="description"
+      content="Hanpan là bộ ứng dụng văn phòng miễn phí cho máy tính: chuyển ý tưởng kinh doanh đã sắp xếp trên sơ đồ tư duy thành kế hoạch kinh doanh, báo cáo dạng Hangul (HWP, định dạng văn bản của Hàn Quốc), PPT hay Word, rồi viết tiếp ngay trong cùng một cửa sổ. Về AI, Hanpan dùng trước AI đã cài trên máy tính của bạn. Made by TenAI."
+    />
+    <meta property="og:title" content="Hanpan — Sơ đồ tư duy thành ngay kế hoạch kinh doanh" />
+    <meta
+      property="og:description"
+      content="Từ một sơ đồ tư duy ra kế hoạch kinh doanh, báo cáo HWP, PPT và Word. Miễn phí, không cần đăng ký. Made by TenAI."
+    />
+    <meta property="og:image" content="https://hanpan-blond.vercel.app/images/og-hanpan.png" />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
+    <link rel="icon" href="/images/icon.svg" type="image/svg+xml" />
+    <link rel="alternate" hreflang="ko" href="https://hanpan.tenai.kr/ko/" />
+    <link rel="alternate" hreflang="en" href="https://hanpan.tenai.kr/en/" />
+    <link rel="alternate" hreflang="vi" href="https://hanpan.tenai.kr/vi/" />
+    <link rel="alternate" hreflang="x-default" href="https://hanpan.tenai.kr/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/site.css" />
+  </head>
+  <body>
+    <aside class="maker" aria-label="Đơn vị phát triển">
+      <div class="wrap">
+        <a
+          class="maker-logo"
+          href="https://www.tenai.kr"
+          aria-label="Trang chủ TenAI (www.tenai.kr)"
+          ><img
+            src="/images/tenai-logo.png"
+            alt="TenAI — AX Hub Platform"
+            width="1919"
+            height="812"
+        /></a>
+        <p>
+          <strong>Hanpan do TenAI phát triển.</strong> TenAI là nền tảng AX Hub giúp doanh nghiệp và
+          cơ quan nhà nước chuyển đổi sang AI (AX), và phát triển mô hình ngôn ngữ lớn (LLM) tiếng
+          Hàn cùng AI xử lý văn bản.
+        </p>
+        <div class="maker-links">
+          <a href="https://www.tenai.kr">www.tenai.kr</a>
+          <a href="mailto:ten@tenai.kr">ten@tenai.kr</a>
+        </div>
+      </div>
+    </aside>
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href="#"><img src="/images/icon.svg" alt="" />Hanpan</a>
+        <nav aria-label="Điều hướng trang">
+          <a href="#features">Tính năng</a>
+          <a href="#news">Cập nhật</a>
+          <a href="#install">Cài đặt</a>
+          <a href="#local-ai">AI trên máy</a>
+          <a href="https://github.com/tenaico/hanpan">GitHub</a>
+          <span class="lang-switch" aria-label="Ngôn ngữ">
+            <a href="/ko/" hreflang="ko" lang="ko">한국어</a>
+            <a href="/en/" hreflang="en" lang="en">English</a>
+            <a href="/vi/" hreflang="vi" lang="vi" aria-current="page">Tiếng Việt</a>
+          </span>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="wrap">
+          <div>
+            <h1 id="hero-title">Sơ đồ tư duy<br />thành ngay kế hoạch kinh doanh.</h1>
+            <p class="lead">
+              Chỉ với một nút bấm, ý tưởng kinh doanh đã sắp xếp trên sơ đồ tư duy được chuyển thành
+              kế hoạch kinh doanh, báo cáo dạng Hangul (HWP, định dạng văn bản của Hàn Quốc), PPT
+              hay Word, và bạn viết tiếp ngay trong cùng một cửa sổ. Sửa bên này thì bên kia cũng
+              được cập nhật theo. Về AI, Hanpan dùng trước AI đã cài trên máy tính của bạn.
+            </p>
+            <div class="actions">
+              <a class="btn download-link" href="https://github.com/tenaico/hanpan/releases/latest">
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 16.5h12" />
+                </svg>
+                Tải về cho Windows
+              </a>
+              <span class="meta"
+                >Miễn phí · Windows 10/11 (64-bit) · <span class="version">v0.21.2</span> ·
+                <a href="https://github.com/tenaico/hanpan/releases">Tất cả phiên bản</a></span
+              >
+              <span class="meta mac"
+                >Bản beta cho Mac:
+                <a
+                  class="mac-link"
+                  data-arch="arm64"
+                  href="https://github.com/tenaico/hanpan/releases/latest"
+                  >Apple Silicon (M1 trở lên)</a
+                >
+                ·
+                <a
+                  class="mac-link"
+                  data-arch="x64"
+                  href="https://github.com/tenaico/hanpan/releases/latest"
+                  >Intel</a
+                ></span
+              >
+            </div>
+          </div>
+
+          <div class="stage" aria-hidden="true">
+            <svg viewBox="-86 0 646 490">
+              <!-- the map -->
+              <path class="map-line" d="M120 245 C 60 245, 60 120, 30 110" />
+              <path class="map-line" d="M120 245 C 60 245, 60 200, 22 195" />
+              <path class="map-line" d="M120 245 C 60 245, 60 300, 22 300" />
+              <path class="map-line" d="M120 245 C 60 245, 60 385, 30 390" />
+              <g class="root">
+                <circle cx="120" cy="245" r="54" />
+                <text x="120" y="240" text-anchor="middle">Kế hoạch</text>
+                <text x="120" y="260" text-anchor="middle">dự án mới</text>
+              </g>
+              <g class="topic">
+                <rect x="-70" y="92" width="104" height="36" rx="18" />
+                <text x="-18" y="115" text-anchor="middle">Tổng quan</text>
+              </g>
+              <g class="topic">
+                <rect x="-78" y="177" width="104" height="36" rx="18" />
+                <text x="-26" y="200" text-anchor="middle">Thị trường</text>
+              </g>
+              <g class="topic">
+                <rect x="-78" y="282" width="104" height="36" rx="18" />
+                <text x="-26" y="305" text-anchor="middle">Chiến lược</text>
+              </g>
+              <g class="topic">
+                <rect x="-70" y="372" width="104" height="36" rx="18" />
+                <text x="-18" y="395" text-anchor="middle">Hiệu quả</text>
+              </g>
+              <path class="flow" d="M176 245 C 220 245, 222 190, 262 190" />
+              <!-- the report it becomes -->
+              <g class="report">
+                <rect class="sheet" x="262" y="40" width="290" height="420" rx="8" />
+                <g class="sheet-text">
+                  <text class="row sheet-title" x="407" y="96" text-anchor="middle">
+                    Kế hoạch dự án mới 2027
+                  </text>
+                  <text class="row sheet-date" x="526" y="124" text-anchor="end">
+                    02/11/2026, Phòng Chiến lược
+                  </text>
+                  <text class="row sheet-l1" x="290" y="172">□ Tổng quan dự án</text>
+                  <text class="row sheet-l2" x="306" y="204">○ Dịch vụ tự động hóa văn bản</text>
+                  <text class="row sheet-l2" x="306" y="234">○ Cho công ty dưới 50 người</text>
+                  <text class="row sheet-l1" x="290" y="280">□ Tình hình thị trường</text>
+                  <text class="row sheet-l2" x="306" y="312">○ Nhu cầu tự động hóa tăng</text>
+                </g>
+                <path
+                  d="M306 340 H 520 M306 364 H 488 M306 388 H 506 M306 412 H 470"
+                  stroke="#dce3ec"
+                  stroke-width="7"
+                  stroke-linecap="round"
+                />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" aria-labelledby="features-title">
+        <div class="wrap">
+          <h2 id="features-title">Suy nghĩ, viết và trình bày trên cùng một bảng</h2>
+          <p class="intro">
+            Sơ đồ tư duy, HWP, Word, PPT, Excel, PDF đều mở thành các thẻ trong một cửa sổ. Việc
+            chuyển qua lại giữa các phần mềm để sao chép, dán nay chỉ còn một nút bấm.
+          </p>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Màn hình chính</span>
+              <h3>Chỉ cần ghi chủ đề là bắt đầu với sơ đồ tư duy</h3>
+              <p>
+                Ghi chủ đề cần sắp xếp vào bảng khởi động trên cùng của màn hình chính rồi bấm
+                <strong>Tạo sơ đồ tư duy</strong>, một sơ đồ tư duy mới với chủ đề đó ở giữa sẽ mở
+                ra ngay.
+              </p>
+              <ul>
+                <li>
+                  Các thẻ cũng xếp theo thứ tự công việc: Sơ đồ tư duy → AI HWP → AI PowerPoint →
+                  Mẫu Hanpan
+                </li>
+                <li>Các công cụ Word, Excel, thiết kế, PDF được gom vào một hàng bên dưới</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/01-home.png"
+                alt="Màn hình chính của Hanpan với bảng khởi động và các thẻ lấy sơ đồ tư duy làm trung tâm"
+                loading="lazy"
+                width="1800"
+                height="1125"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Sơ đồ tư duy → Văn bản</span>
+              <h3>Từ một sơ đồ tư duy ra kế hoạch kinh doanh, báo cáo, PPT và Word</h3>
+              <p>Bấm Gửi trên thanh công cụ, văn bản sẽ mở ở thẻ mới trong cùng cửa sổ.</p>
+              <ul>
+                <li>
+                  Báo cáo gạch đầu dòng kiểu Hàn Quốc (□ ○ ―), báo cáo chia chương (Ⅰ.), đánh số
+                  kiểu công văn (1. 가. 1))
+                </li>
+                <li>
+                  Giữ nguyên chữ đã ghi trên sơ đồ tư duy, hoặc để AI viết thêm thành câu gạch đầu
+                  dòng
+                </li>
+                <li>Mỗi nhánh lớn thành một slide, ghi chú thành ghi chú cho người thuyết trình</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/03-send-dialog.png"
+                alt="Cửa sổ gửi sơ đồ tư duy sang báo cáo HWP"
+                loading="lazy"
+                width="1800"
+                height="1075"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Kiểu slide PPT</span>
+              <h3>Chọn tài liệu thuyết trình từ 10 kiểu</h3>
+              <p>
+                Khi gửi sang PPT, chọn một kiểu thì trang bìa, mục lục, nội dung và slide kết thúc
+                đều được trình bày theo kiểu đó.
+              </p>
+              <ul>
+                <li>
+                  Thông điệp một dòng chữ lớn, báo cáo nêu kết luận trước, thẻ lời lẽ dễ hiểu, khung
+                  tư vấn, thuyết trình theo câu chuyện, thông tin có điểm nhấn màu, tối giản dạng
+                  khối, câu chuyện trải nghiệm ấm áp, mẫu cân đối, pitch deck gọi vốn đầu tư
+                </li>
+                <li>
+                  Bố cục dạng thẻ, ma trận, dòng thời gian hay số lớn tùy theo nội dung của nhánh
+                </li>
+                <li>Sau khi tạo xong vẫn sửa được chữ, màu, hình ngay trong thẻ PPT</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/09-slide-styles.png"
+                alt="Slide nội dung làm từ cùng một sơ đồ tư duy theo 10 kiểu slide"
+                loading="lazy"
+                width="1792"
+                height="424"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Trình chuyển đổi Markdown</span>
+              <h3>Chuyển Markdown sang HWP, Word, PDF một lần</h3>
+              <p>
+                Dán Markdown từ bài AI viết hoặc từ ghi chú rồi bấm
+                <strong>Chuyển đổi một lần</strong>, các định dạng đã chọn sẽ được tạo cùng nhau
+                trong một thư mục.
+              </p>
+              <ul>
+                <li>Chỉ chọn những gì cần trong HWP, HWPX, Word, ODT, PDF, HTML</li>
+                <li>Theo dạng báo cáo, văn bản thường hoặc công văn; bảng thành bảng thật</li>
+                <li>Xem trước hình thức văn bản trước khi tạo</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/10-md-convert.png"
+                alt="Cửa sổ dán Markdown, xem trước và chuyển một lần sang HWP, Word, PDF"
+                loading="lazy"
+                width="1475"
+                height="960"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Đồng bộ hai chiều</span>
+              <h3>Sửa sơ đồ tư duy thì văn bản đổi theo, sửa văn bản thì sơ đồ tư duy đổi theo</h3>
+              <p>
+                Sau khi gửi, sơ đồ tư duy và văn bản HWP vẫn được liên kết với nhau. Hanpan cho xem
+                trước chỗ thay đổi, còn chỗ bị sửa khác nhau ở hai bên thì bạn tự chọn. Phần nội
+                dung đã viết trong văn bản được giữ lại.
+              </p>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/05-sync.png"
+                alt="Cửa sổ đồng bộ cho thấy chỗ thay đổi trong văn bản liên kết với sơ đồ tư duy"
+                loading="lazy"
+                width="1800"
+                height="1075"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Công cụ công văn, báo cáo</span>
+              <h3>Từ chỉnh sửa công văn đến soát lại bằng 3 màu</h3>
+              <ul>
+                <li>
+                  Theo quy tắc công văn Hàn Quốc: ngày ghi 2026. 5. 8., giờ ghi 14:30, cuối nội dung
+                  ghi chữ “끝.”
+                </li>
+                <li>Kiểm tra nơi nhận, tiêu đề, thứ tự đánh số mục, đuôi câu dùng lẫn lộn</li>
+                <li>Đổi giọng văn theo thế hệ: tuổi 60, tuổi 40, thế hệ MZ</li>
+                <li>Bút đánh dấu: cần kiểm chứng (đỏ), ý chính (xanh), con số (vàng)</li>
+                <li>19 mẫu công văn, báo cáo, kế hoạch</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/06-hwp-tools.png"
+                alt="Công cụ Hanpan trong thẻ HWP và các dấu soát lại 3 màu"
+                loading="lazy"
+                width="1800"
+                height="1075"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Thiết kế AI</span>
+              <h3>Thông báo, áp phích, tin dạng thẻ: chỉ cần một dòng cho AI</h3>
+              <p>
+                Ghi điều cần làm thành một dòng vào <strong>✦ Trợ lý AI</strong> bên phải, AI viết
+                chữ còn Hanpan sắp xếp bố cục và màu sắc để ra bản thiết kế. Bạn cũng có thể chỉ
+                điền nội dung của mình vào mẫu đã chọn.
+              </p>
+              <ul>
+                <li>
+                  Thông báo khổ A4, tin dạng thẻ, ảnh thu nhỏ, màn hình thuyết trình, story dọc
+                </li>
+                <li>
+                  Sau khi tạo vẫn sửa từng chữ, từng hình; chọn một khung chữ thì thanh ✦ giúp trau
+                  chuốt, rút gọn, dịch
+                </li>
+                <li>
+                  Chọn nhiều thứ để di chuyển theo đường căn, xoay, chuyển màu, đổ bóng, viền ngoài,
+                  hình khối, mã QR
+                </li>
+                <li>
+                  20 mẫu, mỗi mẫu có màu và hình khác nhau, 124 biểu tượng nét, và phông chữ Hanpan
+                  hiển thị giống nhau trên mọi máy tính
+                </li>
+                <li>
+                  Đổi khổ bảng mà bố cục vẫn giữ nguyên: từ thông báo A4 sang tin dạng thẻ hay ảnh
+                  thu nhỏ
+                </li>
+                <li>
+                  Nhóm để di chuyển cùng nhau, cắt ảnh, vẽ chữ tay bằng bút, thước kẻ, thêm tệp
+                  phông chữ của bạn
+                </li>
+                <li>Lưu thành PNG, JPG, PDF hoặc sao chép rồi dán ngay vào HWP, Word, PPT</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/11-design-ai.png"
+                alt="Cửa sổ Thiết kế AI với Trợ lý AI bên phải và thông báo họp phụ huynh tạo từ một dòng yêu cầu"
+                loading="lazy"
+                width="1683"
+                height="974"
+              />
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="news" aria-labelledby="news-title">
+        <div class="wrap">
+          <h2 id="news-title">Tin cập nhật</h2>
+          <p class="intro">Hanpan đã cài sẽ báo khi có phiên bản mới và tự cập nhật.</p>
+          <ol class="news" data-more-label="Xem các bản cập nhật trước">
+            <li>
+              <span class="news-ver">0.21.2</span>
+              <span class="news-date">19/11/2026</span>
+              <p>Đã chỉnh lại logo và câu chữ theo từng ngôn ngữ.</p>
+            </li>
+            <li>
+              <span class="news-ver">0.21.1</span>
+              <span class="news-date">18/11/2026</span>
+              <p>
+                Có thể đính kèm tệp tham khảo cho Trợ lý AI trong Ảnh AI, Minh họa AI và Bản vẽ AI.
+                Hãy đính kèm bản phác logo hay ảnh rồi nhờ “vẽ giống thế này”, hoặc đính kèm PDF
+                thông số rồi nhờ “làm hộp theo đúng kích thước này”. AI chỉ xem tệp đính kèm để tham
+                khảo, tệp không được đưa vào hình vẽ hay bản vẽ.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.21.0</span>
+              <span class="news-date">17/11/2026</span>
+              <p>
+                Có ứng dụng mới Bản vẽ AI. Mở bản vẽ DXF nhận được để đo khoảng cách giữa hai điểm,
+                và dựng mô hình 3D đơn giản bằng các hình như hộp, hình trụ. Bạn cũng có thể tạo
+                bằng lời, ví dụ “làm ống cắm bút rộng 80mm”. Bản vẽ có ghi kích thước trên hình
+                chiếu đứng, hình chiếu bằng, hình chiếu cạnh được gửi thẳng sang văn bản HWP. Ứng
+                dụng nằm ở Màn hình chính › Tất cả ứng dụng › nhóm Hình ảnh.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.20.2</span>
+              <span class="news-date">16/11/2026</span>
+              <p>
+                Khi cài trên Windows có thể chọn ngôn ngữ dùng Hanpan. Màn hình cài đặt và Hanpan
+                cùng mở bằng ngôn ngữ đã chọn. Nội dung cập nhật hiện bằng tiếng Hàn trên giao diện
+                tiếng Hàn, và bằng tiếng Anh trên giao diện ngôn ngữ khác. Cũng đã sửa những câu
+                chưa được dịch hết trên giao diện tiếng Việt.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.20.1</span>
+              <span class="news-date">13/11/2026</span>
+              <p>Đã sửa lỗi không mở được văn bản Markdown có khối mã nằm trong danh sách.</p>
+            </li>
+            <li>
+              <span class="news-ver">0.20.0</span>
+              <span class="news-date">13/11/2026</span>
+              <p>
+                Lần đầu mở, bạn cần đồng ý điều kiện sử dụng, và trên Windows cần tạo khóa bảo mật
+                thì Hanpan mới mở. Khóa bảo mật chỉ nằm trên USB (khuyên dùng) hoặc trên máy tính
+                này, không gửi lên máy chủ. Mất USB thì có thể tạo khóa mới, và có thể tạo sẵn USB
+                dự phòng trong phần Cài đặt. Màn hình cài đặt có hiện thông tin về giấy phép sử dụng
+                và miễn trừ trách nhiệm.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.5</span>
+              <span class="news-date">12/11/2026</span>
+              <p>
+                Ứng dụng Thiết kế đổi tên thành Thiết kế AI, và lần đầu mở mỗi ứng dụng sẽ có bong
+                bóng nhỏ chỉ nút Trợ lý AI nằm ở đâu. Đã sắp xếp lại các nút trên thẻ xu hướng ở Màn
+                hình chính, và khi kéo biểu tượng ứng dụng trong phần trang trí Màn hình chính sẽ có
+                biểu tượng mờ đi theo.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.4</span>
+              <span class="news-date">11/11/2026</span>
+              <p>
+                Khi biến bản tóm tắt xu hướng thành sơ đồ tư duy, nội dung được sắp thành các nhánh
+                ngắn và ghi chú; khi để AI viết thêm cho sơ đồ tư duy rồi gửi sang Word, HWP, PPT,
+                cùng một câu không còn bị lặp hai lần. Cũng đã sửa lỗi chữ Latinh và số trông bị
+                giãn cách trong AI Word.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.3</span>
+              <span class="news-date">11/11/2026</span>
+              <p>
+                Ảnh AI và Minh họa AI dùng cùng giao diện và phông chữ với các trình soạn thảo khác
+                của Hanpan, và Minh họa AI có thể lưu bản sao .ai cho Illustrator. Tóm tắt AI viết
+                dựa trên số liệu và bài báo của bản đồ thời tiết xu hướng, và ghi các bài báo đã
+                trích dẫn làm tài liệu tham khảo.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.2</span>
+              <span class="news-date">10/11/2026</span>
+              <p>
+                Có thể nhận Tóm tắt AI dưới dạng Word, HWP, sơ đồ tư duy, PPT hoặc PDF tùy ý. Văn
+                bản tóm tắt có dạng báo cáo gồm ngày, tiêu đề chính in đậm, tiêu đề phụ có đánh số
+                và bảng bản đồ thời tiết. Các biểu tượng ứng dụng ở Màn hình chính cũng được vẽ lại
+                theo một kiểu thống nhất.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.1</span>
+              <span class="news-date">10/11/2026</span>
+              <p>
+                Bấm nút Tóm tắt AI trên thẻ Radar xu hướng, AI bạn đã kết nối sẽ đọc bản đồ thời
+                tiết hôm nay, viết bản tóm tắt và mở thành văn bản Word mới. Bản tóm tắt có tiêu đề
+                chính, bảng 10 lĩnh vực, tình hình hiện tại, triển vọng 1–3 tháng và các điểm cần
+                theo dõi, có thể chép ngay vào báo cáo hay tài liệu họp.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.0</span>
+              <span class="news-date">10/11/2026</span>
+              <p>
+                Có thể trang trí Màn hình chính theo ý muốn. Kéo thẻ để di chuyển, kéo góc để đổi
+                kích thước, thêm hoặc bớt các thẻ lối tắt, ghi chú, thư mục, đồng hồ. Thẻ Radar xu
+                hướng mới cho thấy diễn biến hôm nay của 10 lĩnh vực như AI, chứng khoán, kinh tế,
+                bất động sản bằng thời tiết: nắng, nhiều mây, mưa.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.18.0</span>
+              <span class="news-date">08/11/2026</span>
+              <p>
+                Khi gửi sơ đồ tư duy sang PPT, AI viết chữ trên slide theo giọng văn của kiểu đã
+                chọn. Kiểu “Báo cáo nêu kết luận trước” dùng tiêu đề chứa kết luận, kiểu “Thẻ lời lẽ
+                dễ hiểu” dùng giọng văn nhẹ nhàng, dễ hiểu để trau chuốt tiêu đề và câu trên màn
+                hình, đồng thời điền dòng dẫn chứng, ghi chú cho người thuyết trình và câu kết. Nếu
+                ghi người nghe, nội dung sẽ được viết cho phù hợp với họ, và AI không tự đặt ra con
+                số không có trong sơ đồ tư duy. Trên máy chỉ cài ứng dụng Claude, Hanpan sẽ cho biết
+                cần cài thêm gì.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.17.1</span>
+              <span class="news-date">08/11/2026</span>
+              <p>
+                Xuất văn bản HWP sang Word vẫn giữ nguyên phông chữ tiếng Hàn như Hamchorom Batang.
+                Excel đọc ngày trong CSV đúng là ngày, và ngày đã nhập không còn bị che thành ####.
+                Khi in PDF có thể chọn máy in và số bản, và trong Word chỉ cần một cửa sổ Thiết lập
+                trang để đổi cùng lúc khổ giấy, hướng giấy và lề.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.17.0</span>
+              <span class="news-date">08/11/2026</span>
+              <p>
+                Có Ảnh AI và Minh họa AI. Khi sửa ảnh hay vẽ mà bị vướng, chỉ cần nhờ Trợ lý AI bên
+                phải. Toàn bộ giao diện cũng dùng được bằng tiếng Việt. Menu Tệp và vị trí Trợ lý AI
+                của mọi ứng dụng được thống nhất, và văn bản mới bắt đầu với giá trị mặc định tiếng
+                Hàn như phông Malgun Gothic, trang tính “시트1”. Cũng đã thêm gửi văn bản sang ứng
+                dụng khác, mẫu của tôi, tiện ích Màn hình chính và chia sẻ của Windows.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.15.0</span>
+              <span class="news-date">02/11/2026</span>
+              <p>
+                Đã có hình ảnh, phông chữ, hiệu ứng âm thanh từ Gongu Madang (kho tác phẩm dùng
+                chung của Hàn Quốc). Tìm và chèn hình hết hạn bản quyền bằng bảng thiết kế hay Trợ
+                lý AI thì ứng dụng tự ghi dòng nguồn, và chức năng kiểm tra nguồn hình sẽ tìm ra
+                những chỗ thiếu nguồn. Cũng đã thêm 7 phông chữ miễn phí, 4 biểu mẫu theo luật (của
+                Hàn Quốc) như đơn yêu cầu công khai thông tin, mẫu giáo dục có hình, mở mẫu thành sơ
+                đồ tư duy, và hiệu ứng âm thanh nhạc truyền thống Hàn Quốc cho slide.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.14.0</span>
+              <span class="news-date">01/11/2026</span>
+              <p>
+                Trình soạn sơ đồ tư duy được làm lại nhiều. Dải phía trên chia thành các thẻ Trang
+                đầu, Chèn, Định dạng, Kiểu, Xem; có thêm biểu tượng như mức ưu tiên, tiến độ, đổi
+                hình dạng và màu chủ đề, sao chép định dạng, khung bao quanh các nhánh, tìm và thay
+                thế. Bạn cũng có thể nhờ AI gắn biểu tượng hay trang trí chủ đề.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.10</span>
+              <span class="news-date">31/10/2026</span>
+              <p>
+                Đã thêm nút Hướng dẫn sử dụng vào bảng khởi động màu xanh lá trên cùng của Màn hình
+                chính. Bấm vào là mở ngay phần Bắt đầu với Hanpan, có cách dùng cho từng tính năng.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.9</span>
+              <span class="news-date">31/10/2026</span>
+              <p>
+                Cửa sổ Thiết kế đã có Trợ lý AI. Bấm ✦ Trợ lý AI ở góc trên bên phải để tạo thiết kế
+                mới, hoặc giữ nguyên hình thức của mẫu đã chọn và chỉ thay chữ bằng nội dung của
+                bạn. Chọn một khung chữ thì thanh hiện phía trên giúp trau chuốt, rút gọn, dịch chỉ
+                trong một lần.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.8</span>
+              <span class="news-date">31/10/2026</span>
+              <p>
+                Đã vẽ lại toàn bộ 20 mẫu thiết kế. Mỗi mẫu khác nhau về màu và một hình nổi bật.
+                Thông báo hiện ngày thật to, thư gửi phụ huynh có kèm giấy đồng ý tham gia. Bìa
+                thuyết trình có biểu đồ cột, thông báo khai trương có hình cửa tiệm.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.7</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Đã vẽ lại mẫu thiết kế từ đầu và tăng lên 20 mẫu. Có thêm thực đơn, thông báo khai
+                trương, thiệp cảm ơn, nội quy an toàn và nhiều mẫu khác. Mẫu được làm bằng phông chữ
+                có sẵn trong Hanpan nên mở trên máy nào cũng giống nhau, và có thêm 124 biểu tượng
+                nét để tìm và chèn, như “lịch”, “địa điểm”.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.6</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Đã thêm vào cửa sổ Thiết kế những thao tác trước đây tốn công. Nhóm nhiều thành phần
+                để di chuyển cùng nhau, bấm đúp vào ảnh để cắt chỉ giữ phần muốn hiện. Vẽ chữ tay
+                hay tô đánh dấu bằng bút, đo vị trí bằng thước kẻ, thêm tệp phông chữ của bạn và lưu
+                cùng thiết kế. Cũng đã có menu chuột phải.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.5</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Cửa sổ Thiết kế được đổi thành như một công cụ thiết kế. Chọn nhiều thứ để di chuyển
+                theo đường căn, dùng tay nắm để đổi kích thước và xoay, sửa chữ ngay tại chỗ. Đã có
+                hình khối, mã QR, chuyển màu, đổ bóng, bộ lọc ảnh và mẫu mới, và đổi khổ bảng mà bố
+                cục vẫn giữ nguyên.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.4</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Cửa sổ Thiết kế đã có AI. Ghi điều cần làm thành một dòng, AI sẽ làm thông báo, áp
+                phích, tin dạng thẻ; khung chữ đã chọn thì AI trau chuốt, rút gọn hoặc dịch.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.3</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Đã có Trình chuyển đổi Markdown. Dán Markdown rồi bấm Chuyển đổi một lần, các định
+                dạng đã chọn trong HWP, HWPX, Word, ODT, PDF, HTML sẽ được tạo cùng nhau trong một
+                thư mục.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.2</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Màn hình chính được sắp xếp lại lấy sơ đồ tư duy làm trung tâm. Ghi chủ đề vào bảng
+                khởi động là mở một sơ đồ tư duy mới, các thẻ theo thứ tự Sơ đồ tư duy, AI HWP, AI
+                PowerPoint, Mẫu Hanpan. Đã khoác lên giao diện màu xanh bảng đen riêng của Hanpan,
+                và đổi mọi chữ “bản đồ” trong ứng dụng thành “sơ đồ tư duy”. Cũng phát hành luôn bản
+                beta cho Mac (Apple Silicon, Intel).
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.1</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Đã thiết kế mới 10 kiểu slide. Đã sửa lỗi chữ trong ô bảng bị chồng lên nhau và lỗi
+                hình che mất chữ trong văn bản HWP do Hanpan tạo.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.0</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Khi gửi sang PPT có thể chọn một trong 10 kiểu slide. Gửi ý kiến nay chuyển về email
+                của nhóm TenAI (ten@tenai.kr).
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.12.8</span>
+              <span class="news-date">30/10/2026</span>
+              <p>
+                Phiên bản công khai đầu tiên. Gửi sơ đồ tư duy sang HWP, PPT, Word; đồng bộ hai
+                chiều; 19 mẫu Hanpan; công cụ Hanpan; bảng thiết kế; ưu tiên AI trên máy.
+              </p>
+            </li>
+          </ol>
+          <p class="news-all">
+            <a href="https://github.com/tenaico/hanpan/releases"
+              >Xem tất cả phiên bản và thay đổi</a
+            >
+          </p>
+        </div>
+      </section>
+
+      <section id="install" class="band" aria-labelledby="install-title">
+        <div class="wrap">
+          <h2 id="install-title">Cài đặt</h2>
+          <p class="intro">
+            Không cần đăng ký, không phải trả tiền. Văn bản chỉ được mở và lưu trên máy tính của
+            bạn.
+          </p>
+          <ol class="steps">
+            <li>
+              <h3>Tải về</h3>
+              <p>
+                Tải
+                <a class="download-link" href="https://github.com/tenaico/hanpan/releases/latest"
+                  ><span class="file-name">Hanpan-Setup-0.21.2.exe</span></a
+                >
+                về rồi chạy. Chúng tôi đã đăng ký chương trình ký mã miễn phí cho phần mềm nguồn mở
+                của SignPath Foundation cho tệp cài đặt Windows (Free code signing provided by
+                SignPath.io, certificate by SignPath Foundation). Chính sách ký mã có trong
+                <a href="https://github.com/tenaico/hanpan/blob/main/docs/code-signing-policy.md"
+                  >Code signing policy</a
+                >.
+              </p>
+            </li>
+            <li>
+              <h3>Bỏ qua cảnh báo</h3>
+              <p>
+                Nếu Chrome hay Edge chặn tệp với cảnh báo kiểu “tệp tải xuống chưa được xác minh”
+                hoặc “tệp này thường không được tải xuống”, hãy mở danh sách tải xuống (Ctrl+J) và
+                bấm <strong>Giữ lại</strong> ở tệp đó (với Edge thì bấm tiếp
+                <strong>Vẫn giữ lại</strong>). Nếu tên tệp vẫn là “Chưa xác minh ….crdownload” thì
+                bạn chưa làm bước này.
+              </p>
+              <p>
+                Nếu hiện cửa sổ “Windows đã bảo vệ PC của bạn”, hãy bấm
+                <strong>Thông tin thêm</strong> rồi bấm <strong>Vẫn chạy</strong>. Thông báo này
+                xuất hiện vì đây là phần mềm miễn phí chưa được ký mã.
+              </p>
+            </li>
+            <li>
+              <h3>Bắt đầu với Hanpan</h3>
+              <p>
+                Lần đầu mở, bạn đồng ý điều kiện sử dụng và tạo khóa bảo mật. Nên tạo trên USB; nếu
+                không có USB thì cũng có thể tạo trên máy tính này. Sau đó Màn hình chính sẽ mở ra.
+                Bấm <strong>Hướng dẫn sử dụng</strong> trên cùng của Màn hình chính hoặc bấm F1 để
+                xem cách dùng trong <strong>Bắt đầu với Hanpan</strong>.
+              </p>
+            </li>
+          </ol>
+          <p class="note">Khi có phiên bản mới, Hanpan sẽ báo và tự cập nhật.</p>
+          <div class="mac-install">
+            <h3>Cài đặt trên Mac (beta)</h3>
+            <p>
+              Tải tệp phù hợp với máy Mac của bạn:
+              <a
+                class="mac-link"
+                data-arch="arm64"
+                href="https://github.com/tenaico/hanpan/releases/latest"
+                >Apple Silicon (M1 trở lên)</a
+              >
+              ·
+              <a
+                class="mac-link"
+                data-arch="x64"
+                href="https://github.com/tenaico/hanpan/releases/latest"
+                >Intel</a
+              >. Trong cửa sổ vừa mở, kéo Hanpan thả vào thư mục Ứng dụng.
+            </p>
+            <p>
+              Nếu lần đầu mở hiện thông báo “nhà phát triển chưa được xác minh”, hãy vào
+              <strong>Cài đặt hệ thống › Quyền riêng tư & Bảo mật</strong> và bấm
+              <strong>Vẫn mở</strong>. Thông báo này xuất hiện vì đây là phần mềm miễn phí chưa có
+              chữ ký nhà phát triển của Apple. Trên Mac, Hanpan không tự cập nhật được; khi có phiên
+              bản mới, hãy tải lại theo thông báo và thay bản cũ.
+            </p>
+            <p>
+              Nếu hiện “Không thể mở ‘Hanpan’ vì ứng dụng bị hỏng”, hãy bấm
+              <strong>Hủy</strong> chứ đừng bấm <strong>Chuyển vào Thùng rác</strong>. Tệp không hề
+              bị hỏng; đó là macOS chặn ứng dụng chưa ký tải từ internet. Sau khi chuyển Hanpan vào
+              thư mục Ứng dụng, dán dòng dưới đây vào <strong>Terminal</strong> (tìm “Terminal”
+              trong Spotlight), bấm Return, rồi mở lại Hanpan.
+            </p>
+            <code class="cmd">xattr -dr com.apple.quarantine /Applications/Hanpan.app</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="local-ai" aria-labelledby="ai-title">
+        <div class="wrap ai-grid">
+          <div>
+            <h2 id="ai-title">AI: ưu tiên AI đã cài trên máy của bạn</h2>
+            <p class="intro" style="margin-bottom: 0">
+              Lần đầu khởi động, Hanpan tìm AI đang chạy trên máy tính này và dùng làm mặc định.
+              Những văn bản khó đưa ra ngoài như kế hoạch kinh doanh cũng không bị gửi ra khỏi máy
+              tính, nên công ty và cơ quan nhà nước có thể yên tâm sử dụng. Nếu muốn dùng gói thuê
+              bao Claude hay ChatGPT, chỉ cần chọn trong phần Cài đặt.
+            </p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">AI được tìm</th>
+                <th scope="col">Địa chỉ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ollama</td>
+                <td><code>127.0.0.1:11434</code></td>
+              </tr>
+              <tr>
+                <td>LM Studio</td>
+                <td><code>127.0.0.1:1234</code></td>
+              </tr>
+              <tr>
+                <td>vLLM · TenOS-Ko-28B</td>
+                <td><code>127.0.0.1:8000</code>, <code>8001</code></td>
+              </tr>
+              <tr>
+                <td>llama.cpp</td>
+                <td><code>127.0.0.1:8080</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="final" aria-labelledby="final-title">
+        <div class="wrap">
+          <h2 id="final-title">Ý tưởng sắp xếp hôm nay, sáng mai thành báo cáo</h2>
+          <p>Tải về miễn phí và dùng thử ngay.</p>
+          <a class="btn download-link" href="https://github.com/tenaico/hanpan/releases/latest">
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 16.5h12" />
+            </svg>
+            Tải về cho Windows
+          </a>
+          <p class="mac-final">
+            Bản beta cho Mac:
+            <a
+              class="mac-link"
+              data-arch="arm64"
+              href="https://github.com/tenaico/hanpan/releases/latest"
+              >Apple Silicon (M1 trở lên)</a
+            >
+            ·
+            <a
+              class="mac-link"
+              data-arch="x64"
+              href="https://github.com/tenaico/hanpan/releases/latest"
+              >Intel</a
+            >
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <p class="made">
+          Made by <a href="https://www.tenai.kr">TenAI</a> (www.tenai.kr)
+          <a class="mail" href="mailto:ten@tenai.kr">ten@tenai.kr</a>
+        </p>
+        <div class="links">
+          <a href="https://github.com/tenaico/hanpan">Mã nguồn</a>
+          <a
+            href="https://github.com/tenaico/hanpan/blob/main/docs/manual/%ED%95%9C%ED%8C%90-%EC%82%AC%EC%9A%A9%EC%84%A4%EB%AA%85%EC%84%9C.md"
+            >Hướng dẫn sử dụng (tiếng Hàn)</a
+          >
+          <a href="https://github.com/tenaico/hanpan/issues">Hỏi đáp, báo lỗi</a>
+          <a href="https://github.com/tenaico/hanpan/blob/main/docs/code-signing-policy.md"
+            >Code signing policy</a
+          >
+          <a href="https://tenai.kr/privacy.html#hanpan-trend">Chính sách quyền riêng tư</a>
+          <span
+            >Được xây dựng dựa trên phần mềm nguồn mở
+            <a href="https://github.com/pblsketch/openoffice">Ieum Office</a> (Apache-2.0).</span
+          >
+          <span
+            >Trang này chỉ đếm số lượt truy cập và số lần bấm nút tải về dưới dạng tổng theo ngày.
+            Trang không lưu cookie hay địa chỉ IP, và tôn trọng thiết lập “Không theo dõi” (Do Not
+            Track) của trình duyệt. Ngôn ngữ bạn chọn chỉ được ghi nhớ trên trình duyệt này.</span
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script src="/assets/site.js"></script>
+  </body>
+</html>
