@@ -286,12 +286,12 @@ Linux판(64비트 x64)도 베타로 냅니다. Windows·Mac 설치 파일과 **�
 
 소개 사이트 https://ieumoffice.com 의 내려받기 버튼은 GitHub의 최신 릴리스를 스스로 찾으므로 손댈 것이 없습니다. 그러나 **업데이트 소식은 손으로 더해야** 합니다. 더하지 않으면 사이트의 "새 버전" 안내가 지난 버전에 머뭅니다.
 
-**한판 사이트(hanpan.tenai.kr)** 는 이 저장소의 `site/`이고, `main`에 합치면 Vercel이 곧바로 공개합니다. 한국어(`site/index.html`), 영어(`site/en/index.html`), 베트남어(`site/vi/index.html`) 세 판이 있습니다. 그래서 새 버전마다 **세 파일 모두** 고칩니다.
+**한판 사이트(hanpan.tenai.kr)** 는 이 저장소의 `site/`이고, `main`에 합치면 Vercel이 곧바로 공개합니다. 한국어(`site/ko/index.html`), 영어(`site/en/index.html`), 베트남어(`site/vi/index.html`) 세 판이 있습니다. 그래서 새 버전마다 **세 파일 모두** 고칩니다.
 
 - 업데이트 소식(`ol.news`) 맨 위에 같은 항목을 더합니다. 날짜 형식은 한국어 `2026. 11. 19.`, 영어 `Nov 19, 2026`, 베트남어 `19/11/2026`입니다.
 - 판 번호(`.version`)와 설치 파일 이름(`.file-name`)도 고칩니다.
 - 화면에는 최근 5개만 보이고, 나머지는 "더 보기" 단추로 펼쳐집니다.
-- 맨 주소(`/`)는 접속한 나라로 언어를 고릅니다(`site/middleware.js`, 시험은 `node --test tools/site-middleware.test.mjs`).
+- 맨 주소(`/`)는 파일 없이 `site/vercel.json`의 규칙으로 접속한 나라의 언어 판을 보여 줍니다(시험: `node --test tools/site-routing.test.mjs`).
 
 1. 사이트 저장소는 앱 저장소 밖의 `E:\github\ieumoffice-site`(GitHub `pblsketch/ieumoffice-site`)입니다. 그 저장소 `README.md`의 **"새 버전을 낸 뒤"** 를 처음부터 따라 합니다.
 2. 고칠 것은 두 곳입니다. **업데이트 페이지**(`/updates`) 맨 위에 새 버전 항목을 하나 더하고(앞 버전 항목은 그대로 둡니다), **메인의 한 줄 안내**의 버전 번호와 기능 이름을 바꿉니다. 바뀐 기능과 어긋나는 다른 칸의 문장도 고칩니다.

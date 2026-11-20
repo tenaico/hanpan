@@ -1,4 +1,5 @@
-// Shared by the Korean (/ and /ko/), English (/en/) and Vietnamese (/vi/) pages.
+// Shared by the Korean (/ko/), English (/en/) and Vietnamese (/vi/) pages; the bare address
+// shows one of them by the visitor's country (site/vercel.json).
 
 // the language the visitor picked last time, kept in this browser only (never sent):
 // the bare address follows it; /ko/, /en/ and /vi/ always show their own language
