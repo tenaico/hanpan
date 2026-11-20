@@ -1,6 +1,42 @@
 {
   "cleanUrls": true,
   "headers": [
-    { "source": "/images/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] }
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Vary",
+          "value": "X-Vercel-IP-Country"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/ko",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ko/",
+      "destination": "/index.html"
+    }
   ]
 }
