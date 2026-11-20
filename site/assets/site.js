@@ -1,3 +1,4 @@
+/* global document, location */
 // Shared by the Korean (/ko/), English (/en/) and Vietnamese (/vi/) pages; the bare address
 // shows one of them by the visitor's country (site/vercel.json).
 
