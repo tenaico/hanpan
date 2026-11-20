@@ -18,7 +18,7 @@ import { join } from 'node:path'
 
 export const CONVERT_FORMATS = ['hwp', 'hwpx', 'docx', 'odt', 'pdf', 'html'] as const
 export type ConvertFormat = (typeof CONVERT_FORMATS)[number]
-export const CONVERT_THEMES = ['report', 'plain', 'gongmun'] as const
+export const CONVERT_THEMES = ['report', 'plain', 'gongmun', 'basic'] as const
 export type ConvertTheme = (typeof CONVERT_THEMES)[number]
 
 export interface ConvertRequest {
