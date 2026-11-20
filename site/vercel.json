@@ -31,14 +31,6 @@
   ],
   "rewrites": [
     {
-      "source": "/ko",
-      "destination": "/"
-    },
-    {
-      "source": "/ko/",
-      "destination": "/"
-    },
-    {
       "source": "/",
       "has": [
         {
@@ -48,6 +40,21 @@
         }
       ],
       "destination": "/vi/"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "x-vercel-ip-country",
+          "value": "VN"
+        }
+      ],
+      "destination": "/vi/"
+    },
+    {
+      "source": "/",
+      "destination": "/en/"
     }
   ]
 }
