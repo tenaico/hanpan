@@ -24,7 +24,8 @@ test('Vietnam gets Vietnamese, Korea Korean, every other country English', () =>
   assert.equal(langForCountry('VN'), 'vi')
   assert.equal(langForCountry('vn'), 'vi')
   assert.equal(langForCountry('KR'), 'ko')
-  for (const c of ['US', 'JP', 'DE', 'TH', '', undefined, null]) assert.equal(langForCountry(c), 'en')
+  for (const c of ['US', 'JP', 'DE', 'TH', '', undefined, null])
+    assert.equal(langForCountry(c), 'en')
 })
 
 test('the bare address is rewritten in place, never redirected', () => {
