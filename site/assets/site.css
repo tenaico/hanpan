@@ -591,8 +591,14 @@ footer .links a {
 }
 
 @media (max-width: 860px) {
-  .top nav {
+  /* phones: the page links go, the language switch stays */
+  .top nav > a {
     display: none;
+  }
+  .lang-switch {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
   }
   .hero {
     padding-top: 40px;
