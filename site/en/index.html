@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hanpan — Your mind map becomes your business plan</title>
+    <meta
+      name="description"
+      content="Hanpan is a free desktop office app. Send the business ideas you sorted out in a mind map to a Hangul (HWP) business plan or report, a PPT, or a Word document, and keep writing in the same window. For AI, it first uses the AI already installed on your PC. Made by TenAI."
+    />
+    <meta property="og:title" content="Hanpan — Your mind map becomes your business plan" />
+    <meta
+      property="og:description"
+      content="One mind map to a Hangul (HWP) business plan or report, a PPT, and a Word document. Free, no sign-up. Made by TenAI."
+    />
+    <meta property="og:image" content="https://hanpan-blond.vercel.app/images/og-hanpan.png" />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
+    <link rel="icon" href="/images/icon.svg" type="image/svg+xml" />
+    <link rel="alternate" hreflang="ko" href="https://hanpan.tenai.kr/ko/" />
+    <link rel="alternate" hreflang="en" href="https://hanpan.tenai.kr/en/" />
+    <link rel="alternate" hreflang="vi" href="https://hanpan.tenai.kr/vi/" />
+    <link rel="alternate" hreflang="x-default" href="https://hanpan.tenai.kr/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/site.css" />
+  </head>
+  <body>
+    <aside class="maker" aria-label="Who made this">
+      <div class="wrap">
+        <a class="maker-logo" href="https://www.tenai.kr" aria-label="TenAI website (www.tenai.kr)"
+          ><img
+            src="/images/tenai-logo.png"
+            alt="TenAI — AX Hub Platform"
+            width="1919"
+            height="812"
+        /></a>
+        <p>
+          <strong>Hanpan is made by TenAI.</strong> TenAI is an AX hub platform that helps companies
+          and public institutions make the AI transition (AX). It builds Korean-language LLMs (large
+          language models) and document AI.
+        </p>
+        <div class="maker-links">
+          <a href="https://www.tenai.kr">www.tenai.kr</a>
+          <a href="mailto:ten@tenai.kr">ten@tenai.kr</a>
+        </div>
+      </div>
+    </aside>
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href="#"><img src="/images/icon.svg" alt="" />Hanpan</a>
+        <nav aria-label="Page sections">
+          <a href="#features">Features</a>
+          <a href="#news">Updates</a>
+          <a href="#install">Install</a>
+          <a href="#local-ai">AI on your PC</a>
+          <a href="https://github.com/tenaico/hanpan">GitHub</a>
+          <span class="lang-switch" aria-label="Language">
+            <a href="/ko/" hreflang="ko" lang="ko">한국어</a>
+            <a href="/en/" hreflang="en" lang="en" aria-current="page">English</a>
+            <a href="/vi/" hreflang="vi" lang="vi">Tiếng Việt</a>
+          </span>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="wrap">
+          <div>
+            <h1 id="hero-title">Your mind map becomes<br />your business plan.</h1>
+            <p class="lead">
+              With one button, send the business ideas you sorted out in a mind map to a Hangul
+              (HWP) business plan or report, a PPT, or a Word document, and keep writing in the same
+              window. Change one side and the other follows. For AI, Hanpan first uses the AI
+              already installed on your PC.
+            </p>
+            <div class="actions">
+              <a class="btn download-link" href="https://github.com/tenaico/hanpan/releases/latest">
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 16.5h12" />
+                </svg>
+                Download for Windows
+              </a>
+              <span class="meta"
+                >Free · Windows 10/11 (64-bit) · <span class="version">v0.21.2</span> ·
+                <a href="https://github.com/tenaico/hanpan/releases">All versions</a></span
+              >
+              <span class="meta mac"
+                >Mac beta:
+                <a
+                  class="mac-link"
+                  data-arch="arm64"
+                  href="https://github.com/tenaico/hanpan/releases/latest"
+                  >Apple silicon (M1 or later)</a
+                >
+                ·
+                <a
+                  class="mac-link"
+                  data-arch="x64"
+                  href="https://github.com/tenaico/hanpan/releases/latest"
+                  >Intel</a
+                ></span
+              >
+            </div>
+          </div>
+
+          <div class="stage" aria-hidden="true">
+            <svg viewBox="-86 0 646 490">
+              <!-- the map -->
+              <path class="map-line" d="M120 245 C 60 245, 60 120, 30 110" />
+              <path class="map-line" d="M120 245 C 60 245, 60 200, 22 195" />
+              <path class="map-line" d="M120 245 C 60 245, 60 300, 22 300" />
+              <path class="map-line" d="M120 245 C 60 245, 60 385, 30 390" />
+              <g class="root">
+                <circle cx="120" cy="245" r="54" />
+                <text x="120" y="240" text-anchor="middle">New business</text>
+                <text x="120" y="260" text-anchor="middle">plan</text>
+              </g>
+              <g class="topic">
+                <rect x="-70" y="92" width="104" height="36" rx="18" />
+                <text x="-18" y="115" text-anchor="middle">Overview</text>
+              </g>
+              <g class="topic">
+                <rect x="-78" y="177" width="104" height="36" rx="18" />
+                <text x="-26" y="200" text-anchor="middle">Market</text>
+              </g>
+              <g class="topic">
+                <rect x="-78" y="282" width="104" height="36" rx="18" />
+                <text x="-26" y="305" text-anchor="middle">Strategy</text>
+              </g>
+              <g class="topic">
+                <rect x="-70" y="372" width="104" height="36" rx="18" />
+                <text x="-18" y="395" text-anchor="middle">Impact</text>
+              </g>
+              <path class="flow" d="M176 245 C 220 245, 222 190, 262 190" />
+              <!-- the report it becomes -->
+              <g class="report">
+                <rect class="sheet" x="262" y="40" width="290" height="420" rx="8" />
+                <g class="sheet-text">
+                  <text class="row sheet-title" x="407" y="96" text-anchor="middle">
+                    2027 New Business Plan
+                  </text>
+                  <text class="row sheet-date" x="526" y="124" text-anchor="end">
+                    Nov 2, 2026 · Strategy Team
+                  </text>
+                  <text class="row sheet-l1" x="290" y="172">□ Overview</text>
+                  <text class="row sheet-l2" x="306" y="204">○ Paperwork automation</text>
+                  <text class="row sheet-l2" x="306" y="234">○ For teams of up to 50</text>
+                  <text class="row sheet-l1" x="290" y="280">□ Market</text>
+                  <text class="row sheet-l2" x="306" y="312">○ Demand is growing</text>
+                </g>
+                <path
+                  d="M306 340 H 520 M306 364 H 488 M306 388 H 506 M306 412 H 470"
+                  stroke="#dce3ec"
+                  stroke-width="7"
+                  stroke-linecap="round"
+                />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" aria-labelledby="features-title">
+        <div class="wrap">
+          <h2 id="features-title">Think, write, and design on one board</h2>
+          <p class="intro">
+            Mind map, Hangul, Word, PPT, Excel, and PDF open as tabs in one window. Copying and
+            pasting between programs is now one button.
+          </p>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Home screen</span>
+              <h3>Type a topic and start with a mind map</h3>
+              <p>
+                Type the topic you want to work out on the start board at the top of Home and press
+                <strong>Create mind map</strong>. A new mind map opens right away with that topic in
+                the center.
+              </p>
+              <ul>
+                <li>
+                  Cards follow the order of the work: Mind map → AI HWP → AI PowerPoint → Hanpan
+                  templates
+                </li>
+                <li>Word, Excel, design, and PDF tools gathered in one row below</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/01-home.png"
+                alt="Hanpan home screen with the start board and mind map cards"
+                loading="lazy"
+                width="1800"
+                height="1125"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Mind map → documents</span>
+              <h3>One mind map to a business plan, report, PPT, and Word document</h3>
+              <p>
+                Press Send in the toolbar and the document opens in a new tab in the same window.
+              </p>
+              <ul>
+                <li>
+                  Korean bullet-style reports (□ ○ ―), chapter reports (Ⅰ.), and Korean government
+                  document numbering (1. 가. 1))
+                </li>
+                <li>
+                  Use the words in your mind map as they are, or let AI expand them into
+                  bullet-style sentences
+                </li>
+                <li>One main branch becomes one slide, and notes become speaker notes</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/03-send-dialog.png"
+                alt="Dialog for sending a mind map to a Hangul report"
+                loading="lazy"
+                width="1800"
+                height="1075"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">PPT slide styles</span>
+              <h3>Pick from 10 styles for your presentation</h3>
+              <p>
+                Pick a style when you send to PPT, and the cover, contents, body, and closing slides
+                are all designed in that style.
+              </p>
+              <ul>
+                <li>
+                  Big one-line message, Conclusion-first report, Plain-language cards, Consulting
+                  framework, Story-driven talk, Color-accent info, Minimal blocks, Warm personal
+                  story, Balanced template, Investor pitch deck
+                </li>
+                <li>
+                  Laid out as cards, matrices, timelines, or big numbers to fit what each branch
+                  holds
+                </li>
+                <li>
+                  After it is made, you can still edit text, colors, and shapes in the PPT tab
+                </li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/09-slide-styles.png"
+                alt="Body slides made from the same mind map in 10 slide styles"
+                loading="lazy"
+                width="1792"
+                height="424"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Markdown converter</span>
+              <h3>Markdown to Hangul, Word, and PDF in one go</h3>
+              <p>
+                Paste Markdown from text an AI wrote for you or from your notes and press
+                <strong>Convert all</strong>. The formats you picked are created together in one
+                folder.
+              </p>
+              <ul>
+                <li>Pick only what you need from HWP, HWPX, Word, ODT, PDF, and HTML</li>
+                <li>
+                  Report, general document, or Korean government document layout, with tables as
+                  real tables
+                </li>
+                <li>Check the document layout in a preview before you create it</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/10-md-convert.png"
+                alt="Dialog for pasting Markdown, checking the preview, and converting to HWP, Word, and PDF at once"
+                loading="lazy"
+                width="1475"
+                height="960"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Two-way sync</span>
+              <h3>
+                Edit the mind map and the document follows, edit the document and the mind map
+                follows
+              </h3>
+              <p>
+                After you send it, the mind map and the Hangul document stay linked. Hanpan shows
+                you what changed first, and where the two sides were edited differently, you choose.
+                Body text you wrote in the document is kept.
+              </p>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/05-sync.png"
+                alt="Sync dialog showing what changed in a document linked to a mind map"
+                loading="lazy"
+                width="1800"
+                height="1075"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">Tools for Korean official documents and reports</span>
+              <h3>From tidying official documents to three-color review</h3>
+              <ul>
+                <li>
+                  Dates as 2026. 5. 8., times as 14:30, and 끝. ("End.") at the end of the body
+                </li>
+                <li>
+                  Checks for recipient and title, item numbering order, and mixed sentence endings
+                </li>
+                <li>Change the tone for readers in their 60s, 40s, or the MZ generation</li>
+                <li>Highlighters for fact checks (red), key points (blue), and numbers (yellow)</li>
+                <li>19 templates for official documents, reports, and proposals</li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/06-hwp-tools.png"
+                alt="Hanpan tools in the Hangul tab with three-color review marks"
+                loading="lazy"
+                width="1800"
+                height="1075"
+              />
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="copy">
+              <span class="tag">AI Design</span>
+              <h3>Notices, posters, and card news from one line to AI</h3>
+              <p>
+                Write what you want to make in one line in <strong>✦ AI Assistant</strong> on the
+                right. The AI writes the text, and Hanpan produces a design with the layout and
+                colors matched. You can also fill a template you picked with just your own content.
+              </p>
+              <ul>
+                <li>A4 notices, card news, thumbnails, presentation screens, vertical stories</li>
+                <li>
+                  After it is made, edit text and shapes one by one, and select a text box to
+                  polish, shorten, or translate it from the ✦ bar
+                </li>
+                <li>
+                  Select several and move them along guides, rotate, gradients, shadows, outlines,
+                  shapes, and QR codes
+                </li>
+                <li>
+                  20 templates, each with its own colors and artwork, 124 line icons, and Hanpan
+                  fonts that look the same on any PC
+                </li>
+                <li>
+                  Change the board size and the layout stays: turn an A4 notice into card news or a
+                  thumbnail
+                </li>
+                <li>
+                  Group and move together, crop photos, draw handwriting with a pen, rulers, and add
+                  your own font files
+                </li>
+                <li>
+                  Save as PNG, JPG, or PDF, or copy and paste straight into Hangul, Word, or PPT
+                </li>
+              </ul>
+            </div>
+            <div class="shot">
+              <img
+                src="/images/11-design-ai.png"
+                alt="AI Design window with the AI Assistant on the right and a parent information session notice made from a one-line request"
+                loading="lazy"
+                width="1683"
+                height="974"
+              />
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="news" aria-labelledby="news-title">
+        <div class="wrap">
+          <h2 id="news-title">Updates</h2>
+          <p class="intro">
+            Once installed, Hanpan tells you when a new version is out and updates itself.
+          </p>
+          <ol class="news" data-more-label="Show earlier updates">
+            <li>
+              <span class="news-ver">0.21.2</span>
+              <span class="news-date">Nov 19, 2026</span>
+              <p>Tidied up the logo and wording for each language.</p>
+            </li>
+            <li>
+              <span class="news-ver">0.21.1</span>
+              <span class="news-date">Nov 18, 2026</span>
+              <p>
+                You can attach reference files to the AI Assistant in AI Photo, AI Illustration, and
+                AI Drawing. Attach a logo draft or a photo and ask "draw it like this", or attach a
+                spec sheet PDF and ask "make a box with these dimensions". The AI only looks at
+                attached files for reference; they are not put into the picture or drawing.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.21.0</span>
+              <span class="news-date">Nov 17, 2026</span>
+              <p>
+                New app: AI Drawing. Open a DXF drawing you received, measure the length between two
+                points, and build simple 3D models from shapes such as boxes and cylinders. You can
+                also make one by describing it, like "make a pencil holder 80 mm wide". Drawings
+                with dimensions on the front, top, and side views go straight to a Hangul document.
+                Find it on Home under All apps › Graphics.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.20.2</span>
+              <span class="news-date">Nov 16, 2026</span>
+              <p>
+                When installing on Windows, you can choose the language for Hanpan. The installer
+                and Hanpan both open in that language. Update notes appear in Korean on the Korean
+                interface and in English on other languages. Also fixed text that had not been fully
+                translated in the Vietnamese interface.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.20.1</span>
+              <span class="news-date">Nov 13, 2026</span>
+              <p>Fixed Markdown documents with a code block inside a list not opening.</p>
+            </li>
+            <li>
+              <span class="news-ver">0.20.0</span>
+              <span class="news-date">Nov 13, 2026</span>
+              <p>
+                On first launch you agree to the terms of use, and on Windows you create a security
+                key before Hanpan opens. The security key stays only on a USB drive (recommended) or
+                this PC and is never sent to a server. If you lose the USB drive you can create a
+                new key, and you can make a backup USB drive in Settings. The installer shows a
+                license and disclaimer notice.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.5</span>
+              <span class="news-date">Nov 12, 2026</span>
+              <p>
+                The Design app is now called AI Design, and the first time you open each app, a
+                small speech bubble shows where the AI Assistant button is. Tidied up the buttons on
+                the Home trend card, and when you drag an app icon while customizing Home, a
+                semi-transparent icon follows.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.4</span>
+              <span class="news-date">Nov 11, 2026</span>
+              <p>
+                Turning a trend briefing into a mind map now gives short branches and notes, and the
+                same sentence no longer appears twice when you expand a mind map with AI and send it
+                to Word, Hangul, or PPT. Also fixed extra spacing between Latin letters and numbers
+                in AI Word.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.3</span>
+              <span class="news-date">Nov 11, 2026</span>
+              <p>
+                AI Photo and AI Illustration use the same theme and fonts as Hanpan's other editors,
+                and AI Illustration can save an .ai copy for Illustrator. AI Briefing is written
+                from the weather map figures and articles, and lists the articles it cites as
+                references.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.2</span>
+              <span class="news-date">Nov 10, 2026</span>
+              <p>
+                You can get the AI Briefing in the format you want: Word, Hangul, mind map, PPT, or
+                PDF. Briefing documents come out as reports with a date, a bold headline, numbered
+                subheadings, and a weather map table. The app icons on Home were also redrawn in one
+                consistent style.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.1</span>
+              <span class="news-date">Nov 10, 2026</span>
+              <p>
+                Press the AI Briefing button on the Trend Radar card, and the AI you connected reads
+                today's weather map, writes a briefing, and opens it as a new Word document. It
+                includes a headline, a table of 10 areas, the current situation, a 1–3 month
+                outlook, and checkpoints, so you can move it straight into a report or meeting
+                material.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.19.0</span>
+              <span class="news-date">Nov 10, 2026</span>
+              <p>
+                You can customize the Home screen. Drag cards to move them, drag corners to resize,
+                and add or remove shortcut, memo, folder, and clock cards. The new Trend Radar card
+                shows today's trends in 10 areas, such as AI, stocks, the economy, and real estate,
+                as weather: sunny, cloudy, or rainy.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.18.0</span>
+              <span class="news-date">Nov 8, 2026</span>
+              <p>
+                When you send a mind map to PPT, the AI writes the slide text in the tone of the
+                style you picked. "Conclusion-first report" uses titles that state the conclusion,
+                and "Plain-language cards" uses a friendly, plain tone for titles and on-screen
+                text, and it fills in supporting lines, speaker notes, and a closing line. If you
+                name the audience, it writes for them, and it does not make up numbers that are not
+                in the mind map. On a PC with only the Claude app installed, it tells you what else
+                to install.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.17.1</span>
+              <span class="news-date">Nov 8, 2026</span>
+              <p>
+                Korean fonts such as Hamchorom Batang stay in place when you export a Hangul
+                document to Word. Excel reads CSV dates as dates, and dates you enter are no longer
+                hidden as ####. You can choose the printer and number of copies when printing a PDF,
+                and change paper, orientation, and margins together in one Page Setup dialog in
+                Word.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.17.0</span>
+              <span class="news-date">Nov 8, 2026</span>
+              <p>
+                AI Photo and AI Illustration are here. If you get stuck editing a photo or drawing,
+                just ask the AI Assistant on the right. The whole interface is also available in
+                Vietnamese. The File menu and the AI Assistant position are now the same in every
+                app, and new documents start with Korean defaults such as the Malgun Gothic font and
+                a sheet named 시트1 (Sheet1). Also added sending documents to other apps, My
+                templates, Home widgets, and Windows sharing.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.15.0</span>
+              <span class="news-date">Nov 2, 2026</span>
+              <p>
+                Images, fonts, and sound effects from Gongu Madang (Korea's public-domain content
+                library) are here. When you find and insert a public-domain image from the design
+                board or the AI Assistant, the app adds the credit line, and the image credit check
+                finds missing credits. Also added 7 free fonts, 4 Korean legal forms such as a
+                freedom of information request, education templates with pictures, opening a
+                template as a mind map, and Korean traditional music sound effects for slides.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.14.0</span>
+              <span class="news-date">Nov 1, 2026</span>
+              <p>
+                A major overhaul of the mind map editor. The ribbon at the top is split into Home,
+                Insert, Format, Style, and View tabs, and it adds icons such as priority and
+                progress, changing topic shape and color, format painter, boundaries that group
+                branches, and find and replace. You can also ask AI to add icons or style topics.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.10</span>
+              <span class="news-date">Oct 31, 2026</span>
+              <p>
+                Added a User manual button to the green start board at the top of the Home screen.
+                Press it to open the Getting started with Hanpan guide, which explains how to use
+                each feature.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.9</span>
+              <span class="news-date">Oct 31, 2026</span>
+              <p>
+                The design window now has an AI Assistant. Press ✦ AI Assistant at the top right to
+                make a new design, or to replace only the text of a template you picked with your
+                own content while keeping its look. Select a text box and use the bar that appears
+                above it to polish, shorten, or translate in one step.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.8</span>
+              <span class="news-date">Oct 31, 2026</span>
+              <p>
+                All 20 design templates were redrawn. Each template has its own colors and one
+                eye-catching picture. Notices show the date in large type, and school newsletters
+                come with a consent form. Presentation covers have a bar chart, and shop opening
+                notices have a storefront.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.7</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                Design templates were redrawn from scratch and expanded to 20. New ones include a
+                menu, a shop opening notice, a thank-you card, and safety rules. Templates use fonts
+                bundled with Hanpan, so they look the same on any PC, and there are now 124 line
+                icons you can search for, like "calendar" or "place".
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.6</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                Added tasks that used to take a lot of effort in the design window. Group several
+                items and move them together, and double-click a photo to crop it to just the part
+                you want. Draw handwriting or highlights with a pen, measure positions with rulers,
+                and add your own font files to save them with the design. There is also a
+                right-click menu now.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.5</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                The design window now works like a design tool. Select several items and move them
+                along guides, resize and rotate with handles, and edit text in place. Shapes, QR
+                codes, gradients, shadows, photo filters, and new templates were added, and the
+                layout stays when you change the board size.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.4</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                AI comes to the design window. Write what you want in one line and the AI makes a
+                notice, poster, or card news, and it can polish, shorten, or translate the text box
+                you select.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.3</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                The Markdown converter is here. Paste Markdown and press Convert all, and the
+                formats you picked from HWP, HWPX, Word, ODT, PDF, and HTML are created together in
+                one folder.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.2</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                The Home screen was rebuilt around the mind map. Type a topic on the start board and
+                a new mind map opens, and the cards are in the order Mind map, AI HWP, AI
+                PowerPoint, Hanpan templates. Hanpan got its own chalkboard-green design, and the
+                word "map" in the app was changed to "mind map" everywhere. A Mac beta (Apple
+                silicon and Intel) was released too.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.1</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                Redesigned the 10 slide styles. Fixed text overlapping in table cells and pictures
+                covering text in Hangul documents made by Hanpan.
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.13.0</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                You can pick one of 10 slide styles when sending to PPT. Send feedback now goes to
+                the TenAI team email (ten@tenai.kr).
+              </p>
+            </li>
+            <li>
+              <span class="news-ver">0.12.8</span>
+              <span class="news-date">Oct 30, 2026</span>
+              <p>
+                First public release. Sending mind maps to Hangul, PPT, and Word, two-way sync, 19
+                Hanpan templates, Hanpan tools, a design board, and AI on your PC first.
+              </p>
+            </li>
+          </ol>
+          <p class="news-all">
+            <a href="https://github.com/tenaico/hanpan/releases">See all versions and changes</a>
+          </p>
+        </div>
+      </section>
+
+      <section id="install" class="band" aria-labelledby="install-title">
+        <div class="wrap">
+          <h2 id="install-title">Install</h2>
+          <p class="intro">
+            No sign-up and no payment. Documents are opened and saved only on your PC.
+          </p>
+          <ol class="steps">
+            <li>
+              <h3>Download</h3>
+              <p>
+                Download and run
+                <a class="download-link" href="https://github.com/tenaico/hanpan/releases/latest"
+                  ><span class="file-name">Hanpan-Setup-0.21.2.exe</span></a
+                >. We have applied to SignPath Foundation for free code signing for open source
+                projects for the Windows installer (Free code signing provided by SignPath.io,
+                certificate by SignPath Foundation). The signing policy is in the
+                <a href="https://github.com/tenaico/hanpan/blob/main/docs/code-signing-policy.md"
+                  >Code signing policy</a
+                >.
+              </p>
+            </li>
+            <li>
+              <h3>Get past the warnings</h3>
+              <p>
+                If Chrome or Edge stops the file with a warning such as "Unverified download" or
+                "This file isn't commonly downloaded", open the downloads list (Ctrl+J) and press
+                <strong>Keep</strong> for that file (in Edge, also <strong>Keep anyway</strong>). If
+                the file is still named "Unconfirmed ….crdownload", you have not done this step yet.
+              </p>
+              <p>
+                If a "Windows protected your PC" window appears, press
+                <strong>More info</strong> and then <strong>Run anyway</strong>. This message
+                appears because it is a free program that has not received code signing yet.
+              </p>
+            </li>
+            <li>
+              <h3>Start Hanpan</h3>
+              <p>
+                On first launch you agree to the terms of use and create a security key. We
+                recommend creating it on a USB drive; if you do not have one, you can create it on
+                this PC. Then the Home screen opens. Press <strong>User manual</strong> at the top
+                of the Home screen or press F1 to see how to use Hanpan in
+                <strong>Getting started with Hanpan</strong>.
+              </p>
+            </li>
+          </ol>
+          <p class="note">When a new version is out, Hanpan tells you and updates itself.</p>
+          <div class="mac-install">
+            <h3>Install on Mac (beta)</h3>
+            <p>
+              Download the file for your Mac:
+              <a
+                class="mac-link"
+                data-arch="arm64"
+                href="https://github.com/tenaico/hanpan/releases/latest"
+                >Apple silicon (M1 or later)</a
+              >
+              ·
+              <a
+                class="mac-link"
+                data-arch="x64"
+                href="https://github.com/tenaico/hanpan/releases/latest"
+                >Intel</a
+              >. In the window that opens, drag Hanpan into the Applications folder.
+            </p>
+            <p>
+              If an "unidentified developer" message appears the first time you open it, go to
+              <strong>System Settings › Privacy &amp; Security</strong> and press
+              <strong>Open Anyway</strong>. This message appears because it is a free program
+              without an Apple developer signature. On Mac, Hanpan cannot update itself, so when it
+              tells you a new version is out, download it again and replace the app.
+            </p>
+            <p>
+              If you see "'Hanpan' is damaged and can't be opened", press <strong>Cancel</strong>,
+              not <strong>Move to Trash</strong>. The file is not broken; macOS is blocking an
+              unsigned app downloaded from the internet. After moving Hanpan to the Applications
+              folder, paste the line below into <strong>Terminal</strong> (search "Terminal" in
+              Spotlight), press Return, and open Hanpan again.
+            </p>
+            <code class="cmd">xattr -dr com.apple.quarantine /Applications/Hanpan.app</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="local-ai" aria-labelledby="ai-title">
+        <div class="wrap ai-grid">
+          <div>
+            <h2 id="ai-title">AI starts with what is on your PC</h2>
+            <p class="intro" style="margin-bottom: 0">
+              On first start, Hanpan looks for AI running on this PC and uses it by default.
+              Documents that are hard to show outside, like business plans, are not sent off your
+              PC, so companies and public institutions can use it with peace of mind. If you want to
+              use a Claude or ChatGPT subscription, choose it in Settings.
+            </p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">AI it looks for</th>
+                <th scope="col">Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ollama</td>
+                <td><code>127.0.0.1:11434</code></td>
+              </tr>
+              <tr>
+                <td>LM Studio</td>
+                <td><code>127.0.0.1:1234</code></td>
+              </tr>
+              <tr>
+                <td>vLLM · TenOS-Ko-28B</td>
+                <td><code>127.0.0.1:8000</code>, <code>8001</code></td>
+              </tr>
+              <tr>
+                <td>llama.cpp</td>
+                <td><code>127.0.0.1:8080</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="final" aria-labelledby="final-title">
+        <div class="wrap">
+          <h2 id="final-title">Today's ideas, tomorrow morning's report</h2>
+          <p>Download it free and try it now.</p>
+          <a class="btn download-link" href="https://github.com/tenaico/hanpan/releases/latest">
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 16.5h12" />
+            </svg>
+            Download for Windows
+          </a>
+          <p class="mac-final">
+            Mac beta:
+            <a
+              class="mac-link"
+              data-arch="arm64"
+              href="https://github.com/tenaico/hanpan/releases/latest"
+              >Apple silicon (M1 or later)</a
+            >
+            ·
+            <a
+              class="mac-link"
+              data-arch="x64"
+              href="https://github.com/tenaico/hanpan/releases/latest"
+              >Intel</a
+            >
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <p class="made">
+          Made by <a href="https://www.tenai.kr">TenAI</a> (www.tenai.kr)
+          <a class="mail" href="mailto:ten@tenai.kr">ten@tenai.kr</a>
+        </p>
+        <div class="links">
+          <a href="https://github.com/tenaico/hanpan">Source code</a>
+          <a
+            href="https://github.com/tenaico/hanpan/blob/main/docs/manual/%ED%95%9C%ED%8C%90-%EC%82%AC%EC%9A%A9%EC%84%A4%EB%AA%85%EC%84%9C.md"
+            >User manual (Korean)</a
+          >
+          <a href="https://github.com/tenaico/hanpan/issues">Questions and bug reports</a>
+          <a href="https://github.com/tenaico/hanpan/blob/main/docs/code-signing-policy.md"
+            >Code signing policy</a
+          >
+          <a href="https://tenai.kr/privacy.html#hanpan-trend">Privacy policy</a>
+          <span
+            >Built on the open source
+            <a href="https://github.com/pblsketch/openoffice">Ieum Office</a> (Apache-2.0).</span
+          >
+          <span
+            >This page counts only daily totals of visits and download button clicks. It keeps no
+            cookies or IP addresses and respects your browser's Do Not Track setting. The language
+            you pick is remembered only in this browser.</span
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script src="/assets/site.js"></script>
+  </body>
+</html>

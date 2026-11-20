@@ -16,639 +16,28 @@
     <meta property="og:image" content="https://hanpan-blond.vercel.app/images/og-hanpan.png" />
     <meta property="og:image:width" content="2400" />
     <meta property="og:image:height" content="1260" />
-    <link rel="icon" href="images/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/images/icon.svg" type="image/svg+xml" />
+    <link rel="alternate" hreflang="ko" href="https://hanpan.tenai.kr/ko/" />
+    <link rel="alternate" hreflang="en" href="https://hanpan.tenai.kr/en/" />
+    <link rel="alternate" hreflang="vi" href="https://hanpan.tenai.kr/vi/" />
+    <link rel="alternate" hreflang="x-default" href="https://hanpan.tenai.kr/" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap"
       rel="stylesheet"
     />
-    <style>
-      :root {
-        --board: #183f33;
-        --board-deep: #123027;
-        --node: #f2c94c;
-        --paper: #ffffff;
-        --chalk: #dfe9e3;
-        --mist: #f1f6f3;
-        --ink: #13201a;
-        --ink-soft: #4a5b53;
-        --line-on-board: rgb(223 233 227 / 45%);
-        --radius: 14px;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html {
-        scroll-behavior: smooth;
-      }
-      body {
-        margin: 0;
-        background: var(--paper);
-        color: var(--ink);
-        font:
-          400 17px/1.7 'IBM Plex Sans KR',
-          system-ui,
-          'Malgun Gothic',
-          sans-serif;
-        word-break: keep-all;
-        -webkit-font-smoothing: antialiased;
-      }
-      a {
-        color: inherit;
-      }
-      img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-      }
-      :focus-visible {
-        outline: 3px solid var(--node);
-        outline-offset: 3px;
-        border-radius: 6px;
-      }
-      .wrap {
-        width: min(1120px, 100% - 40px);
-        margin: 0 auto;
-      }
-
-      /* the maker: TenAI, above everything */
-      .maker {
-        background: var(--paper);
-        border-bottom: 1px solid var(--chalk);
-        font-size: 14px;
-        color: var(--ink-soft);
-      }
-      .maker .wrap {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px 20px;
-        padding: 10px 0;
-      }
-      .maker-logo {
-        display: block;
-        flex: none;
-      }
-      .maker-logo img {
-        height: 30px;
-        width: auto;
-      }
-      .maker p {
-        margin: 0;
-        flex: 1 1 360px;
-        line-height: 1.5;
-      }
-      .maker p strong {
-        color: var(--ink);
-        font-weight: 700;
-      }
-      .maker-links {
-        display: flex;
-        gap: 16px;
-        flex: none;
-      }
-      .maker-links a {
-        color: var(--board);
-        font-weight: 500;
-        text-decoration: none;
-      }
-      .maker-links a:hover {
-        text-decoration: underline;
-      }
-
-      /* header */
-      .top {
-        background: var(--board);
-      }
-      .top .wrap {
-        display: flex;
-        align-items: center;
-        gap: 28px;
-        height: 72px;
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        text-decoration: none;
-        color: var(--paper);
-        font-weight: 700;
-        font-size: 21px;
-      }
-      .brand img {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-      }
-      .top nav {
-        display: flex;
-        gap: 22px;
-        margin-left: auto;
-        font-size: 15px;
-      }
-      .top nav a {
-        color: var(--chalk);
-        text-decoration: none;
-      }
-      .top nav a:hover {
-        color: var(--paper);
-      }
-
-      /* hero: the board */
-      .hero {
-        background:
-          radial-gradient(circle at 1px 1px, rgb(255 255 255 / 7%) 1px, transparent 0) 0 0 / 28px
-            28px,
-          var(--board);
-        color: var(--paper);
-        padding: 56px 0 96px;
-        overflow: hidden;
-      }
-      .hero .wrap {
-        display: grid;
-        grid-template-columns: 1fr 1.1fr;
-        gap: 56px;
-        align-items: center;
-      }
-      .hero h1 {
-        margin: 0 0 20px;
-        font-size: clamp(36px, 5vw, 58px);
-        line-height: 1.22;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-      }
-      .hero p.lead {
-        margin: 0 0 32px;
-        max-width: 30em;
-        color: var(--chalk);
-        font-size: 19px;
-      }
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 14px 22px;
-      }
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 15px 26px;
-        border-radius: 999px;
-        background: var(--node);
-        color: var(--ink);
-        font-weight: 700;
-        font-size: 17px;
-        text-decoration: none;
-        box-shadow: 0 10px 30px rgb(255 138 61 / 30%);
-      }
-      .btn:hover {
-        filter: brightness(1.05);
-      }
-      .btn svg {
-        width: 20px;
-        height: 20px;
-      }
-      .meta {
-        color: var(--chalk);
-        font-size: 14px;
-      }
-      .meta a {
-        color: var(--paper);
-      }
-
-      /* the map turning into a report */
-      .stage {
-        position: relative;
-        aspect-ratio: 1.32;
-      }
-      .stage svg {
-        width: 100%;
-        height: 100%;
-        overflow: visible;
-      }
-      .map-line {
-        stroke: var(--line-on-board);
-        stroke-width: 2.5;
-        fill: none;
-      }
-      .topic rect {
-        fill: rgb(255 255 255 / 10%);
-        stroke: var(--line-on-board);
-        stroke-width: 1.5;
-      }
-      .topic text {
-        fill: var(--paper);
-        font:
-          500 15px 'IBM Plex Sans KR',
-          sans-serif;
-      }
-      .root circle {
-        fill: var(--node);
-      }
-      .root text {
-        fill: var(--ink);
-        font:
-          700 15px 'IBM Plex Sans KR',
-          sans-serif;
-      }
-      .sheet {
-        fill: var(--paper);
-        filter: drop-shadow(0 22px 40px rgb(0 0 0 / 35%));
-      }
-      .sheet-text {
-        font-family: 'Nanum Myeongjo', serif;
-        fill: var(--ink);
-      }
-      .sheet-title {
-        font-weight: 800;
-        font-size: 20px;
-      }
-      .sheet-l1 {
-        font-weight: 800;
-        font-size: 15px;
-      }
-      .sheet-l2 {
-        font-size: 14px;
-      }
-      .sheet-date {
-        font-size: 11px;
-        fill: var(--ink-soft);
-      }
-      .flow {
-        stroke: var(--node);
-        stroke-width: 2.5;
-        stroke-dasharray: 6 7;
-        fill: none;
-      }
-
-      @media (prefers-reduced-motion: no-preference) {
-        .topic,
-        .root {
-          animation: settle 0.6s ease-out both;
-        }
-        .topic:nth-of-type(2) {
-          animation-delay: 0.1s;
-        }
-        .topic:nth-of-type(3) {
-          animation-delay: 0.2s;
-        }
-        .topic:nth-of-type(4) {
-          animation-delay: 0.3s;
-        }
-        .topic:nth-of-type(5) {
-          animation-delay: 0.4s;
-        }
-        .flow {
-          animation: dash 1.2s 0.9s linear both;
-          stroke-dashoffset: 120;
-        }
-        .report {
-          animation: rise 0.9s 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-        }
-        .report .row {
-          animation: write 0.35s ease-out both;
-        }
-        .report .row:nth-of-type(1) {
-          animation-delay: 1.9s;
-        }
-        .report .row:nth-of-type(2) {
-          animation-delay: 2.05s;
-        }
-        .report .row:nth-of-type(3) {
-          animation-delay: 2.2s;
-        }
-        .report .row:nth-of-type(4) {
-          animation-delay: 2.35s;
-        }
-        .report .row:nth-of-type(5) {
-          animation-delay: 2.5s;
-        }
-        .report .row:nth-of-type(6) {
-          animation-delay: 2.65s;
-        }
-        .report .row:nth-of-type(7) {
-          animation-delay: 2.8s;
-        }
-      }
-      @keyframes settle {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-      }
-      @keyframes dash {
-        to {
-          stroke-dashoffset: 0;
-        }
-      }
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translate(30px, 24px) rotate(2deg);
-        }
-      }
-      @keyframes write {
-        from {
-          opacity: 0;
-        }
-      }
-
-      /* sections */
-      section {
-        padding: 96px 0;
-      }
-      h2 {
-        margin: 0 0 14px;
-        font-size: clamp(28px, 3.4vw, 38px);
-        line-height: 1.3;
-        letter-spacing: -0.015em;
-      }
-      .intro {
-        max-width: 36em;
-        color: var(--ink-soft);
-        margin: 0 0 56px;
-      }
-
-      .feature {
-        display: grid;
-        grid-template-columns: 0.85fr 1.15fr;
-        gap: 48px;
-        align-items: center;
-        margin-bottom: 88px;
-      }
-      .feature:nth-child(even) {
-        grid-template-columns: 1.15fr 0.85fr;
-      }
-      .feature:nth-child(even) .copy {
-        order: 2;
-      }
-      .feature:last-child {
-        margin-bottom: 0;
-      }
-      .feature h3 {
-        margin: 0 0 12px;
-        font-size: 25px;
-        line-height: 1.35;
-      }
-      .feature p {
-        margin: 0 0 12px;
-        color: var(--ink-soft);
-      }
-      .feature ul {
-        margin: 0;
-        padding-left: 1.1em;
-        color: var(--ink-soft);
-      }
-      .feature li {
-        margin: 4px 0;
-      }
-      .shot {
-        border-radius: var(--radius);
-        overflow: hidden;
-        border: 1px solid var(--chalk);
-        background: var(--mist);
-      }
-      .tag {
-        display: inline-block;
-        margin-bottom: 10px;
-        color: var(--board);
-        font-weight: 700;
-        font-size: 15px;
-      }
-
-      .band {
-        background: var(--mist);
-      }
-      .steps {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 28px;
-        counter-reset: step;
-        padding: 0;
-        margin: 0;
-        list-style: none;
-      }
-      .steps li {
-        position: relative;
-        padding-top: 58px;
-      }
-      .steps li::before {
-        counter-increment: step;
-        content: counter(step);
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        background: var(--board);
-        color: var(--paper);
-        font-weight: 700;
-      }
-      .steps h3 {
-        margin: 0 0 8px;
-        font-size: 20px;
-      }
-      .steps p {
-        margin: 0;
-        color: var(--ink-soft);
-      }
-      .news {
-        display: grid;
-        gap: 0;
-        padding: 0;
-        margin: 0;
-        list-style: none;
-        border-top: 1px solid var(--chalk);
-      }
-      .news li {
-        display: grid;
-        grid-template-columns: 7em 9em 1fr;
-        gap: 16px;
-        align-items: baseline;
-        padding: 20px 0;
-        border-bottom: 1px solid var(--chalk);
-      }
-      .news-ver {
-        font-weight: 800;
-        font-size: 18px;
-        color: var(--board);
-      }
-      .news-date {
-        color: var(--ink-soft);
-        font-size: 15px;
-      }
-      .news p {
-        margin: 0;
-      }
-      .news-all {
-        margin: 24px 0 0;
-      }
-      @media (max-width: 720px) {
-        .news li {
-          grid-template-columns: auto 1fr;
-        }
-        .news p {
-          grid-column: 1 / -1;
-        }
-      }
-      .mac-install {
-        margin-top: 28px;
-        max-width: 46em;
-      }
-      .mac-install h3 {
-        margin: 0 0 8px;
-        font-size: 20px;
-      }
-      .mac-install p {
-        margin: 0 0 10px;
-        color: var(--ink-soft);
-      }
-      .mac-install .cmd {
-        display: block;
-        margin: 0 0 10px;
-        padding: 10px 14px;
-        background: var(--paper);
-        border-radius: 8px;
-        color: var(--ink);
-        font-size: 14px;
-        overflow-wrap: anywhere;
-        user-select: all;
-      }
-      .final .mac-final {
-        margin: 22px auto 0;
-        font-size: 15px;
-      }
-      .final .mac-final a {
-        color: var(--paper);
-      }
-      .note {
-        margin-top: 36px;
-        padding: 18px 22px;
-        border-left: 4px solid var(--node);
-        background: var(--paper);
-        color: var(--ink-soft);
-        border-radius: 0 10px 10px 0;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 16px;
-      }
-      th,
-      td {
-        text-align: left;
-        padding: 12px 14px;
-        border-bottom: 1px solid var(--chalk);
-      }
-      th {
-        color: var(--ink-soft);
-        font-weight: 500;
-      }
-      td code {
-        font-family: inherit;
-        background: var(--mist);
-        padding: 2px 7px;
-        border-radius: 6px;
-      }
-      .ai-grid {
-        display: grid;
-        grid-template-columns: 1fr 1.1fr;
-        gap: 56px;
-        align-items: start;
-      }
-
-      .final {
-        background: var(--board);
-        color: var(--paper);
-        text-align: center;
-      }
-      .final h2 {
-        color: var(--paper);
-      }
-      .final p {
-        color: var(--chalk);
-        margin: 0 auto 30px;
-        max-width: 34em;
-      }
-
-      footer {
-        background: var(--board-deep);
-        color: var(--chalk);
-        padding: 40px 0;
-        font-size: 14px;
-      }
-      footer .wrap {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px 32px;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .made {
-        font-size: 16px;
-        color: var(--paper);
-      }
-      .made a {
-        color: var(--node);
-        font-weight: 700;
-        text-decoration: none;
-      }
-      .made a:hover {
-        text-decoration: underline;
-      }
-      .made .mail {
-        color: var(--chalk);
-        font-weight: 500;
-        margin-left: 10px;
-      }
-      footer .links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 18px;
-      }
-      footer .links a {
-        color: var(--chalk);
-      }
-
-      @media (max-width: 860px) {
-        .top nav {
-          display: none;
-        }
-        .hero {
-          padding-top: 40px;
-        }
-        .maker-logo img {
-          height: 26px;
-        }
-        .hero .wrap,
-        .feature,
-        .feature:nth-child(even),
-        .ai-grid {
-          grid-template-columns: 1fr;
-        }
-        .feature:nth-child(even) .copy {
-          order: 0;
-        }
-        .steps {
-          grid-template-columns: 1fr;
-        }
-        section {
-          padding: 72px 0;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="/assets/site.css" />
   </head>
   <body>
     <aside class="maker" aria-label="만든 곳">
       <div class="wrap">
         <a class="maker-logo" href="https://www.tenai.kr" aria-label="TenAI 홈페이지 (www.tenai.kr)"
-          ><img src="images/tenai-logo.png" alt="TenAI — AX Hub Platform" width="1919" height="812"
+          ><img
+            src="/images/tenai-logo.png"
+            alt="TenAI — AX Hub Platform"
+            width="1919"
+            height="812"
         /></a>
         <p>
           <strong>한판은 텐에이아이(TenAI)가 만들었습니다.</strong> 텐에이아이는 기업과 공공기관의
@@ -662,13 +51,18 @@
     </aside>
     <header class="top">
       <div class="wrap">
-        <a class="brand" href="#"><img src="images/icon.svg" alt="" />한판</a>
+        <a class="brand" href="#"><img src="/images/icon.svg" alt="" />한판</a>
         <nav aria-label="페이지 안내">
           <a href="#features">기능</a>
           <a href="#news">업데이트</a>
           <a href="#install">설치</a>
           <a href="#local-ai">내 PC AI</a>
           <a href="https://github.com/tenaico/hanpan">GitHub</a>
+          <span class="lang-switch" aria-label="언어">
+            <a href="/ko/" hreflang="ko" lang="ko" aria-current="page">한국어</a>
+            <a href="/en/" hreflang="en" lang="en">English</a>
+            <a href="/vi/" hreflang="vi" lang="vi">Tiếng Việt</a>
+          </span>
         </nav>
       </div>
     </header>
@@ -801,7 +195,7 @@
             </div>
             <div class="shot">
               <img
-                src="images/01-home.png"
+                src="/images/01-home.png"
                 alt="시작판과 마인드맵 중심 카드가 있는 한판 홈 화면"
                 loading="lazy"
                 width="1800"
@@ -823,7 +217,7 @@
             </div>
             <div class="shot">
               <img
-                src="images/03-send-dialog.png"
+                src="/images/03-send-dialog.png"
                 alt="마인드맵에서 한글 보고서로 보내는 창"
                 loading="lazy"
                 width="1800"
@@ -852,7 +246,7 @@
             </div>
             <div class="shot">
               <img
-                src="images/09-slide-styles.png"
+                src="/images/09-slide-styles.png"
                 alt="같은 마인드맵을 10가지 슬라이드 스타일로 만든 본문 슬라이드"
                 loading="lazy"
                 width="1792"
@@ -877,7 +271,7 @@
             </div>
             <div class="shot">
               <img
-                src="images/10-md-convert.png"
+                src="/images/10-md-convert.png"
                 alt="마크다운을 붙여 넣고 미리 보기를 보며 HWP·워드·PDF로 한 번에 변환하는 창"
                 loading="lazy"
                 width="1475"
@@ -897,7 +291,7 @@
             </div>
             <div class="shot">
               <img
-                src="images/05-sync.png"
+                src="/images/05-sync.png"
                 alt="마인드맵과 연결된 문서에서 바뀐 곳을 보여 주는 맞추기 창"
                 loading="lazy"
                 width="1800"
@@ -920,7 +314,7 @@
             </div>
             <div class="shot">
               <img
-                src="images/06-hwp-tools.png"
+                src="/images/06-hwp-tools.png"
                 alt="한글 탭의 한판 도구와 3색 검토 표시"
                 loading="lazy"
                 width="1800"
@@ -960,7 +354,7 @@
             </div>
             <div class="shot">
               <img
-                src="images/11-design-ai.png"
+                src="/images/11-design-ai.png"
                 alt="오른쪽 AI 도우미와 한 줄 요청으로 만든 학부모 설명회 안내문이 열린 AI 디자인 창"
                 loading="lazy"
                 width="1683"
@@ -975,7 +369,7 @@
         <div class="wrap">
           <h2 id="news-title">업데이트 소식</h2>
           <p class="intro">설치한 한판은 새 버전이 나오면 알려 주고 스스로 업데이트합니다.</p>
-          <ol class="news">
+          <ol class="news" data-more-label="이전 소식 더 보기">
             <li>
               <span class="news-ver">0.21.2</span>
               <span class="news-date">2026. 11. 19.</span>
@@ -1423,53 +817,13 @@
           >
           <span
             >이 페이지는 방문 수와 내려받기 버튼을 누른 횟수를 하루 단위 합계로만 셉니다. 쿠키와 IP
-            주소는 남기지 않고, 브라우저의 '추적 안 함' 설정을 지킵니다.</span
+            주소는 남기지 않고, 브라우저의 '추적 안 함' 설정을 지킵니다. 고른 언어는 이 브라우저에만
+            기억합니다.</span
           >
         </div>
       </div>
     </footer>
 
-    <script>
-      // the installer of the newest release, asked from GitHub; the release page stays the link if that fails
-      fetch('https://api.github.com/repos/tenaico/hanpan/releases/latest')
-        .then((r) => (r.ok ? r.json() : null))
-        .then((release) => {
-          const asset =
-            release &&
-            release.assets &&
-            release.assets.find((a) => /Setup-.*\.exe$/.test(a.name) && !/arm64/.test(a.name))
-          if (!asset) return
-          document
-            .querySelectorAll('.download-link')
-            .forEach((a) => (a.href = asset.browser_download_url))
-          document.querySelectorAll('.file-name').forEach((s) => (s.textContent = asset.name))
-          document.querySelectorAll('.version').forEach((s) => (s.textContent = release.tag_name))
-          document.querySelectorAll('.mac-link').forEach((a) => {
-            const dmg = release.assets.find((d) => d.name.endsWith('-' + a.dataset.arch + '.dmg'))
-            if (dmg) a.href = dmg.browser_download_url
-          })
-        })
-        .catch(() => {})
-
-      // daily counts of visits and download clicks (site/api/track.js); only on the real
-      // site, and not when the browser asks not to be tracked
-      const counting =
-        ['hanpan.tenai.kr', 'hanpan-blond.vercel.app'].includes(location.hostname) &&
-        navigator.doNotTrack !== '1'
-      const count = (data) => {
-        if (counting) navigator.sendBeacon('/api/track', JSON.stringify(data))
-      }
-      count({ e: 'view', r: document.referrer })
-      document.addEventListener('click', (e) => {
-        const a = e.target.closest('.download-link, .mac-link')
-        if (!a) return
-        const section = a.closest('section')
-        count({
-          e: 'download',
-          p: a.classList.contains('mac-link') ? 'mac-' + a.dataset.arch : 'windows',
-          place: section ? section.id || section.classList[0] : 'other',
-        })
-      })
-    </script>
+    <script src="/assets/site.js"></script>
   </body>
 </html>
