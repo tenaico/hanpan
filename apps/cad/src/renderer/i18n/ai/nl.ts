@@ -44,6 +44,8 @@ export const nl = {
   aiToolUngroupShapes: 'Groep opheffen',
   aiToolAlignShapes: 'Vormen uitlijnen · {n}',
   aiToolSetWorkplane: 'Werkvlak aanpassen',
+  aiToolReadDrawing: 'Lijnen en tekst lezen',
+  aiToolEditDrawing: 'Lijnen en tekst bewerken',
   aiToolRefused: '{action} · geweigerd',
   aiAttachTitle: 'Lokale bestanden bijvoegen (of sleep ze naar het paneel)',
   aiRemoveAttachmentTitle: 'Bijlage verwijderen',

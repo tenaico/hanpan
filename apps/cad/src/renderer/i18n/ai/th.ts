@@ -44,6 +44,8 @@ export const th = {
   aiToolUngroupShapes: 'ยกเลิกกลุ่ม',
   aiToolAlignShapes: 'จัดแนวรูปทรง · {n}',
   aiToolSetWorkplane: 'ปรับขนาดแผ่นงาน',
+  aiToolReadDrawing: 'อ่านเส้นและข้อความ',
+  aiToolEditDrawing: 'แก้ไขเส้นและข้อความ',
   aiToolRefused: '{action} · ถูกปฏิเสธ',
   aiAttachTitle: 'แนบไฟล์ในเครื่อง (หรือลากมาวางบนแผงก็ได้)',
   aiRemoveAttachmentTitle: 'เอาสิ่งที่แนบออก',

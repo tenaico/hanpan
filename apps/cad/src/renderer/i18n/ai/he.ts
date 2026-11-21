@@ -43,6 +43,8 @@ export const he = {
   aiToolUngroupShapes: 'פירוק קבוצה',
   aiToolAlignShapes: 'יישור צורות · {n}',
   aiToolSetWorkplane: 'שינוי גודל משטח העבודה',
+  aiToolReadDrawing: 'קריאת קווים וטקסט',
+  aiToolEditDrawing: 'עריכת קווים וטקסט',
   aiToolRefused: '{action} · נדחה',
   aiAttachTitle: 'צירוף קבצים מקומיים (אפשר גם לגרור אל החלונית)',
   aiRemoveAttachmentTitle: 'הסרת הקובץ המצורף',

@@ -44,6 +44,8 @@ export const pl = {
   aiToolUngroupShapes: 'Rozgrupowanie',
   aiToolAlignShapes: 'Wyrównanie kształtów · {n}',
   aiToolSetWorkplane: 'Zmiana rozmiaru płyty roboczej',
+  aiToolReadDrawing: 'Odczytaj linie i teksty',
+  aiToolEditDrawing: 'Edytuj linie i teksty',
   aiToolRefused: '{action} · odrzucono',
   aiAttachTitle: 'Załącz pliki lokalne (lub przeciągnij je na panel)',
   aiRemoveAttachmentTitle: 'Usuń załącznik',

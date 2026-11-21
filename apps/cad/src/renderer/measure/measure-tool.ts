@@ -50,7 +50,7 @@ export function measureEntities(doc: CadDocument): DrawingEntity[] {
     .flatMap(placeEntities)
 }
 
-function placeEntities(part: DrawingPart): DrawingEntity[] {
+export function placeEntities(part: DrawingPart): DrawingEntity[] {
   const tr = transformOf(part.position, part.rotation)
   const at = (p: [number, number]): [number, number] => {
     const r = applyTransform(tr, [p[0], p[1], 0])
@@ -131,7 +131,7 @@ function onArc(deg: number, start: number, end: number): boolean {
 }
 
 /** How far the point lies from the entity's line work, in the workplane. */
-function entityDistance(e: DrawingEntity, p: [number, number]): number {
+export function entityDistance(e: DrawingEntity, p: [number, number]): number {
   switch (e.kind) {
     case 'line':
       return segmentDistance(p, e.a, e.b)

@@ -44,6 +44,8 @@ export const id = {
   aiToolUngroupShapes: 'Memisahkan kelompok',
   aiToolAlignShapes: 'Meratakan bentuk · {n}',
   aiToolSetWorkplane: 'Mengubah ukuran bidang kerja',
+  aiToolReadDrawing: 'Baca garis dan teks',
+  aiToolEditDrawing: 'Ubah garis dan teks',
   aiToolRefused: '{action} · ditolak',
   aiAttachTitle: 'Lampirkan file lokal (atau seret ke panel)',
   aiRemoveAttachmentTitle: 'Hapus lampiran',

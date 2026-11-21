@@ -44,6 +44,8 @@ export const hi = {
   aiToolUngroupShapes: 'समूह तोड़ना',
   aiToolAlignShapes: 'आकार संरेखित करना · {n}',
   aiToolSetWorkplane: 'कार्य पटल का आकार बदलना',
+  aiToolReadDrawing: 'रेखाएँ और टेक्स्ट पढ़ें',
+  aiToolEditDrawing: 'रेखाएँ और टेक्स्ट बदलें',
   aiToolRefused: '{action} · अस्वीकृत',
   aiAttachTitle: 'स्थानीय फ़ाइलें संलग्न करें (या उन्हें पैनल पर खींचें)',
   aiRemoveAttachmentTitle: 'अनुलग्नक हटाएँ',

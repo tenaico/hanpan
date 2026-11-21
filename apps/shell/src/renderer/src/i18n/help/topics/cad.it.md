@@ -5,9 +5,9 @@ Disegno IA è una scheda per modelli 3D e disegni semplici. Apri un disegno che 
 ## Aprire un disegno
 
 - Per un nuovo disegno vai nella home, apri **All apps** e premi **Disegno IA**. La scheda si apre come **Disegno senza titolo**.
-- Per aprire un file usa **File › Apri…** (Ctrl+O) oppure trascina il file sulla finestra. Disegno IA apre file .ttukcad, DXF, STL, OBJ, 3MF, GLB e PLY.
+- Per aprire un file usa **File › Apri…** (Ctrl+O) oppure trascina il file sulla finestra. Disegno IA apre file .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB e PLY. I DWG si aprono dal formato AutoCAD R14 al formato 2018.
 - Un file che non è .ttukcad si apre come nuovo disegno senza titolo con il nome del file. Il file originale non viene mai modificato: quando salvi viene sempre chiesto un nuovo file .ttukcad.
-- I file DWG, STEP, IGES e BREP vengono da programmi CAD professionali e non si possono leggere. Al loro posto Disegno IA mostra **Come aprire questo file**: chiedi a chi te l'ha mandato un DXF (per un disegno 2D) o un STL (per un modello 3D).
+- I file STEP, IGES e BREP sono file 3D di programmi CAD professionali e non si possono leggere. Al loro posto Disegno IA mostra **Come aprire questo file**: chiedi a chi te l'ha mandato un STL (un modello 3D).
 - Un file oltre 100 MB, o un modello con più di 2 milioni di triangoli, non si apre.
 
 ## Inserire le forme
@@ -32,6 +32,14 @@ Disegno IA è una scheda per modelli 3D e disegni semplici. Apri un disegno che 
 - Inserisci l'**Altezza (mm)** e premi **Chiudi forma**: il contorno si alza e diventa una forma piena. **Annulla** esce senza creare niente.
 - Le linee che si incrociano non sono accettate. Annulla punti finché non si incrociano più.
 - **Testo** chiede le parole da inserire e le trasforma in lettere piene, con il carattere fornito insieme a GenOffice.
+
+## Modificare le linee e il testo di un disegno ricevuto
+
+- Apri un DXF o un DWG e premi **Modifica linee**. Fai clic su una linea, un cerchio, un arco o un testo del disegno per sceglierlo (prende il colore di evidenziazione); Shift+clic ne sceglie altri.
+- Nella barra in basso, **Elimina** (o il tasto Delete) toglie la scelta, **Sposta** la sposta della X e della Y che inserisci in mm e, con un solo testo scelto, scrivi le nuove parole e premi **Cambia testo**. Esc annulla la scelta; premendolo di nuovo termini Modifica linee.
+- Ogni modifica torna indietro con un solo **Annulla** (Ctrl+Z). Un disegno bloccato non viene modificato.
+- Puoi anche chiederlo all'assistente IA, per esempio: "Elimina tutto quello che c'è sul layer delle quote", "Cambia il testo 'Sala riunioni' in 'Sala riunioni grande'", "Sposta il layer delle porte di 500 mm a destra".
+- Il risultato viene salvato come .ttukcad. Il file DXF o DWG originale non viene mai modificato.
 
 ## Misurare e la tavola quotata
 
@@ -81,6 +89,7 @@ Disegno IA è una scheda per modelli 3D e disegni semplici. Apri un disegno che 
 
 ## Cosa non sa fare
 
-- Aprire direttamente file DWG, STEP, IGES o BREP. Chiedi invece un DXF o un STL.
+- Aprire direttamente file STEP, IGES o BREP. Chiedi invece un STL.
+- Salvare di nuovo in DXF o DWG. Un disegno modificato viene salvato come .ttukcad.
 - Vincoli, cronologia di progetto o assiemi come nei programmi CAD professionali. Ogni forma è definita dai suoi numeri.
 - Stampare. Invia la tavola quotata a un documento Hangul o Word e stampa da lì.

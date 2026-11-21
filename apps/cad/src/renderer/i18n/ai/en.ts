@@ -44,6 +44,8 @@ export const en = {
   aiToolUngroupShapes: 'Ungroup',
   aiToolAlignShapes: 'Align parts · {n}',
   aiToolSetWorkplane: 'Resize the workplane',
+  aiToolReadDrawing: 'Read the lines and text',
+  aiToolEditDrawing: 'Edit the lines and text',
   aiToolRefused: '{action} · refused',
   aiAttachTitle: 'Attach local files (or drag them onto the panel)',
   aiRemoveAttachmentTitle: 'Remove attachment',

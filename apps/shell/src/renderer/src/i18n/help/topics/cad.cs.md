@@ -5,9 +5,9 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 ## Otevření výkresu
 
 - Nový výkres začnete tak, že na úvodní stránce otevřete **All apps** a stisknete **Výkres AI**. Karta se otevře jako **Výkres bez názvu**.
-- Soubor otevřete přes **Soubor › Otevřít…** (Ctrl+O) nebo ho přetáhněte do okna. Výkres AI otevírá soubory .ttukcad, DXF, STL, OBJ, 3MF, GLB a PLY.
+- Soubor otevřete přes **Soubor › Otevřít…** (Ctrl+O) nebo ho přetáhněte do okna. Výkres AI otevírá soubory .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB a PLY. DWG otevře od formátu AutoCAD R14 po formát 2018.
 - Soubor, který není .ttukcad, se otevře jako nový výkres bez názvu pojmenovaný podle souboru. Původní soubor se nikdy nezmění: při ukládání se vždy vytváří nový soubor .ttukcad.
-- Soubory DWG, STEP, IGES a BREP pocházejí z profesionálních programů CAD a nelze je načíst. Výkres AI místo toho ukáže **Jak otevřít tento soubor**: požádejte odesílatele o DXF (pro 2D výkres) nebo STL (pro 3D model).
+- Soubory STEP, IGES a BREP jsou 3D soubory z profesionálních programů CAD a nelze je načíst. Výkres AI místo toho ukáže **Jak otevřít tento soubor**: požádejte odesílatele o STL (3D model).
 - Soubor větší než 100 MB nebo model s více než 2 miliony trojúhelníků se neotevře.
 
 ## Vkládání tvarů
@@ -32,6 +32,14 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 - Zadejte **Výška (mm)** a stiskněte **Uzavřít tvar**: obrys se zvedne a stane se tělesem. **Zrušit** odejde, aniž by cokoli vytvořil.
 - Čáry, které se navzájem kříží, nejsou přijaty. Vracejte body, dokud se čáry nepřestanou křížit.
 - **Text** se zeptá na slova, která chcete umístit, a promění je v plná písmena písmem, které je součástí GenOffice.
+
+## Úprava čar a textu výkresu, který jste dostali
+
+- Otevřete DXF nebo DWG a stiskněte **Upravit čáry**. Klepnutím na čáru, kružnici, oblouk nebo text výkresu ho vyberete (zbarví se barvou zvýraznění); klepnutím se Shift vyberete další.
+- Na liště dole **Smazat** (nebo klávesa Delete) odstraní výběr, **Posunout** ho posune o X a Y zadané v mm a když je vybraný jeden text, napíšete nová slova a stisknete **Změnit text**. Esc zruší výběr; dalším stisknutím úpravu čar ukončíte.
+- Každou změnu vrátíte jedním **Zpět** (Ctrl+Z). Zamčený výkres se nezmění.
+- Můžete také požádat asistenta AI, například: „Smaž všechno ve vrstvě kót“, „Změň text ‚Zasedačka‘ na ‚Velká zasedačka‘“, „Posuň vrstvu dveří o 500 mm doprava“.
+- Výsledek se uloží jako .ttukcad. Původní soubor DXF nebo DWG se nikdy nezmění.
 
 ## Měření a rozměrový výkres
 
@@ -81,6 +89,7 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 
 ## Co neumí
 
-- Přímo otevírat soubory DWG, STEP, IGES ani BREP. Požádejte místo nich o DXF nebo STL.
+- Přímo otevírat soubory STEP, IGES ani BREP. Požádejte místo nich o STL.
+- Ukládat zpět do DXF nebo DWG. Upravený výkres se uloží jako .ttukcad.
 - Vazby, historii návrhu ani sestavy jako profesionální programy CAD. Každý tvar se nastavuje vlastními čísly.
 - Tisknout. Pošlete rozměrový výkres do dokumentu Hangul nebo Word a tiskněte odtud.

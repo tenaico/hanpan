@@ -29,6 +29,7 @@ export const HOME_FILTER_GROUPS: Record<'documents' | 'others', readonly string[
     ...OPEN_EXTS.illust,
     'ttukcad',
     'dxf',
+    'dwg',
     'stl',
     'obj',
     '3mf',

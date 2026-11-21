@@ -5,9 +5,9 @@ Bản vẽ AI là thẻ dành cho các mô hình 3D và bản vẽ đơn giản.
 ## Mở bản vẽ
 
 - Để tạo bản vẽ mới, ở trang chủ hãy mở **Tất cả ứng dụng** rồi nhấn **Bản vẽ AI**. Thẻ mới có tên **Bản vẽ chưa có tiêu đề**.
-- Để mở tệp, dùng **Tệp › Mở…** (Ctrl+O) hoặc kéo tệp vào cửa sổ. Bản vẽ AI mở được tệp .ttukcad, DXF, STL, OBJ, 3MF, GLB và PLY.
+- Để mở tệp, dùng **Tệp › Mở…** (Ctrl+O) hoặc kéo tệp vào cửa sổ. Bản vẽ AI mở được tệp .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB và PLY. Tệp DWG mở được từ định dạng AutoCAD R14 đến định dạng 2018.
 - Tệp không phải .ttukcad sẽ mở thành một bản vẽ mới chưa có tên, mang tên của tệp đó. Tệp gốc không bao giờ bị thay đổi: khi lưu, ứng dụng luôn hỏi tên cho một tệp .ttukcad mới.
-- Tệp DWG, STEP, IGES và BREP do các phần mềm CAD chuyên nghiệp tạo ra và không đọc được. Thay vào đó, bạn sẽ thấy **Cách mở tệp này**: hãy nhờ người gửi gửi lại bằng DXF (cho bản vẽ 2D) hoặc STL (cho mô hình 3D).
+- Tệp STEP, IGES và BREP là tệp 3D do các phần mềm CAD chuyên nghiệp tạo ra và không đọc được. Thay vào đó, bạn sẽ thấy **Cách mở tệp này**: hãy nhờ người gửi gửi lại bằng STL (mô hình 3D).
 - Tệp lớn hơn 100 MB, hoặc mô hình có hơn 2 triệu tam giác, sẽ không mở được.
 
 ## Đặt hình
@@ -32,6 +32,14 @@ Bản vẽ AI là thẻ dành cho các mô hình 3D và bản vẽ đơn giản.
 - Nhập **Chiều cao (mm)** rồi nhấn **Đóng hình**: đường viền dựng đứng lên thành một khối đặc. **Hủy** thoát ra mà không tạo gì cả.
 - Các đường cắt nhau sẽ không được chấp nhận. Hãy hoàn tác điểm cho đến khi chúng không còn cắt nhau.
 - **Chữ** hỏi bạn nội dung cần đặt và biến nó thành chữ khối, dùng phông chữ đi kèm GenOffice.
+
+## Sửa nét vẽ và chữ của bản vẽ nhận được
+
+- Mở tệp DXF hoặc DWG rồi nhấn **Sửa nét vẽ**. Bấm vào một đoạn thẳng, hình tròn, cung tròn hoặc chữ trong bản vẽ để chọn (nó đổi sang màu tô sáng); giữ Shift khi bấm để chọn thêm.
+- Trên thanh bên dưới, **Xóa** (hoặc phím Delete) xóa phần đã chọn, **Di chuyển** dời nó theo X và Y bạn nhập bằng mm, còn khi chọn một chữ thì gõ chữ mới rồi nhấn **Đổi chữ**. Esc bỏ chọn; nhấn lần nữa để kết thúc Sửa nét vẽ.
+- Mỗi thay đổi được trả lại bằng một lần **Hoàn tác** (Ctrl+Z). Bản vẽ đã khóa sẽ không bị thay đổi.
+- Bạn cũng có thể nhờ trợ lý AI, ví dụ: "Xóa hết mọi thứ trên lớp kích thước", "Đổi chữ 'Phòng họp' thành 'Phòng họp lớn'", "Dời lớp cửa sang phải 500 mm".
+- Kết quả được lưu thành .ttukcad. Tệp DXF hoặc DWG gốc không bao giờ bị thay đổi.
 
 ## Đo và bản vẽ kích thước
 
@@ -81,6 +89,7 @@ Bản vẽ AI là thẻ dành cho các mô hình 3D và bản vẽ đơn giản.
 
 ## Những việc chưa làm được
 
-- Mở trực tiếp tệp DWG, STEP, IGES hoặc BREP. Hãy xin tệp DXF hoặc STL thay thế.
+- Mở trực tiếp tệp STEP, IGES hoặc BREP. Hãy xin tệp STL thay thế.
+- Lưu ngược lại thành DXF hoặc DWG. Bản vẽ đã sửa được lưu thành .ttukcad.
 - Ràng buộc, lịch sử thiết kế hay lắp ráp như trong phần mềm CAD chuyên nghiệp. Mỗi hình được xác định bằng các con số của riêng nó.
 - In. Hãy gửi bản vẽ kích thước sang tài liệu Hangul hoặc Word rồi in từ đó.

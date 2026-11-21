@@ -44,6 +44,8 @@ export const ru = {
   aiToolUngroupShapes: 'Разгруппировка',
   aiToolAlignShapes: 'Выравнивание фигур · {n}',
   aiToolSetWorkplane: 'Изменение размера рабочей плоскости',
+  aiToolReadDrawing: 'Прочитать линии и тексты',
+  aiToolEditDrawing: 'Изменить линии и тексты',
   aiToolRefused: '{action} · отклонено',
   aiAttachTitle: 'Прикрепить локальные файлы (или перетащите их на панель)',
   aiRemoveAttachmentTitle: 'Удалить вложение',

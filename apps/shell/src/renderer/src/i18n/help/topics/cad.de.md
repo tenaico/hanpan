@@ -5,9 +5,9 @@ KI-Zeichnung ist ein Tab für einfache 3D-Modelle und Zeichnungen. Öffnen Sie e
 ## Eine Zeichnung öffnen
 
 - Für eine neue Zeichnung gehen Sie zur Startseite, öffnen **All apps** und drücken **KI-Zeichnung**. Der Tab beginnt als **Unbenannte Zeichnung**.
-- Um eine Datei zu öffnen, verwenden Sie **Datei › Öffnen…** (Strg+O) oder ziehen die Datei auf das Fenster. KI-Zeichnung öffnet .ttukcad-, DXF-, STL-, OBJ-, 3MF-, GLB- und PLY-Dateien.
+- Um eine Datei zu öffnen, verwenden Sie **Datei › Öffnen…** (Strg+O) oder ziehen die Datei auf das Fenster. KI-Zeichnung öffnet .ttukcad-, DXF-, DWG-, STL-, OBJ-, 3MF-, GLB- und PLY-Dateien. DWG-Dateien öffnen sich vom Format AutoCAD R14 bis zum Format 2018.
 - Eine Datei, die keine .ttukcad-Datei ist, öffnet sich als neue unbenannte Zeichnung mit dem Namen der Datei. Die Originaldatei wird nie verändert: Beim Speichern wird immer nach einer neuen .ttukcad-Datei gefragt.
-- DWG-, STEP-, IGES- und BREP-Dateien stammen aus professionellen CAD-Programmen und können nicht gelesen werden. KI-Zeichnung zeigt stattdessen **So öffnen Sie diese Datei**: Bitten Sie den Absender um eine DXF-Datei (für eine 2D-Zeichnung) oder eine STL-Datei (für ein 3D-Modell).
+- STEP-, IGES- und BREP-Dateien sind 3D-Dateien aus professionellen CAD-Programmen und können nicht gelesen werden. KI-Zeichnung zeigt stattdessen **So öffnen Sie diese Datei**: Bitten Sie den Absender um eine STL-Datei (ein 3D-Modell).
 - Eine Datei über 100 MB oder ein Modell mit mehr als 2 Millionen Dreiecken lässt sich nicht öffnen.
 
 ## Formen platzieren
@@ -32,6 +32,14 @@ KI-Zeichnung ist ein Tab für einfache 3D-Modelle und Zeichnungen. Öffnen Sie e
 - Geben Sie die **Höhe (mm)** ein und drücken Sie **Form schließen**: Der Umriss wird zu einem Körper hochgezogen. **Abbrechen** beendet, ohne etwas zu erstellen.
 - Linien, die sich kreuzen, werden abgelehnt. Nehmen Sie Punkte zurück, bis sich nichts mehr kreuzt.
 - **Text** fragt nach den Wörtern, die platziert werden sollen, und macht daraus massive Buchstaben in der Schrift, die mit GenOffice geliefert wird.
+
+## Linien und Text einer erhaltenen Zeichnung bearbeiten
+
+- Öffnen Sie eine DXF- oder DWG-Datei und drücken Sie **Linien bearbeiten**. Klicken Sie auf eine Linie, einen Kreis, einen Bogen oder einen Text der Zeichnung, um ihn auszuwählen (er erscheint in der Hervorhebungsfarbe); mit Umschalt+Klick wählen Sie weitere aus.
+- In der Leiste darunter entfernt **Löschen** (oder die Delete-Taste) die Auswahl, **Verschieben** verschiebt sie um die eingegebenen X- und Y-Werte in mm, und bei einem einzelnen ausgewählten Text geben Sie die neuen Wörter ein und drücken **Text ändern**. Esc hebt die Auswahl auf; ein weiteres Drücken beendet Linien bearbeiten.
+- Jede Änderung nimmt ein einziges **Rückgängig** (Strg+Z) zurück. Eine gesperrte Zeichnung wird nicht geändert.
+- Sie können auch den KI-Assistenten bitten, zum Beispiel: „Lösche alles auf dem Bemaßungs-Layer“, „Ändere den Text ‚Besprechungsraum‘ in ‚Großer Besprechungsraum‘“, „Verschiebe den Türen-Layer um 500 mm nach rechts“.
+- Das Ergebnis wird als .ttukcad gespeichert. Die ursprüngliche DXF- oder DWG-Datei wird nie verändert.
 
 ## Messen und das Maßblatt
 
@@ -81,6 +89,7 @@ KI-Zeichnung ist ein Tab für einfache 3D-Modelle und Zeichnungen. Öffnen Sie e
 
 ## Was es nicht kann
 
-- DWG-, STEP-, IGES- oder BREP-Dateien direkt öffnen. Bitten Sie stattdessen um DXF oder STL.
+- STEP-, IGES- oder BREP-Dateien direkt öffnen. Bitten Sie stattdessen um STL.
+- Zurück als DXF oder DWG speichern. Eine bearbeitete Zeichnung wird als .ttukcad gespeichert.
 - Abhängigkeiten, Konstruktionsverlauf oder Baugruppen wie in professionellen CAD-Programmen. Jede Form wird durch ihre eigenen Zahlen bestimmt.
 - Drucken. Senden Sie das Maßblatt an ein Hangul- oder Word-Dokument und drucken Sie von dort.

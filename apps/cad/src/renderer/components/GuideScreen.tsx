@@ -8,7 +8,7 @@ export interface GuideScreenProps {
 }
 
 /**
- * Shown for a file of a CAD program this editor cannot read (DWG, STEP,
+ * Shown for a file of a CAD program this editor cannot read (STEP,
  * IGES, BREP): which file it is, why it does not open, and what to ask the
  * sender for instead. The file was not read; an empty drawing stays open.
  */

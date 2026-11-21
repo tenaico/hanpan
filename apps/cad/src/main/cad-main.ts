@@ -16,7 +16,7 @@
  *   failed open the drawing is untitled, so its first save asks where.
  * - A DXF, STL, OBJ, 3MF, GLB or PLY file is only ever read: it opens as a
  *   new untitled drawing, and no save lands on anything but a `.ttukcad` path.
- *   A DWG, STEP, IGES or BREP file is not even read: the screen explains how
+ *   A STEP, IGES or BREP file is not even read: the screen explains how
  *   to get a DXF or STL file instead.
  * - An export writes the bytes the renderer made to a path picked in the save
  *   dialog, with the format's extension, never onto a file this view opened or
@@ -106,6 +106,7 @@ const DRAWING_EXTENSION = '.ttukcad'
 /** Files that open as a new untitled drawing and are never written. */
 const IMPORT_EXTENSIONS: ReadonlySet<string> = new Set<ImportExt>([
   'dxf',
+  'dwg',
   'stl',
   'obj',
   '3mf',
@@ -116,7 +117,7 @@ const IMPORT_EXTENSIONS: ReadonlySet<string> = new Set<ImportExt>([
  * Files of CAD programs this editor cannot read. They are not read at all:
  * the screen says to ask the sender for a DXF or STL file instead.
  */
-const GUIDE_EXTENSIONS: ReadonlySet<string> = new Set(['dwg', 'step', 'stp', 'iges', 'igs', 'brep'])
+const GUIDE_EXTENSIONS: ReadonlySet<string> = new Set(['step', 'stp', 'iges', 'igs', 'brep'])
 /** Everything a view can be made for, as the standalone window's argv filter. */
 const OPENABLE_RE = new RegExp(
   `\\.(${['ttukcad', ...IMPORT_EXTENSIONS, ...GUIDE_EXTENSIONS].join('|')})$`,

@@ -5,9 +5,9 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 ## Membuka gambar
 
 - Untuk gambar baru, di beranda buka **All apps** lalu tekan **Gambar AI**. Tab dimulai dengan nama **Gambar tanpa judul**.
-- Untuk membuka file, gunakan **File › Buka…** (Ctrl+O) atau seret file ke jendela. Gambar AI membuka file .ttukcad, DXF, STL, OBJ, 3MF, GLB, dan PLY.
+- Untuk membuka file, gunakan **File › Buka…** (Ctrl+O) atau seret file ke jendela. Gambar AI membuka file .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB, dan PLY. DWG bisa dibuka dari format AutoCAD R14 sampai format 2018.
 - File yang bukan .ttukcad dibuka sebagai gambar baru tanpa judul yang diberi nama sesuai file itu. File aslinya tidak pernah diubah: saat menyimpan, Anda selalu diminta membuat file .ttukcad baru.
-- File DWG, STEP, IGES, dan BREP berasal dari program CAD profesional dan tidak bisa dibaca. Sebagai gantinya Gambar AI menampilkan **Cara membuka file ini**: mintalah pengirimnya mengirim DXF (untuk gambar 2D) atau STL (untuk model 3D).
+- File STEP, IGES, dan BREP adalah file 3D dari program CAD profesional dan tidak bisa dibaca. Sebagai gantinya Gambar AI menampilkan **Cara membuka file ini**: mintalah pengirimnya mengirim STL (model 3D).
 - File di atas 100 MB, atau model dengan lebih dari 2 juta segitiga, tidak bisa dibuka.
 
 ## Menaruh bentuk
@@ -32,6 +32,14 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 - Isi **Tinggi (mm)** lalu tekan **Tutup bentuk**: garis bentuk itu naik menjadi benda padat. **Batal** keluar tanpa membuat apa pun.
 - Garis yang saling bersilangan ditolak. Urungkan titik sampai garisnya tidak lagi bersilangan.
 - **Teks** menanyakan kata yang ingin ditaruh lalu mengubahnya menjadi huruf padat, dengan font bawaan GenOffice.
+
+## Mengubah garis dan teks gambar yang Anda terima
+
+- Buka DXF atau DWG lalu tekan **Ubah garis**. Klik garis, lingkaran, busur, atau teks pada gambar untuk memilihnya (warnanya berubah menjadi warna sorotan); klik sambil menahan Shift untuk memilih lebih banyak.
+- Di bilah bawah, **Hapus** (atau tombol Delete) menghapus pilihan, **Pindahkan** menggesernya sejauh X dan Y yang Anda isi dalam mm, dan jika satu teks dipilih, ketik kata-kata baru lalu tekan **Ganti teks**. Esc membatalkan pilihan; tekan sekali lagi untuk mengakhiri Ubah garis.
+- Setiap perubahan kembali dengan satu kali **Urungkan** (Ctrl+Z). Gambar yang dikunci tidak berubah.
+- Anda juga bisa meminta asisten AI, misalnya: "Hapus semua yang ada di layer dimensi", "Ganti teks 'Ruang rapat' menjadi 'Ruang rapat besar'", "Geser layer pintu 500 mm ke kanan".
+- Hasilnya disimpan sebagai .ttukcad. File DXF atau DWG aslinya tidak pernah diubah.
 
 ## Mengukur dan lembar dimensi
 
@@ -81,6 +89,7 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 
 ## Yang tidak bisa dilakukan
 
-- Membuka file DWG, STEP, IGES, atau BREP secara langsung. Mintalah DXF atau STL sebagai gantinya.
+- Membuka file STEP, IGES, atau BREP secara langsung. Mintalah STL sebagai gantinya.
+- Menyimpan kembali ke DXF atau DWG. Gambar yang sudah diubah disimpan sebagai .ttukcad.
 - Batasan, riwayat desain, atau rakitan seperti di program CAD profesional. Setiap bentuk diatur dengan angkanya sendiri.
 - Mencetak. Kirim lembar dimensi ke dokumen Hangul atau Word lalu cetak dari sana.

@@ -44,6 +44,8 @@ export const ar = {
   aiToolUngroupShapes: 'فك التجميع',
   aiToolAlignShapes: 'محاذاة الأشكال · {n}',
   aiToolSetWorkplane: 'تغيير حجم لوح العمل',
+  aiToolReadDrawing: 'قراءة الخطوط والنصوص',
+  aiToolEditDrawing: 'تعديل الخطوط والنصوص',
   aiToolRefused: '{action} · مرفوض',
   aiAttachTitle: 'إرفاق ملفات محلية (أو اسحبها إلى اللوحة)',
   aiRemoveAttachmentTitle: 'إزالة المرفق',

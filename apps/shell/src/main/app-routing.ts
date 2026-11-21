@@ -10,13 +10,13 @@ const PPTX_RE = /\.pptx$/i
 const PDF_RE = /\.pdf$/i
 const HTML_RE = /\.html?$/i
 const MINDMAP_RE = /\.xmind$/i
-// AI Drawing: its own document, and the 3D and DXF files it imports into a new untitled drawing
+// AI Drawing: its own document, and the 3D, DXF and DWG files it imports into a new untitled drawing
 // (no other editor opens these)
 const CAD_RE = /\.ttukcad$/i
-const CAD_IMPORT_RE = /\.(dxf|stl|obj|3mf|glb|ply)$/i
+const CAD_IMPORT_RE = /\.(dxf|dwg|stl|obj|3mf|glb|ply)$/i
 // Files of CAD programs AI Drawing cannot read: its tab opens with a guide that says how to get
-// a DXF or STL instead (no other editor opens these either; slides only inserts .glb models)
-const CAD_GUIDE_RE = /\.(dwg|step|stp|iges|igs|brep)$/i
+// a DXF, DWG or STL instead (no other editor opens these either; slides only inserts .glb models)
+const CAD_GUIDE_RE = /\.(step|stp|iges|igs|brep)$/i
 const HWP_RE = /\.hwpx?$/i
 const EPUB_RE = /\.epub$/i
 // AI Photo and AI Illustration (decision 0093): the graphics editor's own format table

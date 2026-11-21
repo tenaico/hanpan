@@ -3,11 +3,11 @@
  *
  * - A `.ttukcad` that opened `ok` keeps its path (the main process granted it).
  *   A crash-recovery copy opens with unsaved changes; an untitled one has no path.
- * - A DXF, STL, OBJ, 3MF, GLB or PLY file becomes a new untitled drawing with
+ * - A DXF, DWG, STL, OBJ, 3MF, GLB or PLY file becomes a new untitled drawing with
  *   one part, named after the file. Nothing is granted: the first save asks
  *   for a new `.ttukcad`. 3MF, GLB and PLY are read by three's readers, which
  *   may wait, so they open through `openResult`.
- * - A DWG, STEP, IGES or BREP file opens an empty untitled drawing with the
+ * - A STEP, IGES or BREP file opens an empty untitled drawing with the
  *   guide that says how to get a file that opens (`guide`).
  * - Anything else opens an empty untitled drawing and says why, so the tab
  *   never shows a blank screen and never writes over a file it could not read.
@@ -19,6 +19,7 @@ import {
   drawingPartFromDxf,
   newId,
   openCadFile,
+  readDwg,
   readDxf,
   readObj,
   readStl,
@@ -116,8 +117,8 @@ function importDocument(
   ext: ImportExt,
   name: string,
 ): CadDocument | 'too-large' | 'import-failed' {
-  if (ext === 'dxf') {
-    const read = readDxf(bytes)
+  if (ext === 'dxf' || ext === 'dwg') {
+    const read = ext === 'dwg' ? readDwg(bytes) : readDxf(bytes)
     if (read.status !== 'ok') return read.status === 'too-large' ? 'too-large' : 'import-failed'
     return addPart(createDocument(), drawingPartFromDxf(read, name))
   }

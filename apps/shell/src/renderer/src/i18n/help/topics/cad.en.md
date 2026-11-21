@@ -5,9 +5,9 @@ AI Drawing is a tab for simple 3D models and drawings. Open a drawing someone se
 ## Opening a drawing
 
 - For a new drawing, go to Home, open **All apps** and press **AI Drawing**. The tab starts as **Untitled Drawing**.
-- To open a file, use **File › Open…** (Ctrl+O) or drag the file onto the window. AI Drawing opens .ttukcad, DXF, STL, OBJ, 3MF, GLB and PLY files.
+- To open a file, use **File › Open…** (Ctrl+O) or drag the file onto the window. AI Drawing opens .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB and PLY files. DWG opens from the AutoCAD R14 format to the 2018 format.
 - A file that is not .ttukcad opens as a new untitled drawing named after the file. The original file is never changed: saving always asks for a new .ttukcad file.
-- DWG, STEP, IGES and BREP files come from professional CAD programs and cannot be read. AI Drawing shows **How to open this file** instead: ask the person who sent it for a DXF (for a 2D drawing) or an STL (for a 3D model).
+- STEP, IGES and BREP files are 3D files from professional CAD programs and cannot be read. AI Drawing shows **How to open this file** instead: ask the person who sent it for an STL (a 3D model).
 - A file over 100 MB, or a model with more than 2 million triangles, does not open.
 
 ## Placing shapes
@@ -32,6 +32,14 @@ AI Drawing is a tab for simple 3D models and drawings. Open a drawing someone se
 - Enter the **Height (mm)** and press **Close shape**: the outline stands up as a solid. **Cancel** leaves without making anything.
 - Lines that cross each other are refused. Undo points until they no longer cross.
 - **Text** asks for the words to place and turns them into solid letters, using the font that comes with GenOffice.
+
+## Editing the lines and text of a drawing you received
+
+- Open a DXF or DWG and press **Edit lines**. Click a line, circle, arc or text of the drawing to pick it (it turns the highlight colour); Shift-click picks more.
+- In the bar below, **Delete** (or the Delete key) removes the pick, **Move** shifts it by the X and Y you enter in mm, and with one text picked you type the new words and press **Change text**. Esc clears the pick; pressing it again ends Edit lines.
+- Each change comes back with one **Undo** (Ctrl+Z). A locked drawing is not changed.
+- You can also ask the AI assistant, for example: "Delete everything on the dimension layer", "Change the text 'Meeting room' to 'Large meeting room'", "Move the door layer 500 mm to the right".
+- The result is saved as .ttukcad. The original DXF or DWG file is never changed.
 
 ## Measuring and the dimension sheet
 
@@ -81,6 +89,7 @@ AI Drawing is a tab for simple 3D models and drawings. Open a drawing someone se
 
 ## What it cannot do
 
-- Open DWG, STEP, IGES or BREP files directly. Ask for DXF or STL instead.
+- Open STEP, IGES or BREP files directly. Ask for STL instead.
+- Save back to DXF or DWG. An edited drawing is saved as .ttukcad.
 - Constraints, design history or assemblies as in professional CAD programs. Each part is set by its own numbers.
 - Print. Send the dimension sheet to a Hangul or Word document and print from there.

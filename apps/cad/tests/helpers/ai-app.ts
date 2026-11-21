@@ -152,6 +152,7 @@ export function recordingViewport() {
     view: () => {},
     setSketch: () => {},
     setMeasure: () => {},
+    setEntityEdit: () => {},
     snapshot: async () => new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
     dispose: () => {},
   })

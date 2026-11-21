@@ -86,6 +86,12 @@ export interface Viewport {
   setSketch(points: readonly (readonly [number, number])[] | null): void
   /** What the measuring tool shows; null ends measuring (clicks pick parts again). */
   setMeasure(view: MeasureView | null): void
+  /**
+   * The "Edit lines" tool: the picked drawing entities as polylines (x, y, z
+   * in mm) drawn over everything in the selection colour; an empty list
+   * starts the tool (clicks go to `onEntityClick`), null ends it.
+   */
+  setEntityEdit(lines: readonly (readonly number[])[] | null): void
   /** One frame on the light colours, without selection and handles, as PNG bytes. */
   snapshot(): Promise<Uint8Array>
   dispose(): void
@@ -120,6 +126,8 @@ export interface ViewportOptions {
   onMeasureHover?: (point: Vec3, reach: number) => void
   /** while measuring: a click, instead of `onPick` */
   onMeasureClick?: (point: Vec3, reach: number) => void
+  /** while editing lines: a click, instead of `onPick`; `add` with Shift or Ctrl */
+  onEntityClick?: (point: Vec3, reach: number, add: boolean) => void
 }
 
 export type ViewportFactory = (
@@ -312,6 +320,13 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
   measureLine.visible = false
   scene.add(measureLine)
   let measure: MeasureView | null = null
+  // the "Edit lines" tool: the picked entities, over everything in the selection colour
+  const entityMaterial = new LineBasicMaterial({ color: colors.selection, depthTest: false })
+  const entityLines = new LineSegments(new BufferGeometry(), entityMaterial)
+  entityLines.renderOrder = 3
+  entityLines.visible = false
+  scene.add(entityLines)
+  let entityEdit = false
   const measureLayer = document.createElement('div')
   measureLayer.className = 'cad-measure-layer'
   const snapMark = document.createElement('div')
@@ -516,7 +531,7 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
   /** Puts the pivot where the selection is and shows the handles on it, or hides them. */
   function placeHandles(): void {
     if (!handles) return
-    if (sketching || measure) {
+    if (sketching || measure || entityEdit) {
       handles.detach()
       return
     }
@@ -711,6 +726,13 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
       if (found) options.onMeasureClick?.(found.point, found.reach)
       return
     }
+    if (entityEdit) {
+      const found = measureAt(event.clientX, event.clientY)
+      if (found) {
+        options.onEntityClick?.(found.point, found.reach, event.shiftKey || event.ctrlKey)
+      }
+      return
+    }
     if (sketching) {
       const ray: Ray = {
         origin: [origin.x, origin.y, origin.z],
@@ -889,6 +911,7 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
     issueMaterial.color.set(colors.issue)
     sketchLineMaterial.color.set(colors.selection)
     measureMaterial.color.set(colors.selection)
+    entityMaterial.color.set(colors.selection)
     sketchPointMaterial.color.set(colors.selection)
     // drawing lines take the new ink
     if (!session.active) drawItems()
@@ -961,6 +984,26 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
       placeMeasure()
       render()
     },
+    setEntityEdit(lines) {
+      const was = entityEdit
+      entityEdit = lines !== null
+      if (was !== entityEdit) {
+        if (entityEdit) cancelDrag()
+        placeHandles()
+      }
+      // each polyline becomes segments: p0-p1, p1-p2, ...
+      const flat: number[] = []
+      for (const line of lines ?? []) {
+        for (let i = 3; i + 2 < line.length; i += 3) {
+          flat.push(line[i - 3]!, line[i - 2]!, line[i - 1]!, line[i]!, line[i + 1]!, line[i + 2]!)
+        }
+      }
+      entityLines.geometry.dispose()
+      entityLines.geometry = new BufferGeometry()
+      entityLines.geometry.setAttribute('position', new Float32BufferAttribute(flat, 3))
+      entityLines.visible = flat.length > 0
+      render()
+    },
     snapshot() {
       if (!renderer) return Promise.reject(new Error('the 3D view has no renderer'))
       const current = renderer
@@ -975,6 +1018,7 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
         overlays: (visible) => {
           selectionMaterial.visible = visible
           measureMaterial.visible = visible
+          entityMaterial.visible = visible
           helper.visible = visible
         },
       })
@@ -998,6 +1042,8 @@ export const createViewport: ViewportFactory = (host, theme, options = {}) => {
       measureLayer.remove()
       measureLine.geometry.dispose()
       measureMaterial.dispose()
+      entityLines.geometry.dispose()
+      entityMaterial.dispose()
       plane.geometry.dispose()
       minorLines.geometry.dispose()
       majorLines.geometry.dispose()

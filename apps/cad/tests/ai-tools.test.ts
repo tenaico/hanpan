@@ -2,7 +2,7 @@
 /**
  * The AI's tools against a real session: every tool call is one
  * `history.edit`, refusals leave the drawing as it was, and the skill offers
- * exactly the eight tools with a prompt that names every shape. No model is
+ * exactly the ten tools with a prompt that names every shape. No model is
  * involved; the tools are called the way the agent loop calls them.
  */
 import { describe, expect, it } from 'vitest'
@@ -251,10 +251,10 @@ describe('runCadTool', () => {
 })
 
 describe('createCadSkill', () => {
-  it('exposes exactly the eight tools with object schemas', () => {
+  it('exposes exactly the ten tools with object schemas', () => {
     const skill = createCadSkill({ session: () => null })
     expect(skill.tools.map((t) => t.name).sort()).toEqual(Object.values(CAD_TOOL_NAMES).sort())
-    expect(skill.tools).toHaveLength(8)
+    expect(skill.tools).toHaveLength(10)
     for (const tool of skill.tools) {
       expect(tool.description.length).toBeGreaterThan(20)
       expect(tool.inputSchema.type).toBe('object')
