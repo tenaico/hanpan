@@ -19,7 +19,6 @@ import {
   drawingPartFromDxf,
   newId,
   openCadFile,
-  readDwg,
   readDxf,
   readObj,
   readStl,
@@ -27,6 +26,8 @@ import {
   type MeshPart,
   type MeshReadResult,
 } from '@genoffice/cad-engine'
+// DWG reading is its own entry: acad-ts is ESM-only, and CommonJS users of the engine must not load it
+import { readDwg } from '@genoffice/cad-engine/dwg'
 import type { ImportExt, OpenFileResult } from '../../shared/ipc'
 import { isThreeExt, readThreeMesh } from '../import/three-mesh'
 import { CadSession, titleOfPath } from './session'

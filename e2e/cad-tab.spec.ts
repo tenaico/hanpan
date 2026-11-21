@@ -4,14 +4,6 @@ import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test, expect, type ElectronApplication, type Locator, type Page } from '@playwright/test'
-import {
-  ACadVersion,
-  CadDocument as AcadDocument,
-  Circle,
-  DwgWriter,
-  Line,
-  XYZ,
-} from '@node-projects/acad-ts'
 import { PNG } from 'pngjs'
 import {
   SHAPE_DIMS,
@@ -642,33 +634,14 @@ const NO_WEBGL_ARGS = ['--disable-gpu', '--disable-software-rasterizer']
 const listTabs = (page: Page): Promise<SentTab[]> =>
   page.evaluate(() => (window as unknown as ShellApisOnWindow).aiOfficeTabs.list())
 
-/**
- * A 2018-format DWG made here (the repo keeps no other program's files): one
- * line across the middle and a circle around it, so "Show all" centres the
- * view on the line.
- */
-function makeDwg(): Uint8Array {
-  const doc = new AcadDocument()
-  doc.header!.version = ACadVersion.AC1032
-  const line = new Line()
-  line.startPoint = new XYZ(-1000, 0, 0)
-  line.endPoint = new XYZ(1000, 0, 0)
-  doc.modelSpace!.entities.add(line)
-  const circle = new Circle()
-  circle.center = new XYZ(0, 0, 0)
-  circle.radius = 600
-  doc.modelSpace!.entities.add(circle)
-  const target = new Uint8Array(4 * 1024 * 1024)
-  return target.slice(0, DwgWriter.writeToStream(target, doc))
-}
-
 test.describe('AI Drawing tab: DWG and Edit lines (decision 0102)', () => {
   test('a .dwg opens, Edit lines deletes the clicked line, and the save keeps the circle', async () => {
     test.setTimeout(240_000)
     const dir = await mkdtemp(join(tmpdir(), 'genoffice-cad-dwg-'))
     const dwg = join(dir, 'Floor Plan.dwg')
-    const dwgBytes = makeDwg()
-    await writeFile(dwg, dwgBytes)
+    // acad-ts is ESM-only: a small node script writes the test DWG
+    execFileSync(process.execPath, [join(__dirname, 'make-dwg.mjs'), dwg])
+    const dwgBytes = readFileSync(dwg)
     const target = join(dir, 'plan-edited.ttukcad')
     const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-dwg' })
     const { app, page } = launched
