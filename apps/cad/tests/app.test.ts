@@ -172,6 +172,7 @@ function fakeViewport() {
     view: () => {},
     setSketch: () => {},
     setMeasure: () => {},
+    setEntityEdit: () => {},
     snapshot: async () => new Uint8Array([0x89, 0x50]),
     dispose: () => {},
   })
@@ -420,6 +421,7 @@ describe('the AI Drawing screen', () => {
         view: (command) => void views.push(command),
         setSketch: () => {},
         setMeasure: () => {},
+        setEntityEdit: () => {},
         snapshot: async () => new Uint8Array(),
         dispose: () => {},
       }
@@ -466,6 +468,7 @@ function probeViewport() {
       view: () => {},
       setSketch: (points) => void probe.sketches.push(points ? [...points] : null),
       setMeasure: (view) => void probe.measures.push(view),
+      setEntityEdit: () => {},
       snapshot: async () => new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
       dispose: () => {},
     }

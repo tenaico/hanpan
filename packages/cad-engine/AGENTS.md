@@ -8,6 +8,8 @@
 - 고치는 함수(`ops.ts`): 놓기, 바꾸기, 지우기, 묶기, 풀기, 줄 맞추기, 작업판 크기. 모두 입력 문서를 바꾸지 않고 새 문서를 돌려준다. 잘못된 값은 `CadEditError`(코드 다섯 가지)로 던진다.
 - 되돌리기(`history.ts`): `CadHistory.edit`가 문서를 고치는 유일한 길이다. `openGroup`과 `closeGroup` 사이의 고침은 되돌리기 한 번이다(AI 요청 하나). 100단계까지 둔다.
 - 경계 상자(`bounds.ts`)와 회전 계산(`geometry.ts`), 그물 기본 함수(`mesh.ts`).
+- DWG 읽기(`dwg.ts`, 결정 0102): acad-ts(MIT)로 읽어 DXF 글로 바꾼 뒤 `readDxf`에 넘긴다. 결과는 DXF와 같은 `DxfReadResult`다.
+- 도면 요소 고치기(`drawing-edit.ts`): 지우기, 옮기기, 글자·레이어·색 바꾸기, 더하기, 레이어 목록. 요소는 부품 안의 번호로 가리키고, 잠근 도면은 거절한다.
 
 ## 맡지 않는 것 (경계)
 
@@ -21,6 +23,7 @@
 - **모르는 필드를 버리지 않는다.** 문서의 `extra`와 도형의 `extra`에 두고 다음 저장에 그대로 쓴다.
 - **`src/`에서 Node 내장 모듈, `Buffer`, `require`, `process`, DOM을 쓰지 않는다.** `tests/browser-safety.test.ts`와 DOM 라이브러리 없는 형 검사가 지킨다. 식별자는 `getRandomValues`로 만든다.
 - **`src/index.ts`는 `export … from './파일'` 줄만 둔다.** 그래서 `src/` 아래에 하위 폴더를 두지 않는다.
+- **`@node-projects/acad-ts`는 3.9.0으로 고정한다.** 올릴 때는 `tests/dwg.test.ts`를 다시 돌린다. 2004 이전 형식의 시험 파일은 한글 코드 페이지로 쓰지 못하므로, 그 형식의 한글은 실제 파일로 확인한다.
 - **`manifold-3d`는 3.2.1로 고정한다.** 3.3부터 명령줄 도구용 의존성(이미지 라이브러리 sharp, LGPL)이 딸려 와 `npm run licenses`가 실패한다(2026-11-16 확인).
 - **다른 프로그램의 견본 파일을 넣지 않는다.** 시험 파일은 시험이 직접 만든다.
 

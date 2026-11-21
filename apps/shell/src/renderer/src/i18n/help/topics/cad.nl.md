@@ -5,9 +5,9 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 ## Een tekening openen
 
 - Voor een nieuwe tekening opent u op de startpagina **All apps** en drukt u op **AI-tekening**. Het tabblad begint als **Naamloze tekening**.
-- Om een bestand te openen gebruikt u **Bestand › Openen…** (Ctrl+O) of sleept u het bestand naar het venster. AI-tekening opent .ttukcad-, DXF-, STL-, OBJ-, 3MF-, GLB- en PLY-bestanden.
+- Om een bestand te openen gebruikt u **Bestand › Openen…** (Ctrl+O) of sleept u het bestand naar het venster. AI-tekening opent .ttukcad-, DXF-, DWG-, STL-, OBJ-, 3MF-, GLB- en PLY-bestanden. DWG opent van het AutoCAD R14-formaat tot en met het 2018-formaat.
 - Een bestand dat geen .ttukcad is, opent als nieuwe naamloze tekening met de naam van dat bestand. Het originele bestand verandert nooit: bij opslaan wordt altijd om een nieuw .ttukcad-bestand gevraagd.
-- DWG-, STEP-, IGES- en BREP-bestanden komen uit professionele CAD-programma's en kunnen niet worden gelezen. AI-tekening toont dan **Zo opent u dit bestand**: vraag de afzender om een DXF (voor een 2D-tekening) of een STL (voor een 3D-model).
+- STEP-, IGES- en BREP-bestanden zijn 3D-bestanden uit professionele CAD-programma's en kunnen niet worden gelezen. AI-tekening toont dan **Zo opent u dit bestand**: vraag de afzender om een STL (een 3D-model).
 - Een bestand groter dan 100 MB, of een model met meer dan 2 miljoen driehoeken, gaat niet open.
 
 ## Vormen plaatsen
@@ -32,6 +32,14 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 - Vul **Hoogte (mm)** in en druk op **Vorm sluiten**: de omtrek komt overeind als massieve vorm. **Annuleren** stopt zonder iets te maken.
 - Lijnen die elkaar kruisen worden geweigerd. Maak punten ongedaan tot ze elkaar niet meer kruisen.
 - **Tekst** vraagt welke woorden u wilt plaatsen en maakt er massieve letters van, in het lettertype dat bij GenOffice hoort.
+
+## De lijnen en tekst van een ontvangen tekening bewerken
+
+- Open een DXF of DWG en druk op **Lijnen bewerken**. Klik op een lijn, cirkel, boog of tekst van de tekening om die te kiezen (hij krijgt de markeerkleur); met Shift-klik kiest u er meer.
+- In de balk eronder verwijdert **Verwijderen** (of de Delete-toets) de keuze, verschuift **Verplaatsen** die met de X en Y die u in mm invult, en met één tekst gekozen typt u de nieuwe woorden en drukt u op **Tekst wijzigen**. Esc wist de keuze; nog een keer drukken beëindigt Lijnen bewerken.
+- Elke wijziging draait u terug met één keer **Ongedaan maken** (Ctrl+Z). Een vergrendelde tekening wordt niet gewijzigd.
+- U kunt het ook aan de AI-assistent vragen, bijvoorbeeld: "Verwijder alles op de maatvoeringslaag", "Verander de tekst 'Vergaderzaal' in 'Grote vergaderzaal'", "Verplaats de deurenlaag 500 mm naar rechts".
+- Het resultaat wordt opgeslagen als .ttukcad. Het oorspronkelijke DXF- of DWG-bestand wordt nooit gewijzigd.
 
 ## Meten en het maatblad
 
@@ -81,6 +89,7 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 
 ## Wat het niet kan
 
-- DWG-, STEP-, IGES- of BREP-bestanden rechtstreeks openen. Vraag in plaats daarvan om DXF of STL.
+- STEP-, IGES- of BREP-bestanden rechtstreeks openen. Vraag in plaats daarvan om STL.
+- Terug opslaan als DXF of DWG. Een bewerkte tekening wordt opgeslagen als .ttukcad.
 - Beperkingen, ontwerpgeschiedenis of samenstellingen zoals in professionele CAD-programma's. Elke vorm wordt bepaald door zijn eigen getallen.
 - Afdrukken. Stuur het maatblad naar een Hangul- of Word-document en druk het daar af.

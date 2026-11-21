@@ -771,10 +771,10 @@ export class TabManager {
   }
 
   /**
-   * AI Drawing: a .ttukcad file, a new untitled drawing, or a .dxf/.stl/.obj/.3mf/
+   * AI Drawing: a .ttukcad file, a new untitled drawing, or a .dxf/.dwg/.stl/.obj/.3mf/
    * .glb/.ply the editor imports into a new untitled drawing named after the file.
    * An import has no file behind the tab, so a save asks where to write a .ttukcad
-   * and the source file is never written. A .dwg/.step/.iges/.brep opens the same
+   * and the source file is never written. A .step/.iges/.brep opens the same
    * way, with a guide in place of its content (the editor cannot read it).
    */
   openCadTab(openPath?: string): string {

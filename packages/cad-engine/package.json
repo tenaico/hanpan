@@ -6,7 +6,8 @@
   "type": "module",
   "description": "AI drawing engine: an immutable CAD document with grouped undo, primitive and extruded solids, boolean evaluation, .ttukcad, STL, OBJ and DXF files, measuring and a dimensioned A4 sheet",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./dwg": "./src/dwg.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -14,6 +15,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@node-projects/acad-ts": "3.9.0",
     "earcut": "^3.2.4",
     "manifold-3d": "3.2.1"
   },

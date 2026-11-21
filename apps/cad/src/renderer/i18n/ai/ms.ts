@@ -44,6 +44,8 @@ export const ms = {
   aiToolUngroupShapes: 'Meleraikan kumpulan',
   aiToolAlignShapes: 'Menjajarkan bentuk · {n}',
   aiToolSetWorkplane: 'Mengubah saiz papan kerja',
+  aiToolReadDrawing: 'Baca garisan dan teks',
+  aiToolEditDrawing: 'Ubah garisan dan teks',
   aiToolRefused: '{action} · ditolak',
   aiAttachTitle: 'Lampirkan fail setempat (atau seret ke panel)',
   aiRemoveAttachmentTitle: 'Alih keluar lampiran',

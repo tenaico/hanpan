@@ -42,6 +42,8 @@ export const zh = {
   aiToolUngroupShapes: '取消组合',
   aiToolAlignShapes: '对齐形状 · {n} 个',
   aiToolSetWorkplane: '调整工作板大小',
+  aiToolReadDrawing: '读取线条和文字',
+  aiToolEditDrawing: '编辑线条和文字',
   aiToolRefused: '{action} · 被拒绝',
   aiAttachTitle: '添加本地文件作为附件(也可拖拽到面板)',
   aiRemoveAttachmentTitle: '移除附件',

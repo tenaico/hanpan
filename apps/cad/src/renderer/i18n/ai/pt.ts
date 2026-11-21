@@ -45,6 +45,8 @@ export const pt = {
   aiToolUngroupShapes: 'Desagrupar',
   aiToolAlignShapes: 'Alinhar formas · {n}',
   aiToolSetWorkplane: 'Redimensionar o plano de trabalho',
+  aiToolReadDrawing: 'Ler linhas e textos',
+  aiToolEditDrawing: 'Editar linhas e textos',
   aiToolRefused: '{action} · recusado',
   aiAttachTitle: 'Anexar arquivos locais (ou arraste-os para o painel)',
   aiRemoveAttachmentTitle: 'Remover anexo',

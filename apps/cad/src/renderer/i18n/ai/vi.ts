@@ -44,6 +44,8 @@ export const vi = {
   aiToolUngroupShapes: 'Bỏ nhóm',
   aiToolAlignShapes: 'Căn chỉnh hình · {n}',
   aiToolSetWorkplane: 'Đổi kích thước mặt làm việc',
+  aiToolReadDrawing: 'Đọc nét vẽ và chữ',
+  aiToolEditDrawing: 'Sửa nét vẽ và chữ',
   aiToolRefused: '{action} · bị từ chối',
   aiAttachTitle: 'Đính kèm tệp cục bộ (hoặc kéo thả vào bảng điều khiển)',
   aiRemoveAttachmentTitle: 'Xóa tệp đính kèm',

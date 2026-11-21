@@ -175,9 +175,9 @@ export const FORMAT_FAMILIES: readonly FormatFamily[] = [
   {
     family: 'cad',
     label: 'AI drawing',
-    // its own document, plus the 3D and DXF files it imports into a new untitled drawing
-    // (a .dwg/.step/.iges/.brep opens a tab with a guide only, so it is not listed)
-    editorOpen: ['ttukcad', 'dxf', 'stl', 'obj', '3mf', 'glb', 'ply'],
+    // its own document, plus the 3D, DXF and DWG files it imports into a new untitled drawing
+    // (a .step/.iges/.brep opens a tab with a guide only, so it is not listed)
+    editorOpen: ['ttukcad', 'dxf', 'dwg', 'stl', 'obj', '3mf', 'glb', 'ply'],
     // an import is never written back: a drawing is always saved as .ttukcad
     editorSave: ['ttukcad'],
     // File › Export: the visible solids as one mesh, or a picture of the 3D view

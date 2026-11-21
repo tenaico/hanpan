@@ -94,6 +94,9 @@ import type { CanvasTheme } from './scene/canvas-colors'
 import { DocEvaluator, loadKernel } from './scene/evaluator'
 import { HandleRefusedError, MOVE_SNAP_MM, type DocChange, type HandleMode } from './scene/handles'
 import { sceneModel } from './scene/scene-model'
+import { drawingLines } from './scene/drawing-lines'
+import { EntityEditTool, bindEntityEdit } from './editing/entity-edit'
+import { EntityEditBar } from './editing/EntityEditBar'
 import {
   createViewport,
   type MeasureView,
@@ -190,6 +193,10 @@ export default function App({
   evaluatorRef.current = evaluator
   const sketchRef = useRef<SketchTool | null>(null)
   sketchRef.current = sketch
+  // the "Edit lines" tool for an opened DXF or DWG
+  const [lineEdit, setLineEdit] = useState<EntityEditTool | null>(null)
+  const lineEditRef = useRef<EntityEditTool | null>(null)
+  lineEditRef.current = lineEdit
   const measureRef = useRef<MeasureTool | null>(null)
   measureRef.current = measure
   const sendTargetRef = useRef<SendTarget>(send.target)
@@ -318,8 +325,9 @@ export default function App({
     if (!sessionRef.current || guideRef.current) return
     selection.clear()
     setMessage(null)
-    // one tool at a time: sketching ends measuring
+    // one tool at a time: sketching ends measuring and editing lines
     setMeasure(null)
+    setLineEdit(null)
     setSketch(new SketchTool(MOVE_SNAP_MM))
   }, [])
 
@@ -333,6 +341,7 @@ export default function App({
     if (!current || guideRef.current) return
     sketchRef.current?.cancel()
     setSketch(null)
+    setLineEdit(null)
     setMessage(null)
     // the snap points of a drawing are worked out once per state of it (and of the kernel)
     let cached: {
@@ -350,6 +359,37 @@ export default function App({
     }
     setMeasure(new MeasureTool(snaps, () => measureEntities(current.history.current())))
   }, [])
+
+  /** The "Edit lines" button: pick and change the lines of an opened DXF or DWG, or leave it. */
+  const toggleLineEdit = useCallback((): void => {
+    if (lineEditRef.current) {
+      setLineEdit(null)
+      return
+    }
+    const current = sessionRef.current
+    if (!current || guideRef.current) return
+    sketchRef.current?.cancel()
+    setSketch(null)
+    setMeasure(null)
+    setMessage(null)
+    selection.clear()
+    setLineEdit(new EntityEditTool(current.history))
+  }, [])
+
+  // Delete removes the picked lines, Esc forgets them (then leaves the tool); a new drawing ends it
+  useEffect(() => {
+    if (!lineEdit) return
+    const off = bindEntityEdit(lineEdit, {
+      keys: window,
+      onExit: () => setLineEdit(null),
+      onRefused: (err) => setMessage({ key: refusalText(err), error: true }),
+    })
+    return () => {
+      off()
+      lineEdit.dispose()
+    }
+  }, [lineEdit])
+  useEffect(() => setLineEdit(null), [session])
 
   // a measurement goes with any change of the drawing; Esc clears it, then leaves the tool
   useEffect(() => {
@@ -428,6 +468,7 @@ export default function App({
       onWorkplanePoint: (point) => sketchRef.current?.addPoint(point),
       onMeasureHover: (point, reach) => void measureRef.current?.hover(point, reach),
       onMeasureClick: (point, reach) => void measureRef.current?.click(point, reach),
+      onEntityClick: (point, reach, add) => lineEditRef.current?.click(point, reach, add),
     })
     if (!made) {
       setWebgl(false)
@@ -506,6 +547,30 @@ export default function App({
     draw()
     return measure.subscribe(draw)
   }, [view, measure])
+
+  // the picked lines are drawn over the drawing in the selection colour
+  useEffect(() => {
+    if (!view) return
+    if (!lineEdit || !session) {
+      view.setEntityEdit(null)
+      return
+    }
+    const draw = (): void => {
+      const part = lineEdit.pickedPart()
+      view.setEntityEdit(
+        part
+          ? drawingLines({ ...part, entities: lineEdit.pickedEntities() }).map((l) => l.points)
+          : [],
+      )
+    }
+    draw()
+    const offTool = lineEdit.subscribe(draw)
+    const offHistory = session.history.subscribe(draw)
+    return () => {
+      offTool()
+      offHistory()
+    }
+  }, [view, lineEdit, session])
 
   // ---- the dimension sheet, copy picture and send ----
 
@@ -858,6 +923,7 @@ export default function App({
         handleMode={handleMode}
         sketching={!!sketch}
         measuring={!!measure}
+        editingLines={!!lineEdit}
         sheetBlocked={doc ? sheetBlocked(doc) : 'sheetEmpty'}
         onToggleAutoSave={setAutoSave}
         onSave={() => void doSave('save')}
@@ -875,6 +941,7 @@ export default function App({
         onView={(cmd) => viewRef.current?.view(cmd)}
         onHandleMode={setHandleMode}
         onMeasure={toggleMeasure}
+        onEditLines={toggleLineEdit}
         onSheet={() => setSheetOpen(true)}
         onCopyPicture={copyView}
         onSend={() => void sendSheet()}
@@ -908,6 +975,15 @@ export default function App({
           {measure && (
             <div className="cad-sketch-dock cad-measure-dock" data-cad-measure="">
               <MeasureOverlay tool={measure} onDone={() => setMeasure(null)} />
+            </div>
+          )}
+          {lineEdit && (
+            <div className="cad-sketch-dock cad-measure-dock" data-cad-lines="">
+              <EntityEditBar
+                tool={lineEdit}
+                onDone={() => setLineEdit(null)}
+                onRefused={(err) => setMessage({ key: refusalText(err), error: true })}
+              />
             </div>
           )}
         </main>

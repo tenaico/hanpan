@@ -6092,10 +6092,11 @@ const OPEN_DIALOG_EXTENSIONS = [
   'epub',
   ...OPEN_EXTS.photo,
   ...OPEN_EXTS.illust,
-  // AI Drawing and the 3D/DXF files it imports (a .dwg/.step/.iges/.brep still opens a guide
+  // AI Drawing and the 3D/DXF/DWG files it imports (a .step/.iges/.brep still opens a guide
   // when picked through "All files", but is not offered as a supported file)
   'ttukcad',
   'dxf',
+  'dwg',
   'stl',
   'obj',
   '3mf',
@@ -6239,8 +6240,8 @@ function routeDocumentPath(filePath: string): boolean {
     else tabManager.openCadTab(filePath)
     return true
   }
-  // a .dxf/.stl/.obj/.3mf/.glb/.ply becomes a new untitled drawing every time: the file is a
-  // source, not the document. A .dwg/.step/.iges/.brep opens the same way, with the guide that
+  // a .dxf/.dwg/.stl/.obj/.3mf/.glb/.ply becomes a new untitled drawing every time: the file is a
+  // source, not the document. A .step/.iges/.brep opens the same way, with the guide that
   // says how to get a file AI Drawing can read
   if (CAD_IMPORT_RE.test(filePath) || CAD_GUIDE_RE.test(filePath)) {
     recordRecentFile(filePath)
@@ -6876,7 +6877,7 @@ function registerHomeIpc(): void {
         { name: tm('filterMindmap'), extensions: ['xmind'] },
         {
           name: tm('filterCad'),
-          extensions: ['ttukcad', 'dxf', 'stl', 'obj', '3mf', 'glb', 'ply'],
+          extensions: ['ttukcad', 'dxf', 'dwg', 'stl', 'obj', '3mf', 'glb', 'ply'],
         },
         { name: tm('filterHwp'), extensions: ['hwp', 'hwpx'] },
         { name: tm('filterEpub'), extensions: ['epub'] },

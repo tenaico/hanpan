@@ -43,6 +43,8 @@ export const zhTW = {
   aiToolUngroupShapes: '取消群組',
   aiToolAlignShapes: '對齊形狀 · {n} 個',
   aiToolSetWorkplane: '調整工作板大小',
+  aiToolReadDrawing: '讀取線條和文字',
+  aiToolEditDrawing: '編輯線條和文字',
   aiToolRefused: '{action} · 已拒絕',
   aiAttachTitle: '新增本機檔案作為附件(也可拖曳到面板)',
   aiRemoveAttachmentTitle: '移除附件',

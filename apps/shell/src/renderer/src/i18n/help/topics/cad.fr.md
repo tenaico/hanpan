@@ -5,9 +5,9 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 ## Ouvrir un dessin
 
 - Pour un nouveau dessin, allez sur l'accueil, ouvrez **All apps** et appuyez sur **Dessin IA**. L'onglet s'ouvre sous le nom **Dessin sans titre**.
-- Pour ouvrir un fichier, utilisez **Fichier › Ouvrir…** (Ctrl+O) ou glissez le fichier sur la fenêtre. Dessin IA ouvre les fichiers .ttukcad, DXF, STL, OBJ, 3MF, GLB et PLY.
+- Pour ouvrir un fichier, utilisez **Fichier › Ouvrir…** (Ctrl+O) ou glissez le fichier sur la fenêtre. Dessin IA ouvre les fichiers .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB et PLY. Les DWG s'ouvrent du format AutoCAD R14 au format 2018.
 - Un fichier autre que .ttukcad s'ouvre comme un nouveau dessin sans titre qui porte le nom du fichier. Le fichier d'origine n'est jamais modifié : l'enregistrement demande toujours un nouveau fichier .ttukcad.
-- Les fichiers DWG, STEP, IGES et BREP viennent de logiciels de CAO professionnels et ne peuvent pas être lus. Dessin IA affiche alors **Comment ouvrir ce fichier** : demandez à l'expéditeur un DXF (pour un plan 2D) ou un STL (pour un modèle 3D).
+- Les fichiers STEP, IGES et BREP sont des fichiers 3D de logiciels de CAO professionnels et ne peuvent pas être lus. Dessin IA affiche alors **Comment ouvrir ce fichier** : demandez à l'expéditeur un STL (un modèle 3D).
 - Un fichier de plus de 100 Mo, ou un modèle de plus de 2 millions de triangles, ne s'ouvre pas.
 
 ## Placer des formes
@@ -32,6 +32,14 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 - Saisissez la **Hauteur (mm)** et appuyez sur **Fermer la forme** : le contour se dresse en volume plein. **Annuler** quitte sans rien créer.
 - Les lignes qui se croisent sont refusées. Annulez des points jusqu'à ce qu'elles ne se croisent plus.
 - **Texte** demande les mots à placer et les transforme en lettres pleines, avec la police fournie avec GenOffice.
+
+## Modifier les lignes et le texte d'un plan reçu
+
+- Ouvrez un DXF ou un DWG et appuyez sur **Modifier les lignes**. Cliquez sur une ligne, un cercle, un arc ou un texte du plan pour le sélectionner (il prend la couleur de surbrillance) ; Shift+clic en sélectionne d'autres.
+- Dans la barre du bas, **Supprimer** (ou la touche Delete) efface la sélection, **Déplacer** la décale des X et Y saisis en mm et, avec un seul texte sélectionné, vous tapez les nouveaux mots puis appuyez sur **Changer le texte**. Esc efface la sélection ; un second appui termine Modifier les lignes.
+- Chaque modification revient en arrière avec un seul **Annuler** (Ctrl+Z). Un plan verrouillé n'est pas modifié.
+- Vous pouvez aussi le demander à l'assistant IA, par exemple : « Supprime tout ce qui est sur le calque des cotes », « Remplace le texte « Salle de réunion » par « Grande salle de réunion » », « Déplace le calque des portes de 500 mm vers la droite ».
+- Le résultat est enregistré en .ttukcad. Le fichier DXF ou DWG d'origine n'est jamais modifié.
 
 ## Mesurer et plan coté
 
@@ -81,6 +89,7 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 
 ## Ce qu'il ne sait pas faire
 
-- Ouvrir directement les fichiers DWG, STEP, IGES ou BREP. Demandez plutôt un DXF ou un STL.
+- Ouvrir directement les fichiers STEP, IGES ou BREP. Demandez plutôt un STL.
+- Réenregistrer en DXF ou DWG. Un plan modifié est enregistré en .ttukcad.
 - Contraintes, historique de conception ou assemblages comme dans les logiciels de CAO professionnels. Chaque forme est définie par ses propres valeurs.
 - Imprimer. Envoyez le plan coté vers un document Hangul ou Word et imprimez depuis celui-ci.

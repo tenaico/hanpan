@@ -136,7 +136,7 @@ export type CadOpenStatus = 'ok' | 'empty' | 'too-large' | 'broken' | 'unsupport
  * The engine reads DXF, STL and OBJ; the renderer reads 3MF, GLB and PLY with
  * three's readers (they need a DOM, so they stay out of the engine).
  */
-export type ImportExt = 'dxf' | 'stl' | 'obj' | '3mf' | 'glb' | 'ply'
+export type ImportExt = 'dxf' | 'dwg' | 'stl' | 'obj' | '3mf' | 'glb' | 'ply'
 
 /**
  * How a path opens.
@@ -147,7 +147,7 @@ export type ImportExt = 'dxf' | 'stl' | 'obj' | '3mf' | 'glb' | 'ply'
  *   `untitled`: the drawing has no path).
  * - `import`: a DXF, STL, OBJ, 3MF, GLB or PLY file. The renderer turns it
  *   into a new drawing named `name`; nothing is granted, so the first save asks where.
- * - `guide`: a file of a CAD program this editor cannot read (DWG, STEP,
+ * - `guide`: a file of a CAD program this editor cannot read (STEP,
  *   IGES, BREP). It is not read; the screen explains how to get a DXF or STL
  *   instead. `ext` is the lower-case extension, `name` the file name without it.
  * - any other status: a `.ttukcad` that does not open, or a file that cannot

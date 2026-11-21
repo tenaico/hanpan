@@ -46,6 +46,8 @@ export const de = {
   aiToolUngroupShapes: 'Gruppierung aufheben',
   aiToolAlignShapes: 'Formen ausrichten · {n}',
   aiToolSetWorkplane: 'Arbeitsfläche anpassen',
+  aiToolReadDrawing: 'Linien und Texte lesen',
+  aiToolEditDrawing: 'Linien und Texte bearbeiten',
   aiToolRefused: '{action} · abgelehnt',
   aiAttachTitle: 'Lokale Dateien anhängen (oder auf den Bereich ziehen)',
   aiRemoveAttachmentTitle: 'Anlage entfernen',

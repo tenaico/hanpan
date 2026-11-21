@@ -1021,3 +1021,28 @@ html.genoffice-popover-open .ribbon-tabs {
   top: auto;
   bottom: 8px;
 }
+
+/* the Edit lines bar: small move boxes and one text box, on one line where it fits */
+.cad-lines-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cad-lines-number,
+.cad-lines-text {
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.cad-lines-number {
+  width: 64px;
+}
+
+.cad-lines-text {
+  width: 160px;
+}

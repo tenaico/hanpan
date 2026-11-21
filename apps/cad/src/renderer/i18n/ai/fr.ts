@@ -45,6 +45,8 @@ export const fr = {
   aiToolUngroupShapes: 'Dissocier',
   aiToolAlignShapes: 'Aligner des formes · {n}',
   aiToolSetWorkplane: 'Redimensionner le plan de travail',
+  aiToolReadDrawing: 'Lire les lignes et les textes',
+  aiToolEditDrawing: 'Modifier les lignes et les textes',
   aiToolRefused: '{action} · refusé',
   aiAttachTitle: 'Joindre des fichiers locaux (ou faites-les glisser sur le panneau)',
   aiRemoveAttachmentTitle: 'Supprimer la pièce jointe',

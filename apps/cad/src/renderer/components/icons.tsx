@@ -224,6 +224,14 @@ export const IconMeasure = () => (
   </Icon>
 )
 
+/** A plan line with a pen touching it: change the lines of an opened drawing. */
+export const IconEditLines = () => (
+  <Icon>
+    <path d="M2.5 15.5h7M2.5 15.5v-6" />
+    <path d="m10.5 12.5 6-6-2-2-6 6-.5 2.5z" />
+  </Icon>
+)
+
 /** A landscape sheet with a part and one dimension line over it. */
 export const IconSheet = () => (
   <Icon>

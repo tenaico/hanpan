@@ -5,9 +5,9 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 ## Abrir un dibujo
 
 - Para un dibujo nuevo, vaya al inicio, abra **All apps** y pulse **Dibujo IA**. La pestaña empieza como **Dibujo sin título**.
-- Para abrir un archivo, use **Archivo › Abrir…** (Ctrl+O) o arrastre el archivo a la ventana. Dibujo IA abre archivos .ttukcad, DXF, STL, OBJ, 3MF, GLB y PLY.
+- Para abrir un archivo, use **Archivo › Abrir…** (Ctrl+O) o arrastre el archivo a la ventana. Dibujo IA abre archivos .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB y PLY. Los DWG se abren desde el formato AutoCAD R14 hasta el formato 2018.
 - Un archivo que no es .ttukcad se abre como un dibujo nuevo sin título con el nombre del archivo. El archivo original nunca se modifica: al guardar siempre se pide un archivo .ttukcad nuevo.
-- Los archivos DWG, STEP, IGES y BREP vienen de programas de CAD profesionales y no se pueden leer. En su lugar, Dibujo IA muestra **Cómo abrir este archivo**: pida a quien se lo envió un DXF (para un plano 2D) o un STL (para un modelo 3D).
+- Los archivos STEP, IGES y BREP son archivos 3D de programas de CAD profesionales y no se pueden leer. En su lugar, Dibujo IA muestra **Cómo abrir este archivo**: pida a quien se lo envió un STL (un modelo 3D).
 - Un archivo de más de 100 MB, o un modelo con más de 2 millones de triángulos, no se abre.
 
 ## Colocar formas
@@ -32,6 +32,14 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 - Escriba la **Altura (mm)** y pulse **Cerrar forma**: el contorno se levanta como un sólido. **Cancelar** sale sin crear nada.
 - No se aceptan líneas que se cruzan. Deshaga puntos hasta que dejen de cruzarse.
 - **Texto** pide las palabras que quiere colocar y las convierte en letras sólidas, con la fuente que viene con GenOffice.
+
+## Editar las líneas y el texto de un plano recibido
+
+- Abra un DXF o un DWG y pulse **Editar líneas**. Haga clic en una línea, un círculo, un arco o un texto del plano para seleccionarlo (se pinta del color de resaltado); Shift+clic selecciona más.
+- En la barra de abajo, **Eliminar** (o la tecla Delete) quita lo seleccionado, **Mover** lo desplaza las X e Y que escriba en mm y, con un solo texto seleccionado, escribe las palabras nuevas y pulsa **Cambiar texto**. Esc borra la selección; pulsarlo otra vez termina Editar líneas.
+- Cada cambio se revierte con un solo **Deshacer** (Ctrl+Z). Un plano bloqueado no se modifica.
+- También puede pedírselo al asistente de IA, por ejemplo: "Borra todo lo que hay en la capa de cotas", "Cambia el texto 'Sala de reuniones' por 'Sala de reuniones grande'", "Mueve la capa de puertas 500 mm a la derecha".
+- El resultado se guarda como .ttukcad. El archivo DXF o DWG original nunca se modifica.
 
 ## Medir y el plano acotado
 
@@ -81,6 +89,7 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 
 ## Lo que no puede hacer
 
-- Abrir directamente archivos DWG, STEP, IGES o BREP. Pida un DXF o un STL en su lugar.
+- Abrir directamente archivos STEP, IGES o BREP. Pida un STL en su lugar.
+- Guardar de nuevo en DXF o DWG. Un plano editado se guarda como .ttukcad.
 - Restricciones, historial de diseño o ensamblajes como en los programas de CAD profesionales. Cada forma se define con sus propios números.
 - Imprimir. Envíe el plano acotado a un documento de Hangul o de Word e imprima desde allí.

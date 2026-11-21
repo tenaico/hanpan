@@ -5,9 +5,9 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 ## Abrir um desenho
 
 - Para um desenho novo, vá à página inicial, abra **All apps** e clique em **Desenho IA**. A aba começa como **Desenho sem título**.
-- Para abrir um arquivo, use **Arquivo › Abrir…** (Ctrl+O) ou arraste o arquivo para a janela. O Desenho IA abre arquivos .ttukcad, DXF, STL, OBJ, 3MF, GLB e PLY.
+- Para abrir um arquivo, use **Arquivo › Abrir…** (Ctrl+O) ou arraste o arquivo para a janela. O Desenho IA abre arquivos .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB e PLY. Arquivos DWG abrem do formato AutoCAD R14 até o formato 2018.
 - Um arquivo que não é .ttukcad abre como um desenho novo sem título, com o nome do arquivo. O arquivo original nunca é alterado: ao salvar, sempre é pedido um novo arquivo .ttukcad.
-- Arquivos DWG, STEP, IGES e BREP vêm de programas de CAD profissionais e não podem ser lidos. Nesse caso o Desenho IA mostra **Como abrir este arquivo**: peça a quem enviou um DXF (para um desenho 2D) ou um STL (para um modelo 3D).
+- Arquivos STEP, IGES e BREP são arquivos 3D de programas de CAD profissionais e não podem ser lidos. Nesse caso o Desenho IA mostra **Como abrir este arquivo**: peça a quem enviou um STL (um modelo 3D).
 - Um arquivo com mais de 100 MB, ou um modelo com mais de 2 milhões de triângulos, não abre.
 
 ## Colocar formas
@@ -32,6 +32,14 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 - Informe a **Altura (mm)** e clique em **Fechar forma**: o contorno vira um sólido. **Cancelar** sai sem criar nada.
 - Linhas que se cruzam não são aceitas. Desfaça pontos até que elas não se cruzem mais.
 - **Texto** pede as palavras a colocar e as transforma em letras sólidas, com a fonte que vem com o GenOffice.
+
+## Editar as linhas e o texto de um desenho recebido
+
+- Abra um DXF ou DWG e pressione **Editar linhas**. Clique em uma linha, círculo, arco ou texto do desenho para selecioná-lo (ele fica na cor de destaque); Shift+clique seleciona mais.
+- Na barra abaixo, **Apagar** (ou a tecla Delete) remove a seleção, **Mover** a desloca pelo X e Y que você digitar em mm e, com um único texto selecionado, você digita as novas palavras e pressiona **Alterar texto**. Esc limpa a seleção; pressioná-lo de novo encerra Editar linhas.
+- Cada alteração volta com um único **Desfazer** (Ctrl+Z). Um desenho bloqueado não é alterado.
+- Você também pode pedir ao assistente de IA, por exemplo: "Apague tudo o que está na camada de cotas", "Troque o texto 'Sala de reunião' por 'Sala de reunião grande'", "Mova a camada das portas 500 mm para a direita".
+- O resultado é salvo como .ttukcad. O arquivo DXF ou DWG original nunca é alterado.
 
 ## Medir e a folha de cotas
 
@@ -81,6 +89,7 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 
 ## O que ele não faz
 
-- Abrir diretamente arquivos DWG, STEP, IGES ou BREP. Peça um DXF ou um STL no lugar.
+- Abrir diretamente arquivos STEP, IGES ou BREP. Peça um STL no lugar.
+- Salvar de volta em DXF ou DWG. Um desenho editado é salvo como .ttukcad.
 - Restrições, histórico de projeto ou montagens como nos programas de CAD profissionais. Cada forma é definida pelos próprios números.
 - Imprimir. Envie a folha de cotas para um documento do Hangul ou do Word e imprima de lá.

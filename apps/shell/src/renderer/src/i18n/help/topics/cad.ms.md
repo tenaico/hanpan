@@ -5,9 +5,9 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 ## Membuka lukisan
 
 - Untuk lukisan baharu, pergi ke laman utama, buka **All apps** dan tekan **Lukisan AI**. Tab bermula sebagai **Lukisan tanpa tajuk**.
-- Untuk membuka fail, gunakan **Fail › Buka…** (Ctrl+O) atau seret fail ke tetingkap. Lukisan AI membuka fail .ttukcad, DXF, STL, OBJ, 3MF, GLB dan PLY.
+- Untuk membuka fail, gunakan **Fail › Buka…** (Ctrl+O) atau seret fail ke tetingkap. Lukisan AI membuka fail .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB dan PLY. DWG dibuka daripada format AutoCAD R14 hingga format 2018.
 - Fail yang bukan .ttukcad dibuka sebagai lukisan baharu tanpa tajuk yang dinamakan mengikut fail itu. Fail asal tidak pernah diubah: menyimpan sentiasa meminta fail .ttukcad yang baharu.
-- Fail DWG, STEP, IGES dan BREP datang daripada program CAD profesional dan tidak boleh dibaca. Lukisan AI memaparkan **Cara membuka fail ini**: minta pengirimnya menghantar DXF (untuk lukisan 2D) atau STL (untuk model 3D).
+- Fail STEP, IGES dan BREP ialah fail 3D daripada program CAD profesional dan tidak boleh dibaca. Lukisan AI memaparkan **Cara membuka fail ini**: minta pengirimnya menghantar STL (model 3D).
 - Fail melebihi 100 MB, atau model dengan lebih daripada 2 juta segi tiga, tidak akan dibuka.
 
 ## Meletakkan bentuk
@@ -32,6 +32,14 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 - Masukkan **Tinggi (mm)** dan tekan **Tutup bentuk**: garis bentuk itu naik menjadi bentuk pepejal. **Batal** keluar tanpa membuat apa-apa.
 - Garisan yang bersilang ditolak. Buat asal titik sehingga garisan tidak lagi bersilang.
 - **Teks** meminta perkataan yang hendak diletakkan dan menukarnya menjadi huruf pepejal, menggunakan fon yang disertakan dengan GenOffice.
+
+## Mengubah garisan dan teks lukisan yang anda terima
+
+- Buka DXF atau DWG dan tekan **Ubah garisan**. Klik garisan, bulatan, lengkok atau teks pada lukisan untuk memilihnya (ia bertukar kepada warna serlahan); Shift-klik memilih lebih banyak.
+- Dalam bar di bawah, **Padam** (atau kekunci Delete) membuang pilihan, **Alih** menganjaknya mengikut X dan Y yang anda masukkan dalam mm, dan apabila satu teks dipilih, taip perkataan baharu dan tekan **Tukar teks**. Esc mengosongkan pilihan; tekan sekali lagi untuk menamatkan Ubah garisan.
+- Setiap perubahan dikembalikan dengan satu **Buat asal** (Ctrl+Z). Lukisan yang dikunci tidak diubah.
+- Anda juga boleh meminta pembantu AI, contohnya: "Padam semua pada lapisan dimensi", "Tukar teks 'Bilik mesyuarat' kepada 'Bilik mesyuarat besar'", "Alihkan lapisan pintu 500 mm ke kanan".
+- Hasilnya disimpan sebagai .ttukcad. Fail DXF atau DWG asal tidak pernah diubah.
 
 ## Mengukur dan helaian dimensi
 
@@ -81,6 +89,7 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 
 ## Perkara yang tidak boleh dilakukan
 
-- Membuka fail DWG, STEP, IGES atau BREP secara terus. Minta DXF atau STL sebagai gantinya.
+- Membuka fail STEP, IGES atau BREP secara terus. Minta STL sebagai gantinya.
+- Menyimpan semula ke DXF atau DWG. Lukisan yang diubah disimpan sebagai .ttukcad.
 - Kekangan, sejarah reka bentuk atau himpunan seperti dalam program CAD profesional. Setiap bentuk ditetapkan oleh nombornya sendiri.
 - Mencetak. Hantar helaian dimensi ke dokumen Hangul atau Word dan cetak dari sana.

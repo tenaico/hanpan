@@ -38,6 +38,7 @@ import {
   IconHole,
   IconKeyboard,
   IconMeasure,
+  IconEditLines,
   IconMove,
   IconPicture,
   IconRedo,
@@ -114,6 +115,8 @@ export interface RibbonProps {
   sketching: boolean
   /** the measuring tool is on */
   measuring: boolean
+  /** the "Edit lines" tool (an opened DXF or DWG) is on */
+  editingLines: boolean
   /** why there is no dimension sheet to show or send (nothing placed); null when there is */
   sheetBlocked: StringKey | null
   onToggleAutoSave(on: boolean): void
@@ -133,6 +136,7 @@ export interface RibbonProps {
   onView(command: ViewCommand): void
   onHandleMode(mode: HandleMode): void
   onMeasure(): void
+  onEditLines(): void
   onSheet(): void
   /** the 3D view as a picture on the clipboard */
   onCopyPicture(): void
@@ -168,6 +172,15 @@ export function Ribbon(p: RibbonProps) {
           onClick={p.onMeasure}
         >
           <IconMeasure />
+        </Big>
+        <Big
+          action="edit-lines"
+          label={t('editLines')}
+          active={p.editingLines}
+          disabled={off}
+          onClick={p.onEditLines}
+        >
+          <IconEditLines />
         </Big>
         <Big
           action="sheet"

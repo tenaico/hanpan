@@ -44,6 +44,8 @@ export const ko = {
   aiToolUngroupShapes: '묶음 풀기',
   aiToolAlignShapes: '도형 줄 맞추기 · {n}개',
   aiToolSetWorkplane: '작업판 크기 바꾸기',
+  aiToolReadDrawing: '도면의 선과 글자 읽기',
+  aiToolEditDrawing: '도면의 선과 글자 고치기',
   aiToolRefused: '{action} · 거절됨',
   aiAttachTitle: '로컬 파일을 첨부 (패널로 끌어다 놓아도 됩니다)',
   aiRemoveAttachmentTitle: '첨부 파일 제거',

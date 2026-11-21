@@ -102,3 +102,4 @@
 | [0099](0099-hanpan-local-security-key.md)                     | 한판은 이용 조건에 동의해야 켜지고, Windows판은 이 PC나 USB에 만든 보안키가 있어야 켜진다(0094를 대체) | 2026-11-12 |
 | [0100](0100-hanpan-installer-language.md)                     | Windows 설치 프로그램 첫 화면에서 언어를 고르고, 그 언어로 한판이 처음 켜진다(0092 보완)               | 2026-11-16 |
 | [0101](0101-hanpan-cad-tab.md)                                | "AI 도면" 탭을 한판 저장소에서 새로 만들고(apps/cad, packages/cad-engine), DWG·STEP 없이 낸다          | 2026-11-16 |
+| [0102](0102-hanpan-cad-dwg-and-line-editing.md)               | AI 도면이 DWG를 열고(acad-ts, MIT), 받은 도면의 선·글자를 손과 AI로 고친다(0101 일부 대체)             | 2026-11-21 |

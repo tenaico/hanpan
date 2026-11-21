@@ -5,9 +5,9 @@ Rysunek AI to karta do prostych modeli 3D i rysunków. Otworzysz w niej rysunek,
 ## Otwieranie rysunku
 
 - Aby zacząć nowy rysunek, na stronie głównej otwórz **All apps** i naciśnij **Rysunek AI**. Karta startuje jako **Rysunek bez tytułu**.
-- Aby otworzyć plik, użyj **Plik › Otwórz…** (Ctrl+O) albo przeciągnij plik na okno. Rysunek AI otwiera pliki .ttukcad, DXF, STL, OBJ, 3MF, GLB i PLY.
+- Aby otworzyć plik, użyj **Plik › Otwórz…** (Ctrl+O) albo przeciągnij plik na okno. Rysunek AI otwiera pliki .ttukcad, DXF, DWG, STL, OBJ, 3MF, GLB i PLY. Pliki DWG otwierają się od formatu AutoCAD R14 do formatu 2018.
 - Plik w innym formacie niż .ttukcad otwiera się jako nowy rysunek bez tytułu, nazwany tak jak ten plik. Oryginalny plik nigdy się nie zmienia: przy zapisie program zawsze prosi o nowy plik .ttukcad.
-- Pliki DWG, STEP, IGES i BREP pochodzą z profesjonalnych programów CAD i nie da się ich odczytać. Rysunek AI pokazuje wtedy okno **Jak otworzyć ten plik**: poproś nadawcę o plik DXF (dla rysunku 2D) albo STL (dla modelu 3D).
+- Pliki STEP, IGES i BREP to pliki 3D z profesjonalnych programów CAD i nie da się ich odczytać. Rysunek AI pokazuje wtedy okno **Jak otworzyć ten plik**: poproś nadawcę o plik STL (model 3D).
 - Plik większy niż 100 MB albo model z ponad 2 milionami trójkątów się nie otworzy.
 
 ## Wstawianie kształtów
@@ -32,6 +32,14 @@ Rysunek AI to karta do prostych modeli 3D i rysunków. Otworzysz w niej rysunek,
 - Wpisz **Wysokość (mm)** i naciśnij **Zamknij kształt**: obrys podnosi się i staje się bryłą. **Anuluj** wychodzi, nic nie tworząc.
 - Linie, które się przecinają, nie są przyjmowane. Cofaj punkty, aż linie przestaną się przecinać.
 - **Tekst** pyta o słowa do wstawienia i zamienia je w bryłowe litery czcionką dołączoną do GenOffice.
+
+## Edycja linii i tekstu otrzymanego rysunku
+
+- Otwórz plik DXF albo DWG i naciśnij **Edytuj linie**. Kliknij linię, okrąg, łuk albo tekst rysunku, aby go zaznaczyć (zmieni kolor na kolor wyróżnienia); kliknięcie z Shift zaznacza kolejne.
+- Na pasku poniżej **Usuń** (albo klawisz Delete) usuwa zaznaczenie, **Przesuń** przesuwa je o wpisane X i Y w mm, a gdy zaznaczony jest jeden tekst, wpisujesz nowe słowa i naciskasz **Zmień tekst**. Esc czyści zaznaczenie; ponowne naciśnięcie kończy edycję linii.
+- Każdą zmianę cofniesz jednym **Cofnij** (Ctrl+Z). Zablokowany rysunek nie zostanie zmieniony.
+- Możesz też poprosić asystenta AI, na przykład: „Usuń wszystko z warstwy wymiarów”, „Zmień tekst ‚Sala konferencyjna’ na ‚Duża sala konferencyjna’”, „Przesuń warstwę drzwi o 500 mm w prawo”.
+- Wynik zapisuje się jako .ttukcad. Oryginalny plik DXF albo DWG nigdy się nie zmienia.
 
 ## Mierzenie i arkusz wymiarowy
 
@@ -81,6 +89,7 @@ Rysunek AI to karta do prostych modeli 3D i rysunków. Otworzysz w niej rysunek,
 
 ## Czego nie potrafi
 
-- Bezpośrednio otwierać plików DWG, STEP, IGES ani BREP. Poproś zamiast tego o DXF albo STL.
+- Bezpośrednio otwierać plików STEP, IGES ani BREP. Poproś zamiast tego o STL.
+- Zapisywać z powrotem do DXF ani DWG. Zmieniony rysunek zapisuje się jako .ttukcad.
 - Więzów, historii projektowania ani złożeń jak w profesjonalnych programach CAD. Każdy kształt jest ustawiany własnymi liczbami.
 - Drukować. Wyślij arkusz wymiarowy do dokumentu Hangul lub Word i drukuj stamtąd.

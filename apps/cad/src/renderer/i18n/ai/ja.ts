@@ -44,6 +44,8 @@ export const ja = {
   aiToolUngroupShapes: 'グループ解除',
   aiToolAlignShapes: '図形を整列 · {n}個',
   aiToolSetWorkplane: '作業面のサイズを変更',
+  aiToolReadDrawing: '線と文字を読む',
+  aiToolEditDrawing: '線と文字を編集',
   aiToolRefused: '{action} · 拒否されました',
   aiAttachTitle: 'ローカルファイルを添付(パネルへのドラッグ&ドロップも可)',
   aiRemoveAttachmentTitle: '添付ファイルを削除',

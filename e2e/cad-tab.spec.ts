@@ -634,6 +634,58 @@ const NO_WEBGL_ARGS = ['--disable-gpu', '--disable-software-rasterizer']
 const listTabs = (page: Page): Promise<SentTab[]> =>
   page.evaluate(() => (window as unknown as ShellApisOnWindow).aiOfficeTabs.list())
 
+test.describe('AI Drawing tab: DWG and Edit lines (decision 0102)', () => {
+  test('a .dwg opens, Edit lines deletes the clicked line, and the save keeps the circle', async () => {
+    test.setTimeout(240_000)
+    const dir = await mkdtemp(join(tmpdir(), 'genoffice-cad-dwg-'))
+    const dwg = join(dir, 'Floor Plan.dwg')
+    // acad-ts is ESM-only: a small node script writes the test DWG
+    execFileSync(process.execPath, [join(__dirname, 'make-dwg.mjs'), dwg])
+    const dwgBytes = readFileSync(dwg)
+    const target = join(dir, 'plan-edited.ttukcad')
+    const launched = await launchCad({ onboardingSeen: true, videoDir: 'cad-dwg' })
+    const { app, page } = launched
+    try {
+      await openPath(page, dwg)
+      await expect.poll(async () => (await cadTabs(page)).length, { timeout: 30_000 }).toBe(1)
+      const cad = await waitForPageWithUrl(app, '://cad/')
+      await expect(cad.locator('[data-cad-ready]')).toBeVisible({ timeout: 30_000 })
+      await expect(cad.locator('.cad-guide')).toHaveCount(0)
+      await ribbonTab(cad, 'view')
+      await cad.locator('[data-action="view-top"]').click()
+      await cad.locator('[data-action="view-fit"]').click()
+
+      await ribbonTab(cad, 'dims')
+      await cad.locator('[data-ribbon-pane="dims"] [data-action="edit-lines"]').click()
+      await expect(cad.locator('[data-cad-lines]')).toBeVisible()
+      const canvas = (await cad.locator('.cad-viewport canvas').boundingBox())!
+      await cad.mouse.click(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2)
+      await expect(cad.locator('[data-cad-lines-count]')).toContainText('1')
+      await cad.screenshot({ path: screenshotPath('cad-dwg-edit-lines') })
+      await cad.locator('[data-cad-lines-delete]').click()
+      await expect(cad.locator('[data-cad-lines-count]')).toHaveCount(0)
+
+      await answerSaveDialogs(app, target)
+      expect(await clickMenuItem(app, 'File', 'Save')).toBe(true)
+      await expect
+        .poll(async () => (await cadTabs(page))[0]?.filePath, { timeout: 30_000 })
+        .toBe(target)
+      const reopened = openCadFile(new Uint8Array(await readFile(target)))
+      expect(reopened.status).toBe('ok')
+      if (reopened.status === 'ok') {
+        const part = reopened.document.parts[0]
+        expect(part?.type).toBe('drawing')
+        if (part?.type === 'drawing') expect(part.entities.map((e) => e.kind)).toEqual(['circle'])
+      }
+      // the DWG itself is never written
+      expect(Buffer.compare(readFileSync(dwg), Buffer.from(dwgBytes))).toBe(0)
+    } finally {
+      await closeAndSaveVideo(launched, 'cad-dwg')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
 test.describe('AI Drawing tab (stage 4: measure, sheet, send)', () => {
   test('measure reads 80 mm on an 80 mm box', async () => {
     test.setTimeout(240_000)

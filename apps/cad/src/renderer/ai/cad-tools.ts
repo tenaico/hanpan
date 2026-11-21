@@ -1,5 +1,5 @@
 /**
- * What the AI's eight tools do to the open drawing. The prompt and the JSON
+ * What the AI's ten tools do to the open drawing. The prompt and the JSON
  * schemas the model sees are in `cad-skill.ts`.
  *
  * Every tool call that changes the model is exactly one `session.history.edit`
@@ -12,7 +12,13 @@
 import {
   CadEditError,
   SHAPE_DIMS,
+  addDrawingEntities,
   addShape,
+  deleteDrawingEntities,
+  drawingLayers,
+  findDrawingPart,
+  moveDrawingEntities,
+  updateDrawingEntities,
   alignParts,
   groupParts,
   removeParts,
@@ -22,6 +28,9 @@ import {
   worldBounds,
   type CadDocument,
   type CadEditErrorCode,
+  type DrawingEntity,
+  type DrawingPart,
+  type EntityPatch,
   type Part,
   type PartPatch,
   type ShapeInit,
@@ -39,6 +48,8 @@ export const CAD_TOOL_NAMES = {
   ungroupShapes: 'ungroup_shapes',
   alignShapes: 'align_shapes',
   setWorkplane: 'set_workplane',
+  readDrawing: 'read_drawing',
+  editDrawing: 'edit_drawing',
 } as const
 
 export type CadToolName = (typeof CAD_TOOL_NAMES)[keyof typeof CAD_TOOL_NAMES]
@@ -60,6 +71,28 @@ export const AI_UNSUPPORTED_KINDS: readonly ShapeKind[] = ['text']
 
 const AXES = ['x', 'y', 'z'] as const
 const ANCHORS = ['min', 'center', 'max'] as const
+
+/** The most entities one read_drawing call lists. */
+export const DRAWING_READ_LIMIT = 200
+/** The most entities one edit_drawing call adds or changes the text, colour or layer of. */
+export const DRAWING_EDIT_LIMIT = 200
+
+/**
+ * A number for each drawing part object the AI read. Parts are values that
+ * every edit replaces, so a reading's number stops matching the moment the
+ * drawing changes (an edit, an undo, the user's own change), and an edit made
+ * from an outdated list of indices is refused instead of hitting the wrong lines.
+ */
+const revisions = new WeakMap<DrawingPart, number>()
+let nextRevision = 1
+function revisionOf(part: DrawingPart): number {
+  let rev = revisions.get(part)
+  if (rev === undefined) {
+    rev = nextRevision++
+    revisions.set(part, rev)
+  }
+  return rev
+}
 
 /** What each engine refusal means, in words the model can act on. */
 const CODE_HINT: Record<CadEditErrorCode, string> = {
@@ -262,6 +295,174 @@ function refOf(part: Part): PartRef {
   return ref
 }
 
+const round2 = (p: readonly number[]): number[] => p.map(mm)
+
+/** One entity as the model reads it: its index, kind, layer and rounded coordinates. */
+function entityRow(e: DrawingEntity, i: number): Record<string, unknown> {
+  const row: Record<string, unknown> = { i, kind: e.kind, layer: e.layer }
+  if (e.color) row.color = e.color
+  switch (e.kind) {
+    case 'line':
+      return { ...row, a: round2(e.a), b: round2(e.b) }
+    case 'polyline':
+      return { ...row, points: round2(e.points), closed: e.closed }
+    case 'circle':
+      return { ...row, center: round2(e.center), radius: mm(e.radius) }
+    case 'arc':
+      return {
+        ...row,
+        center: round2(e.center),
+        radius: mm(e.radius),
+        startDeg: mm(e.startDeg),
+        endDeg: mm(e.endDeg),
+      }
+    case 'text':
+      return { ...row, at: round2(e.at), height: mm(e.height), text: e.value }
+  }
+}
+
+/** A point of the entity, to filter by nearness. */
+function anchorOf(e: DrawingEntity): [number, number] {
+  switch (e.kind) {
+    case 'line':
+      return [(e.a[0] + e.b[0]) / 2, (e.a[1] + e.b[1]) / 2]
+    case 'polyline':
+      return [e.points[0] ?? 0, e.points[1] ?? 0]
+    case 'circle':
+    case 'arc':
+      return e.center
+    case 'text':
+      return e.at
+  }
+}
+
+function drawingOf(session: CadSession, id: string): DrawingPart {
+  const part = findDrawingPart(session.history.current(), id)
+  if (!part) throw new CadEditError('unknown-id', `${id} is not a drawing (DXF or DWG) part`)
+  return part
+}
+
+function readDrawing(session: CadSession, args: Obj): unknown {
+  const part = drawingOf(session, str(args.id, 'id'))
+  const layer = optStr(args.layer, 'layer')
+  const kind = optStr(args.kind, 'kind')
+  const contains = optStr(args.contains, 'contains')
+  const near = args.near
+  if (near !== undefined) {
+    need(
+      Array.isArray(near) && near.length === 2 && near.every((v) => typeof v === 'number'),
+      'near must be [x, y] (two numbers)',
+    )
+  }
+  const within = args.within === undefined ? 1000 : num(args.within, 'within')
+  const offset = args.offset === undefined ? 0 : num(args.offset, 'offset')
+  const limit = Math.min(
+    DRAWING_READ_LIMIT,
+    args.limit === undefined ? DRAWING_READ_LIMIT : num(args.limit, 'limit'),
+  )
+  need(Number.isInteger(offset) && offset >= 0, 'offset must be a whole number of 0 or more')
+  need(Number.isInteger(limit) && limit > 0, 'limit must be a whole number above 0')
+  const matches: number[] = []
+  part.entities.forEach((e, i) => {
+    if (layer !== undefined && e.layer !== layer) return
+    if (kind !== undefined && e.kind !== kind) return
+    if (contains !== undefined && !(e.kind === 'text' && e.value.includes(contains))) return
+    if (near !== undefined) {
+      const [x, y] = anchorOf(e)
+      const [nx, ny] = near as [number, number]
+      if (Math.hypot(x - nx, y - ny) > within) return
+    }
+    matches.push(i)
+  })
+  const page = matches.slice(offset, offset + limit)
+  return {
+    rev: revisionOf(part),
+    total: part.entities.length,
+    matched: matches.length,
+    layers: drawingLayers(part),
+    entities: page.map((i) => entityRow(part.entities[i]!, i)),
+    next_offset: offset + page.length < matches.length ? offset + page.length : null,
+  }
+}
+
+function indexList(value: unknown, what: string): number[] {
+  need(
+    Array.isArray(value) && value.every((v) => typeof v === 'number' && Number.isInteger(v)),
+    `${what} must be a list of entity indices (whole numbers)`,
+  )
+  return value
+}
+
+function parsePatch(value: unknown, what: string): EntityPatch {
+  need(isObj(value), `${what} must be an object`)
+  const patch: EntityPatch = { index: num(value.index, `${what}.index`) }
+  if (value.text !== undefined) patch.text = str(value.text, `${what}.text`)
+  if (value.layer !== undefined) patch.layer = str(value.layer, `${what}.layer`)
+  if (value.color !== undefined) {
+    patch.color = value.color === null ? null : str(value.color, `${what}.color`)
+  }
+  return patch
+}
+
+function editDrawing(session: CadSession, args: Obj): unknown {
+  const id = str(args.id, 'id')
+  const part = drawingOf(session, id)
+  const rev = num(args.rev, 'rev')
+  if (rev !== revisionOf(part)) {
+    throw new InputError(
+      'the drawing changed since that read_drawing (its indices may have moved); call read_drawing again and use the new rev',
+    )
+  }
+  const sets = args.set === undefined ? [] : args.set
+  need(Array.isArray(sets), 'set must be a list')
+  need(
+    sets.length <= DRAWING_EDIT_LIMIT,
+    `set has ${sets.length} entries; at most ${DRAWING_EDIT_LIMIT}`,
+  )
+  const patches = sets.map((v, i) => parsePatch(v, `set[${i}]`))
+  let move: { indices: number[]; delta: [number, number] } | null = null
+  if (args.move !== undefined) {
+    need(isObj(args.move), 'move must be { indices, dx, dy }')
+    move = {
+      indices: indexList(args.move.indices, 'move.indices'),
+      delta: [num(args.move.dx ?? 0, 'move.dx'), num(args.move.dy ?? 0, 'move.dy')],
+    }
+  }
+  const gone = args.delete === undefined ? [] : indexList(args.delete, 'delete')
+  const adds = args.add === undefined ? [] : args.add
+  need(Array.isArray(adds), 'add must be a list')
+  need(
+    adds.length <= DRAWING_EDIT_LIMIT,
+    `add has ${adds.length} entries; at most ${DRAWING_EDIT_LIMIT}`,
+  )
+  need(
+    patches.length + gone.length + adds.length + (move ? 1 : 0) > 0,
+    'give at least one of set, move, delete, add',
+  )
+  // the indices of set, move and delete all refer to the reading; new entities go at the end
+  session.history.edit('AI edit drawing', (doc) => {
+    let out = doc
+    if (patches.length > 0) out = updateDrawingEntities(out, id, patches)
+    if (move) out = moveDrawingEntities(out, id, move.indices, move.delta)
+    if (gone.length > 0) out = deleteDrawingEntities(out, id, gone)
+    if (adds.length > 0) out = addDrawingEntities(out, id, adds as DrawingEntity[])
+    return out
+  })
+  const now = drawingOf(session, id)
+  return {
+    rev: revisionOf(now),
+    total: now.entities.length,
+    changed: patches.length,
+    moved: move?.indices.length ?? 0,
+    deleted: gone.length,
+    added: adds.length,
+    note:
+      gone.length > 0 || adds.length > 0
+        ? 'indices after a deleted entity moved down; call read_drawing before using indices again'
+        : undefined,
+  }
+}
+
 function readModel(session: CadSession): unknown {
   const doc = session.history.current()
   return {
@@ -362,6 +563,12 @@ export function runCadTool(session: CadSession, name: string, input: unknown): C
         session.history.edit('AI align', (doc) => alignParts(doc, ids, axis, anchor))
         return { ok: true, data: { aligned: ids.length } }
       }
+
+      case CAD_TOOL_NAMES.readDrawing:
+        return { ok: true, data: readDrawing(session, args) }
+
+      case CAD_TOOL_NAMES.editDrawing:
+        return { ok: true, data: editDrawing(session, args) }
 
       case CAD_TOOL_NAMES.setWorkplane: {
         const wp: Partial<CadDocument['workplane']> = {}

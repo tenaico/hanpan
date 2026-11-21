@@ -99,6 +99,7 @@ describe('opening the files of stage 3', () => {
     ['Bracket.3mf', '3mf'],
     ['Scene.GLB', 'glb'],
     ['scan.ply', 'ply'],
+    ['Floor Plan.dwg', 'dwg'],
   ])('open %s returns import as %s and grants nothing', async (name, ext) => {
     const path = join(dir, name)
     writeFileSync(path, 'bytes')
@@ -108,8 +109,8 @@ describe('opening the files of stage 3', () => {
     expect(cadFilePath(contents.id)).toBeUndefined()
   })
 
-  it.each(['Floor Plan.dwg', 'shaft.step', 'shaft.STP', 'body.iges', 'body.igs', 'solid.brep'])(
-    '.dwg shows the guide and grants nothing (%s)',
+  it.each(['shaft.step', 'shaft.STP', 'body.iges', 'body.igs', 'solid.brep'])(
+    'a STEP, IGES or BREP file shows the guide and grants nothing (%s)',
     async (name) => {
       const path = join(dir, name)
       writeFileSync(path, 'proprietary bytes')

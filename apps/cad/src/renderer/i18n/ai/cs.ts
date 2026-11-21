@@ -44,6 +44,8 @@ export const cs = {
   aiToolUngroupShapes: 'Zrušení seskupení',
   aiToolAlignShapes: 'Zarovnání tvarů · {n}',
   aiToolSetWorkplane: 'Změna velikosti pracovní desky',
+  aiToolReadDrawing: 'Číst čáry a texty',
+  aiToolEditDrawing: 'Upravit čáry a texty',
   aiToolRefused: '{action} · odmítnuto',
   aiAttachTitle: 'Připojit místní soubory (nebo je přetáhněte na panel)',
   aiRemoveAttachmentTitle: 'Odebrat přílohu',
