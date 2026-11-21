@@ -18,7 +18,7 @@ export function readDwg(bytes: Uint8Array, options: DxfReadOptions = {}): DxfRea
   if (bytes.length > (options.maxBytes ?? MAX_FILE_BYTES)) return { status: 'too-large' }
   if (bytes.length === 0) return { status: 'empty' }
   if (!looksLikeDwg(bytes)) return { status: 'broken' }
-  let text = ''
+  let text: string
   try {
     // the reader wants an ArrayBuffer of exactly these bytes
     const buffer = bytes.slice().buffer
