@@ -95,6 +95,7 @@ import { DocEvaluator, loadKernel } from './scene/evaluator'
 import { HandleRefusedError, MOVE_SNAP_MM, type DocChange, type HandleMode } from './scene/handles'
 import { sceneModel } from './scene/scene-model'
 import { drawingLines } from './scene/drawing-lines'
+import { loadDrawingGlyphs } from './scene/text-glyphs'
 import { EntityEditTool, bindEntityEdit } from './editing/entity-edit'
 import { EntityEditBar } from './editing/EntityEditBar'
 import {
@@ -498,6 +499,20 @@ export default function App({
     }
   }, [session, webgl, guide, viewportFactory, applyEdit])
 
+  // the letters of drawing text: once the font is in, the view draws the drawing again with them
+  const [glyphsReady, setGlyphsReady] = useState(false)
+  useEffect(() => {
+    let alive = true
+    loadDrawingGlyphs().then(
+      () => alive && setGlyphsReady(true),
+      // without the font, texts stay boxes; nothing else changes
+      (err: unknown) => console.warn('[cad] the drawing font did not load:', err),
+    )
+    return () => {
+      alive = false
+    }
+  }, [])
+
   // every change of the history: evaluate (unchanged parts come from the cache) and draw
   useEffect(() => {
     if (!session) return
@@ -509,7 +524,7 @@ export default function App({
     }
     show()
     return session.history.subscribe(show)
-  }, [session, view, evaluator])
+  }, [session, view, evaluator, glyphsReady])
 
   useEffect(() => {
     view?.setHandleMode(handleMode)

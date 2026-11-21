@@ -25,7 +25,7 @@ function stepsFor(control: readonly Point[], stepLength: number): number {
 }
 
 /** The glyph path as flat contours in path units (y down), curves cut into short lines. */
-function contoursOf(commands: readonly PathCommand[], stepLength: number): Point[][] {
+export function contoursOf(commands: readonly PathCommand[], stepLength: number): Point[][] {
   const contours: Point[][] = []
   let current: Point[] = []
   let pen: Point = [0, 0]

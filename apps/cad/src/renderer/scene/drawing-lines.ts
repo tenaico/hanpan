@@ -1,7 +1,8 @@
 /**
  * A DXF drawing part as polylines in the frame that holds it: lines and
  * polylines as they are, circles and arcs cut into short segments, text as the
- * outline of the box it takes (the 3D view has no font for it).
+ * outlines of its letters once the drawing font has loaded (`text-glyphs.ts`),
+ * and as the box it takes before that or in a drawing with very many texts.
  *
  * Each polyline keeps its entity colour. White (DXF colour 7, "white on a
  * dark screen, black on paper") and entities without a colour are drawn in the
@@ -18,6 +19,7 @@ import {
   type Vec3,
 } from '@genoffice/cad-engine'
 import type { CanvasColors } from './canvas-colors'
+import { GLYPH_TEXT_LIMIT, drawingGlyphs, type GlyphSet } from './text-glyphs'
 
 export interface DrawingLine {
   /** x, y, z of each point, in millimetres */
@@ -91,19 +93,44 @@ function entityPoints(e: DrawingEntity): [number, number][] {
   }
 }
 
+/** The letters of a text as polylines in the drawing's own frame. */
+function textLetters(
+  e: Extract<DrawingEntity, { kind: 'text' }>,
+  glyphs: GlyphSet,
+): [number, number][][] {
+  const r = (e.rotationDeg * Math.PI) / 180
+  const c = Math.cos(r)
+  const s = Math.sin(r)
+  return glyphs
+    .outlines(e.value, e.height)
+    .map((ring) =>
+      ring.map(([x, y]): [number, number] => [e.at[0] + x * c - y * s, e.at[1] + x * s + y * c]),
+    )
+}
+
 /** The part's entities as polylines; `parent` places the frame the part sits in. */
 export function drawingLines(part: DrawingPart, parent: Transform = IDENTITY): DrawingLine[] {
   const tr = compose(parent, transformOf(part.position, part.rotation))
   const out: DrawingLine[] = []
-  for (const entity of part.entities) {
-    const flat = entityPoints(entity)
-    if (flat.length < 2) continue
+  const glyphs = drawingGlyphs()
+  const letters =
+    glyphs !== null &&
+    part.entities.reduce((n, e) => n + (e.kind === 'text' ? 1 : 0), 0) <= GLYPH_TEXT_LIMIT
+  const place = (flat: [number, number][], color: string | null): void => {
+    if (flat.length < 2) return
     const points: number[] = []
     for (const [x, y] of flat) {
       const p: Vec3 = applyTransform(tr, [x, y, 0])
       points.push(p[0], p[1], p[2])
     }
-    out.push({ points, color: entity.color ?? null })
+    out.push({ points, color })
+  }
+  for (const entity of part.entities) {
+    if (letters && entity.kind === 'text') {
+      for (const ring of textLetters(entity, glyphs)) place(ring, entity.color ?? null)
+      continue
+    }
+    place(entityPoints(entity), entity.color ?? null)
   }
   return out
 }
