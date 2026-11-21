@@ -39,7 +39,7 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 - Dans la barre du bas, **Supprimer** (ou la touche Delete) efface la sélection, **Déplacer** la décale des X et Y saisis en mm et, avec un seul texte sélectionné, vous tapez les nouveaux mots puis appuyez sur **Changer le texte**. Esc efface la sélection ; un second appui termine Modifier les lignes.
 - Chaque modification revient en arrière avec un seul **Annuler** (Ctrl+Z). Un plan verrouillé n'est pas modifié.
 - Vous pouvez aussi le demander à l'assistant IA, par exemple : « Supprime tout ce qui est sur le calque des cotes », « Remplace le texte « Salle de réunion » par « Grande salle de réunion » », « Déplace le calque des portes de 500 mm vers la droite ».
-- Le résultat est enregistré en .ttukcad. Le fichier DXF ou DWG d'origine n'est jamais modifié.
+- Le résultat est enregistré en .ttukcad. Le fichier DXF ou DWG d'origine n'est jamais modifié. Pour le renvoyer, créez un nouveau fichier avec **Exporter en DXF** ou **Exporter en DWG**.
 
 ## Mesurer et plan coté
 
@@ -67,6 +67,7 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 ## Exporter
 
 - **Fichier › Exporter en STL** et **Exporter en OBJ** enregistrent le modèle pour une imprimante 3D ou un autre logiciel. **Exporter une image (PNG)** enregistre ce que montre la vue, sur un fond clair.
+- **Exporter en DXF** et **Exporter en DWG** enregistrent le plan dans un nouveau fichier au format AutoCAD 2018 (mm) : lignes, cercles, arcs, textes, calques et couleurs tels quels, et les solides sous forme de leur contour vu de dessus, sur le calque AI-DRAWING.
 - Un export ne remplace jamais le fichier d'origine du dessin.
 
 ## Raccourcis clavier
@@ -90,6 +91,6 @@ Dessin IA est un onglet pour les modèles 3D et les plans simples. Ouvrez un pla
 ## Ce qu'il ne sait pas faire
 
 - Ouvrir directement les fichiers STEP, IGES ou BREP. Demandez plutôt un STL.
-- Réenregistrer en DXF ou DWG. Un plan modifié est enregistré en .ttukcad.
+- Écraser le fichier DXF ou DWG reçu : ce que GenOffice ne lit pas (hachures, attributs de bloc, présentations) serait perdu. Exportez plutôt un nouveau fichier DXF ou DWG.
 - Contraintes, historique de conception ou assemblages comme dans les logiciels de CAO professionnels. Chaque forme est définie par ses propres valeurs.
 - Imprimer. Envoyez le plan coté vers un document Hangul ou Word et imprimez depuis celui-ci.

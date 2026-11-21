@@ -123,7 +123,13 @@ const OPENABLE_RE = new RegExp(
   `\\.(${['ttukcad', ...IMPORT_EXTENSIONS, ...GUIDE_EXTENSIONS].join('|')})$`,
   'i',
 )
-const EXPORT_FORMATS: ReadonlySet<string> = new Set<ExportFormat>(['stl', 'obj', 'png'])
+const EXPORT_FORMATS: ReadonlySet<string> = new Set<ExportFormat>([
+  'stl',
+  'obj',
+  'png',
+  'dxf',
+  'dwg',
+])
 /** The largest picture "Copy as picture" puts on the clipboard. */
 const MAX_COPY_IMAGE_BYTES = 10 * 1024 * 1024
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
@@ -671,9 +677,10 @@ function isViewSourcePath(wcId: number, path: string): boolean {
 }
 
 function exportFilterName(format: ExportFormat): string {
-  return format === 'png'
-    ? `${tm('filterImage')} (PNG)`
-    : `${tm('filterModel3d')} (${format.toUpperCase()})`
+  if (format === 'png') return `${tm('filterImage')} (PNG)`
+  // a CAD drawing file is known by its format's name in every language
+  if (format === 'dxf' || format === 'dwg') return format.toUpperCase()
+  return `${tm('filterModel3d')} (${format.toUpperCase()})`
 }
 
 /**

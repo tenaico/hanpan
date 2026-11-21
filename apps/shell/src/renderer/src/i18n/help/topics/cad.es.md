@@ -39,7 +39,7 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 - En la barra de abajo, **Eliminar** (o la tecla Delete) quita lo seleccionado, **Mover** lo desplaza las X e Y que escriba en mm y, con un solo texto seleccionado, escribe las palabras nuevas y pulsa **Cambiar texto**. Esc borra la selección; pulsarlo otra vez termina Editar líneas.
 - Cada cambio se revierte con un solo **Deshacer** (Ctrl+Z). Un plano bloqueado no se modifica.
 - También puede pedírselo al asistente de IA, por ejemplo: "Borra todo lo que hay en la capa de cotas", "Cambia el texto 'Sala de reuniones' por 'Sala de reuniones grande'", "Mueve la capa de puertas 500 mm a la derecha".
-- El resultado se guarda como .ttukcad. El archivo DXF o DWG original nunca se modifica.
+- El resultado se guarda como .ttukcad. El archivo DXF o DWG original nunca se modifica. Para devolverlo, cree un archivo nuevo con **Exportar DXF** o **Exportar DWG**.
 
 ## Medir y el plano acotado
 
@@ -67,6 +67,7 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 ## Exportar
 
 - **Archivo › Exportar STL** y **Exportar OBJ** escriben el modelo para una impresora 3D u otro programa. **Exportar imagen (PNG)** guarda lo que muestra la vista, sobre un fondo claro.
+- **Exportar DXF** y **Exportar DWG** escriben el plano como un archivo nuevo en formato AutoCAD 2018 (mm): líneas, círculos, arcos, textos, capas y colores tal como están, y los sólidos como su contorno visto desde arriba, en la capa AI-DRAWING.
 - Una exportación nunca sustituye el archivo del que salió el dibujo.
 
 ## Atajos de teclado
@@ -90,6 +91,6 @@ Dibujo IA es una pestaña para modelos 3D y planos sencillos. Abra un plano que 
 ## Lo que no puede hacer
 
 - Abrir directamente archivos STEP, IGES o BREP. Pida un STL en su lugar.
-- Guardar de nuevo en DXF o DWG. Un plano editado se guarda como .ttukcad.
+- Sobrescribir el archivo DXF o DWG que recibió: se perdería lo que GenOffice no lee (sombreados, atributos de bloque, presentaciones). En su lugar, exporte un DXF o DWG nuevo.
 - Restricciones, historial de diseño o ensamblajes como en los programas de CAD profesionales. Cada forma se define con sus propios números.
 - Imprimir. Envíe el plano acotado a un documento de Hangul o de Word e imprima desde allí.

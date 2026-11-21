@@ -190,7 +190,7 @@ export type CadMenuCommand =
 
 // ---- export (stage 3) ----
 
-export type ExportFormat = 'stl' | 'obj' | 'png'
+export type ExportFormat = 'stl' | 'obj' | 'png' | 'dxf' | 'dwg'
 
 export interface ExportFileRequest {
   format: ExportFormat

@@ -61,6 +61,8 @@ export const id = {
   groupOpen: 'Buka',
   groupExport: 'Ekspor',
   exportStl: 'Ekspor STL',
+  exportDxf: 'Ekspor DXF',
+  exportDwg: 'Ekspor DWG',
   exportObj: 'Ekspor OBJ',
   exportPng: 'Ekspor gambar (PNG)',
   groupPlace: 'Taruh bentuk',

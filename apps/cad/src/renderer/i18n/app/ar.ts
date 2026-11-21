@@ -59,6 +59,8 @@ export const ar = {
   groupOpen: 'فتح',
   groupExport: 'تصدير',
   exportStl: 'تصدير STL',
+  exportDxf: 'تصدير DXF',
+  exportDwg: 'تصدير DWG',
   exportObj: 'تصدير OBJ',
   exportPng: 'تصدير صورة (PNG)',
   groupPlace: 'وضع الأشكال',

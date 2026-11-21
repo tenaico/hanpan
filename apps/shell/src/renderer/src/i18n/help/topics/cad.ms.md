@@ -39,7 +39,7 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 - Dalam bar di bawah, **Padam** (atau kekunci Delete) membuang pilihan, **Alih** menganjaknya mengikut X dan Y yang anda masukkan dalam mm, dan apabila satu teks dipilih, taip perkataan baharu dan tekan **Tukar teks**. Esc mengosongkan pilihan; tekan sekali lagi untuk menamatkan Ubah garisan.
 - Setiap perubahan dikembalikan dengan satu **Buat asal** (Ctrl+Z). Lukisan yang dikunci tidak diubah.
 - Anda juga boleh meminta pembantu AI, contohnya: "Padam semua pada lapisan dimensi", "Tukar teks 'Bilik mesyuarat' kepada 'Bilik mesyuarat besar'", "Alihkan lapisan pintu 500 mm ke kanan".
-- Hasilnya disimpan sebagai .ttukcad. Fail DXF atau DWG asal tidak pernah diubah.
+- Hasilnya disimpan sebagai .ttukcad. Fail DXF atau DWG asal tidak pernah diubah. Untuk menghantarnya semula, buat fail baharu dengan **Eksport ke DXF** atau **Eksport ke DWG**.
 
 ## Mengukur dan helaian dimensi
 
@@ -67,6 +67,7 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 ## Mengeksport
 
 - **Fail › Eksport ke STL** dan **Eksport ke OBJ** menulis model untuk pencetak 3D atau program lain. **Eksport ke gambar (PNG)** menyimpan apa yang ditunjukkan paparan, dengan latar belakang cerah.
+- **Eksport ke DXF** dan **Eksport ke DWG** menulis lukisan sebagai fail baharu dalam format AutoCAD 2018 (mm): garisan, bulatan, lengkok, teks, lapisan dan warna seperti asal, dan pepejal sebagai garis luarnya dilihat dari atas, pada lapisan AI-DRAWING.
 - Eksport tidak pernah menggantikan fail asal lukisan itu.
 
 ## Pintasan papan kekunci
@@ -90,6 +91,6 @@ Lukisan AI ialah tab untuk model 3D dan lukisan yang ringkas. Buka lukisan yang 
 ## Perkara yang tidak boleh dilakukan
 
 - Membuka fail STEP, IGES atau BREP secara terus. Minta STL sebagai gantinya.
-- Menyimpan semula ke DXF atau DWG. Lukisan yang diubah disimpan sebagai .ttukcad.
+- Menulis ganti fail DXF atau DWG yang anda terima: apa yang tidak dibaca GenOffice (lorekan, atribut blok, susun atur) akan hilang. Sebaliknya, eksport DXF atau DWG baharu.
 - Kekangan, sejarah reka bentuk atau himpunan seperti dalam program CAD profesional. Setiap bentuk ditetapkan oleh nombornya sendiri.
 - Mencetak. Hantar helaian dimensi ke dokumen Hangul atau Word dan cetak dari sana.

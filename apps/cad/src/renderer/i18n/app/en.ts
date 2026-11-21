@@ -60,6 +60,8 @@ export const en = {
   groupOpen: 'Open',
   groupExport: 'Export',
   exportStl: 'Export STL',
+  exportDxf: 'Export DXF',
+  exportDwg: 'Export DWG',
   exportObj: 'Export OBJ',
   exportPng: 'Export picture (PNG)',
   groupPlace: 'Place shapes',

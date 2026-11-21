@@ -59,6 +59,8 @@ export const pl = {
   groupOpen: 'Otwórz',
   groupExport: 'Eksport',
   exportStl: 'Eksportuj STL',
+  exportDxf: 'Eksportuj DXF',
+  exportDwg: 'Eksportuj DWG',
   exportObj: 'Eksportuj OBJ',
   exportPng: 'Eksportuj obraz (PNG)',
   groupPlace: 'Wstaw kształty',

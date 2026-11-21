@@ -60,6 +60,8 @@ export const hi = {
   groupOpen: 'खोलें',
   groupExport: 'निर्यात',
   exportStl: 'STL में निर्यात',
+  exportDxf: 'DXF में निर्यात',
+  exportDwg: 'DWG में निर्यात',
   exportObj: 'OBJ में निर्यात',
   exportPng: 'चित्र (PNG) में निर्यात',
   groupPlace: 'आकार रखें',

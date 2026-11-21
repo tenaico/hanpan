@@ -8,7 +8,7 @@
 - 고치는 함수(`ops.ts`): 놓기, 바꾸기, 지우기, 묶기, 풀기, 줄 맞추기, 작업판 크기. 모두 입력 문서를 바꾸지 않고 새 문서를 돌려준다. 잘못된 값은 `CadEditError`(코드 다섯 가지)로 던진다.
 - 되돌리기(`history.ts`): `CadHistory.edit`가 문서를 고치는 유일한 길이다. `openGroup`과 `closeGroup` 사이의 고침은 되돌리기 한 번이다(AI 요청 하나). 100단계까지 둔다.
 - 경계 상자(`bounds.ts`)와 회전 계산(`geometry.ts`), 그물 기본 함수(`mesh.ts`).
-- DWG 읽기(`dwg.ts`, 결정 0102): acad-ts(MIT)로 읽어 DXF 글로 바꾼 뒤 `readDxf`에 넘긴다. 결과는 DXF와 같은 `DxfReadResult`다.
+- DWG 읽기와 DXF·DWG 쓰기(`dwg.ts`, 결정 0102, 진입점 `@genoffice/cad-engine/dwg`): acad-ts(MIT)로 읽어 DXF 글로 바꾼 뒤 `readDxf`에 넘긴다. `writeDrawingFile`은 도면 요소로 AutoCAD 2018 형식(mm) 문서를 만들어 DXF 글이나 DWG로 쓴다. acad-ts가 ESM 전용이라 `index.ts`에서 내보내지 않는다.
 - 도면 요소 고치기(`drawing-edit.ts`): 지우기, 옮기기, 글자·레이어·색 바꾸기, 더하기, 레이어 목록. 요소는 부품 안의 번호로 가리키고, 잠근 도면은 거절한다.
 
 ## 맡지 않는 것 (경계)

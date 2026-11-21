@@ -14,13 +14,22 @@ import {
   groupParts,
   meshVolume,
   newId,
+  readDxf,
   readObj,
   readStl,
   updatePart,
   type CadDocument,
   type Kernel,
 } from '@genoffice/cad-engine'
-import { exportObj, exportPng, exportStl } from '../src/renderer/export/export'
+import { readDwg } from '@genoffice/cad-engine/dwg'
+import {
+  SOLID_OUTLINE_LAYER,
+  drawingEntitiesForExport,
+  exportDrawingFile,
+  exportObj,
+  exportPng,
+  exportStl,
+} from '../src/renderer/export/export'
 import { runExport, type CadExportSource } from '../src/renderer/export/use-export'
 import type { ExportFileRequest, ExportResult } from '../src/shared/ipc'
 
@@ -131,6 +140,47 @@ describe('export', () => {
       ok: false,
       notice: 'exportEmpty',
     })
+  })
+
+  // 0.22.3: DXF and DWG of an edited drawing, as a new file
+  it('DXF and DWG hold the drawing where it sits and the solids seen from above', async () => {
+    const k = await sharedKernel()
+    let doc = addPart(createDocument(), {
+      id: 'plan',
+      type: 'drawing',
+      name: 'plan',
+      role: 'solid',
+      color: '#000000',
+      position: [100, 0, 0],
+      rotation: [0, 0, 0],
+      hidden: false,
+      locked: false,
+      entities: [
+        { kind: 'line', a: [0, 0], b: [10, 0], layer: 'WALL' },
+        { kind: 'text', at: [0, 5], height: 2, rotationDeg: 0, value: '회의실', layer: 'TEXT' },
+      ],
+    })
+    doc = addShape(doc, 'box', { dims: { width: 10, depth: 10, height: 10 } }).doc
+    const evaluated = evaluateDocument(doc, k)
+    const entities = drawingEntitiesForExport(doc, evaluated)
+    // the drawing's line, moved with its part
+    expect(entities[0]).toMatchObject({ kind: 'line', a: [100, 0], b: [110, 0], layer: 'WALL' })
+    // the box's outline from above: a 10 x 10 square around the middle
+    const outline = entities.filter((e) => e.layer === SOLID_OUTLINE_LAYER)
+    expect(outline.length).toBeGreaterThanOrEqual(4)
+    for (const format of ['dxf', 'dwg'] as const) {
+      const out = exportDrawingFile(doc, evaluated, format)
+      if (!out.ok) throw new Error(out.notice)
+      const read = format === 'dxf' ? readDxf(out.bytes) : readDwg(out.bytes)
+      if (read.status !== 'ok') throw new Error(read.status)
+      expect(read.entities.some((e) => e.kind === 'text' && e.value === '회의실')).toBe(true)
+      expect(read.entities.filter((e) => e.layer === SOLID_OUTLINE_LAYER).length).toBe(
+        outline.length,
+      )
+    }
+    // nothing visible: nothing to export
+    const empty = createDocument()
+    expect(exportDrawingFile(empty, [], 'dxf')).toEqual({ ok: false, notice: 'exportEmpty' })
   })
 
   it('PNG is the picture the 3D view takes', async () => {

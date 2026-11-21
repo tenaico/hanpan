@@ -2,11 +2,15 @@
  * The bytes of an export: STL and OBJ hold the results of the visible
  * top-level solids merged into one mesh (holes already cut by the evaluation;
  * a hole on its own only cuts inside a group, so it is not exported),
+ * DXF and DWG hold the drawings and the solids' outlines from above (0.22.3),
  * PNG is a picture of the 3D view. The main process asks where to write them
  * (`cad:export-file`).
  */
-import { writeObj, writeStl } from '@genoffice/cad-engine'
-import type { CadDocument, EvaluatedPart, Mesh } from '@genoffice/cad-engine'
+import { viewOutline, writeObj, writeStl } from '@genoffice/cad-engine'
+import type { CadDocument, DrawingEntity, EvaluatedPart, Mesh } from '@genoffice/cad-engine'
+// DXF and DWG writing is its own entry: acad-ts is ESM-only
+import { writeDrawingFile } from '@genoffice/cad-engine/dwg'
+import { placeEntities } from '../measure/measure-tool'
 
 /** Why an export made no file; the key of the screen's notice. */
 export type ExportNotice = 'exportEmpty'
@@ -75,6 +79,48 @@ export function exportStl(doc: CadDocument, evaluated: readonly EvaluatedPart[])
 /** OBJ of the visible top-level results, in millimetres. */
 export function exportObj(doc: CadDocument, evaluated: readonly EvaluatedPart[]): ExportBytes {
   return meshExport(doc, evaluated, writeObj)
+}
+
+/**
+ * What a DXF or DWG export holds, in millimetres on the workplane: the
+ * entities of the visible top-level drawings where they sit, and the outline of
+ * every other visible top-level solid seen from above (layer "AI-DRAWING"),
+ * since a drawing file has no solids of its own. Empty when nothing is visible.
+ */
+export function drawingEntitiesForExport(
+  doc: CadDocument,
+  evaluated: readonly EvaluatedPart[],
+): DrawingEntity[] {
+  const out: DrawingEntity[] = []
+  const results = new Map(evaluated.map((e) => [e.id, e]))
+  for (const part of doc.parts) {
+    if (part.hidden) continue
+    if (part.type === 'drawing') {
+      for (const e of placeEntities(part)) out.push(e)
+      continue
+    }
+    if (part.role === 'hole') continue
+    const mesh = results.get(part.id)?.mesh
+    if (!mesh || mesh.indices.length < 3) continue
+    for (const [x0, y0, x1, y1] of viewOutline(mesh, 'top')) {
+      out.push({ kind: 'line', a: [x0!, y0!], b: [x1!, y1!], layer: SOLID_OUTLINE_LAYER })
+    }
+  }
+  return out
+}
+
+/** The layer the outlines of solids go on in a DXF or DWG export. */
+export const SOLID_OUTLINE_LAYER = 'AI-DRAWING'
+
+/** A DXF or DWG file of the drawing; a new file, never the one the drawing came from. */
+export function exportDrawingFile(
+  doc: CadDocument,
+  evaluated: readonly EvaluatedPart[],
+  format: 'dxf' | 'dwg',
+): ExportBytes {
+  const entities = drawingEntitiesForExport(doc, evaluated)
+  if (entities.length === 0) return { ok: false, notice: 'exportEmpty' }
+  return { ok: true, bytes: writeDrawingFile(entities, format) }
 }
 
 /** The 3D view as PNG, drawn by the view itself in the light theme. */

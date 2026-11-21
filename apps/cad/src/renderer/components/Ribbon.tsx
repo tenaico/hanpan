@@ -348,6 +348,22 @@ export function Ribbon(p: RibbonProps) {
                 <IconExport />
               </Big>
               <Big
+                action="export-dxf"
+                label={t('exportDxf')}
+                disabled={off}
+                onClick={() => p.onExport('dxf')}
+              >
+                <IconExport />
+              </Big>
+              <Big
+                action="export-dwg"
+                label={t('exportDwg')}
+                disabled={off}
+                onClick={() => p.onExport('dwg')}
+              >
+                <IconExport />
+              </Big>
+              <Big
                 action="export-png"
                 label={t('exportPng')}
                 disabled={off}

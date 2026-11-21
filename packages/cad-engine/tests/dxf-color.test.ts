@@ -33,6 +33,16 @@ function entitiesOf(bytes: Uint8Array): DrawingEntity[] {
 }
 
 describe('DXF colours', () => {
+  // AutoCAD 2004 and later keep an exact colour in group 420 beside the nearest
+  // numbered colour in 62; the exact one wins (0.22.3)
+  it('reads a true colour (420) before the numbered colour (62)', () => {
+    const exact = [...line(0, 0, 1, 0, 'L'), [62, 7], [420, 0xff8000]] as Group[]
+    const numbered = [...line(0, 1, 1, 1, 'L'), [62, 1]] as Group[]
+    const [a, b] = entitiesOf(withLayers([['L', 3]], [exact, numbered]))
+    expect(a!.color).toBe('#ff8000')
+    expect(b!.color).toBe('#ff0000')
+  })
+
   it('maps the standard colour numbers', () => {
     expect(aciToHex(1)).toBe('#ff0000')
     expect(aciToHex(3)).toBe('#00ff00')

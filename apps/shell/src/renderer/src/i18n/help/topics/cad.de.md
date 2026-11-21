@@ -39,7 +39,7 @@ KI-Zeichnung ist ein Tab für einfache 3D-Modelle und Zeichnungen. Öffnen Sie e
 - In der Leiste darunter entfernt **Löschen** (oder die Delete-Taste) die Auswahl, **Verschieben** verschiebt sie um die eingegebenen X- und Y-Werte in mm, und bei einem einzelnen ausgewählten Text geben Sie die neuen Wörter ein und drücken **Text ändern**. Esc hebt die Auswahl auf; ein weiteres Drücken beendet Linien bearbeiten.
 - Jede Änderung nimmt ein einziges **Rückgängig** (Strg+Z) zurück. Eine gesperrte Zeichnung wird nicht geändert.
 - Sie können auch den KI-Assistenten bitten, zum Beispiel: „Lösche alles auf dem Bemaßungs-Layer“, „Ändere den Text ‚Besprechungsraum‘ in ‚Großer Besprechungsraum‘“, „Verschiebe den Türen-Layer um 500 mm nach rechts“.
-- Das Ergebnis wird als .ttukcad gespeichert. Die ursprüngliche DXF- oder DWG-Datei wird nie verändert.
+- Das Ergebnis wird als .ttukcad gespeichert. Die ursprüngliche DXF- oder DWG-Datei wird nie verändert. Um sie zurückzuschicken, erstellen Sie mit **Als DXF exportieren** oder **Als DWG exportieren** eine neue Datei.
 
 ## Messen und das Maßblatt
 
@@ -67,6 +67,7 @@ KI-Zeichnung ist ein Tab für einfache 3D-Modelle und Zeichnungen. Öffnen Sie e
 ## Exportieren
 
 - **Datei › Als STL exportieren** und **Als OBJ exportieren** schreiben das Modell für einen 3D-Drucker oder ein anderes Programm. **Als Bild (PNG) exportieren** speichert, was die Ansicht zeigt, auf hellem Hintergrund.
+- **Als DXF exportieren** und **Als DWG exportieren** schreiben die Zeichnung als neue Datei im Format AutoCAD 2018 (mm): Linien, Kreise, Bögen, Text, Layer und Farben bleiben, wie sie sind, Körper kommen als ihr Umriss von oben gesehen auf den Layer AI-DRAWING.
 - Ein Export ersetzt nie die Datei, aus der die Zeichnung stammt.
 
 ## Tastenkürzel
@@ -90,6 +91,6 @@ KI-Zeichnung ist ein Tab für einfache 3D-Modelle und Zeichnungen. Öffnen Sie e
 ## Was es nicht kann
 
 - STEP-, IGES- oder BREP-Dateien direkt öffnen. Bitten Sie stattdessen um STL.
-- Zurück als DXF oder DWG speichern. Eine bearbeitete Zeichnung wird als .ttukcad gespeichert.
+- Die erhaltene DXF- oder DWG-Datei überschreiben: Was GenOffice nicht liest (Schraffuren, Blockattribute, Layouts), ginge verloren. Exportieren Sie stattdessen eine neue DXF- oder DWG-Datei.
 - Abhängigkeiten, Konstruktionsverlauf oder Baugruppen wie in professionellen CAD-Programmen. Jede Form wird durch ihre eigenen Zahlen bestimmt.
 - Drucken. Senden Sie das Maßblatt an ein Hangul- oder Word-Dokument und drucken Sie von dort.
