@@ -114,6 +114,7 @@ function fakeApi(pending: string | null, file: OpenFileResult | null): Fake {
     },
     api: {
       consumePending: async () => pending,
+      openFileDialog: async () => {},
       openFile: async () => file ?? { status: 'unreadable' },
       save: async (request: SaveCadRequest) => {
         fake.saves.push(request)

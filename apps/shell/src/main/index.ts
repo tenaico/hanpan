@@ -6860,12 +6860,18 @@ function registerHomeIpc(): void {
     fileIndexer?.refresh()
   })
 
-  ipcMain.handle(HOME_CHANNELS.browse, async (event) => {
+  // AI Drawing's own Open asks with { first: 'cad' }: its files are offered first
+  ipcMain.handle(HOME_CHANNELS.browse, async (event, opts?: { first?: string }) => {
     const win = BrowserWindow.fromWebContents(event.sender) ?? shellWindow
     if (!win) return
+    const cadFilter = {
+      name: tm('filterCad'),
+      extensions: ['ttukcad', 'dxf', 'dwg', 'stl', 'obj', '3mf', 'glb', 'ply'],
+    }
     const result = await showOpenDialogWithMemory(dialog, win, {
       title: tm('dlgOpenTitle'),
       filters: [
+        ...(opts?.first === 'cad' ? [cadFilter] : []),
         { name: tm('filterSupported'), extensions: OPEN_DIALOG_EXTENSIONS },
         { name: tm('filterWord'), extensions: ['docx', 'doc'] },
         { name: tm('filterOdt'), extensions: ['odt'] },
@@ -6875,10 +6881,7 @@ function registerHomeIpc(): void {
         { name: tm('filterMarkdown'), extensions: ['md', 'markdown', 'txt', 'json'] },
         { name: tm('filterHtml'), extensions: ['html', 'htm'] },
         { name: tm('filterMindmap'), extensions: ['xmind'] },
-        {
-          name: tm('filterCad'),
-          extensions: ['ttukcad', 'dxf', 'dwg', 'stl', 'obj', '3mf', 'glb', 'ply'],
-        },
+        ...(opts?.first === 'cad' ? [] : [cadFilter]),
         { name: tm('filterHwp'), extensions: ['hwp', 'hwpx'] },
         { name: tm('filterEpub'), extensions: ['epub'] },
         { name: tm('filterPhoto'), extensions: [...OPEN_EXTS.photo] },

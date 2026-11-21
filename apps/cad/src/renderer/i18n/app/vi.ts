@@ -56,6 +56,8 @@ export const vi = {
   autoSave: 'Tự động lưu',
   autoSaveTip: 'Lưu mỗi 30 giây và khi cửa sổ mất tiêu điểm',
   groupSave: 'Lưu',
+  open: 'Mở…',
+  groupOpen: 'Mở',
   groupExport: 'Xuất',
   exportStl: 'Xuất STL',
   exportObj: 'Xuất OBJ',

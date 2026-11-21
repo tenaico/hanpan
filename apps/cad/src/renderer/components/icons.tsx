@@ -131,6 +131,13 @@ export const IconAlign = () => (
   </Icon>
 )
 
+/** A folder opening: open a drawing file. */
+export const IconOpen = () => (
+  <Icon>
+    <path d="M2.5 15.5V4.5h5l1.5 2h6.5v2.5M2.5 15.5 5 9h12.5l-2.5 6.5z" />
+  </Icon>
+)
+
 export const IconSave = () => (
   <Icon>
     <path d="M4 3h9.5L16.5 6v11H4zM7 3v4.5h6V3M7 17v-5h7v5" />

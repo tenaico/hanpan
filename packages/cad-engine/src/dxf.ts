@@ -521,6 +521,67 @@ class Reader {
     this.emit({ kind: 'text', at: apply(m, x, y), height, rotationDeg, value, layer }, type)
   }
 
+  /**
+   * A linear or aligned DIMENSION that has no block of its own, drawn from its
+   * points: the two extension lines (13/23, 14/24 up to the dimension line), the
+   * dimension line through 10/20, and its text (group 1, "<>" or empty for the
+   * measurement in group 42) over the middle of the line. Other kinds: false.
+   */
+  private dimensionWithoutBlock(entity: RawEntity, m: Matrix, layer: string): boolean {
+    const type = groupNumber(entity, 70, 0) & 7
+    if ((type !== 0 && type !== 1) || groupValue(entity, 13) === undefined) return false
+    if (groupValue(entity, 14) === undefined) return false
+    const num = (code: number): number => groupNumber(entity, code, 0)
+    const p1: [number, number] = [num(13), num(23)]
+    const p2: [number, number] = [num(14), num(24)]
+    const d: [number, number] = [num(10), num(20)]
+    let u: [number, number]
+    if (type === 0) {
+      const r = (num(50) * Math.PI) / 180
+      u = [Math.cos(r), Math.sin(r)]
+    } else {
+      const len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+      if (!(len > 0)) return false
+      u = [(p2[0] - p1[0]) / len, (p2[1] - p1[1]) / len]
+    }
+    // the feet of the two points on the dimension line through d
+    const foot = (p: [number, number]): [number, number] => {
+      const t = (p[0] - d[0]) * u[0] + (p[1] - d[1]) * u[1]
+      return [d[0] + u[0] * t, d[1] + u[1] * t]
+    }
+    const q1 = foot(p1)
+    const q2 = foot(p2)
+    const lineOf = (a: [number, number], b: [number, number]): void => {
+      if (Math.hypot(b[0] - a[0], b[1] - a[1]) < 1e-9) return
+      this.emit(
+        { kind: 'line', a: apply(m, a[0], a[1]), b: apply(m, b[0], b[1]), layer },
+        'DIMENSION',
+      )
+    }
+    lineOf(p1, q1)
+    lineOf(p2, q2)
+    lineOf(q1, q2)
+    const span = Math.hypot(q2[0] - q1[0], q2[1] - q1[1])
+    const measured = num(42)
+    const shown = Number.isFinite(measured) ? String(Math.round(measured * 100) / 100) : ''
+    const raw = decodeSpecials(stripMtext(groupValue(entity, 1) ?? ''))
+    const value = raw === '' ? shown : raw.replace('<>', shown)
+    if (!value || !(span > 0)) return true
+    // text reads left to right: turn a line that runs right to left around
+    let dir = u
+    if (dir[0] < -1e-9 || (Math.abs(dir[0]) <= 1e-9 && dir[1] < 0)) dir = [-dir[0], -dir[1]]
+    const deg = (Math.atan2(dir[1], dir[0]) * 180) / Math.PI
+    const h = span * 0.06
+    const width = h * 0.6 * value.length
+    const mid: [number, number] = [(q1[0] + q2[0]) / 2, (q1[1] + q2[1]) / 2]
+    // up from the line by a fifth of the text height, centred along it
+    const nrm: [number, number] = [-dir[1], dir[0]]
+    const x = mid[0] - dir[0] * (width / 2) + nrm[0] * h * 0.2
+    const y = mid[1] - dir[1] * (width / 2) + nrm[1] * h * 0.2
+    this.text('DIMENSION', m, x, y, h, deg, value, layer)
+    return true
+  }
+
   private expand(name: string, m: Matrix, depth: number, layer: string, useBase: boolean): boolean {
     const block = this.blocks.get(name.toUpperCase())
     if (!block) return false
@@ -720,7 +781,9 @@ class Reader {
       }
       case 'DIMENSION': {
         const name = groupValue(entity, 2)
-        if (!name || !this.expand(name, m, depth, layer, false)) this.skip('DIMENSION')
+        if (name && this.expand(name, m, depth, layer, false)) return
+        // no *D block (AutoCAD's dimensional constraints, some converted files): draw it ourselves
+        if (!this.dimensionWithoutBlock(entity, m, layer)) this.skip('DIMENSION')
         return
       }
       case 'SEQEND':

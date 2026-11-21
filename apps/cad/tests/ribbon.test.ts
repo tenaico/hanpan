@@ -45,6 +45,7 @@ function props(over: Partial<RibbonProps> = {}): RibbonProps {
     sketching: false,
     onToggleAutoSave: vi.fn(),
     onSave: vi.fn(),
+    onOpen: vi.fn(),
     onSaveAs: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
@@ -102,6 +103,18 @@ describe('the ribbon', () => {
     root = createRoot(host)
     show(props())
     expect(pane('home').hidden).toBe(false)
+  })
+
+  it('the File tab opens a drawing file (DWG, DXF, ...) first, even with nothing open', () => {
+    const p = props({ disabled: true })
+    show(p)
+    const open = action('file-open')!
+    expect(open.textContent).toContain(en.open)
+    expect(open.disabled).toBe(false)
+    act(() => open.click())
+    expect(p.onOpen).toHaveBeenCalledTimes(1)
+    // it is the first button of the File tab
+    expect(pane('file').querySelector('[data-action]')).toBe(open)
   })
 
   it('shows the title and the saved state in the tab row', () => {

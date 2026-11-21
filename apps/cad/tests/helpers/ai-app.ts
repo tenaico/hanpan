@@ -59,6 +59,7 @@ export function aiFake(file: OpenFileResult | null, reply?: Reply): AiFake {
     sends: [],
     api: {
       consumePending: async () => (file ? 'C:/models/a.ttukcad' : null),
+      openFileDialog: async () => {},
       openFile: async () => file ?? { status: 'unreadable' },
       save: async () => ({ ok: true, path: 'C:/models/a.ttukcad' }),
       setDirty: () => {},

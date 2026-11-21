@@ -55,6 +55,8 @@ export const cs = {
   autoSave: 'Automatické ukládání',
   autoSaveTip: 'Ukládá každých 30 sekund a když okno ztratí fokus',
   groupSave: 'Uložení',
+  open: 'Otevřít…',
+  groupOpen: 'Otevřít',
   groupExport: 'Export',
   exportStl: 'Exportovat STL',
   exportObj: 'Exportovat OBJ',

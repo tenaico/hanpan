@@ -56,6 +56,8 @@ export const en = {
   autoSave: 'Auto save',
   autoSaveTip: 'Saves every 30 seconds and when the window loses focus',
   groupSave: 'Save',
+  open: 'Open…',
+  groupOpen: 'Open',
   groupExport: 'Export',
   exportStl: 'Export STL',
   exportObj: 'Export OBJ',

@@ -59,6 +59,8 @@ export const es = {
   autoSave: 'Guardado automático',
   autoSaveTip: 'Guarda cada 30 segundos y cuando la ventana pierde el foco',
   groupSave: 'Guardar',
+  open: 'Abrir…',
+  groupOpen: 'Abrir',
   groupExport: 'Exportar',
   exportStl: 'Exportar STL',
   exportObj: 'Exportar OBJ',
