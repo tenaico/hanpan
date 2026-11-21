@@ -529,6 +529,71 @@ describe('readDxf: blocks', () => {
     expect(result.skipped).toEqual({})
   })
 
+  // AutoCAD's dimensional constraints (and some converted files) carry no *D block:
+  // the dimension is drawn from its own points (0.22.1, seen in Autodesk's sample DWGs)
+  it('a linear DIMENSION without a block draws its extension lines, its line and its text', () => {
+    const dim: Group[] = [
+      [0, 'DIMENSION'],
+      [8, 'DIM'],
+      [2, ''],
+      [10, 0],
+      [20, 20],
+      [70, 32],
+      [1, 'ROW=60'],
+      [42, 60],
+      [100, 'AcDbAlignedDimension'],
+      [13, 0],
+      [23, 0],
+      [14, 60],
+      [24, 0],
+      [100, 'AcDbRotatedDimension'],
+      [50, 0],
+    ]
+    const result = ok(dxf({ entities: [dim] }))
+    const lines = only(result.entities, 'line').map((l) => [l.a, l.b])
+    // two extension lines up to y = 20, and the dimension line from x 0 to 60 at y = 20
+    expect(lines).toEqual([
+      [
+        [0, 0],
+        [0, 20],
+      ],
+      [
+        [60, 0],
+        [60, 20],
+      ],
+      [
+        [0, 20],
+        [60, 20],
+      ],
+    ])
+    const [label] = only(result.entities, 'text')
+    expect(label).toMatchObject({ value: 'ROW=60', layer: 'DIM', rotationDeg: 0 })
+    // the text sits over the middle of the dimension line
+    expect(label!.at[1]).toBeGreaterThan(20)
+    expect(label!.at[0]).toBeLessThan(30)
+    expect(result.skipped).toEqual({})
+  })
+
+  it('an aligned DIMENSION without a block and without text shows its measurement', () => {
+    const dim: Group[] = [
+      [0, 'DIMENSION'],
+      [2, ''],
+      [10, 10],
+      [20, 10],
+      [70, 33],
+      [42, 14.14213],
+      [100, 'AcDbAlignedDimension'],
+      [13, 0],
+      [23, 0],
+      [14, 10],
+      [24, 10],
+    ]
+    const result = ok(dxf({ entities: [dim] }))
+    // the dimension point lies on the measured line: no extension lines, only the dimension line
+    expect(only(result.entities, 'line')).toHaveLength(1)
+    expect(only(result.entities, 'text').map((t) => t.value)).toEqual(['14.14'])
+  })
+
   it('a block that inserts itself stops at depth 8 and does not hang', () => {
     const result = ok(
       dxf({

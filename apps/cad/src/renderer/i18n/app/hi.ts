@@ -56,6 +56,8 @@ export const hi = {
   autoSave: 'स्वतः सहेजें',
   autoSaveTip: 'हर 30 सेकंड में और विंडो से फ़ोकस हटने पर सहेजता है',
   groupSave: 'सहेजना',
+  open: 'खोलें…',
+  groupOpen: 'खोलें',
   groupExport: 'निर्यात',
   exportStl: 'STL में निर्यात',
   exportObj: 'OBJ में निर्यात',

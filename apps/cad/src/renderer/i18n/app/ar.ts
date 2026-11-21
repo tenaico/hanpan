@@ -55,6 +55,8 @@ export const ar = {
   autoSave: 'حفظ تلقائي',
   autoSaveTip: 'يحفظ كل 30 ثانية وعندما تفقد النافذة التركيز',
   groupSave: 'حفظ',
+  open: 'فتح…',
+  groupOpen: 'فتح',
   groupExport: 'تصدير',
   exportStl: 'تصدير STL',
   exportObj: 'تصدير OBJ',

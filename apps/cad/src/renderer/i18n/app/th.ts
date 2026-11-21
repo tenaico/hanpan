@@ -53,6 +53,8 @@ export const th = {
   autoSave: 'บันทึกอัตโนมัติ',
   autoSaveTip: 'บันทึกทุก 30 วินาที และเมื่อหน้าต่างเสียโฟกัส',
   groupSave: 'บันทึก',
+  open: 'เปิด…',
+  groupOpen: 'เปิด',
   groupExport: 'ส่งออก',
   exportStl: 'ส่งออกเป็น STL',
   exportObj: 'ส่งออกเป็น OBJ',

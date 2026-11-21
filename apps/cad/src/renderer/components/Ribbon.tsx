@@ -44,6 +44,7 @@ import {
   IconRedo,
   IconRotate,
   IconSave,
+  IconOpen,
   IconScale,
   IconSend,
   IconSheet,
@@ -121,6 +122,8 @@ export interface RibbonProps {
   sheetBlocked: StringKey | null
   onToggleAutoSave(on: boolean): void
   onSave(): void
+  /** the shell's open dialog, drawing files first */
+  onOpen(): void
   onSaveAs(): void
   onUndo(): void
   onRedo(): void
@@ -296,6 +299,17 @@ export function Ribbon(p: RibbonProps) {
         {pane(
           'file',
           <>
+            <Group label={t('groupOpen')}>
+              <Big
+                action="file-open"
+                label={t('open')}
+                kbd="Ctrl+O"
+                disabled={false}
+                onClick={p.onOpen}
+              >
+                <IconOpen />
+              </Big>
+            </Group>
             <Group label={t('groupSave')}>
               <Big
                 action="file-save"

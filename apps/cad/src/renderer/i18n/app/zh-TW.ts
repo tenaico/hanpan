@@ -52,6 +52,8 @@ export const zhTW = {
   autoSave: '自動儲存',
   autoSaveTip: '每 30 秒及視窗失去焦點時自動儲存',
   groupSave: '儲存',
+  open: '開啟…',
+  groupOpen: '開啟',
   groupExport: '匯出',
   exportStl: '匯出 STL',
   exportObj: '匯出 OBJ',

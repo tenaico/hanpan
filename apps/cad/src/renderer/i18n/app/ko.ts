@@ -55,6 +55,8 @@ export const ko = {
   autoSave: '자동 저장',
   autoSaveTip: '30초마다, 그리고 창이 포커스를 잃을 때 자동 저장',
   groupSave: '저장',
+  open: '열기…',
+  groupOpen: '열기',
   groupExport: '내보내기',
   exportStl: 'STL로 내보내기',
   exportObj: 'OBJ로 내보내기',

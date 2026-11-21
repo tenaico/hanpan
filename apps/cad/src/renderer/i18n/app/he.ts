@@ -54,6 +54,8 @@ export const he = {
   autoSave: 'שמירה אוטומטית',
   autoSaveTip: 'שומר כל 30 שניות וכשהחלון מאבד את המיקוד',
   groupSave: 'שמירה',
+  open: 'פתיחה…',
+  groupOpen: 'פתיחה',
   groupExport: 'ייצוא',
   exportStl: 'ייצוא ל-STL',
   exportObj: 'ייצוא ל-OBJ',

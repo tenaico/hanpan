@@ -49,6 +49,7 @@ function listen<Args extends unknown[]>(
 const core: CadCoreApi = {
   consumePending: () => ipcRenderer.invoke(CAD_CHANNELS.consumePending),
   openFile: (path) => ipcRenderer.invoke(CAD_CHANNELS.openFile, path),
+  openFileDialog: () => ipcRenderer.invoke(APP_CHANNELS.openFileDialog, { first: 'cad' }),
   save: (request) => ipcRenderer.invoke(CAD_CHANNELS.save, request),
   setDirty: (dirty) => ipcRenderer.send(CAD_CHANNELS.dirtyChanged, dirty),
   onSaveRequest: (handler) => listen<[SaveMode]>(CAD_CHANNELS.saveRequest, handler),

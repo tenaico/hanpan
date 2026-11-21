@@ -279,6 +279,11 @@ export interface CadCoreApi {
   /** the stored Korean document features switch (decision 0091): null when never set */
   getKoreanDocFeatures?(): Promise<boolean | null>
   onKoreanDocFeaturesChanged?(handler: (stored: boolean | null) => void): () => void
+  /**
+   * The shell's open dialog with the drawing files (.ttukcad, DXF, DWG, STL, ...)
+   * offered first; each picked file opens in a tab of its own.
+   */
+  openFileDialog(): Promise<void>
 }
 
 /** Answers to the in-app MCP server. */

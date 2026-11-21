@@ -928,6 +928,7 @@ export default function App({
         onToggleAutoSave={setAutoSave}
         onSave={() => void doSave('save')}
         onSaveAs={() => void doSave('saveAs')}
+        onOpen={() => void window.cadApi.openFileDialog().catch(() => {})}
         onUndo={undo}
         onRedo={redo}
         onExport={exportAs}

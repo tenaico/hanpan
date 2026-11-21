@@ -58,6 +58,8 @@ export const it = {
   autoSave: 'Salvataggio automatico',
   autoSaveTip: 'Salva ogni 30 secondi e quando la finestra perde il focus',
   groupSave: 'Salva',
+  open: 'Apri…',
+  groupOpen: 'Apri',
   groupExport: 'Esporta',
   exportStl: 'Esporta STL',
   exportObj: 'Esporta OBJ',

@@ -57,6 +57,8 @@ export const id = {
   autoSave: 'Simpan otomatis',
   autoSaveTip: 'Menyimpan setiap 30 detik dan saat jendela kehilangan fokus',
   groupSave: 'Simpan',
+  open: 'Buka…',
+  groupOpen: 'Buka',
   groupExport: 'Ekspor',
   exportStl: 'Ekspor STL',
   exportObj: 'Ekspor OBJ',

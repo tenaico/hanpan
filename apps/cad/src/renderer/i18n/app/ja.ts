@@ -58,6 +58,8 @@ export const ja = {
   autoSave: '自動保存',
   autoSaveTip: '30 秒ごとと、ウィンドウのフォーカスが外れたときに自動保存',
   groupSave: '保存',
+  open: '開く…',
+  groupOpen: '開く',
   groupExport: 'エクスポート',
   exportStl: 'STL に書き出す',
   exportObj: 'OBJ に書き出す',

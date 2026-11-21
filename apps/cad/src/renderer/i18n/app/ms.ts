@@ -58,6 +58,8 @@ export const ms = {
   autoSave: 'Simpan automatik',
   autoSaveTip: 'Menyimpan setiap 30 saat dan apabila tetingkap hilang fokus',
   groupSave: 'Simpan',
+  open: 'Buka…',
+  groupOpen: 'Buka',
   groupExport: 'Eksport',
   exportStl: 'Eksport ke STL',
   exportObj: 'Eksport ke OBJ',

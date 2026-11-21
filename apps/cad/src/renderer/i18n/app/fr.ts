@@ -59,6 +59,8 @@ export const fr = {
   autoSave: 'Enregistrement auto',
   autoSaveTip: 'Enregistre toutes les 30 s et quand la fenêtre perd le focus',
   groupSave: 'Enregistrer',
+  open: 'Ouvrir…',
+  groupOpen: 'Ouvrir',
   groupExport: 'Exporter',
   exportStl: 'Exporter en STL',
   exportObj: 'Exporter en OBJ',

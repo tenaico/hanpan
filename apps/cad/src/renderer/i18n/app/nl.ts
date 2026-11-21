@@ -61,6 +61,8 @@ export const nl = {
   autoSave: 'Automatisch opslaan',
   autoSaveTip: 'Slaat elke 30 seconden op en wanneer het venster de focus verliest',
   groupSave: 'Opslaan',
+  open: 'Openen…',
+  groupOpen: 'Openen',
   groupExport: 'Exporteren',
   exportStl: 'Exporteren als STL',
   exportObj: 'Exporteren als OBJ',

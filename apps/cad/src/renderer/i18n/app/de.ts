@@ -62,6 +62,8 @@ export const de = {
   autoSave: 'Automatisch speichern',
   autoSaveTip: 'Speichert alle 30 Sekunden und wenn das Fenster den Fokus verliert',
   groupSave: 'Speichern',
+  open: 'Öffnen…',
+  groupOpen: 'Öffnen',
   groupExport: 'Exportieren',
   exportStl: 'Als STL exportieren',
   exportObj: 'Als OBJ exportieren',

@@ -50,6 +50,8 @@ export const zh = {
   autoSave: '自动保存',
   autoSaveTip: '每 30 秒及窗口失去焦点时自动保存',
   groupSave: '保存',
+  open: '打开…',
+  groupOpen: '打开',
   groupExport: '导出',
   exportStl: '导出 STL',
   exportObj: '导出 OBJ',

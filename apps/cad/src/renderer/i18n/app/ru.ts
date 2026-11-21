@@ -56,6 +56,8 @@ export const ru = {
   autoSave: 'Автосохранение',
   autoSaveTip: 'Сохраняет каждые 30 секунд и когда окно теряет фокус',
   groupSave: 'Сохранение',
+  open: 'Открыть…',
+  groupOpen: 'Открыть',
   groupExport: 'Экспорт',
   exportStl: 'Экспорт в STL',
   exportObj: 'Экспорт в OBJ',
