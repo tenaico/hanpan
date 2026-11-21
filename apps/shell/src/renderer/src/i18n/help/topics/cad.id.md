@@ -39,7 +39,7 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 - Di bilah bawah, **Hapus** (atau tombol Delete) menghapus pilihan, **Pindahkan** menggesernya sejauh X dan Y yang Anda isi dalam mm, dan jika satu teks dipilih, ketik kata-kata baru lalu tekan **Ganti teks**. Esc membatalkan pilihan; tekan sekali lagi untuk mengakhiri Ubah garis.
 - Setiap perubahan kembali dengan satu kali **Urungkan** (Ctrl+Z). Gambar yang dikunci tidak berubah.
 - Anda juga bisa meminta asisten AI, misalnya: "Hapus semua yang ada di layer dimensi", "Ganti teks 'Ruang rapat' menjadi 'Ruang rapat besar'", "Geser layer pintu 500 mm ke kanan".
-- Hasilnya disimpan sebagai .ttukcad. File DXF atau DWG aslinya tidak pernah diubah.
+- Hasilnya disimpan sebagai .ttukcad. File DXF atau DWG aslinya tidak pernah diubah. Untuk mengirimkannya kembali, buat file baru dengan **Ekspor DXF** atau **Ekspor DWG**.
 
 ## Mengukur dan lembar dimensi
 
@@ -67,6 +67,7 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 ## Mengekspor
 
 - **File › Ekspor STL** dan **Ekspor OBJ** menulis model untuk printer 3D atau program lain. **Ekspor gambar (PNG)** menyimpan apa yang tampak di layar, dengan latar terang.
+- **Ekspor DXF** dan **Ekspor DWG** menulis gambar sebagai file baru dalam format AutoCAD 2018 (mm): garis, lingkaran, busur, teks, layer, dan warna apa adanya, dan benda padat sebagai garis luarnya dilihat dari atas, pada layer AI-DRAWING.
 - Ekspor tidak pernah menimpa file asal gambar.
 
 ## Pintasan keyboard
@@ -90,6 +91,6 @@ Gambar AI adalah tab untuk model 3D dan gambar teknik sederhana. Buka gambar kir
 ## Yang tidak bisa dilakukan
 
 - Membuka file STEP, IGES, atau BREP secara langsung. Mintalah STL sebagai gantinya.
-- Menyimpan kembali ke DXF atau DWG. Gambar yang sudah diubah disimpan sebagai .ttukcad.
+- Menimpa file DXF atau DWG yang Anda terima: yang tidak dibaca GenOffice (arsiran, atribut blok, layout) akan hilang. Sebagai gantinya, ekspor DXF atau DWG baru.
 - Batasan, riwayat desain, atau rakitan seperti di program CAD profesional. Setiap bentuk diatur dengan angkanya sendiri.
 - Mencetak. Kirim lembar dimensi ke dokumen Hangul atau Word lalu cetak dari sana.

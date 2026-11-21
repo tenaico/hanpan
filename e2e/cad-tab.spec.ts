@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { readFileSync, realpathSync, rmSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync, rmSync } from 'node:fs'
 import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -10,6 +10,7 @@ import {
   makeMesh,
   meshVolume,
   openCadFile,
+  readDxf,
   readStl,
   writeStl,
   type CadDocument,
@@ -677,6 +678,20 @@ test.describe('AI Drawing tab: DWG and Edit lines (decision 0102)', () => {
         expect(part?.type).toBe('drawing')
         if (part?.type === 'drawing') expect(part.entities.map((e) => e.kind)).toEqual(['circle'])
       }
+      // 0.22.3: the edited drawing goes out as a new DXF and a new DWG
+      const dxfOut = join(dir, 'plan-edited.dxf')
+      await answerSaveDialogs(app, dxfOut)
+      await ribbonTab(cad, 'file')
+      await cad.locator('[data-action="export-dxf"]').click()
+      await expect.poll(() => existsSync(dxfOut), { timeout: 30_000 }).toBe(true)
+      const exported = readDxf(new Uint8Array(readFileSync(dxfOut)))
+      expect(exported.status).toBe('ok')
+      if (exported.status === 'ok') expect(exported.entities.map((e) => e.kind)).toEqual(['circle'])
+      const dwgOut = join(dir, 'plan-edited.dwg')
+      await answerSaveDialogs(app, dwgOut)
+      await cad.locator('[data-action="export-dwg"]').click()
+      await expect.poll(() => existsSync(dwgOut), { timeout: 30_000 }).toBe(true)
+      expect(readFileSync(dwgOut).subarray(0, 6).toString('latin1')).toBe('AC1032')
       // the DWG itself is never written
       expect(Buffer.compare(readFileSync(dwg), Buffer.from(dwgBytes))).toBe(0)
     } finally {

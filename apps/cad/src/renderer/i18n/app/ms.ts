@@ -62,6 +62,8 @@ export const ms = {
   groupOpen: 'Buka',
   groupExport: 'Eksport',
   exportStl: 'Eksport ke STL',
+  exportDxf: 'Eksport ke DXF',
+  exportDwg: 'Eksport ke DWG',
   exportObj: 'Eksport ke OBJ',
   exportPng: 'Eksport ke gambar (PNG)',
   groupPlace: 'Letak bentuk',

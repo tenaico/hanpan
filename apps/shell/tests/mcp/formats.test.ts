@@ -104,7 +104,7 @@ describe('format registry', () => {
     expect(cad.editorOpen).toEqual(['ttukcad', 'dxf', 'dwg', 'stl', 'obj', '3mf', 'glb', 'ply'])
     for (const ext of cad.editorOpen) expect(appForPath(`/x/a.${ext}`), `.${ext}`).toBe('cad')
     expect(cad.editorSave).toEqual(['ttukcad'])
-    expect(cad.editorExport).toEqual(['stl', 'obj', 'png'])
+    expect(cad.editorExport).toEqual(['stl', 'obj', 'dxf', 'dwg', 'png'])
     // reached through open_documents only (read a summary, save)
     expect(cad.mcp).toBeUndefined()
   })

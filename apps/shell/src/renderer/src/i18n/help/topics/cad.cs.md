@@ -39,7 +39,7 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 - Na liště dole **Smazat** (nebo klávesa Delete) odstraní výběr, **Posunout** ho posune o X a Y zadané v mm a když je vybraný jeden text, napíšete nová slova a stisknete **Změnit text**. Esc zruší výběr; dalším stisknutím úpravu čar ukončíte.
 - Každou změnu vrátíte jedním **Zpět** (Ctrl+Z). Zamčený výkres se nezmění.
 - Můžete také požádat asistenta AI, například: „Smaž všechno ve vrstvě kót“, „Změň text ‚Zasedačka‘ na ‚Velká zasedačka‘“, „Posuň vrstvu dveří o 500 mm doprava“.
-- Výsledek se uloží jako .ttukcad. Původní soubor DXF nebo DWG se nikdy nezmění.
+- Výsledek se uloží jako .ttukcad. Původní soubor DXF nebo DWG se nikdy nezmění. Chcete-li ho poslat zpět, vytvořte nový soubor přes **Exportovat DXF** nebo **Exportovat DWG**.
 
 ## Měření a rozměrový výkres
 
@@ -67,6 +67,7 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 ## Export
 
 - **Soubor › Exportovat STL** a **Exportovat OBJ** uloží model pro 3D tiskárnu nebo jiný program. **Exportovat obrázek (PNG)** uloží to, co je vidět v okně, na světlém pozadí.
+- **Exportovat DXF** a **Exportovat DWG** uloží výkres jako nový soubor ve formátu AutoCAD 2018 (mm): čáry, kružnice, oblouky, texty, hladiny a barvy beze změny a tělesa jako jejich obrys při pohledu shora, v hladině AI-DRAWING.
 - Export nikdy nepřepíše soubor, ze kterého výkres pochází.
 
 ## Klávesové zkratky
@@ -90,6 +91,6 @@ Výkres AI je karta pro jednoduché 3D modely a výkresy. Otevřete v ní výkre
 ## Co neumí
 
 - Přímo otevírat soubory STEP, IGES ani BREP. Požádejte místo nich o STL.
-- Ukládat zpět do DXF nebo DWG. Upravený výkres se uloží jako .ttukcad.
+- Přepsat soubor DXF nebo DWG, který jste dostali: ztratilo by se to, co GenOffice nečte (šrafy, atributy bloků, rozvržení). Místo toho exportujte nový soubor DXF nebo DWG.
 - Vazby, historii návrhu ani sestavy jako profesionální programy CAD. Každý tvar se nastavuje vlastními čísly.
 - Tisknout. Pošlete rozměrový výkres do dokumentu Hangul nebo Word a tiskněte odtud.

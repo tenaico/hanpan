@@ -39,7 +39,7 @@ Rysunek AI to karta do prostych modeli 3D i rysunków. Otworzysz w niej rysunek,
 - Na pasku poniżej **Usuń** (albo klawisz Delete) usuwa zaznaczenie, **Przesuń** przesuwa je o wpisane X i Y w mm, a gdy zaznaczony jest jeden tekst, wpisujesz nowe słowa i naciskasz **Zmień tekst**. Esc czyści zaznaczenie; ponowne naciśnięcie kończy edycję linii.
 - Każdą zmianę cofniesz jednym **Cofnij** (Ctrl+Z). Zablokowany rysunek nie zostanie zmieniony.
 - Możesz też poprosić asystenta AI, na przykład: „Usuń wszystko z warstwy wymiarów”, „Zmień tekst ‚Sala konferencyjna’ na ‚Duża sala konferencyjna’”, „Przesuń warstwę drzwi o 500 mm w prawo”.
-- Wynik zapisuje się jako .ttukcad. Oryginalny plik DXF albo DWG nigdy się nie zmienia.
+- Wynik zapisuje się jako .ttukcad. Oryginalny plik DXF albo DWG nigdy się nie zmienia. Aby go odesłać, utwórz nowy plik poleceniem **Eksportuj DXF** albo **Eksportuj DWG**.
 
 ## Mierzenie i arkusz wymiarowy
 
@@ -67,6 +67,7 @@ Rysunek AI to karta do prostych modeli 3D i rysunków. Otworzysz w niej rysunek,
 ## Eksportowanie
 
 - **Plik › Eksportuj STL** i **Eksportuj OBJ** zapisują model dla drukarki 3D albo innego programu. **Eksportuj obraz (PNG)** zapisuje to, co widać w widoku, na jasnym tle.
+- **Eksportuj DXF** i **Eksportuj DWG** zapisują rysunek jako nowy plik w formacie AutoCAD 2018 (mm): linie, okręgi, łuki, teksty, warstwy i kolory bez zmian, a bryły jako ich obrys widziany z góry, na warstwie AI-DRAWING.
 - Eksport nigdy nie zastępuje pliku, z którego pochodzi rysunek.
 
 ## Skróty klawiszowe
@@ -90,6 +91,6 @@ Rysunek AI to karta do prostych modeli 3D i rysunków. Otworzysz w niej rysunek,
 ## Czego nie potrafi
 
 - Bezpośrednio otwierać plików STEP, IGES ani BREP. Poproś zamiast tego o STL.
-- Zapisywać z powrotem do DXF ani DWG. Zmieniony rysunek zapisuje się jako .ttukcad.
+- Nadpisywać otrzymanego pliku DXF albo DWG: zginęłoby to, czego GenOffice nie odczytuje (kreskowania, atrybuty bloków, układy). Zamiast tego wyeksportuj nowy plik DXF albo DWG.
 - Więzów, historii projektowania ani złożeń jak w profesjonalnych programach CAD. Każdy kształt jest ustawiany własnymi liczbami.
 - Drukować. Wyślij arkusz wymiarowy do dokumentu Hangul lub Word i drukuj stamtąd.

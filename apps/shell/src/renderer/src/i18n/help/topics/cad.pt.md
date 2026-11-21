@@ -39,7 +39,7 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 - Na barra abaixo, **Apagar** (ou a tecla Delete) remove a seleção, **Mover** a desloca pelo X e Y que você digitar em mm e, com um único texto selecionado, você digita as novas palavras e pressiona **Alterar texto**. Esc limpa a seleção; pressioná-lo de novo encerra Editar linhas.
 - Cada alteração volta com um único **Desfazer** (Ctrl+Z). Um desenho bloqueado não é alterado.
 - Você também pode pedir ao assistente de IA, por exemplo: "Apague tudo o que está na camada de cotas", "Troque o texto 'Sala de reunião' por 'Sala de reunião grande'", "Mova a camada das portas 500 mm para a direita".
-- O resultado é salvo como .ttukcad. O arquivo DXF ou DWG original nunca é alterado.
+- O resultado é salvo como .ttukcad. O arquivo DXF ou DWG original nunca é alterado. Para devolvê-lo, crie um arquivo novo com **Exportar DXF** ou **Exportar DWG**.
 
 ## Medir e a folha de cotas
 
@@ -67,6 +67,7 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 ## Exportar
 
 - **Arquivo › Exportar STL** e **Exportar OBJ** gravam o modelo para uma impressora 3D ou outro programa. **Exportar imagem (PNG)** salva o que a vista mostra, sobre um fundo claro.
+- **Exportar DXF** e **Exportar DWG** gravam o desenho como um arquivo novo no formato AutoCAD 2018 (mm): linhas, círculos, arcos, textos, camadas e cores como estão, e os sólidos como seu contorno visto de cima, na camada AI-DRAWING.
 - Uma exportação nunca substitui o arquivo de onde o desenho veio.
 
 ## Atalhos de teclado
@@ -90,6 +91,6 @@ Desenho IA é uma aba para modelos 3D e desenhos simples. Abra um desenho que al
 ## O que ele não faz
 
 - Abrir diretamente arquivos STEP, IGES ou BREP. Peça um STL no lugar.
-- Salvar de volta em DXF ou DWG. Um desenho editado é salvo como .ttukcad.
+- Gravar por cima do arquivo DXF ou DWG que você recebeu: o que o GenOffice não lê (hachuras, atributos de bloco, layouts) seria perdido. Em vez disso, exporte um novo DXF ou DWG.
 - Restrições, histórico de projeto ou montagens como nos programas de CAD profissionais. Cada forma é definida pelos próprios números.
 - Imprimir. Envie a folha de cotas para um documento do Hangul ou do Word e imprima de lá.

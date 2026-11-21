@@ -57,6 +57,8 @@ export const th = {
   groupOpen: 'เปิด',
   groupExport: 'ส่งออก',
   exportStl: 'ส่งออกเป็น STL',
+  exportDxf: 'ส่งออกเป็น DXF',
+  exportDwg: 'ส่งออกเป็น DWG',
   exportObj: 'ส่งออกเป็น OBJ',
   exportPng: 'ส่งออกเป็นภาพ (PNG)',
   groupPlace: 'วางรูปทรง',

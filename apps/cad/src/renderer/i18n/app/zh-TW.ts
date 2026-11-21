@@ -56,6 +56,8 @@ export const zhTW = {
   groupOpen: '開啟',
   groupExport: '匯出',
   exportStl: '匯出 STL',
+  exportDxf: '匯出 DXF',
+  exportDwg: '匯出 DWG',
   exportObj: '匯出 OBJ',
   exportPng: '匯出圖片 (PNG)',
   groupPlace: '放置形狀',

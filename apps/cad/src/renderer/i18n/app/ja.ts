@@ -62,6 +62,8 @@ export const ja = {
   groupOpen: '開く',
   groupExport: 'エクスポート',
   exportStl: 'STL に書き出す',
+  exportDxf: 'DXF に書き出す',
+  exportDwg: 'DWG に書き出す',
   exportObj: 'OBJ に書き出す',
   exportPng: '画像 (PNG) に書き出す',
   groupPlace: '図形を置く',

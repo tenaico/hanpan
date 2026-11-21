@@ -62,6 +62,8 @@ export const pt = {
   groupOpen: 'Abrir',
   groupExport: 'Exportar',
   exportStl: 'Exportar STL',
+  exportDxf: 'Exportar DXF',
+  exportDwg: 'Exportar DWG',
   exportObj: 'Exportar OBJ',
   exportPng: 'Exportar imagem (PNG)',
   groupPlace: 'Colocar formas',

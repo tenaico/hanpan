@@ -65,6 +65,8 @@ export const nl = {
   groupOpen: 'Openen',
   groupExport: 'Exporteren',
   exportStl: 'Exporteren als STL',
+  exportDxf: 'Exporteren als DXF',
+  exportDwg: 'Exporteren als DWG',
   exportObj: 'Exporteren als OBJ',
   exportPng: 'Exporteren als afbeelding (PNG)',
   groupPlace: 'Vormen plaatsen',

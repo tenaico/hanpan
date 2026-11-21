@@ -60,6 +60,8 @@ export const vi = {
   groupOpen: 'Mở',
   groupExport: 'Xuất',
   exportStl: 'Xuất STL',
+  exportDxf: 'Xuất DXF',
+  exportDwg: 'Xuất DWG',
   exportObj: 'Xuất OBJ',
   exportPng: 'Xuất hình ảnh (PNG)',
   groupPlace: 'Đặt hình',

@@ -60,6 +60,8 @@ export const ru = {
   groupOpen: 'Открыть',
   groupExport: 'Экспорт',
   exportStl: 'Экспорт в STL',
+  exportDxf: 'Экспорт в DXF',
+  exportDwg: 'Экспорт в DWG',
   exportObj: 'Экспорт в OBJ',
   exportPng: 'Экспорт в картинку (PNG)',
   groupPlace: 'Добавить фигуры',

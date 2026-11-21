@@ -39,7 +39,7 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 - In de balk eronder verwijdert **Verwijderen** (of de Delete-toets) de keuze, verschuift **Verplaatsen** die met de X en Y die u in mm invult, en met één tekst gekozen typt u de nieuwe woorden en drukt u op **Tekst wijzigen**. Esc wist de keuze; nog een keer drukken beëindigt Lijnen bewerken.
 - Elke wijziging draait u terug met één keer **Ongedaan maken** (Ctrl+Z). Een vergrendelde tekening wordt niet gewijzigd.
 - U kunt het ook aan de AI-assistent vragen, bijvoorbeeld: "Verwijder alles op de maatvoeringslaag", "Verander de tekst 'Vergaderzaal' in 'Grote vergaderzaal'", "Verplaats de deurenlaag 500 mm naar rechts".
-- Het resultaat wordt opgeslagen als .ttukcad. Het oorspronkelijke DXF- of DWG-bestand wordt nooit gewijzigd.
+- Het resultaat wordt opgeslagen als .ttukcad. Het oorspronkelijke DXF- of DWG-bestand wordt nooit gewijzigd. Om haar terug te sturen, maakt u een nieuw bestand met **Exporteren als DXF** of **Exporteren als DWG**.
 
 ## Meten en het maatblad
 
@@ -67,6 +67,7 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 ## Exporteren
 
 - **Bestand › Exporteren als STL** en **Exporteren als OBJ** schrijven het model weg voor een 3D-printer of een ander programma. **Exporteren als afbeelding (PNG)** bewaart wat het beeld toont, op een lichte achtergrond.
+- **Exporteren als DXF** en **Exporteren als DWG** schrijven de tekening weg als nieuw bestand in het AutoCAD 2018-formaat (mm): lijnen, cirkels, bogen, tekst, lagen en kleuren zoals ze zijn, en volumes als hun omtrek van bovenaf gezien, op de laag AI-DRAWING.
 - Een export vervangt nooit het bestand waar de tekening vandaan kwam.
 
 ## Sneltoetsen
@@ -90,6 +91,6 @@ AI-tekening is een tabblad voor eenvoudige 3D-modellen en tekeningen. Open een t
 ## Wat het niet kan
 
 - STEP-, IGES- of BREP-bestanden rechtstreeks openen. Vraag in plaats daarvan om STL.
-- Terug opslaan als DXF of DWG. Een bewerkte tekening wordt opgeslagen als .ttukcad.
+- Het ontvangen DXF- of DWG-bestand overschrijven: wat GenOffice niet leest (arceringen, blokattributen, lay-outs) zou verloren gaan. Exporteer in plaats daarvan een nieuw DXF- of DWG-bestand.
 - Beperkingen, ontwerpgeschiedenis of samenstellingen zoals in professionele CAD-programma's. Elke vorm wordt bepaald door zijn eigen getallen.
 - Afdrukken. Stuur het maatblad naar een Hangul- of Word-document en druk het daar af.

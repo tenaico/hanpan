@@ -13,7 +13,7 @@ AI 도면 편집기다. 간단한 3D 모형과 DXF·DWG 도면을 `.ttukcad` 파
   - `measure/`: 치수 재기 도구(`measure-tool.ts`: 두 점 거리, DXF 선 길이, 원·호 지름. 계산은 엔진)와 화면 위 막대(`MeasureOverlay.tsx`).
   - `sheet/`: 치수 도면 대화 상자(`SheetDialog.tsx`), 도면 PNG(`sheet-png.ts`), 그림 복사와 한글·워드로 보내기(`send.ts`), 보낼 곳 고르기(`use-send-target.ts`, 결정 0091의 한국 문서 기능 스위치를 따른다).
   - `import/three-mesh.ts`: 3MF·GLB·PLY를 three의 읽기 코드로 읽어 엔진 그물 하나로 바꾼다(색·재질 버림, GLB는 m→mm·+Y 위→+Z 위).
-  - `export/`: STL·OBJ·PNG 내보내기 바이트(`export.ts`)와 메뉴 요청을 받는 훅(`use-export.ts`).
+  - `export/`: STL·OBJ·DXF·DWG·PNG 내보내기 바이트(`export.ts`. DXF·DWG는 보이는 도면 요소와 입체의 위에서 본 윤곽선을 `AI-DRAWING` 레이어로, 엔진 `writeDrawingFile`이 쓴다)와 메뉴 요청을 받는 훅(`use-export.ts`).
   - `ai/`: AI 도우미. 창(`AiPanel.tsx`: 대화, 입력 칸, 답의 단계 표시, 요청 하나를 `openGroup`·`closeGroup`으로 묶기), 속성 창 아래 자리와 접힌 막대·열림 기억(`AiDock.tsx`, 리본의 **AI 도우미** 단추와 같이 연다), 입력 칸 위 빠른 실행 셋(`QuickActions.tsx`: 치수 도면 만들기, 방 배치 시작, 한글·워드로 보내기), 공용 `ai:*` 창구로 보내고 받기(`transport.ts`), 실패한 실행의 연결 상태와 사용량 보고(`connection.ts`), 구독 연결 상태와 연결 카드(`subscription-client.ts`), 답할 언어 지시(`lang-directive.ts`), skill(`cad-skill.ts`: 영어 지시문, 도구 10개의 설명), 도구가 문서를 고치는 일(`cad-tools.ts`, 고치는 도구 호출 하나는 `edit` 한 번. 도면 요소는 `read_drawing`·`edit_drawing`이 번호로 다루고, 읽은 뒤 도면이 바뀌었으면 `rev`가 달라 고치기를 거절한다). 화면 모양은 `ai-panel.css`.
   - `i18n/`: 21개 언어 문구(`app/<언어>.ts`를 `strings-app.ts`가, `ai/<언어>.ts`를 `strings-ai.ts`가 모으고 `strings.ts`가 합친다), 현재 언어(`locale.tsx`). 낱말은 아래 용어집을 따른다.
 - 메인 프로세스(`src/main/`): `cad-main.ts`(뷰 만들기, 뷰마다 허용된 경로, 열기·저장, 닫기 전 저장 확인, 이름 바뀜 따라가기, 단독 실행), `recovery-main.ts`(복구 사본 저장소), `i18n-main.ts`(메인 문구), `mcp-queries.ts`(앱 안 MCP 서버의 질문: 모형 요약, 저장할 바이트), `atomic-write.ts`(파일을 끊김 없이 쓰기), `index.ts`(셸에 내보내는 함수 목록).

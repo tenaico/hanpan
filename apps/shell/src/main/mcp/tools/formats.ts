@@ -180,8 +180,8 @@ export const FORMAT_FAMILIES: readonly FormatFamily[] = [
     editorOpen: ['ttukcad', 'dxf', 'dwg', 'stl', 'obj', '3mf', 'glb', 'ply'],
     // an import is never written back: a drawing is always saved as .ttukcad
     editorSave: ['ttukcad'],
-    // File › Export: the visible solids as one mesh, or a picture of the 3D view
-    editorExport: ['stl', 'obj', 'png'],
+    // File › Export: the visible solids as one mesh, the drawing as DXF or DWG, or a picture of the 3D view
+    editorExport: ['stl', 'obj', 'dxf', 'dwg', 'png'],
     // no `mcp` block: an open drawing is listed, read (a model summary), saved and
     // closed through open_documents only
   },

@@ -39,7 +39,7 @@ Disegno IA è una scheda per modelli 3D e disegni semplici. Apri un disegno che 
 - Nella barra in basso, **Elimina** (o il tasto Delete) toglie la scelta, **Sposta** la sposta della X e della Y che inserisci in mm e, con un solo testo scelto, scrivi le nuove parole e premi **Cambia testo**. Esc annulla la scelta; premendolo di nuovo termini Modifica linee.
 - Ogni modifica torna indietro con un solo **Annulla** (Ctrl+Z). Un disegno bloccato non viene modificato.
 - Puoi anche chiederlo all'assistente IA, per esempio: "Elimina tutto quello che c'è sul layer delle quote", "Cambia il testo 'Sala riunioni' in 'Sala riunioni grande'", "Sposta il layer delle porte di 500 mm a destra".
-- Il risultato viene salvato come .ttukcad. Il file DXF o DWG originale non viene mai modificato.
+- Il risultato viene salvato come .ttukcad. Il file DXF o DWG originale non viene mai modificato. Per rimandarlo indietro, crea un nuovo file con **Esporta DXF** o **Esporta DWG**.
 
 ## Misurare e la tavola quotata
 
@@ -67,6 +67,7 @@ Disegno IA è una scheda per modelli 3D e disegni semplici. Apri un disegno che 
 ## Esportare
 
 - **File › Esporta STL** ed **Esporta OBJ** scrivono il modello per una stampante 3D o un altro programma. **Esporta immagine (PNG)** salva quello che mostra la vista, su sfondo chiaro.
+- **Esporta DXF** ed **Esporta DWG** scrivono il disegno come nuovo file in formato AutoCAD 2018 (mm): linee, cerchi, archi, testi, layer e colori così come sono, e i solidi come il loro contorno visto dall'alto, sul layer AI-DRAWING.
 - Un'esportazione non sostituisce mai il file da cui viene il disegno.
 
 ## Scorciatoie da tastiera
@@ -90,6 +91,6 @@ Disegno IA è una scheda per modelli 3D e disegni semplici. Apri un disegno che 
 ## Cosa non sa fare
 
 - Aprire direttamente file STEP, IGES o BREP. Chiedi invece un STL.
-- Salvare di nuovo in DXF o DWG. Un disegno modificato viene salvato come .ttukcad.
+- Sovrascrivere il file DXF o DWG ricevuto: andrebbe perso ciò che GenOffice non legge (tratteggi, attributi dei blocchi, layout). Esporta invece un nuovo DXF o DWG.
 - Vincoli, cronologia di progetto o assiemi come nei programmi CAD professionali. Ogni forma è definita dai suoi numeri.
 - Stampare. Invia la tavola quotata a un documento Hangul o Word e stampa da lì.

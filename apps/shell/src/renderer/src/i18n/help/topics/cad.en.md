@@ -39,7 +39,7 @@ AI Drawing is a tab for simple 3D models and drawings. Open a drawing someone se
 - In the bar below, **Delete** (or the Delete key) removes the pick, **Move** shifts it by the X and Y you enter in mm, and with one text picked you type the new words and press **Change text**. Esc clears the pick; pressing it again ends Edit lines.
 - Each change comes back with one **Undo** (Ctrl+Z). A locked drawing is not changed.
 - You can also ask the AI assistant, for example: "Delete everything on the dimension layer", "Change the text 'Meeting room' to 'Large meeting room'", "Move the door layer 500 mm to the right".
-- The result is saved as .ttukcad. The original DXF or DWG file is never changed.
+- The result is saved as .ttukcad. The original DXF or DWG file is never changed. To send it back, make a new file with **Export DXF** or **Export DWG**.
 
 ## Measuring and the dimension sheet
 
@@ -67,6 +67,7 @@ AI Drawing is a tab for simple 3D models and drawings. Open a drawing someone se
 ## Exporting
 
 - **File › Export STL** and **Export OBJ** write the model for a 3D printer or another program. **Export picture (PNG)** saves what the view shows, on a light background.
+- **Export DXF** and **Export DWG** write the drawing as a new file in the AutoCAD 2018 format (mm): lines, circles, arcs, text, layers and colours as they are, and solids as their outline seen from above, on the layer AI-DRAWING.
 - An export never replaces the file the drawing came from.
 
 ## Keyboard shortcuts
@@ -90,6 +91,6 @@ AI Drawing is a tab for simple 3D models and drawings. Open a drawing someone se
 ## What it cannot do
 
 - Open STEP, IGES or BREP files directly. Ask for STL instead.
-- Save back to DXF or DWG. An edited drawing is saved as .ttukcad.
+- Write over the DXF or DWG file you received: what GenOffice does not read (hatches, block attributes, layouts) would be lost. Export a new DXF or DWG instead.
 - Constraints, design history or assemblies as in professional CAD programs. Each part is set by its own numbers.
 - Print. Send the dimension sheet to a Hangul or Word document and print from there.

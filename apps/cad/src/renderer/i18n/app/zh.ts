@@ -54,6 +54,8 @@ export const zh = {
   groupOpen: '打开',
   groupExport: '导出',
   exportStl: '导出 STL',
+  exportDxf: '导出 DXF',
+  exportDwg: '导出 DWG',
   exportObj: '导出 OBJ',
   exportPng: '导出图片 (PNG)',
   groupPlace: '放置形状',

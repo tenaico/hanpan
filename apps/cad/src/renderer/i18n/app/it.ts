@@ -62,6 +62,8 @@ export const it = {
   groupOpen: 'Apri',
   groupExport: 'Esporta',
   exportStl: 'Esporta STL',
+  exportDxf: 'Esporta DXF',
+  exportDwg: 'Esporta DWG',
   exportObj: 'Esporta OBJ',
   exportPng: 'Esporta immagine (PNG)',
   groupPlace: 'Inserisci forme',

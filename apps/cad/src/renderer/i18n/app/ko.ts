@@ -59,6 +59,8 @@ export const ko = {
   groupOpen: '열기',
   groupExport: '내보내기',
   exportStl: 'STL로 내보내기',
+  exportDxf: 'DXF로 내보내기',
+  exportDwg: 'DWG로 내보내기',
   exportObj: 'OBJ로 내보내기',
   exportPng: '그림(PNG)으로 내보내기',
   groupPlace: '도형 놓기',

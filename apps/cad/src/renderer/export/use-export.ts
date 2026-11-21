@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { CadDocument, EvaluatedPart } from '@genoffice/cad-engine'
 import type { CadExportApi, ExportFormat } from '../../shared/ipc'
-import { exportObj, exportPng, exportStl, type PngSource } from './export'
+import { type PngSource, exportDrawingFile, exportObj, exportPng, exportStl } from './export'
 
 /** Notices an export can end with (keys of the screen's dictionary). */
 export type ExportNoticeKey = 'exportEmpty' | 'exportFailed' | 'exportSourcePath'
@@ -33,6 +33,10 @@ async function exportBytes(
     return view ? exportPng(view) : 'exportFailed'
   }
   const doc = source.document()
+  if (format === 'dxf' || format === 'dwg') {
+    const made = exportDrawingFile(doc, await source.evaluated(), format)
+    return made.ok ? made.bytes : made.notice
+  }
   const made = (format === 'stl' ? exportStl : exportObj)(doc, await source.evaluated())
   return made.ok ? made.bytes : made.notice
 }

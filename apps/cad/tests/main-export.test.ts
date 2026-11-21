@@ -210,7 +210,7 @@ describe('export', () => {
   it.each([
     ['no bytes', { format: 'stl', suggestedName: 'x' }],
     ['text instead of bytes', { format: 'stl', bytes: 'abc', suggestedName: 'x' }],
-    ['an unknown format', { format: 'dwg', bytes: STL_BYTES, suggestedName: 'x' }],
+    ['an unknown format', { format: 'step', bytes: STL_BYTES, suggestedName: 'x' }],
     ['empty bytes', { format: 'stl', bytes: new Uint8Array(0), suggestedName: 'x' }],
     ['nothing', null],
   ])('a request with %s is refused before any dialog', async (_label, request) => {

@@ -58,6 +58,8 @@ export const he = {
   groupOpen: 'פתיחה',
   groupExport: 'ייצוא',
   exportStl: 'ייצוא ל-STL',
+  exportDxf: 'ייצוא ל-DXF',
+  exportDwg: 'ייצוא ל-DWG',
   exportObj: 'ייצוא ל-OBJ',
   exportPng: 'ייצוא לתמונה (PNG)',
   groupPlace: 'הצבת צורות',

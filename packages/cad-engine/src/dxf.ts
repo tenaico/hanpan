@@ -598,12 +598,16 @@ class Reader {
     const layer = own === '0' && inherited !== null ? inherited : own
     const outer = this.colour
     const index = groupNumber(entity, 62, 256)
+    // an exact colour (420, AutoCAD 2004 and later) comes before the nearest numbered one
+    const exact = groupNumber(entity, 420, -1)
     this.colour =
-      index === 0
-        ? outer
-        : index >= 1 && index <= 255
-          ? aciToHex(index)
-          : aciToHex(this.layerColours.get(layer.toUpperCase()) ?? 0)
+      exact >= 0 && exact <= 0xffffff
+        ? `#${Math.floor(exact).toString(16).padStart(6, '0')}`
+        : index === 0
+          ? outer
+          : index >= 1 && index <= 255
+            ? aciToHex(index)
+            : aciToHex(this.layerColours.get(layer.toUpperCase()) ?? 0)
     try {
       this.readEntity(entity, parent, depth, layer, inherited)
     } finally {

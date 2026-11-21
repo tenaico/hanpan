@@ -59,6 +59,8 @@ export const cs = {
   groupOpen: 'Otevřít',
   groupExport: 'Export',
   exportStl: 'Exportovat STL',
+  exportDxf: 'Exportovat DXF',
+  exportDwg: 'Exportovat DWG',
   exportObj: 'Exportovat OBJ',
   exportPng: 'Exportovat obrázek (PNG)',
   groupPlace: 'Vložit tvary',
